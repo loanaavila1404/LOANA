@@ -2,8 +2,7 @@ import { z } from 'zod';
 import { TIPOS_DOCUMENTO } from '../constants/catalogs';
 
 export const documentTypeSchema = z.enum(TIPOS_DOCUMENTO, {
-  required_error: 'El tipo de documento es requerido',
-  invalid_type_error: 'Tipo de documento no válido',
+  message: 'Tipo de documento no válido',
 });
 
 export const dniSchema = z.string()
@@ -36,5 +35,5 @@ export const paginationSchema = z.object({
 });
 
 export const statusSchema = z.enum(['ACTIVO', 'INACTIVO'], {
-  invalid_type_error: 'Estado no válido',
+  message: 'Estado no válido',
 });
