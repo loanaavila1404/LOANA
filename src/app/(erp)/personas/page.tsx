@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table";
 import { UserCheck, PlusCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { PersonaFormModal } from "@/components/features/personas/PersonaFormModal";
 
 export default async function PersonasPage() {
   const supabase = await createClient();
@@ -24,10 +25,7 @@ export default async function PersonasPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold font-heading">Estudiantes y Personas</h1>
-        <Button>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Nuevo Estudiante
-        </Button>
+        <PersonaFormModal />
       </div>
 
       <Card>

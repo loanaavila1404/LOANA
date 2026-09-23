@@ -1,14 +1,15 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table"
 import { Badge } from "@/components/ui/Badge"
-import { Button } from "@/components/ui/Button"
-import { CreditCard, PlusCircle } from "lucide-react"
+import { CreditCard } from "lucide-react"
 import { createClient } from '@/lib/supabase/server'
 import { formatCurrency } from '@/lib/utils/currency'
+import { NewMatriculaButton } from "@/components/features/matriculas/NewMatriculaButton"
 
 export default async function MatriculasPage() {
   const supabase = await createClient()
 
+  // Fetch matriculas
   const { data: matriculas } = await supabase
     .from('matriculas')
     .select(`
@@ -27,6 +28,36 @@ export default async function MatriculasPage() {
     `)
     .order('fecha_matricula', { ascending: false })
 
+  // Fetch estudiantes for form
+  const { data: estudiantesData } = await supabase
+    .from('estudiantes')
+    .select(`
+      id,
+      personas (
+        nombres,
+        apellido_paterno
+      )
+    `)
+    .eq('status', 'ACTIVO')
+
+  const estudiantes = (estudiantesData || []).map(est => ({
+    id: est.id,
+    nombres: est.personas?.nombres || '',
+    apellido_paterno: est.personas?.apellido_paterno || ''
+  }))
+
+  // Fetch ediciones for form
+  const { data: edicionesData } = await supabase
+    .from('ediciones')
+    .select('id, codigo, nombre')
+    .eq('status', 'ACTIVO')
+
+  const ediciones = (edicionesData || []).map(e => ({
+    id: e.id,
+    codigo: e.codigo,
+    nombre: e.nombre || ''
+  }))
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -37,10 +68,7 @@ export default async function MatriculasPage() {
           </h1>
           <p className="text-graphite-600 mt-1">Gestión de inscripciones, reservas y pagos de cuotas</p>
         </div>
-        <Button className="flex items-center gap-2">
-          <PlusCircle className="h-4 w-4" />
-          Nueva Matrícula
-        </Button>
+        <NewMatriculaButton estudiantes={estudiantes} ediciones={ediciones} />
       </div>
 
       <Card>

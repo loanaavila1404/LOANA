@@ -1,7 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
-import { Button } from "@/components/ui/Button";
-import { PlusCircle } from "lucide-react";
 import { KanbanBoard } from "@/components/features/crm/KanbanBoard";
+import { CRMHeader } from "@/components/features/crm/CRMHeader";
 
 export default async function CRMPage() {
   const supabase = await createClient();
@@ -18,15 +17,9 @@ export default async function CRMPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold font-heading">CRM Comercial</h1>
-        <Button>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Nuevo Prospecto
-        </Button>
-      </div>
-
+      <CRMHeader />
       <KanbanBoard prospectos={prospectos || []} />
     </div>
   );
 }
+
