@@ -1,60 +1,92 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
-import { CreditCard, PlusCircle } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table"
+import { Badge } from "@/components/ui/Badge"
+import { Button } from "@/components/ui/Button"
+import { CreditCard, PlusCircle } from "lucide-react"
+import { createClient } from '@/lib/supabase/server'
+import { formatCurrency } from '@/lib/utils/currency'
 
-const matriculas = [
-  { id: 1, student: "Juan Pérez", course: "MAT-101", amount: "$500.00", status: "Pagado" },
-  { id: 2, student: "Ana Gómez", course: "FIS-201", amount: "$500.00", status: "Pendiente" },
-  { id: 3, student: "Carlos Ruiz", course: "PROG-101", amount: "$600.00", status: "Pagado" },
-];
+export default async function MatriculasPage() {
+  const supabase = await createClient()
 
-export default function MatriculasPage() {
+  const { data: matriculas } = await supabase
+    .from('matriculas')
+    .select(`
+      id,
+      codigo_matricula,
+      fecha_matricula,
+      importe_matricula,
+      status,
+      estudiantes (
+        codigo_estudiante,
+        personas (
+          nombres,
+          apellido_paterno
+        )
+      )
+    `)
+    .order('fecha_matricula', { ascending: false })
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold font-heading">Matrículas y Pagos</h1>
-        <Button>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Registrar Matrícula
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-graphite-900 font-heading flex items-center gap-2">
+            <CreditCard className="h-6 w-6 text-primary" />
+            Matrículas y Pagos
+          </h1>
+          <p className="text-graphite-600 mt-1">Gestión de inscripciones, reservas y pagos de cuotas</p>
+        </div>
+        <Button className="flex items-center gap-2">
+          <PlusCircle className="h-4 w-4" />
+          Nueva Matrícula
         </Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CreditCard className="h-5 w-5" />
-            Registro de Matrículas
-          </CardTitle>
+          <CardTitle>Últimas Matrículas</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md border">
-            <table className="w-full text-sm text-left">
-              <thead className="border-b bg-muted/50">
-                <tr>
-                  <th className="p-4 font-medium">Estudiante</th>
-                  <th className="p-4 font-medium">Curso</th>
-                  <th className="p-4 font-medium">Monto</th>
-                  <th className="p-4 font-medium">Estado</th>
-                  <th className="p-4 font-medium text-right">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {matriculas.map((mat) => (
-                  <tr key={mat.id} className="border-b last:border-0 hover:bg-muted/50 transition-colors">
-                    <td className="p-4">{mat.student}</td>
-                    <td className="p-4">{mat.course}</td>
-                    <td className="p-4">{mat.amount}</td>
-                    <td className="p-4">{mat.status}</td>
-                    <td className="p-4 text-right">
-                      <Button variant="ghost">Gestionar</Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          {matriculas && matriculas.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Código</TableHead>
+                  <TableHead>Estudiante</TableHead>
+                  <TableHead>Fecha</TableHead>
+                  <TableHead>Importe</TableHead>
+                  <TableHead className="text-right">Estado</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {matriculas.map((mat) => {
+                  const persona = mat.estudiantes?.personas;
+                  const nombreCompleto = persona ? `${persona.nombres} ${persona.apellido_paterno}` : 'Desconocido';
+                  return (
+                    <TableRow key={mat.id}>
+                      <TableCell className="font-mono text-xs">{mat.codigo_matricula}</TableCell>
+                      <TableCell className="font-medium text-graphite-900">{nombreCompleto}</TableCell>
+                      <TableCell>{mat.fecha_matricula ? new Date(mat.fecha_matricula).toLocaleDateString('es-PE') : '-'}</TableCell>
+                      <TableCell>{formatCurrency(mat.importe_matricula || 0)}</TableCell>
+                      <TableCell className="text-right">
+                        <Badge variant={mat.status === 'CONFIRMADA' ? 'success' : 'default'}>
+                          {mat.status}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-12 text-center text-graphite-500">
+              <CreditCard className="h-12 w-12 mb-4 text-graphite-300" />
+              <p>No se encontraron matrículas en el sistema.</p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }
