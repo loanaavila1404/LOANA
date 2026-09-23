@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ERP Brusben - CRM Comercial (Prospectos &amp; Leads)</title>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS v3 with forms and container queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              red: '#C4121A',
+              'red-dark': '#A30D14',
+              'red-light': '#FDF2F2',
+              sidebar: '#181A1F',
+              'sidebar-hover': '#23262D',
+              surface: '#F5F6F8',
+              border: '#E2E4E9',
+              subtle: '#667085',
+              heading: '#101828',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-[#F5F6F8] font-sans text-slate-800 antialiased h-screen flex overflow-hidden">
+<!-- BEGIN: Sidebar -->
+<aside class="w-64 bg-[#181A1F] text-slate-300 flex flex-col shrink-0 border-r border-[#262930] select-none">
+<!-- Institutional Logo Box -->
+<div class="p-3">
+<div class="bg-white rounded-lg p-2.5 flex items-center justify-between shadow-sm">
+<div class="flex items-center gap-2.5 overflow-hidden">
+<!-- Institutional Emblem Icon (Brusben Shield & Graduation Cap) -->
+<div class="w-8 h-8 rounded bg-[#C4121A] flex items-center justify-center text-white shrink-0 shadow-inner">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+<path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+</svg>
+</div>
+<div class="leading-tight truncate">
+<div class="flex items-baseline gap-1">
+<span class="font-extrabold tracking-tight text-slate-900 text-sm">BRUSBEN</span>
+<span class="text-[9px] font-semibold text-slate-500">E.I.R.L.</span>
+</div>
+<p class="text-[8px] tracking-wider text-slate-500 font-semibold uppercase">Capacitarse es superarse</p>
+</div>
+</div>
+<button class="text-slate-400 hover:text-slate-600 transition-colors p-1" title="Colapsar panel lateral">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+</div>
+<!-- Navigation Menu Items -->
+<nav class="flex-1 px-3 py-2 space-y-1 overflow-y-auto text-sm font-medium">
+<!-- Item: Inicio -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-[#23262D] transition-colors" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Inicio</span>
+</a>
+<!-- Item: CRM Comercial (Active state) -->
+<a class="flex items-center justify-between px-3 py-2.5 rounded-lg bg-[#C4121A] text-white shadow-sm font-semibold" href="#">
+<div class="flex items-center gap-3">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>CRM Comercial</span>
+</div>
+<span class="bg-white/20 text-white text-[11px] font-bold px-2 py-0.5 rounded-full">12</span>
+</a>
+<!-- Item: Personas y estudiantes -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-[#23262D] transition-colors" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Personas y estudiantes</span>
+</a>
+<!-- Item: Oferta académica -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-[#23262D] transition-colors" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Oferta académica</span>
+</a>
+<!-- Item: Matrículas -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-[#23262D] transition-colors" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Matrículas</span>
+</a>
+<!-- Item: Usuarios y accesos -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-[#23262D] transition-colors" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Usuarios y accesos</span>
+</a>
+<!-- Item: Auditoría -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-[#23262D] transition-colors" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Auditoría</span>
+</a>
+<!-- Item: Mi perfil -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-[#23262D] transition-colors" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Mi perfil</span>
+</a>
+</nav>
+<!-- Sidebar Footer -->
+<div class="p-3 border-t border-[#262930] text-[11px] text-slate-400 flex items-center justify-between">
+<span>ERP Brusben v2.4.0</span>
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-emerald-500/20"></span>
+<span class="text-slate-300 font-medium">Operativo</span>
+</div>
+</div>
+</aside>
+<!-- END: Sidebar -->
+<!-- BEGIN: MainContentWrapper -->
+<div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#F5F6F8]">
+<!-- BEGIN: TopBar -->
+<header class="h-16 bg-white border-b border-[#E2E4E9] flex items-center justify-between px-6 shrink-0 z-20">
+<!-- Breadcrumbs and Global Search -->
+<div class="flex items-center gap-6 flex-1 max-w-3xl">
+<div class="flex items-center gap-2 text-xs font-medium text-slate-500 shrink-0">
+<span class="hover:text-slate-700 cursor-pointer">ERP Brusben</span>
+<span class="text-slate-300">/</span>
+<span class="text-slate-700 font-semibold">CRM Comercial</span>
+<span class="text-slate-300">/</span>
+<span class="text-slate-500">Gestión de prospectos</span>
+</div>
+<!-- Search Bar with Keyboard Shortcut Hint -->
+<div class="relative w-full max-w-md hidden md:block">
+<span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</span>
+<input class="w-full pl-9 pr-14 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#C4121A] focus:border-[#C4121A] transition-all" placeholder="Buscar por DNI, nombre, teléfono, código... (Ctrl+K)" type="text"/>
+<span class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-[10px] text-slate-400 font-mono">⌘K</span>
+</div>
+</div>
+<!-- Campus Selector, Notification Bell & User Profile -->
+<div class="flex items-center gap-4">
+<!-- Campus Selector Badge -->
+<div class="flex items-center gap-2 px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-700 cursor-pointer hover:bg-slate-100 transition-colors">
+<svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Sede Central • Lima</span>
+<svg class="w-3 h-3 text-slate-400 ml-0.5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<!-- Notification Bell with Notification Badge -->
+<button class="relative p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-50 rounded-lg transition-colors" title="Notificaciones activas">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-[#C4121A] rounded-full ring-2 ring-white"></span>
+</button>
+<div class="h-6 w-px bg-slate-200"></div>
+<!-- Profile Widget -->
+<div class="flex items-center gap-3 pl-1">
+<div class="text-right leading-none hidden sm:block">
+<p class="text-xs font-bold text-slate-800">Loana Avila Neyra</p>
+<div class="flex items-center justify-end gap-1 mt-1">
+<span class="text-[10px] text-[#C4121A] font-medium">Superadministración</span>
+<svg class="w-3 h-3 text-emerald-600" fill="currentColor" viewbox="0 0 20 20"><path clip-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" fill-rule="evenodd"></path></svg>
+</div>
+</div>
+<!-- Avatar Initials -->
+<div class="w-9 h-9 rounded-full bg-slate-200 border border-slate-300 flex items-center justify-center font-bold text-xs text-slate-700 shadow-sm">
+            LA
+          </div>
+<button class="text-slate-400 hover:text-slate-600 p-1" title="Cerrar sesión">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+</div>
+</header>
+<!-- END: TopBar -->
+<!-- BEGIN: MainContentScrollableArea -->
+<main class="flex-1 overflow-y-auto px-6 py-6 space-y-6">
+<!-- BEGIN: PageHeader -->
+<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+<div>
+<span class="text-[10px] font-extrabold uppercase tracking-wider text-[#C4121A] bg-red-50 px-2 py-0.5 rounded border border-red-100">
+            Gestión de Admisiones &amp; Prospectos
+          </span>
+<h1 class="text-2xl font-bold text-slate-900 mt-1">CRM Comercial</h1>
+<p class="text-xs text-slate-500 mt-0.5 max-w-2xl">
+            Gestiona el ciclo de captación, asignación a asesores y conversión de prospectos para las carreras y cursos técnicos.
+          </p>
+</div>
+<!-- Header CTA Actions -->
+<div class="flex items-center gap-2.5 shrink-0">
+<button class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition shadow-sm">
+<svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Exportar CSV/Excel</span>
+</button>
+<button class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition shadow-sm">
+<span>⚡ Reasignar en lote</span>
+</button>
+<button class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-[#C4121A] hover:bg-[#A30D14] rounded-lg shadow-sm transition active:scale-[0.98]">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>+ Nuevo prospecto</span>
+</button>
+</div>
+</div>
+<!-- END: PageHeader -->
+<!-- BEGIN: KpiDashboard -->
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<!-- KPI Card 1 -->
+<div class="bg-white p-4 rounded-xl border border-slate-200 border-l-4 border-l-[#C4121A] shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between text-xs text-slate-500 font-medium">
+<span>Total prospectos</span>
+<span class="p-1.5 bg-red-50 text-[#C4121A] rounded-lg">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</span>
+</div>
+<div class="mt-2 flex items-baseline gap-2">
+<span class="text-2xl font-black text-slate-900">428</span>
+<span class="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">↑ +18.2% este mes</span>
+</div>
+<p class="text-[11px] text-slate-400 mt-2 font-normal">Ciclo de admisiones activo 2026-I</p>
+</div>
+<!-- KPI Card 2 -->
+<div class="bg-white p-4 rounded-xl border border-slate-200 border-l-4 border-l-blue-500 shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between text-xs text-slate-500 font-medium">
+<span>En seguimiento activo</span>
+<span class="p-1.5 bg-blue-50 text-blue-600 rounded-lg">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</span>
+</div>
+<div class="mt-2 flex items-baseline gap-2">
+<span class="text-2xl font-black text-slate-900">164</span>
+<span class="text-[11px] font-semibold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded">38.3% del embudo</span>
+</div>
+<p class="text-[11px] text-slate-400 mt-2 font-normal">Con asesor asignado y llamada activa</p>
+</div>
+<!-- KPI Card 3 -->
+<div class="bg-white p-4 rounded-xl border border-slate-200 border-l-4 border-l-amber-500 shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between text-xs text-slate-500 font-medium">
+<span>Prematrículas / Reservas</span>
+<span class="p-1.5 bg-amber-50 text-amber-600 rounded-lg">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</span>
+</div>
+<div class="mt-2 flex items-baseline gap-2">
+<span class="text-2xl font-black text-slate-900">52</span>
+<span class="text-[11px] font-semibold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded">Meta: 70 cupos</span>
+</div>
+<p class="text-[11px] text-slate-400 mt-2 font-normal">Pendientes de validación de pago</p>
+</div>
+<!-- KPI Card 4 -->
+<div class="bg-white p-4 rounded-xl border border-slate-200 border-l-4 border-l-emerald-500 shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between text-xs text-slate-500 font-medium">
+<span>Tasa de conversión</span>
+<span class="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</span>
+</div>
+<div class="mt-2 flex items-baseline gap-2">
+<span class="text-2xl font-black text-slate-900">28.4%</span>
+<span class="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">↑ +3.1% vs anterior</span>
+</div>
+<p class="text-[11px] text-slate-400 mt-2 font-normal">Cierre efectivo a matrícula formal</p>
+</div>
+</section>
+<!-- Operational Mini Ribbon -->
+<div class="bg-white border border-slate-200 rounded-xl px-4 py-2.5 flex flex-wrap items-center justify-between text-xs text-slate-600 shadow-sm gap-3">
+<div class="flex items-center gap-2">
+<span class="font-semibold text-slate-900">Leads de hoy:</span>
+<span class="font-bold text-[#C4121A] bg-red-50 px-2 py-0.5 rounded border border-red-100">19 nuevos</span>
+</div>
+<div class="h-3 w-px bg-slate-200 hidden md:block"></div>
+<div class="flex items-center gap-2">
+<span class="font-semibold text-slate-900">Por contactar hoy:</span>
+<span class="font-semibold text-amber-600">34 tareas pendientes</span>
+</div>
+<div class="h-3 w-px bg-slate-200 hidden md:block"></div>
+<div class="flex items-center gap-2">
+<span class="font-semibold text-slate-900">Asesores activos:</span>
+<span class="text-slate-700">6 en turno de atención</span>
+</div>
+<div class="h-3 w-px bg-slate-200 hidden md:block"></div>
+<div class="flex items-center gap-2">
+<span class="font-semibold text-slate-900">Tiempo medio de 1er contacto:</span>
+<span class="font-bold text-emerald-600">14 min</span>
+</div>
+</div>
+<!-- END: KpiDashboard -->
+<!-- BEGIN: FiltersAndTableSection -->
+<div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden flex flex-col">
+<!-- Controls Header: Tabs & Multi-filter -->
+<div class="p-4 border-b border-slate-200 space-y-4">
+<!-- View Switcher Tabs -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1 border-b border-slate-100">
+<div class="flex items-center gap-2">
+<button class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-slate-900 text-white flex items-center gap-1.5 shadow-sm">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 6h16M4 10h16M4 14h16M4 18h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Listado de prospectos</span>
+<span class="bg-slate-700 text-white text-[10px] px-1.5 py-0.2 rounded-full">428</span>
+</button>
+<button class="px-3.5 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5 transition">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Embudo Kanban</span>
+</button>
+</div>
+<!-- Total Leads Counter in View -->
+<div class="text-xs text-slate-500 font-medium">
+              Mostrando <span class="font-bold text-slate-800">8</span> de <span class="font-bold text-slate-800">428</span> prospectos registrados
+            </div>
+</div>
+<!-- Filter Controls Toolbar -->
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5">
+<!-- Search Text Input -->
+<div class="lg:col-span-2 relative">
+<span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</span>
+<input class="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#C4121A]" placeholder="Buscar por nombre, DNI, teléfono o email..." type="text"/>
+</div>
+<!-- Filter: Estado -->
+<select class="w-full py-1.5 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#C4121A]">
+<option value="">Estado: Todos los estados (6)</option>
+<option value="nuevo">Nuevo / Asignado</option>
+<option value="seguimiento">En seguimiento</option>
+<option value="interesado">Interesado / Negociación</option>
+<option value="prematricula">Prematrícula</option>
+<option value="convertido">Convertido / Matriculado</option>
+<option value="descartado">Descartado</option>
+</select>
+<!-- Filter: Programa -->
+<select class="w-full py-1.5 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#C4121A]">
+<option value="">Programa: Todos (Soldadura, SOMA...)</option>
+<option value="soldadura">Soldadura Estructural y TIG</option>
+<option value="soma">Seguridad Industrial (SOMA)</option>
+<option value="maquinaria">Operador de Maquinaria Pesada</option>
+<option value="electricidad">Electricidad &amp; Automatización</option>
+</select>
+<!-- Filter: Canal -->
+<select class="w-full py-1.5 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#C4121A]">
+<option value="">Canal: Todos los canales</option>
+<option value="whatsapp">WhatsApp Directo</option>
+<option value="fb">Facebook Ads</option>
+<option value="tiktok">TikTok Ads</option>
+<option value="web">Web Orgánico</option>
+<option value="presencial">Presencial / Sede</option>
+</select>
+<!-- Filter: Asesor -->
+<div class="flex items-center gap-1.5">
+<select class="flex-1 py-1.5 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#C4121A]">
+<option value="">Asesor: Todos (6)</option>
+<option value="ana">Ana Torres</option>
+<option value="carlos">Carlos Díaz</option>
+<option value="manuel">Manuel Vega</option>
+<option value="lucia">Lucía Paredes</option>
+</select>
+<button class="p-1.5 text-slate-400 hover:text-slate-600 bg-slate-100 rounded-lg transition" title="Limpiar filtros">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+</div>
+</div>
+<!-- High Density Data Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse text-xs">
+<thead>
+<tr class="bg-slate-50/80 border-b border-slate-200 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+<th class="py-3 px-3 w-8 text-center">
+<input class="rounded border-slate-300 text-[#C4121A] focus:ring-[#C4121A]" type="checkbox"/>
+</th>
+<th class="py-3 px-4">Prospecto / DNI</th>
+<th class="py-3 px-4">Programa de Interés</th>
+<th class="py-3 px-3">Canal</th>
+<th class="py-3 px-4">Asesor Asignado</th>
+<th class="py-3 px-3">Estado</th>
+<th class="py-3 px-3">Temperatura</th>
+<th class="py-3 px-4">Próximo Contacto / Tarea</th>
+<th class="py-3 px-4 text-right">Acciones</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 text-slate-700">
+<!-- Row 1 -->
+<tr class="hover:bg-slate-50/70 transition-colors">
+<td class="py-3 px-3 text-center">
+<input checked="" class="rounded border-slate-300 text-[#C4121A] focus:ring-[#C4121A]" type="checkbox"/>
+</td>
+<td class="py-3 px-4">
+<div class="font-bold text-slate-900">Marcos Quispe Mamani</div>
+<div class="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1.5">
+<span>DNI: 71829304</span>
+<span>•</span>
+<span class="text-slate-600 font-medium">984 123 456</span>
+</div>
+</td>
+<td class="py-3 px-4">
+<span class="font-medium text-slate-800">Soldadura Estructural y TIG</span>
+<span class="block text-[10px] text-slate-400">Modalidad Presencial • Noche</span>
+</td>
+<td class="py-3 px-3">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-medium text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> WhatsApp
+                  </span>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-2">
+<div class="w-5 h-5 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-[9px]">AT</div>
+<span class="font-medium text-slate-700">Ana Torres</span>
+</div>
+</td>
+<td class="py-3 px-3">
+<span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-blue-50 text-blue-700 border border-blue-100">
+                    En seguimiento
+                  </span>
+</td>
+<td class="py-3 px-3">
+<span class="text-[11px] font-semibold text-rose-600 bg-rose-50 px-2 py-0.5 rounded">Alta 🔥</span>
+</td>
+<td class="py-3 px-4">
+<div class="font-semibold text-slate-900">Hoy, 11:30 AM</div>
+<div class="text-[11px] text-slate-400 truncate max-w-[170px]">Llamar para coordinar cierre</div>
+</td>
+<td class="py-3 px-4 text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded" title="Ver ficha integral">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<button class="p-1 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded" title="Abrir WhatsApp">
+<svg class="w-4 h-4" fill="currentColor" viewbox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"></path></svg>
+</button>
+<button class="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-slate-50/70 transition-colors bg-amber-50/20">
+<td class="py-3 px-3 text-center">
+<input checked="" class="rounded border-slate-300 text-[#C4121A] focus:ring-[#C4121A]" type="checkbox"/>
+</td>
+<td class="py-3 px-4">
+<div class="font-bold text-slate-900">Valeria Huamán Rivas</div>
+<div class="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1.5">
+<span>DNI: 48201934</span>
+<span>•</span>
+<span class="text-slate-600 font-medium">976 543 210</span>
+</div>
+</td>
+<td class="py-3 px-4">
+<span class="font-medium text-slate-800">Seguridad Industrial y Minera (SOMA)</span>
+<span class="block text-[10px] text-slate-400">Modalidad Semipresencial • Sabatinos</span>
+</td>
+<td class="py-3 px-3">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-medium text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span> Facebook Ads
+                  </span>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-2">
+<div class="w-5 h-5 rounded-full bg-amber-200 text-amber-800 flex items-center justify-center font-bold text-[9px]">CD</div>
+<span class="font-medium text-slate-700">Carlos Díaz</span>
+</div>
+</td>
+<td class="py-3 px-3">
+<span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+                    Prematrícula
+                  </span>
+</td>
+<td class="py-3 px-3">
+<span class="text-[11px] font-semibold text-rose-700 bg-rose-100 px-2 py-0.5 rounded">Muy Alta 🎯</span>
+</td>
+<td class="py-3 px-4">
+<div class="font-semibold text-slate-900">Hoy, 03:00 PM</div>
+<div class="text-[11px] text-slate-400 truncate max-w-[170px]">Validar voucher de reserva</div>
+</td>
+<td class="py-3 px-4 text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<button class="p-1 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded">
+<svg class="w-4 h-4" fill="currentColor" viewbox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"></path></svg>
+</button>
+<button class="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-slate-50/70 transition-colors">
+<td class="py-3 px-3 text-center">
+<input class="rounded border-slate-300 text-[#C4121A] focus:ring-[#C4121A]" type="checkbox"/>
+</td>
+<td class="py-3 px-4">
+<div class="font-bold text-slate-900">Luis Alberto Ramos</div>
+<div class="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1.5">
+<span>DNI: 75920143</span>
+<span>•</span>
+<span class="text-slate-600 font-medium">912 345 678</span>
+</div>
+</td>
+<td class="py-3 px-4">
+<span class="font-medium text-slate-800">Operador de Maquinaria Pesada</span>
+<span class="block text-[10px] text-slate-400">Modalidad Full Práctica • Domingo</span>
+</td>
+<td class="py-3 px-3">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 font-medium text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-slate-500"></span> Web Orgánico
+                  </span>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-2">
+<div class="w-5 h-5 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-[9px]">AT</div>
+<span class="font-medium text-slate-700">Ana Torres</span>
+</div>
+</td>
+<td class="py-3 px-3">
+<span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-red-50 text-[#C4121A] border border-red-200">
+                    Nuevo / Asignado
+                  </span>
+</td>
+<td class="py-3 px-3">
+<span class="text-[11px] font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded">Media</span>
+</td>
+<td class="py-3 px-4">
+<div class="font-semibold text-[#C4121A]">Pendiente</div>
+<div class="text-[11px] text-slate-400 truncate max-w-[170px]">Primer contacto telefónico</div>
+</td>
+<td class="py-3 px-4 text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<button class="p-1 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded">
+<svg class="w-4 h-4" fill="currentColor" viewbox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"></path></svg>
+</button>
+<button class="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-slate-50/70 transition-colors">
+<td class="py-3 px-3 text-center">
+<input class="rounded border-slate-300 text-[#C4121A] focus:ring-[#C4121A]" type="checkbox"/>
+</td>
+<td class="py-3 px-4">
+<div class="font-bold text-slate-900">Fiorella Gómez Tapia</div>
+<div class="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1.5">
+<span>DNI: 73019284</span>
+<span>•</span>
+<span class="text-slate-600 font-medium">968 112 334</span>
+</div>
+</td>
+<td class="py-3 px-4">
+<span class="font-medium text-slate-800">Electricidad y Automatización Industrial</span>
+<span class="block text-[10px] text-slate-400">Modalidad Regular • Tarde</span>
+</td>
+<td class="py-3 px-3">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-pink-50 text-pink-700 font-medium text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-pink-500"></span> TikTok Ads
+                  </span>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-2">
+<div class="w-5 h-5 rounded-full bg-purple-200 text-purple-800 flex items-center justify-center font-bold text-[9px]">MV</div>
+<span class="font-medium text-slate-700">Manuel Vega</span>
+</div>
+</td>
+<td class="py-3 px-3">
+<span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-purple-50 text-purple-700 border border-purple-100">
+                    Interesado / Negociación
+                  </span>
+</td>
+<td class="py-3 px-3">
+<span class="text-[11px] font-semibold text-rose-600 bg-rose-50 px-2 py-0.5 rounded">Alta 🔥</span>
+</td>
+<td class="py-3 px-4">
+<div class="font-semibold text-slate-900">Mañana, 10:00 AM</div>
+<div class="text-[11px] text-slate-400 truncate max-w-[170px]">Envío de malla curricular y costos</div>
+</td>
+<td class="py-3 px-4 text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<button class="p-1 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded">
+<svg class="w-4 h-4" fill="currentColor" viewbox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"></path></svg>
+</button>
+<button class="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-slate-50/70 transition-colors">
+<td class="py-3 px-3 text-center">
+<input class="rounded border-slate-300 text-[#C4121A] focus:ring-[#C4121A]" type="checkbox"/>
+</td>
+<td class="py-3 px-4">
+<div class="font-bold text-slate-900">Jorge Choque Flores</div>
+<div class="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1.5">
+<span>DNI: 45192837</span>
+<span>•</span>
+<span class="text-slate-600 font-medium">955 432 198</span>
+</div>
+</td>
+<td class="py-3 px-4">
+<span class="font-medium text-slate-800">Soldadura Estructural</span>
+<span class="block text-[10px] text-slate-400">Modalidad Presencial • Intensivo</span>
+</td>
+<td class="py-3 px-3">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 font-medium text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Presencial / Sede
+                  </span>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-2">
+<div class="w-5 h-5 rounded-full bg-emerald-200 text-emerald-800 flex items-center justify-center font-bold text-[9px]">LP</div>
+<span class="font-medium text-slate-700">Lucía Paredes</span>
+</div>
+</td>
+<td class="py-3 px-3">
+<span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-blue-50 text-blue-700 border border-blue-100">
+                    En seguimiento
+                  </span>
+</td>
+<td class="py-3 px-3">
+<span class="text-[11px] font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded">Media</span>
+</td>
+<td class="py-3 px-4">
+<div class="font-semibold text-slate-900">18 Sep, 11:00 AM</div>
+<div class="text-[11px] text-slate-400 truncate max-w-[170px]">Seguimiento de financiamiento</div>
+</td>
+<td class="py-3 px-4 text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<button class="p-1 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded">
+<svg class="w-4 h-4" fill="currentColor" viewbox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"></path></svg>
+</button>
+<button class="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 6 -->
+<tr class="hover:bg-slate-50/70 transition-colors bg-emerald-50/20">
+<td class="py-3 px-3 text-center">
+<input class="rounded border-slate-300 text-[#C4121A] focus:ring-[#C4121A]" type="checkbox"/>
+</td>
+<td class="py-3 px-4">
+<div class="font-bold text-slate-900">Brenda Castillo Morales</div>
+<div class="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1.5">
+<span>DNI: 70192834</span>
+<span>•</span>
+<span class="text-slate-600 font-medium">944 876 543</span>
+</div>
+</td>
+<td class="py-3 px-4">
+<span class="font-medium text-slate-800">Mecánica y Mant. de Maquinaria</span>
+<span class="block text-[10px] text-slate-400">Modalidad Regular • Mañana</span>
+</td>
+<td class="py-3 px-3">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 font-medium text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-violet-500"></span> Referido
+                  </span>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-2">
+<div class="w-5 h-5 rounded-full bg-amber-200 text-amber-800 flex items-center justify-center font-bold text-[9px]">CD</div>
+<span class="font-medium text-slate-700">Carlos Díaz</span>
+</div>
+</td>
+<td class="py-3 px-3">
+<span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                    Convertido / Matriculado
+                  </span>
+</td>
+<td class="py-3 px-3">
+<span class="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">Cerrado ✅</span>
+</td>
+<td class="py-3 px-4">
+<div class="font-semibold text-emerald-700">Matriculado</div>
+<div class="text-[11px] text-slate-400 truncate max-w-[170px]">Ciclo 2026-I • Expediente listo</div>
+</td>
+<td class="py-3 px-4 text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="px-2 py-1 text-[11px] font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded shadow-xs flex items-center gap-1">
+<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Ficha</span>
+</button>
+<button class="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Footer / Pagination -->
+<div class="p-4 bg-white border-t border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-500">
+<div class="flex items-center gap-2">
+<span>Mostrar</span>
+<select class="py-1 px-2 text-xs border border-slate-200 rounded-md bg-white text-slate-700 focus:ring-1 focus:ring-[#C4121A]">
+<option>10 filas</option>
+<option>25 filas</option>
+<option>50 filas</option>
+<option>100 filas</option>
+</select>
+<span>de <strong class="text-slate-700">428</strong> prospectos</span>
+</div>
+<div class="flex items-center gap-1.5 self-end sm:self-auto">
+<button class="px-2.5 py-1 text-xs border border-slate-200 rounded-lg text-slate-400 hover:bg-slate-50 disabled:opacity-50" disabled="">Anterior</button>
+<button class="px-2.5 py-1 text-xs font-bold bg-[#C4121A] text-white rounded-lg shadow-xs">1</button>
+<button class="px-2.5 py-1 text-xs border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50">2</button>
+<button class="px-2.5 py-1 text-xs border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50">3</button>
+<span class="px-1 text-slate-400">...</span>
+<button class="px-2.5 py-1 text-xs border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50">54</button>
+<button class="px-2.5 py-1 text-xs border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50">Siguiente</button>
+</div>
+</div>
+</div>
+<!-- END: FiltersAndTableSection -->
+<!-- BEGIN: ContextualBatchBar -->
+<!-- Floating action bar triggered when items are selected -->
+<div class="bg-slate-900 text-white rounded-xl p-3.5 shadow-xl flex flex-wrap items-center justify-between gap-3 border border-slate-800">
+<div class="flex items-center gap-3">
+<span class="flex items-center justify-center w-6 h-6 rounded-full bg-[#C4121A] text-white font-bold text-xs">2</span>
+<div>
+<p class="text-xs font-bold">2 prospectos seleccionados</p>
+<p class="text-[10px] text-slate-400">Acciones masivas sobre la selección actual</p>
+</div>
+</div>
+<div class="flex flex-wrap items-center gap-2">
+<!-- Action: Reasignar -->
+<div class="relative">
+<button class="px-3 py-1.5 text-xs font-semibold bg-[#23262D] hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 flex items-center gap-1.5 transition">
+<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Reasignar asesor</span>
+<svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+<!-- Action: Cambiar Estado -->
+<div class="relative">
+<button class="px-3 py-1.5 text-xs font-semibold bg-[#23262D] hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 flex items-center gap-1.5 transition">
+<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Cambiar estado</span>
+<svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+<!-- Action: WhatsApp Masivo -->
+<button class="px-3 py-1.5 text-xs font-semibold bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg flex items-center gap-1.5 transition">
+<svg class="w-3.5 h-3.5" fill="currentColor" viewbox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"></path></svg>
+<span>Enviar WhatsApp masivo</span>
+</button>
+<!-- Action: Deseleccionar -->
+<button class="px-2.5 py-1.5 text-xs text-slate-400 hover:text-white transition">
+            Deseleccionar
+          </button>
+</div>
+</div>
+<!-- END: ContextualBatchBar -->
+<!-- BEGIN: DesignSystemStatesPreview -->
+<div class="border border-dashed border-slate-300 rounded-xl p-4 bg-slate-50 space-y-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-blue-500"></span>
+<span class="text-xs font-bold text-slate-700 uppercase tracking-wider">Estados del Sistema (Design System Specs)</span>
+</div>
+<span class="text-[11px] text-slate-400">Guía de implementación técnica ERP Brusben</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Empty State Container Example -->
+<div class="bg-white border border-slate-200 rounded-lg p-6 text-center flex flex-col items-center justify-center">
+<div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-2">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg>
+</div>
+<p class="text-xs font-bold text-slate-800">Estado: Sin resultados con los filtros actuales</p>
+<p class="text-[11px] text-slate-400 mt-1 max-w-xs">No se encontraron prospectos asignados bajo los parámetros de búsqueda seleccionados.</p>
+<button class="mt-3 text-[11px] font-semibold text-[#C4121A] hover:underline">Restablecer todos los filtros</button>
+</div>
+<!-- Skeleton Loading Example -->
+<div class="bg-white border border-slate-200 rounded-lg p-4 space-y-3">
+<div class="flex items-center justify-between">
+<span class="text-[11px] font-bold text-slate-400 uppercase">Estado: Carga diferida (Skeleton)</span>
+<span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+</div>
+<div class="animate-pulse space-y-2.5">
+<div class="h-3 bg-slate-200 rounded w-3/4"></div>
+<div class="h-2.5 bg-slate-100 rounded w-1/2"></div>
+<div class="grid grid-cols-3 gap-2 pt-1">
+<div class="h-6 bg-slate-100 rounded"></div>
+<div class="h-6 bg-slate-100 rounded"></div>
+<div class="h-6 bg-slate-100 rounded"></div>
+</div>
+</div>
+<p class="text-[10px] text-slate-400 text-right font-mono">Feedback visual durante la paginación dinámica</p>
+</div>
+</div>
+</div>
+<!-- END: DesignSystemStatesPreview -->
+</main>
+<!-- END: MainContentScrollableArea -->
+</div>
+<!-- END: MainContentWrapper -->
+</body></html>

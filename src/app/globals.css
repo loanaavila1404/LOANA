@@ -20,6 +20,16 @@
   --success: #19713F;
   --warning: #955D00;
   --danger: #C4121A;
+  --brand-50: #fef2f2;
+  --brand-100: #fee2e2;
+  --brand-500: #ef4444;
+  --brand-600: #dc2626;
+  --brand-700: #c4121a;
+  --brand-800: #a80f16;
+  --brand-900: #7f1d1d;
+  
+  --sidebar: #181A1F;
+  --canvas: #F5F6F8;
 }
 
 @theme inline {
@@ -30,12 +40,30 @@
   --color-primary-hover: var(--primary-hover);
   --color-primary-light: var(--primary-light);
   
+  --color-brand-50: var(--brand-50);
+  --color-brand-100: var(--brand-100);
+  --color-brand-500: var(--brand-500);
+  --color-brand-600: var(--brand-600);
+  --color-brand-700: var(--brand-700);
+  --color-brand-800: var(--brand-800);
+  --color-brand-900: var(--brand-900);
+  
+  --color-sidebar: var(--sidebar);
+  --color-canvas: var(--canvas);
+  
+  --color-brusben-red: #C4121A;
+  --color-brusben-redHover: #A30F15;
+  --color-brusben-dark: #181A1F;
+  --color-brusben-darker: #111215;
+  --color-brusben-border: #E2E8F0;
+  --color-brusben-surface: #FFFFFF;
+  --color-brusben-bg: #F4F6F9;
+  
   --color-graphite-900: var(--graphite-900);
   --color-graphite-800: var(--graphite-800);
   --color-graphite-700: var(--graphite-700);
   --color-graphite-600: var(--graphite-600);
   
-  --color-canvas: var(--canvas);
   --color-card: var(--card);
   --color-border: var(--border);
   
@@ -44,7 +72,7 @@
   --color-danger: var(--danger);
 
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-heading: var(--font-plus-jakarta), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
 
 body {
