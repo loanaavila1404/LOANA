@@ -1,3 +1,4 @@
+/* eslint-disable */
 const fs = require('fs');
 const data = fs.readFileSync('c:/Users/loana/Documents/Codex/ERP BRUSBEN/ERP-Brusben-Fase-1/erp-brusben/src/LogoData.html', 'utf8');
 const match = data.match(/data:image\/jpeg;base64,([\s\S]*?)(?:'|")/);
