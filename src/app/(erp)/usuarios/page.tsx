@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/Badge"
 import { Button } from "@/components/ui/Button"
 import { ShieldCheck, PlusCircle } from "lucide-react"
 import { createClient } from '@/lib/supabase/server'
+import { UserEditModal } from "@/components/features/usuarios/UserEditModal"
 
 export default async function UsuariosPage() {
   const supabase = await createClient()
@@ -52,6 +53,7 @@ export default async function UsuariosPage() {
                   <TableHead>Rol</TableHead>
                   <TableHead>Estado</TableHead>
                   <TableHead className="text-right">Último acceso</TableHead>
+                  <TableHead className="text-right">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -73,6 +75,17 @@ export default async function UsuariosPage() {
                     </TableCell>
                     <TableCell className="text-right text-sm text-graphite-500">
                       {usuario.last_access_at ? new Date(usuario.last_access_at).toLocaleDateString('es-PE') : 'Nunca'}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <UserEditModal 
+                        user={{
+                          id: usuario.id,
+                          display_name: usuario.display_name,
+                          email: usuario.email,
+                          status: usuario.status,
+                          roleName: usuario.roles?.name || null
+                        }} 
+                      />
                     </TableCell>
                   </TableRow>
                 ))}

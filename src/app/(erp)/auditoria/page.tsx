@@ -1,54 +1,82 @@
+import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
-import { Activity, Download } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table";
+import { Badge } from "@/components/ui/Badge";
+import { AuditoriaFiltros } from "@/components/features/auditoria/AuditoriaFiltros";
 
-const logs = [
-  { id: 1, action: "Inicio de sesión", user: "admin", date: "2023-10-25 10:00:05", ip: "192.168.1.10" },
-  { id: 2, action: "Creación de registro", user: "jperez", date: "2023-10-25 09:45:12", ip: "192.168.1.22" },
-  { id: 3, action: "Eliminación de curso", user: "admin", date: "2023-10-24 16:30:00", ip: "192.168.1.10" },
-];
+export default async function AuditoriaPage(props: { searchParams: Promise<{ entity?: string, action?: string }> }) {
+  const searchParams = await props.searchParams;
+  const entity = searchParams?.entity || "";
+  const action = searchParams?.action || "";
 
-export default function AuditoriaPage() {
+  const supabase = await createClient();
+  let query = supabase.from("audit_logs").select("*").order("timestamp", { ascending: false }).limit(100);
+
+  if (entity) {
+    query = query.eq("entity", entity);
+  }
+  if (action) {
+    query = query.eq("action", action);
+  }
+
+  const { data: logs, error } = await query;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold font-heading">Auditoría del Sistema</h1>
-        <Button variant="outline">
-          <Download className="mr-2 h-4 w-4" />
-          Exportar Logs
-        </Button>
+        <h1 className="text-2xl font-bold text-graphite-900">Auditoría</h1>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Activity className="h-5 w-5" />
-            Registro de Actividad
-          </CardTitle>
+          <CardTitle>Filtros</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md border">
-            <table className="w-full text-sm text-left">
-              <thead className="border-b bg-muted/50">
-                <tr>
-                  <th className="p-4 font-medium">Fecha y Hora</th>
-                  <th className="p-4 font-medium">Acción</th>
-                  <th className="p-4 font-medium">Usuario</th>
-                  <th className="p-4 font-medium">IP</th>
-                </tr>
-              </thead>
-              <tbody>
-                {logs.map((log) => (
-                  <tr key={log.id} className="border-b last:border-0 hover:bg-muted/50 transition-colors">
-                    <td className="p-4 text-muted-foreground">{log.date}</td>
-                    <td className="p-4">{log.action}</td>
-                    <td className="p-4 font-medium">{log.user}</td>
-                    <td className="p-4 font-mono text-xs text-muted-foreground">{log.ip}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <AuditoriaFiltros currentEntity={entity} currentAction={action} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="p-0 overflow-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Fecha</TableHead>
+                <TableHead>Módulo</TableHead>
+                <TableHead>Entidad</TableHead>
+                <TableHead>Acción</TableHead>
+                <TableHead>Usuario</TableHead>
+                <TableHead>Detalle</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {logs?.map((log) => (
+                <TableRow key={log.id}>
+                  <TableCell>{new Date(log.timestamp || "").toLocaleString("es-ES")}</TableCell>
+                  <TableCell>{log.module || "-"}</TableCell>
+                  <TableCell>{log.entity || "-"}</TableCell>
+                  <TableCell>
+                    <Badge variant={log.action === "INSERT" ? "success" : log.action === "UPDATE" ? "warning" : log.action === "DELETE" ? "danger" : "default"}>
+                      {log.action}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{log.user_id || "Sistema"}</TableCell>
+                  <TableCell>
+                    <div className="max-w-xs overflow-hidden text-ellipsis whitespace-nowrap" title={log.detail || JSON.stringify(log.data_after || log.data_before || {})}>
+                      {log.detail || JSON.stringify(log.data_after || log.data_before || {})}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+              {(!logs || logs.length === 0) && (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-4 text-graphite-500">
+                    No se encontraron registros de auditoría.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
     </div>

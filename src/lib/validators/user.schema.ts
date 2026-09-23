@@ -22,3 +22,11 @@ export const updateProfileSchema = z.object({
   apellidos: z.string().min(2).optional(),
   telefono: z.string().optional(),
 });
+
+export const editUserSchema = z.object({
+  id: z.string().uuid(),
+  rolCodigo: z.enum(CODIGOS_ROL).optional(),
+  status: z.enum(['ACTIVO', 'INACTIVO', 'BLOQUEADO']).optional(),
+});
+
+export type EditUserFormData = z.infer<typeof editUserSchema>;
