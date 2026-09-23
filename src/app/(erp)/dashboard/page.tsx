@@ -1,12 +1,36 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
 import { Users, BookOpen, GraduationCap, Clock } from 'lucide-react'
+import { createClient } from '@/lib/supabase/server'
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const supabase = await createClient()
+  
+  // Real count fetches
+  const { count: estudiantesActivos } = await supabase
+    .from('estudiantes')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'ACTIVO') // Default active state
+
+  const { count: prematriculas } = await supabase
+    .from('matriculas')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'PRE_MATRICULADO')
+
+  const { count: prospectosActivos } = await supabase
+    .from('prospectos')
+    .select('*', { count: 'exact', head: true })
+    .in('status', ['NUEVO', 'CONTACTADO', 'INTERESADO'])
+
+  const { count: tareasPendientes } = await supabase
+    .from('tareas_comerciales')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'PENDIENTE')
+
   const metrics = [
-    { title: 'Estudiantes activos', value: '0', icon: GraduationCap, color: 'text-primary' },
-    { title: 'Prematrículas', value: '0', icon: BookOpen, color: 'text-warning' },
-    { title: 'Prospectos activos', value: '0', icon: Users, color: 'text-success' },
-    { title: 'Tareas pendientes', value: '0', icon: Clock, color: 'text-graphite-600' },
+    { title: 'Estudiantes activos', value: estudiantesActivos || '0', icon: GraduationCap, color: 'text-primary' },
+    { title: 'Prematrículas', value: prematriculas || '0', icon: BookOpen, color: 'text-warning' },
+    { title: 'Prospectos activos', value: prospectosActivos || '0', icon: Users, color: 'text-success' },
+    { title: 'Tareas pendientes', value: tareasPendientes || '0', icon: Clock, color: 'text-graphite-600' },
   ]
 
   return (
@@ -39,7 +63,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="flex h-40 items-center justify-center text-graphite-500 bg-canvas rounded-md border border-dashed border-border">
-              Aún no hay datos para mostrar
+              Sin datos recientes
             </div>
           </CardContent>
         </Card>
