@@ -63,7 +63,7 @@ export default async function DashboardPage() {
 
         <div className="flex sm:flex-row items-center gap-2 sm:gap-2.5">
           {/* Secondary Action: Export (Desktop) */}
-          <button type="button" className="hidden sm:inline-flex items-center px-3.5 py-2 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 hover:border-slate-400 shadow-sm transition">
+          <button type="button" className="hidden items-center px-3.5 py-2 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 hover:border-slate-400 shadow-sm transition">
             <Download className="w-3.5 h-3.5 mr-1.5 text-slate-500" />
             Exportar datos
           </button>
@@ -75,7 +75,7 @@ export default async function DashboardPage() {
 </Link>
           
           {/* Secondary Action: Export (Mobile) */}
-          <button type="button" className="sm:hidden bg-white border border-slate-300 hover:bg-slate-50 active:scale-[0.98] text-slate-700 text-xs font-semibold py-2.5 px-3 rounded-lg shadow-2xs flex items-center justify-center gap-1.5 transition-all">
+          <button type="button" className="hidden active:scale-[0.98] text-slate-700 text-xs font-semibold py-2.5 px-3 rounded-lg shadow-2xs flex items-center justify-center gap-1.5 transition-all">
             <Download className="w-4 h-4 text-slate-500" />
             <span>Exportar</span>
           </button>
