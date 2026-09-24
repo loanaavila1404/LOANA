@@ -69,10 +69,10 @@ export default async function DashboardPage() {
           </button>
           
           {/* Primary Action: New Student */}
-          <button type="button" className="flex-1 sm:flex-none inline-flex items-center justify-center sm:justify-start px-4 sm:px-4 py-2.5 sm:py-2 text-xs font-semibold text-white bg-brusben-red sm:bg-brand-700 hover:bg-brusben-redHover sm:hover:bg-brand-800 active:scale-[0.98] sm:active:scale-100 rounded-lg shadow-sm hover:shadow transition focus:ring-2 focus:ring-offset-2 focus:ring-brand-700 gap-1.5 sm:gap-0">
-            <Plus className="w-4 h-4 sm:mr-1.5" />
-            <span>Nuevo estudiante</span>
-          </button>
+          <Link href="/personas" className="flex-1 sm:flex-none inline-flex items-center justify-center sm:justify-start px-4 sm:px-4 py-2.5 sm:py-2 text-xs font-semibold text-white bg-brusben-red sm:bg-brand-700 hover:bg-brusben-redHover sm:hover:bg-brand-800 active:scale-[0.98] sm:active:scale-100 rounded-lg shadow-sm hover:shadow transition focus:ring-2 focus:ring-offset-2 focus:ring-brand-700 gap-1.5 sm:gap-0">
+  <Plus className="w-4 h-4 sm:mr-1.5" />
+  <span>Nuevo estudiante</span>
+</Link>
           
           {/* Secondary Action: Export (Mobile) */}
           <button type="button" className="sm:hidden bg-white border border-slate-300 hover:bg-slate-50 active:scale-[0.98] text-slate-700 text-xs font-semibold py-2.5 px-3 rounded-lg shadow-2xs flex items-center justify-center gap-1.5 transition-all">
@@ -98,7 +98,7 @@ export default async function DashboardPage() {
               <div className="text-xl sm:text-3xl font-black sm:font-bold text-slate-900 tracking-tight leading-none sm:leading-normal">{prospectosActivos || '0'}</div>
               <p className="text-[10px] sm:text-[11px] font-semibold sm:font-medium text-emerald-600 mt-1 sm:mt-0 flex items-center sm:gap-0 gap-0.5">
                 <TrendingUp className="w-3 h-3 sm:hidden mr-0.5" />
-                <span className="hidden sm:inline">↑ </span>+12.4% <span className="text-slate-400 font-normal sm:hidden ml-0.5">padrón</span>
+                <span className="hidden sm:inline">↑ </span>— <span className="text-slate-400 font-normal sm:hidden ml-0.5">padrón</span>
               </p>
             </div>
           </div>
@@ -118,7 +118,7 @@ export default async function DashboardPage() {
             <div className="mt-2 sm:flex sm:items-baseline sm:gap-2">
               <div className="text-xl sm:text-3xl font-black sm:font-bold text-slate-900 tracking-tight leading-none sm:leading-normal">{estudiantesActivos || '0'}</div>
               <p className="text-[10px] sm:text-[11px] font-semibold sm:font-medium text-emerald-600 mt-1 sm:mt-0">
-                71.4% <span className="text-slate-400 font-normal sm:hidden ml-0.5">ciclo 2026-I</span>
+                — <span className="text-slate-400 font-normal sm:hidden ml-0.5">ciclo 2026-I</span>
                 <span className="hidden sm:inline ml-1 text-slate-500">del padrón</span>
               </p>
             </div>
@@ -139,7 +139,7 @@ export default async function DashboardPage() {
             <div className="mt-2 sm:flex sm:items-baseline sm:gap-2">
               <div className="text-xl sm:text-3xl font-black sm:font-bold text-slate-900 tracking-tight leading-none sm:leading-normal">{prematriculas || '0'}</div>
               <p className="text-[10px] sm:text-[11px] font-medium text-slate-500 mt-1 sm:mt-0">
-                28.6% <span className="text-slate-400 font-normal sm:hidden ml-0.5">egreso/reserva</span>
+                — <span className="text-slate-400 font-normal sm:hidden ml-0.5">egreso/reserva</span>
               </p>
             </div>
           </div>
@@ -159,12 +159,12 @@ export default async function DashboardPage() {
             <div className="mt-2 sm:flex sm:items-baseline sm:gap-2">
               <div className="text-xl sm:text-3xl font-black sm:font-bold text-slate-900 tracking-tight leading-none sm:leading-normal">{tareasPendientes || '0'}</div>
               <p className="text-[10px] sm:text-[11px] font-medium text-slate-500 mt-1 sm:mt-0 truncate">
-                <span className="sm:hidden">14 Carreras • 4 Cert.</span>
+                <span className="sm:hidden">Sin datos</span>
                 <span className="hidden sm:inline text-slate-600">Activos en sede</span>
               </p>
             </div>
           </div>
-          <div className="hidden sm:block mt-3 text-[11px] text-slate-400">14 Carreras Técnicas · 4 Certificaciones</div>
+          <div className="hidden sm:block mt-3 text-[11px] text-slate-400">Sin datos</div>
         </article>
       </section>
 
@@ -176,19 +176,19 @@ export default async function DashboardPage() {
         <div className="flex sm:contents items-center gap-3 overflow-x-auto no-scrollbar py-0.5 sm:py-0">
           <div className="shrink-0 bg-slate-50 sm:bg-transparent border border-slate-100 sm:border-none rounded-lg px-2.5 py-1.5 sm:p-0 text-center sm:text-left min-w-[105px] sm:min-w-0 sm:flex sm:items-center sm:justify-between sm:pr-4">
             <span className="text-[10px] sm:text-xs text-slate-500 block sm:inline">Matrículas mes</span>
-            <span className="text-sm sm:text-xs font-extrabold sm:font-bold text-slate-800 block sm:inline mt-0.5 sm:mt-0">142</span>
+            <span className="text-sm sm:text-xs font-extrabold sm:font-bold text-slate-800 block sm:inline mt-0.5 sm:mt-0">0</span>
           </div>
           <div className="shrink-0 bg-slate-50 sm:bg-transparent border border-slate-100 sm:border-none rounded-lg px-2.5 py-1.5 sm:p-0 text-center sm:text-left min-w-[105px] sm:min-w-0 sm:flex sm:items-center sm:justify-between sm:px-4">
             <span className="text-[10px] sm:text-xs text-slate-500 block sm:inline">Prospectos nuevos</span>
-            <span className="text-sm sm:text-xs font-extrabold sm:font-bold text-brand-700 block sm:inline mt-0.5 sm:mt-0">64 <span className="sm:hidden">leads</span></span>
+            <span className="text-sm sm:text-xs font-extrabold sm:font-bold text-brand-700 block sm:inline mt-0.5 sm:mt-0">0 <span className="sm:hidden">leads</span></span>
           </div>
           <div className="shrink-0 bg-slate-50 sm:bg-transparent border border-slate-100 sm:border-none rounded-lg px-2.5 py-1.5 sm:p-0 text-center sm:text-left min-w-[115px] sm:min-w-0 sm:flex sm:items-center sm:justify-between sm:px-4">
             <span className="text-[10px] sm:text-xs text-slate-500 block sm:inline">Cobranza del día</span>
-            <span className="text-sm sm:text-xs font-extrabold sm:font-bold text-emerald-700 block sm:inline mt-0.5 sm:mt-0">S/ 18,450<span className="hidden sm:inline">.00</span></span>
+            <span className="text-sm sm:text-xs font-extrabold sm:font-bold text-emerald-700 block sm:inline mt-0.5 sm:mt-0">S/ 0<span className="hidden sm:inline">.00</span></span>
           </div>
           <div className="shrink-0 bg-slate-50 sm:bg-transparent border border-slate-100 sm:border-none rounded-lg px-2.5 py-1.5 sm:p-0 text-center sm:text-left min-w-[110px] sm:min-w-0 sm:flex sm:items-center sm:justify-between sm:pl-4">
             <span className="text-[10px] sm:text-xs text-slate-500 block sm:inline">Cuotas por vencer</span>
-            <span className="text-sm sm:text-xs font-extrabold sm:font-semibold text-amber-700 block sm:inline mt-0.5 sm:mt-0">28 pendientes</span>
+            <span className="text-sm sm:text-xs font-extrabold sm:font-semibold text-amber-700 block sm:inline mt-0.5 sm:mt-0">0 pendientes</span>
           </div>
         </div>
       </section>
@@ -206,8 +206,8 @@ export default async function DashboardPage() {
               </div>
               <p className="text-[10.5px] sm:text-xs text-slate-400 sm:text-slate-500 mt-0.5">Estudiantes recién cargados al sistema<span className="hidden sm:inline"> escolar.</span></p>
             </div>
-            <Link href="#" className="text-[11px] sm:text-xs font-bold sm:font-semibold text-brand-700 hover:text-brand-800 sm:hover:underline inline-flex items-center gap-1 transition">
-              <span>Ver todos (1,248)</span>
+            <Link href="/personas" className="text-[11px] sm:text-xs font-bold sm:font-semibold text-brand-700 hover:text-brand-800 sm:hover:underline inline-flex items-center gap-1 transition">
+  <span>Ver todos ({estudiantesActivos || '0'})</span>
               <ChevronRight className="w-3.5 h-3.5 hidden sm:inline" />
             </Link>
           </div>
@@ -215,7 +215,7 @@ export default async function DashboardPage() {
           {/* Filter Tabs */}
           <div className="px-3 sm:px-5 pt-2.5 sm:py-2.5 pb-1 sm:pb-2.5 sm:bg-slate-50/70 border-b border-slate-100 flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar text-xs">
             <button type="button" className="shrink-0 sm:shrink px-2.5 py-1 font-bold sm:font-medium bg-red-50 sm:bg-white text-brand-700 border border-red-200/60 sm:border-slate-200 rounded-md sm:rounded shadow-sm text-[11px] sm:text-xs">
-              Todos (5)
+              Todos (0)
             </button>
             <button type="button" className="shrink-0 sm:shrink px-2.5 py-1 font-medium bg-slate-50 sm:bg-transparent text-slate-600 hover:bg-slate-100 sm:hover:bg-white/80 rounded-md sm:rounded text-[11px] sm:text-xs">
               Matriculados
@@ -242,94 +242,11 @@ export default async function DashboardPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-slate-700">
-                <tr className="hover:bg-slate-50/80 transition-colors">
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-slate-600 text-[11px]">CM</div>
-                      <div>
-                        <div className="font-semibold text-slate-900">Carlos Mendoza Ruiz</div>
-                        <div className="text-[10px] text-slate-400">DNI: 72849102 · Cel: 984 123 456</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="py-3 px-3 font-mono text-[11px] text-slate-500">EST-2026-0841</td>
-                  <td className="py-3 px-3 font-medium text-slate-800">Soldadura Estructural y TIG</td>
-                  <td className="py-3 px-3 text-slate-500 whitespace-nowrap">Hoy, 09:15 AM</td>
-                  <td className="py-3 px-3">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Matriculado</span>
-                  </td>
-                  <td className="py-3 px-4 text-right">
-                    <button className="text-slate-400 hover:text-brand-700 p-1 rounded" title="Ver detalle">
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
-                  </td>
-                </tr>
-                <tr className="hover:bg-slate-50/80 transition-colors">
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center font-bold text-blue-700 text-[11px]">YP</div>
-                      <div>
-                        <div className="font-semibold text-slate-900">Yuliana Paredes Quispe</div>
-                        <div className="text-[10px] text-slate-400">DNI: 48190321 · Cel: 912 345 876</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="py-3 px-3 font-mono text-[11px] text-slate-500">EST-2026-0840</td>
-                  <td className="py-3 px-3 font-medium text-slate-800">Seguridad Industrial y Minera (SOMA)</td>
-                  <td className="py-3 px-3 text-slate-500 whitespace-nowrap">Hoy, 08:42 AM</td>
-                  <td className="py-3 px-3">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">Validando pago</span>
-                  </td>
-                  <td className="py-3 px-4 text-right">
-                    <button className="text-slate-400 hover:text-brand-700 p-1 rounded" title="Ver detalle">
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
-                  </td>
-                </tr>
-                <tr className="hover:bg-slate-50/80 transition-colors">
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-full bg-red-50 border border-red-200 flex items-center justify-center font-bold text-brand-700 text-[11px]">JA</div>
-                      <div>
-                        <div className="font-semibold text-slate-900">Jorge Alanya Cárdenas</div>
-                        <div className="text-[10px] text-slate-400">DNI: 70912445 · Cel: 978 991 223</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="py-3 px-3 font-mono text-[11px] text-slate-500">EST-2026-0839</td>
-                  <td className="py-3 px-3 font-medium text-slate-800">Operador de Maquinaria Pesada</td>
-                  <td className="py-3 px-3 text-slate-500 whitespace-nowrap">Ayer, 17:30 PM</td>
-                  <td className="py-3 px-3">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Matriculado</span>
-                  </td>
-                  <td className="py-3 px-4 text-right">
-                    <button className="text-slate-400 hover:text-brand-700 p-1 rounded" title="Ver detalle">
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
-                  </td>
-                </tr>
-                <tr className="hover:bg-slate-50/80 transition-colors">
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-slate-600 text-[11px]">MV</div>
-                      <div>
-                        <div className="font-semibold text-slate-900">María Vargas Huamán</div>
-                        <div className="text-[10px] text-slate-400">DNI: 75128490 · Cel: 945 112 334</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="py-3 px-3 font-mono text-[11px] text-slate-500">EST-2026-0838</td>
-                  <td className="py-3 px-3 font-medium text-slate-800">Electricidad y Tableros Industriales</td>
-                  <td className="py-3 px-3 text-slate-500 whitespace-nowrap">Ayer, 16:15 PM</td>
-                  <td className="py-3 px-3">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">Docs pendientes</span>
-                  </td>
-                  <td className="py-3 px-4 text-right">
-                    <button className="text-slate-400 hover:text-brand-700 p-1 rounded" title="Ver detalle">
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
-                  </td>
-                </tr>
+    <tr>
+      <td colSpan={6} className="py-8 text-center text-slate-500">
+        Sin datos recientes
+      </td>
+    </tr>
               </tbody>
             </table>
           </div>
@@ -437,7 +354,7 @@ export default async function DashboardPage() {
             
             <div className="grid grid-cols-1 gap-2 sm:space-y-3 sm:gap-0">
               {/* Module 1: CRM Comercial */}
-              <Link href="#" className="bg-white sm:bg-transparent p-3 sm:p-3.5 rounded-xl sm:rounded-lg border border-slate-200 shadow-2xs sm:shadow-none flex items-center justify-between hover:border-brand-700/50 sm:hover:bg-slate-50/80 active:bg-slate-50 transition group">
+              <Link href="/crm" className="bg-white sm:bg-transparent p-3 sm:p-3.5 rounded-xl sm:rounded-lg border border-slate-200 shadow-2xs sm:shadow-none flex items-center justify-between hover:border-brand-700/50 sm:hover:bg-slate-50/80 active:bg-slate-50 transition group">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 sm:w-auto sm:h-auto sm:p-2 rounded-lg sm:rounded bg-red-50 text-brand-700 group-hover:bg-brand-700 group-hover:text-white flex items-center justify-center shrink-0 transition">
                     <Users className="w-5 h-5 sm:w-4 sm:h-4" />
@@ -451,7 +368,7 @@ export default async function DashboardPage() {
               </Link>
               
               {/* Module 2: Oferta Académica */}
-              <Link href="#" className="bg-white sm:bg-transparent p-3 sm:p-3.5 rounded-xl sm:rounded-lg border border-slate-200 shadow-2xs sm:shadow-none flex items-center justify-between hover:border-brand-700/50 sm:hover:bg-slate-50/80 active:bg-slate-50 transition group">
+              <Link href="/oferta" className="bg-white sm:bg-transparent p-3 sm:p-3.5 rounded-xl sm:rounded-lg border border-slate-200 shadow-2xs sm:shadow-none flex items-center justify-between hover:border-brand-700/50 sm:hover:bg-slate-50/80 active:bg-slate-50 transition group">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 sm:w-auto sm:h-auto sm:p-2 rounded-lg sm:rounded bg-slate-100 text-slate-700 group-hover:bg-slate-800 group-hover:text-white flex items-center justify-center shrink-0 transition">
                     <BookOpen className="w-5 h-5 sm:w-4 sm:h-4" />
@@ -465,7 +382,7 @@ export default async function DashboardPage() {
               </Link>
               
               {/* Module 3: Matrículas */}
-              <Link href="#" className="bg-white sm:bg-transparent p-3 sm:p-3.5 rounded-xl sm:rounded-lg border border-slate-200 shadow-2xs sm:shadow-none flex items-center justify-between hover:border-brand-700/50 sm:hover:bg-slate-50/80 active:bg-slate-50 transition group">
+              <Link href="/matriculas" className="bg-white sm:bg-transparent p-3 sm:p-3.5 rounded-xl sm:rounded-lg border border-slate-200 shadow-2xs sm:shadow-none flex items-center justify-between hover:border-brand-700/50 sm:hover:bg-slate-50/80 active:bg-slate-50 transition group">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 sm:w-auto sm:h-auto sm:p-2 rounded-lg sm:rounded bg-emerald-50 text-emerald-700 sm:bg-slate-100 sm:text-slate-700 group-hover:bg-slate-800 group-hover:text-white flex items-center justify-center shrink-0 transition">
                     <FileText className="w-5 h-5 sm:w-4 sm:h-4" />
@@ -479,7 +396,7 @@ export default async function DashboardPage() {
               </Link>
               
               {/* Module 4: Personas y Estudiantes */}
-              <Link href="#" className="bg-white sm:bg-transparent p-3 sm:p-3.5 rounded-xl sm:rounded-lg border border-slate-200 shadow-2xs sm:shadow-none flex items-center justify-between hover:border-brand-700/50 sm:hover:bg-slate-50/80 active:bg-slate-50 transition group">
+              <Link href="/personas" className="bg-white sm:bg-transparent p-3 sm:p-3.5 rounded-xl sm:rounded-lg border border-slate-200 shadow-2xs sm:shadow-none flex items-center justify-between hover:border-brand-700/50 sm:hover:bg-slate-50/80 active:bg-slate-50 transition group">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 sm:w-auto sm:h-auto sm:p-2 rounded-lg sm:rounded bg-blue-50 text-blue-700 sm:bg-slate-100 sm:text-slate-700 group-hover:bg-slate-800 group-hover:text-white flex items-center justify-center shrink-0 transition">
                     <GraduationCap className="w-5 h-5 sm:w-4 sm:h-4" />

@@ -86,17 +86,8 @@ export function Topbar({ user, onOpenSidebar }: { user: any; onOpenSidebar: () =
                 <path d="M4 6h16M4 12h16M4 18h16" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2"></path>
               </svg>
             </button>
-            <div className="bg-white border border-slate-200 rounded-md px-2 py-1 flex items-center gap-1.5 shadow-2xs">
-              <div className="w-6 h-6 rounded bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center shadow-xs shrink-0">
-                <span className="text-white font-black text-xs tracking-tighter">B</span>
-              </div>
-              <div className="flex flex-col leading-none">
-                <div className="flex items-baseline gap-0.5">
-                  <span className="text-xs font-black tracking-tight text-[#c4121a]">BRUSBEN</span>
-                  <span className="text-[9px] font-semibold text-slate-500">E.I.R.L.</span>
-                </div>
-                <span className="text-[6.5px] font-bold tracking-tight uppercase text-slate-400">Capacitarse es superarse</span>
-              </div>
+            <div className="bg-white border border-slate-200 rounded-md px-2 py-1 flex items-center justify-center h-8 shadow-2xs">
+              <img src="/logo.jpg" alt="Logo Brusben" className="h-full w-auto object-contain" />
             </div>
           </div>
           

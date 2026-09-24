@@ -31,7 +31,7 @@ export default async function CRMPage() {
           </div>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-2xl font-black text-slate-900">{prospectos?.length || 0}</span>
-            <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">↑ +18.2% este mes</span>
+            <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">—</span>
           </div>
           <p className="text-[11px] text-slate-400 mt-2 font-normal">Ciclo de admisiones activo 2026-I</p>
         </div>
@@ -44,8 +44,8 @@ export default async function CRMPage() {
             </span>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-slate-900">164</span>
-            <span className="text-[11px] font-semibold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded">38.3% del embudo</span>
+            <span className="text-2xl font-black text-slate-900">{prospectos?.filter(p => p.status === "CONTACTADO").length || 0}</span>
+            <span className="text-[11px] font-semibold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded">—</span>
           </div>
           <p className="text-[11px] text-slate-400 mt-2 font-normal">Con asesor asignado y llamada activa</p>
         </div>
@@ -58,8 +58,8 @@ export default async function CRMPage() {
             </span>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-slate-900">52</span>
-            <span className="text-[11px] font-semibold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded">Meta: 70 cupos</span>
+            <span className="text-2xl font-black text-slate-900">{prospectos?.filter(p => p.status === "INTERESADO").length || 0}</span>
+            <span className="text-[11px] font-semibold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded">—</span>
           </div>
           <p className="text-[11px] text-slate-400 mt-2 font-normal">Pendientes de validación de pago</p>
         </div>
@@ -72,8 +72,8 @@ export default async function CRMPage() {
             </span>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-slate-900">28.4%</span>
-            <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">↑ +3.1% vs anterior</span>
+            <span className="text-2xl font-black text-slate-900">0%</span>
+            <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">—</span>
           </div>
           <p className="text-[11px] text-slate-400 mt-2 font-normal">Cierre efectivo a matrícula formal</p>
         </div>
@@ -83,22 +83,22 @@ export default async function CRMPage() {
       <div className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 flex flex-wrap items-center justify-between text-xs text-slate-600 shadow-sm gap-3">
         <div className="flex items-center gap-2">
           <span className="font-semibold text-slate-900">Leads de hoy:</span>
-          <span className="font-bold text-[#C4121A] bg-red-50 px-2 py-0.5 rounded border border-red-100">19 nuevos</span>
+          <span className="font-bold text-[#C4121A] bg-red-50 px-2 py-0.5 rounded border border-red-100">0 nuevos</span>
         </div>
         <div className="h-3 w-px bg-slate-200 hidden md:block"></div>
         <div className="flex items-center gap-2">
           <span className="font-semibold text-slate-900">Por contactar hoy:</span>
-          <span className="font-semibold text-amber-600">34 tareas pendientes</span>
+          <span className="font-semibold text-amber-600">0 tareas pendientes</span>
         </div>
         <div className="h-3 w-px bg-slate-200 hidden md:block"></div>
         <div className="flex items-center gap-2">
           <span className="font-semibold text-slate-900">Asesores activos:</span>
-          <span className="text-slate-700">6 en turno de atención</span>
+          <span className="text-slate-700">0 en turno de atención</span>
         </div>
         <div className="h-3 w-px bg-slate-200 hidden md:block"></div>
         <div className="flex items-center gap-2">
           <span className="font-semibold text-slate-900">Tiempo medio de 1er contacto:</span>
-          <span className="font-bold text-emerald-600">14 min</span>
+          <span className="font-bold text-emerald-600">—</span>
         </div>
       </div>
 
