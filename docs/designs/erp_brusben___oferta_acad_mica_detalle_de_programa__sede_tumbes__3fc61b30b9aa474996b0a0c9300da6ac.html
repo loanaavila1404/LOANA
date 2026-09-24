@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-slate-50" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ERP Brusben - Detalle de Programa: Soldadura Estructural y TIG Avanzada</title>
+<!-- Google Fonts & Material Symbols -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<!-- Tailwind CSS v3 with Forms and Container Queries plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          brand: {
+            red: '#c4121a',
+            redHover: '#a60f16',
+            sidebar: '#181A1F',
+            sidebarHover: '#23262d'
+          },
+          primary: '#c4121a',
+          'primary-dark': '#9a000d',
+          'primary-fixed': '#ffdad6',
+          'primary-fixed-dim': '#ffb4ab',
+          'surface-container-low': '#f8fafc',
+          'surface-container-high': '#e2e8f0',
+          'surface-container-lowest': '#ffffff',
+          'secondary': '#64748b'
+        },
+        fontFamily: {
+          sans: ['Inter', 'sans-serif'],
+        }
+      }
+    }
+  }
+</script>
+<style data-purpose="custom-scrollbars">
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #f1f5f9;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+</style>
+<meta content="web_dashboard" name="shell-type"/>
+</head>
+<body class="h-full flex overflow-hidden text-slate-800 antialiased font-sans bg-[#f8fafc]">
+<!-- BEGIN: Sidebar Institucional -->
+<aside class="w-64 bg-[#181A1F] text-slate-300 flex flex-col shrink-0 select-none z-30 justify-between border-r border-slate-800">
+<!-- Top Brand & Navigation -->
+<div>
+<!-- Institutional Logo Area con Contenedor Blanco -->
+<div class="p-3.5 border-b border-slate-800/90 flex items-center justify-between">
+<div class="bg-white rounded-lg p-2 flex items-center gap-2.5 shadow-sm w-full">
+<!-- Escudo / Birrete Rojo Institucional -->
+<div class="w-8 h-8 rounded bg-[#c4121a] flex items-center justify-center text-white shrink-0 shadow-xs">
+<span class="material-symbols-outlined text-[19px]">school</span>
+</div>
+<div class="leading-tight overflow-hidden">
+<div class="text-slate-900 font-extrabold text-[12px] tracking-tight flex items-center gap-1">
+            BRUSBEN <span class="text-[9px] px-1 py-0.2 rounded bg-slate-100 text-slate-700 font-semibold border border-slate-200">E.I.R.L.</span>
+</div>
+<div class="text-[8.5px] text-slate-500 font-bold tracking-tight uppercase truncate">Capacitarse es superarse</div>
+</div>
+</div>
+<button aria-label="Colapsar menú lateral" class="p-1 ml-1 text-slate-400 hover:text-white rounded hover:bg-slate-800/80 transition-colors" type="button">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M15 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</div>
+<!-- Navigation Links -->
+<nav aria-label="Menú principal de navegación" class="p-3 space-y-1">
+<!-- Inicio -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-[#23262d] text-xs font-medium transition-all group" href="#">
+<svg class="w-4 h-4 stroke-[1.8] group-hover:text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Inicio</span>
+</a>
+<!-- CRM Comercial -->
+<a class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-[#23262d] text-xs font-medium transition-all group" href="#">
+<div class="flex items-center gap-3">
+<svg class="w-4 h-4 stroke-[1.8]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>CRM Comercial</span>
+</div>
+<span class="bg-[#c4121a] text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full min-w-[18px] text-center">12</span>
+</a>
+<!-- Personas y estudiantes -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-[#23262d] text-xs font-medium transition-all group" href="#">
+<svg class="w-4 h-4 stroke-[1.8]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Personas y estudiantes</span>
+</a>
+<!-- Oferta académica (ACTIVO) -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-[#c4121a] text-white text-xs font-semibold shadow-sm transition-all" href="#">
+<svg class="w-4 h-4 stroke-[2]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Oferta académica</span>
+</a>
+<!-- Matrículas y pagos -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-[#23262d] text-xs font-medium transition-all group" href="#">
+<svg class="w-4 h-4 stroke-[1.8]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Matrículas y pagos</span>
+</a>
+<!-- Reportes -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-[#23262d] text-xs font-medium transition-all group" href="#">
+<svg class="w-4 h-4 stroke-[1.8]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Reportes</span>
+</a>
+<!-- Usuarios y accesos -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-[#23262d] text-xs font-medium transition-all group" href="#">
+<svg class="w-4 h-4 stroke-[1.8]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Usuarios y accesos</span>
+</a>
+<!-- Auditoría -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-[#23262d] text-xs font-medium transition-all group" href="#">
+<svg class="w-4 h-4 stroke-[1.8]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Auditoría</span>
+</a>
+<!-- Mi perfil -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-[#23262d] text-xs font-medium transition-all group" href="#">
+<svg class="w-4 h-4 stroke-[1.8]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Mi perfil</span>
+</a>
+</nav>
+</div>
+<!-- Sidebar Footer -->
+<div class="p-3.5 border-t border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
+<span class="font-mono">v{{APP_VERSION}}</span>
+<span class="flex items-center gap-1.5 text-emerald-400 font-medium">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+      Sistema en línea • Operativo
+    </span>
+</div>
+</aside>
+<!-- END: Sidebar -->
+<!-- BEGIN: Main Area -->
+<div class="flex-1 flex flex-col h-full overflow-hidden">
+<!-- BEGIN: TopHeader -->
+<header class="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between shrink-0 z-20">
+<!-- Breadcrumb & Global Search -->
+<div class="flex items-center gap-6">
+<!-- Breadcrumb navigation -->
+<nav class="flex items-center gap-2 text-xs text-slate-500 font-medium">
+<span class="text-slate-400">ERP Brusben</span>
+<span class="text-slate-300">/</span>
+<span class="text-slate-600 font-medium">Oferta académica</span>
+<span class="text-slate-300">/</span>
+<span class="text-slate-700 font-medium truncate max-w-[190px]">Soldadura Estructural y TIG Avanzada</span>
+<span class="text-slate-300">/</span>
+<span class="text-slate-900 font-bold">Detalle de Programa</span>
+</nav>
+<!-- Search Bar -->
+<div class="relative w-80">
+<span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+<span class="material-symbols-outlined text-[17px]">search</span>
+</span>
+<input class="w-full text-xs pl-9 pr-14 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#c4121a] focus:border-[#c4121a] focus:bg-white transition-all" placeholder="Buscar por código, curso, programa..." type="text"/>
+<span class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none">
+<kbd class="text-[10px] font-mono text-slate-400 bg-white border border-slate-200 px-1.5 py-0.5 rounded shadow-2xs">Ctrl+K</kbd>
+</span>
+</div>
+</div>
+<!-- Right Controls: Campus Selector, Notifications & Profile -->
+<div class="flex items-center gap-4">
+<!-- Campus Selector Tumbes -->
+<button class="flex items-center gap-2 text-xs font-medium text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-lg transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px] text-slate-500">apartment</span>
+<span>Sede Central · Tumbes</span>
+<span class="material-symbols-outlined text-[14px] text-slate-400 ml-0.5">expand_more</span>
+</button>
+<!-- Divider -->
+<div class="h-6 w-px bg-slate-200"></div>
+<!-- Notification Bell with Red Badge -->
+<button aria-label="Notificaciones" class="relative p-1.5 text-slate-500 hover:text-slate-800 rounded-lg hover:bg-slate-100 transition-colors" type="button">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#c4121a]"></span>
+</button>
+<!-- User Profile Pill -->
+<div class="flex items-center gap-3 pl-1">
+<div class="text-right hidden sm:block leading-tight">
+<div class="text-xs font-bold text-slate-900">Loana Avila Neyra</div>
+<div class="text-[10px] text-emerald-600 font-semibold flex items-center justify-end gap-1">
+            Superadministración
+            <span class="material-symbols-outlined text-[13px] text-emerald-600">verified</span>
+</div>
+</div>
+<!-- Avatar Initials -->
+<div class="w-9 h-9 rounded-full bg-slate-200 border border-slate-300 text-slate-700 font-bold text-xs flex items-center justify-center">
+          LA
+        </div>
+<!-- Sign out icon button -->
+<button class="p-1 text-slate-400 hover:text-[#c4121a] transition-colors ml-1" title="Cerrar sesión" type="button">
+<span class="material-symbols-outlined text-[19px]">logout</span>
+</button>
+</div>
+</div>
+</header>
+<!-- END: TopHeader -->
+<!-- Workspace Scrollable Content -->
+<main class="flex-1 overflow-y-auto p-6 space-y-5" data-purpose="workspace-content">
+<div class="flex flex-col w-full space-y-5 max-w-[1600px] mx-auto">
+<!-- Navigation Return Action & Top Actions Bar -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+<a class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-[#c4121a] transition-colors w-fit group" href="#">
+<span class="material-symbols-outlined text-[18px] group-hover:-translate-x-0.5 transition-transform">arrow_back</span>
+<span>Volver al catálogo de programas</span>
+</a>
+<div class="flex items-center gap-2.5 flex-wrap">
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-2xs text-xs font-semibold transition-colors" type="button">
+<span class="material-symbols-outlined text-[17px] text-red-600">picture_as_pdf</span>
+            Descargar Malla Curricular (PDF)
+          </button>
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-2xs text-xs font-semibold transition-colors" type="button">
+<span class="material-symbols-outlined text-[17px] text-slate-500">history</span>
+            Historial de Cambios
+          </button>
+<button class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#c4121a] hover:bg-[#a60f16] text-white shadow-sm text-xs font-bold transition-colors" type="button">
+<span class="material-symbols-outlined text-[17px]">save</span>
+            Guardar modificaciones
+          </button>
+</div>
+</div>
+<!-- Encabezado del Programa Institucional -->
+<div class="bg-white border border-slate-200 rounded-xl p-5 shadow-2xs">
+<div class="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
+<div class="space-y-2">
+<div class="flex flex-wrap items-center gap-2">
+<span class="font-mono font-bold text-xs text-[#c4121a] bg-red-50 border border-red-200 px-2 py-0.5 rounded">
+                Código: PROG-SOL-01
+              </span>
+<span class="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                Programa Vigente
+              </span>
+<span class="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+<span class="material-symbols-outlined text-[13px] text-amber-600">local_fire_department</span>
+                Alta Demanda
+              </span>
+<span class="text-[11px] text-slate-500 font-medium ml-1">
+                Periodo Lectivo 2026-I Activo
+              </span>
+</div>
+<div>
+<h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Soldadura Estructural y TIG Avanzada</h1>
+<p class="text-xs text-slate-500 mt-1 max-w-4xl">
+                Formación integral técnico-operativa enfocada en procesos SMAW, GMAW/FCAW y GTAW (TIG) bajo normas AWS D1.1 y ASME Sección IX con riguroso énfasis en seguridad industrial metalmecánica y calificación de probetas.
+              </p>
+</div>
+</div>
+<!-- Badge Estado Operativo -->
+<div class="shrink-0 bg-slate-50 border border-slate-200 rounded-lg p-3 flex items-center gap-3">
+<div class="w-9 h-9 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]">verified</span>
+</div>
+<div class="text-right">
+<div class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Acreditación</div>
+<div class="text-xs font-bold text-slate-900">Normativa AWS &amp; MINEDU</div>
+</div>
+</div>
+</div>
+<!-- Metadatos Clave en Fila / Mini Tarjetas -->
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mt-4 pt-4 border-t border-slate-100">
+<div class="bg-slate-50/70 border border-slate-200 rounded-lg p-2.5">
+<span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Área Técnica</span>
+<span class="text-xs font-bold text-slate-900 flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-[15px] text-[#c4121a]">precision_manufacturing</span>
+              Metalmecánica
+            </span>
+</div>
+<div class="bg-slate-50/70 border border-slate-200 rounded-lg p-2.5">
+<span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Modalidad</span>
+<span class="text-xs font-bold text-slate-900 flex items-center gap-1 mt-0.5 truncate">
+<span class="material-symbols-outlined text-[15px] text-blue-600">location_on</span>
+              Presencial (Talleres Tumbes)
+            </span>
+</div>
+<div class="bg-slate-50/70 border border-slate-200 rounded-lg p-2.5">
+<span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Duración</span>
+<span class="text-xs font-bold text-slate-900 flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-[15px] text-amber-600">date_range</span>
+              8 Meses (3 Ciclos)
+            </span>
+</div>
+<div class="bg-slate-50/70 border border-slate-200 rounded-lg p-2.5">
+<span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Créditos</span>
+<span class="text-xs font-bold text-slate-900 flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-[15px] text-emerald-600">award_star</span>
+              42 Académicos
+            </span>
+</div>
+<div class="bg-slate-50/70 border border-slate-200 rounded-lg p-2.5 col-span-2 sm:col-span-1">
+<span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Horas Totales</span>
+<span class="text-xs font-bold text-slate-900 flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-[15px] text-indigo-600">schedule</span>
+              720 hrs pedagógicas
+            </span>
+</div>
+</div>
+</div>
+<!-- Navegación por Pestañas (Multitabs) -->
+<div class="flex items-center gap-2 border-b border-slate-200 pb-2 overflow-x-auto">
+<button class="px-3.5 py-2 rounded-lg bg-[#c4121a] text-white font-bold text-xs shadow-xs flex items-center gap-2 shrink-0" type="button">
+<span class="material-symbols-outlined text-[17px]">account_tree</span>
+<span>Detalles y Estructura Curricular</span>
+<span class="bg-white/20 text-white px-1.5 py-0.2 rounded-full text-[10px] font-bold">14 Módulos</span>
+</button>
+<button class="px-3.5 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 font-semibold text-xs flex items-center gap-2 shrink-0 transition-colors" type="button">
+<span class="material-symbols-outlined text-[17px]">groups</span>
+<span>Ediciones y Grupos Activos</span>
+<span class="bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded-full text-[10px] font-bold">3</span>
+</button>
+<button class="px-3.5 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 font-semibold text-xs flex items-center gap-2 shrink-0 transition-colors" type="button">
+<span class="material-symbols-outlined text-[17px]">person_check</span>
+<span>Alumnos Inscritos y Vacantes</span>
+<span class="bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded-full text-[10px] font-bold">76</span>
+</button>
+<button class="px-3.5 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 font-semibold text-xs flex items-center gap-2 shrink-0 transition-colors" type="button">
+<span class="material-symbols-outlined text-[17px]">payments</span>
+<span>Estructura Arancelaria &amp; Pagos</span>
+</button>
+<button class="px-3.5 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 font-semibold text-xs flex items-center gap-2 shrink-0 transition-colors" type="button">
+<span class="material-symbols-outlined text-[17px]">workspace_premium</span>
+<span>Requisitos y Certificación</span>
+</button>
+</div>
+<!-- Layout Balanceado de 2 Columnas (70% - 30%) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+<!-- Columna Principal (~70% = 8 cols en 12-grid) -->
+<div class="lg:col-span-8 space-y-5">
+<!-- Card de Estructura Curricular y Asignaturas -->
+<div class="bg-white border border-slate-200 rounded-xl shadow-2xs overflow-hidden">
+<!-- Header con Selector de Ciclos -->
+<div class="p-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/50">
+<div>
+<h2 class="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-[#c4121a]">view_timeline</span>
+                  Malla Curricular por Ciclos Formativos
+                </h2>
+<p class="text-[11px] text-slate-500">Selecciona el ciclo lectivo para revisar la carga de asignaturas y módulos prácticos.</p>
+</div>
+<div class="flex items-center gap-1.5">
+<button class="px-2.5 py-1 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white border border-slate-200 rounded-lg hover:bg-slate-50" type="button">
+                  + Agregar Asignatura
+                </button>
+</div>
+</div>
+<!-- Selector Interactivo de Ciclos -->
+<div class="p-4 border-b border-slate-200 bg-white">
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+<!-- Ciclo I (ACTIVO) -->
+<button class="text-left p-3 rounded-lg border-2 border-[#c4121a] bg-red-50/30 transition-all flex flex-col justify-between" type="button">
+<div class="flex items-center justify-between">
+<span class="font-bold text-xs text-[#c4121a]">CICLO I</span>
+<span class="w-2 h-2 rounded-full bg-[#c4121a]"></span>
+</div>
+<div class="font-semibold text-slate-900 text-xs mt-1">Fundamentos y Seguridad</div>
+<div class="text-[11px] text-slate-500 mt-1 flex items-center justify-between">
+<span>5 Asignaturas</span>
+<span class="font-medium text-slate-700">14 Créd. • 240 hrs</span>
+</div>
+</button>
+<!-- Ciclo II -->
+<button class="text-left p-3 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all flex flex-col justify-between" type="button">
+<div class="flex items-center justify-between">
+<span class="font-bold text-xs text-slate-700">CICLO II</span>
+<span class="text-[10px] text-slate-400 font-mono">Sec.</span>
+</div>
+<div class="font-semibold text-slate-800 text-xs mt-1">Soldadura TIG y Tuberías</div>
+<div class="text-[11px] text-slate-500 mt-1 flex items-center justify-between">
+<span>5 Asignaturas</span>
+<span class="font-medium text-slate-700">14 Créd. • 240 hrs</span>
+</div>
+</button>
+<!-- Ciclo III -->
+<button class="text-left p-3 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all flex flex-col justify-between" type="button">
+<div class="flex items-center justify-between">
+<span class="font-bold text-xs text-slate-700">CICLO III</span>
+<span class="text-[10px] text-emerald-600 font-semibold">Calificación</span>
+</div>
+<div class="font-semibold text-slate-800 text-xs mt-1">Ensayos AWS &amp; Certificación</div>
+<div class="text-[11px] text-slate-500 mt-1 flex items-center justify-between">
+<span>4 Asignaturas</span>
+<span class="font-medium text-slate-700">14 Créd. • 240 hrs</span>
+</div>
+</button>
+</div>
+</div>
+<!-- Tabla Densa y Profesional de Asignaturas del Ciclo I -->
+<div class="overflow-x-auto">
+<table class="w-full text-left text-xs">
+<thead>
+<tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[11px] h-9">
+<th class="px-3 py-2 w-24">Código</th>
+<th class="px-3 py-2">Nombre del Módulo / Asignatura</th>
+<th class="px-3 py-2">Tipología</th>
+<th class="px-3 py-2">Horas</th>
+<th class="px-3 py-2">Docente Asignado &amp; Certificación</th>
+<th class="px-3 py-2">Estado</th>
+<th class="px-3 py-2 text-right">Acciones</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-200 text-slate-800">
+<tr class="hover:bg-slate-50/80 transition-colors">
+<td class="px-3 py-3 font-mono font-bold text-[#c4121a]">MOD-SOL-101</td>
+<td class="px-3 py-3">
+<div class="font-bold text-slate-900">Seguridad Industrial &amp; Normativa OHSAS en Taller</div>
+<div class="text-[11px] text-slate-500">Manejo de EPP, gases comprimidos y ventilación</div>
+</td>
+<td class="px-3 py-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                        Teórico / Práctico
+                      </span>
+</td>
+<td class="px-3 py-3 font-semibold text-slate-800">40 hrs (3 Créd)</td>
+<td class="px-3 py-3">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-slate-200 text-slate-700 font-bold text-[9px] flex items-center justify-center border border-slate-300 shrink-0">CD</div>
+<div>
+<div class="font-semibold text-slate-800 leading-tight">Ing. Carlos Durand</div>
+<div class="text-[10px] text-slate-500">Especialista SSOMA</div>
+</div>
+</div>
+</td>
+<td class="px-3 py-3">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Activo
+                      </span>
+</td>
+<td class="px-3 py-3 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="p-1 rounded hover:bg-slate-100 text-slate-600 hover:text-slate-900" title="Ver Sílabo" type="button">
+<span class="material-symbols-outlined text-[17px]">description</span>
+</button>
+<button class="p-1 rounded hover:bg-slate-100 text-slate-600 hover:text-slate-900" title="Editar Asignatura" type="button">
+<span class="material-symbols-outlined text-[17px]">edit</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/80 transition-colors">
+<td class="px-3 py-3 font-mono font-bold text-[#c4121a]">MOD-SOL-102</td>
+<td class="px-3 py-3">
+<div class="font-bold text-slate-900">Metrología y Lectura de Planos Metalmecánicos</div>
+<div class="text-[11px] text-slate-500">Simbología AWS A2.4, tolerancias y vernier/micrómetro</div>
+</td>
+<td class="px-3 py-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                        Teórico
+                      </span>
+</td>
+<td class="px-3 py-3 font-semibold text-slate-800">48 hrs (3 Créd)</td>
+<td class="px-3 py-3">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-slate-200 text-slate-700 font-bold text-[9px] flex items-center justify-center border border-slate-300 shrink-0">WB</div>
+<div>
+<div class="font-semibold text-slate-800 leading-tight">Ing. Walter Benites</div>
+<div class="text-[10px] text-amber-700 font-medium">Certificador AWS CWI</div>
+</div>
+</div>
+</td>
+<td class="px-3 py-3">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Activo
+                      </span>
+</td>
+<td class="px-3 py-3 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="p-1 rounded hover:bg-slate-100 text-slate-600 hover:text-slate-900" title="Ver Sílabo" type="button">
+<span class="material-symbols-outlined text-[17px]">description</span>
+</button>
+<button class="p-1 rounded hover:bg-slate-100 text-slate-600 hover:text-slate-900" title="Editar Asignatura" type="button">
+<span class="material-symbols-outlined text-[17px]">edit</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/80 transition-colors">
+<td class="px-3 py-3 font-mono font-bold text-[#c4121a]">MOD-SOL-103</td>
+<td class="px-3 py-3">
+<div class="font-bold text-slate-900">Soldadura por Arco Eléctrico SMAW en Planchas 1G/2G</div>
+<div class="text-[11px] text-slate-500">Electrodos E6011 y E7018, preparación de biseles y raíz</div>
+</td>
+<td class="px-3 py-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        Práctico de Taller
+                      </span>
+</td>
+<td class="px-3 py-3 font-semibold text-slate-800">60 hrs (3 Créd)</td>
+<td class="px-3 py-3">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-slate-200 text-slate-700 font-bold text-[9px] flex items-center justify-center border border-slate-300 shrink-0">WB</div>
+<div>
+<div class="font-semibold text-slate-800 leading-tight">Ing. Walter Benites</div>
+<div class="text-[10px] text-amber-700 font-medium">Certificador AWS CWI</div>
+</div>
+</div>
+</td>
+<td class="px-3 py-3">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Activo
+                      </span>
+</td>
+<td class="px-3 py-3 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="p-1 rounded hover:bg-slate-100 text-slate-600 hover:text-slate-900" title="Ver Sílabo" type="button">
+<span class="material-symbols-outlined text-[17px]">description</span>
+</button>
+<button class="p-1 rounded hover:bg-slate-100 text-slate-600 hover:text-slate-900" title="Editar Asignatura" type="button">
+<span class="material-symbols-outlined text-[17px]">edit</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/80 transition-colors">
+<td class="px-3 py-3 font-mono font-bold text-[#c4121a]">MOD-SOL-104</td>
+<td class="px-3 py-3">
+<div class="font-bold text-slate-900">Soldadura Semiautomática GMAW / FCAW (MIG-MAG)</div>
+<div class="text-[11px] text-slate-500">Calibración de caudal de CO2/Argón y alambres tubulares</div>
+</td>
+<td class="px-3 py-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        Práctico de Taller
+                      </span>
+</td>
+<td class="px-3 py-3 font-semibold text-slate-800">52 hrs (3 Créd)</td>
+<td class="px-3 py-3">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-slate-200 text-slate-700 font-bold text-[9px] flex items-center justify-center border border-slate-300 shrink-0">RP</div>
+<div>
+<div class="font-semibold text-slate-800 leading-tight">Tec. Raúl Paredes</div>
+<div class="text-[10px] text-slate-500">Especialista MIG/MAG</div>
+</div>
+</div>
+</td>
+<td class="px-3 py-3">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Activo
+                      </span>
+</td>
+<td class="px-3 py-3 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="p-1 rounded hover:bg-slate-100 text-slate-600 hover:text-slate-900" title="Ver Sílabo" type="button">
+<span class="material-symbols-outlined text-[17px]">description</span>
+</button>
+<button class="p-1 rounded hover:bg-slate-100 text-slate-600 hover:text-slate-900" title="Editar Asignatura" type="button">
+<span class="material-symbols-outlined text-[17px]">edit</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/80 transition-colors">
+<td class="px-3 py-3 font-mono font-bold text-[#c4121a]">MOD-SOL-105</td>
+<td class="px-3 py-3">
+<div class="font-bold text-slate-900">Ensayos Visuales (VT) y Control de Discontinuidades</div>
+<div class="text-[11px] text-slate-500">Criterios de aceptación y rechazo según código AWS D1.1</div>
+</td>
+<td class="px-3 py-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                        Teórico / Práctico
+                      </span>
+</td>
+<td class="px-3 py-3 font-semibold text-slate-800">40 hrs (2 Créd)</td>
+<td class="px-3 py-3">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-slate-200 text-slate-700 font-bold text-[9px] flex items-center justify-center border border-slate-300 shrink-0">WB</div>
+<div>
+<div class="font-semibold text-slate-800 leading-tight">Ing. Walter Benites</div>
+<div class="text-[10px] text-amber-700 font-medium">Certificador AWS CWI</div>
+</div>
+</div>
+</td>
+<td class="px-3 py-3">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Activo
+                      </span>
+</td>
+<td class="px-3 py-3 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="p-1 rounded hover:bg-slate-100 text-slate-600 hover:text-slate-900" title="Ver Sílabo" type="button">
+<span class="material-symbols-outlined text-[17px]">description</span>
+</button>
+<button class="p-1 rounded hover:bg-slate-100 text-slate-600 hover:text-slate-900" title="Editar Asignatura" type="button">
+<span class="material-symbols-outlined text-[17px]">edit</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Resumen de Ediciones en Paralelo / Grupos Operativos -->
+<div class="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs space-y-3">
+<div class="flex items-center justify-between">
+<div>
+<h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-[#c4121a]">calendar_clock</span>
+                  Ediciones Activas en Paralelo (Ciclo 2026-I)
+                </h3>
+<p class="text-[11px] text-slate-500">Distribución de turnos, sedes asignadas y aforo ocupado en tiempo real.</p>
+</div>
+<button class="inline-flex items-center gap-1 text-xs font-bold text-[#c4121a] hover:text-[#a60f16]" type="button">
+<span class="material-symbols-outlined text-[16px]">add_circle</span>
+                Nueva edición
+              </button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+<!-- G1 Noche -->
+<div class="border border-slate-200 rounded-lg p-3 hover:border-slate-300 transition-colors bg-slate-50/50">
+<div class="flex items-center justify-between">
+<span class="text-[10px] font-mono font-bold text-[#c4121a] bg-red-50 px-1.5 py-0.5 rounded border border-red-100">G1 · EDI-SOL-261A</span>
+<span class="text-[10px] font-bold text-red-700 bg-red-50 border border-red-200 px-2 py-0.2 rounded-full">Completo</span>
+</div>
+<div class="mt-2">
+<div class="text-xs font-bold text-slate-900">Turno Noche Regular</div>
+<div class="text-[11px] text-slate-600 mt-0.5">Lun, Mié y Vie • 19:00 a 22:00</div>
+<div class="text-[10px] text-slate-500 mt-0.5">Docente: Ing. Walter Benites</div>
+</div>
+<div class="mt-3 pt-2 border-t border-slate-200 flex items-center justify-between text-[11px]">
+<span class="text-slate-500">Ocupación: <strong class="text-slate-900 font-bold">25 / 25</strong></span>
+<span class="text-xs font-extrabold text-emerald-700">100%</span>
+</div>
+</div>
+<!-- G2 Sabatino -->
+<div class="border border-slate-200 rounded-lg p-3 hover:border-slate-300 transition-colors bg-slate-50/50">
+<div class="flex items-center justify-between">
+<span class="text-[10px] font-mono font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100">G2 · EDI-SOL-261B</span>
+<span class="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.2 rounded-full">2 libres</span>
+</div>
+<div class="mt-2">
+<div class="text-xs font-bold text-slate-900">Sabatino Intensivo</div>
+<div class="text-[11px] text-slate-600 mt-0.5">Sábados • 08:00 a 17:00</div>
+<div class="text-[10px] text-slate-500 mt-0.5">Docente: Tec. Raúl Paredes</div>
+</div>
+<div class="mt-3 pt-2 border-t border-slate-200 flex items-center justify-between text-[11px]">
+<span class="text-slate-500">Ocupación: <strong class="text-slate-900 font-bold">28 / 30</strong></span>
+<span class="text-xs font-extrabold text-blue-700">93.3%</span>
+</div>
+</div>
+<!-- G3 Domingos -->
+<div class="border border-slate-200 rounded-lg p-3 hover:border-slate-300 transition-colors bg-slate-50/50">
+<div class="flex items-center justify-between">
+<span class="text-[10px] font-mono font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100">G3 · EDI-SOL-261C</span>
+<span class="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.2 rounded-full">2 libres</span>
+</div>
+<div class="mt-2">
+<div class="text-xs font-bold text-slate-900">Dominical Práctico</div>
+<div class="text-[11px] text-slate-600 mt-0.5">Domingos • 08:30 a 16:30</div>
+<div class="text-[10px] text-slate-500 mt-0.5">Docente: Ing. Walter Benites</div>
+</div>
+<div class="mt-3 pt-2 border-t border-slate-200 flex items-center justify-between text-[11px]">
+<span class="text-slate-500">Ocupación: <strong class="text-slate-900 font-bold">23 / 25</strong></span>
+<span class="text-xs font-extrabold text-blue-700">92.0%</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Mini Tabla de Estudiantes Matriculados Recientemente -->
+<div class="bg-white border border-slate-200 rounded-xl shadow-2xs overflow-hidden">
+<div class="p-3.5 border-b border-slate-200 flex items-center justify-between bg-slate-50/40">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[17px] text-[#c4121a]">how_to_reg</span>
+<span class="text-xs font-bold text-slate-900 uppercase tracking-wider">Inscritos Recientes del Programa</span>
+<span class="text-[10px] bg-slate-200 text-slate-700 font-semibold px-1.5 py-0.2 rounded">Últimas 24 hrs</span>
+</div>
+<a class="text-xs font-semibold text-[#c4121a] hover:underline flex items-center gap-0.5" href="#">
+                Ver todos los 76 inscritos
+                <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+</a>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left text-xs">
+<thead>
+<tr class="bg-slate-50 text-slate-500 text-[10px] font-bold uppercase tracking-wider border-b border-slate-200">
+<th class="px-3 py-2">Folio / Matrícula</th>
+<th class="px-3 py-2">Estudiante</th>
+<th class="px-3 py-2">Edición Asignada</th>
+<th class="px-3 py-2">Fecha Inscripción</th>
+<th class="px-3 py-2">Estado Financiero</th>
+<th class="px-3 py-2 text-right">Acción</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 text-slate-700 text-xs">
+<tr>
+<td class="px-3 py-2.5 font-mono font-bold text-slate-900">MAT-2026-0891</td>
+<td class="px-3 py-2.5 font-semibold text-slate-800">César Alexis Mendoza Peña</td>
+<td class="px-3 py-2.5">G1 Noche (EDI-SOL-261A)</td>
+<td class="px-3 py-2.5 text-slate-500">Hoy, 10:42 AM</td>
+<td class="px-3 py-2.5">
+<span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Conforme (Matrícula Pagada)
+                      </span>
+</td>
+<td class="px-3 py-2.5 text-right">
+<button class="text-slate-400 hover:text-slate-800 p-1" title="Ver ficha">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+</button>
+</td>
+</tr>
+<tr>
+<td class="px-3 py-2.5 font-mono font-bold text-slate-900">MAT-2026-0888</td>
+<td class="px-3 py-2.5 font-semibold text-slate-800">Jonathan Silva Coronado</td>
+<td class="px-3 py-2.5">G2 Sabatino (EDI-SOL-261B)</td>
+<td class="px-3 py-2.5 text-slate-500">Ayer, 05:15 PM</td>
+<td class="px-3 py-2.5">
+<span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Conforme (Matrícula Pagada)
+                      </span>
+</td>
+<td class="px-3 py-2.5 text-right">
+<button class="text-slate-400 hover:text-slate-800 p-1" title="Ver ficha">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+</button>
+</td>
+</tr>
+<tr>
+<td class="px-3 py-2.5 font-mono font-bold text-slate-900">MAT-2026-0882</td>
+<td class="px-3 py-2.5 font-semibold text-slate-800">Manuel Eduardo Dioses Ramos</td>
+<td class="px-3 py-2.5">G3 Dominical (EDI-SOL-261C)</td>
+<td class="px-3 py-2.5 text-slate-500">14 Mar 2026</td>
+<td class="px-3 py-2.5">
+<span class="inline-flex items-center gap-1 text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-600"></span> Pendiente Voucher Banco
+                      </span>
+</td>
+<td class="px-3 py-2.5 text-right">
+<button class="text-slate-400 hover:text-slate-800 p-1" title="Ver ficha">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Columna Lateral (~30% = 4 cols en 12-grid) -->
+<div class="lg:col-span-4 space-y-4">
+<!-- Tarjeta 1: Edición Académica Activa: Ciclo 2026-I -->
+<div class="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs space-y-3">
+<div class="flex items-center justify-between pb-3 border-b border-slate-100">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-[#c4121a]">event_available</span>
+<span class="text-xs font-bold text-slate-900 uppercase tracking-wide">Edición Activa: Ciclo 2026-I</span>
+</div>
+<span class="font-mono text-[10px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded">
+                EDI-2026-TUM-01
+              </span>
+</div>
+<div class="space-y-2.5 text-xs">
+<div class="flex justify-between items-center py-1 border-b border-slate-50">
+<span class="text-slate-500 text-[11px]">Inicio de Clases:</span>
+<span class="font-bold text-slate-900">15 de Marzo, 2026</span>
+</div>
+<div class="flex justify-between items-center py-1 border-b border-slate-50">
+<span class="text-slate-500 text-[11px]">Fin Estimado:</span>
+<span class="font-bold text-slate-900">15 de Noviembre, 2026</span>
+</div>
+<div class="flex justify-between items-center py-1 border-b border-slate-50">
+<span class="text-slate-500 text-[11px]">Supervisor a Cargo:</span>
+<span class="font-semibold text-slate-800">Ing. Marco Ordinola</span>
+</div>
+<div class="flex justify-between items-center py-1">
+<span class="text-slate-500 text-[11px]">Taller Asignado:</span>
+<span class="font-semibold text-[#c4121a] flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">handyman</span>
+                  Taller Metal 2 - Sede Tumbes
+                </span>
+</div>
+</div>
+</div>
+<!-- Tarjeta 2: Ocupación y Control de Vacantes -->
+<div class="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs space-y-3.5">
+<div class="flex items-center justify-between">
+<span class="text-xs font-bold text-slate-900 uppercase tracking-wide flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-blue-600">pie_chart</span>
+                Control de Vacantes
+              </span>
+<span class="text-xs font-extrabold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full">
+                95.0% Lleno
+              </span>
+</div>
+<div>
+<div class="flex items-baseline justify-between mb-1">
+<span class="text-2xl font-extrabold text-slate-900 tracking-tight">76 <span class="text-xs font-semibold text-slate-500">/ 80 matriculados</span></span>
+<span class="text-xs font-bold text-emerald-700">4 libres</span>
+</div>
+<!-- Barra de Progreso -->
+<div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+<div class="bg-[#c4121a] h-2.5 rounded-full" style="width: 95%"></div>
+</div>
+</div>
+<!-- Alerta de Cierre Próximo -->
+<div class="bg-amber-50 border border-amber-200 rounded-lg p-2.5 flex items-start gap-2 text-amber-900">
+<span class="material-symbols-outlined text-[18px] text-amber-700 shrink-0 mt-0.5">warning</span>
+<div class="text-[11px] leading-tight">
+<strong class="font-bold block text-amber-950">¡Solo 4 vacantes libres!</strong>
+                El cierre formal de inscripciones para el periodo 2026-I es el 22 de marzo.
+              </div>
+</div>
+<!-- Desglose por Grupos -->
+<div class="space-y-2 pt-2 border-t border-slate-100 text-xs">
+<div class="flex items-center justify-between">
+<span class="text-slate-600">G1 Noche (Semanal)</span>
+<span class="font-bold text-slate-900">25 / 25 <span class="text-[10px] text-red-600 ml-1 font-semibold">(Lleno)</span></span>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-slate-600">G2 Sabatino Intensivo</span>
+<span class="font-bold text-slate-900">28 / 30 <span class="text-[10px] text-emerald-600 ml-1 font-semibold">(2 libres)</span></span>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-slate-600">G3 Domingos</span>
+<span class="font-bold text-slate-900">23 / 25 <span class="text-[10px] text-emerald-600 ml-1 font-semibold">(2 libres)</span></span>
+</div>
+</div>
+<!-- Botones de Acción Operativa -->
+<div class="space-y-2 pt-2">
+<button class="w-full py-2 px-3 bg-white hover:bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-colors shadow-2xs" type="button">
+<span class="material-symbols-outlined text-[16px] text-slate-600">group_add</span>
+                + Ampliar aforo (+5 cupos)
+              </button>
+<button class="w-full py-2 px-3 bg-[#c4121a] hover:bg-[#a60f16] text-white text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-colors shadow-sm" type="button">
+<span class="material-symbols-outlined text-[16px]">how_to_reg</span>
+                Gestionar matrículas del grupo
+              </button>
+</div>
+</div>
+<!-- Tarjeta 3: Resumen Arancelario & Estructura de Pagos -->
+<div class="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs space-y-3">
+<div class="flex items-center justify-between pb-2 border-b border-slate-100">
+<span class="text-xs font-bold text-slate-900 uppercase tracking-wide flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[17px] text-emerald-700">payments</span>
+                Resumen Arancelario
+              </span>
+<span class="text-[10px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">PEN</span>
+</div>
+<div class="space-y-2 text-xs">
+<div class="flex justify-between items-center">
+<span class="text-slate-500">Matrícula Regular:</span>
+<strong class="text-slate-900 font-bold">S/ 150.00</strong>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-slate-500">Cuota Mensual (6 cuotas):</span>
+<strong class="text-slate-900 font-bold">S/ 380.00 / mes</strong>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-slate-500">Derecho Examen AWS / Probeta:</span>
+<strong class="text-slate-900 font-semibold">Incluido</strong>
+</div>
+<div class="pt-2 border-t border-slate-200 flex justify-between items-baseline">
+<span class="font-bold text-slate-900 text-xs">Total Estimado Programa:</span>
+<span class="text-sm font-extrabold text-[#c4121a]">S/ 2,430.00</span>
+</div>
+</div>
+<div class="pt-1">
+<button class="w-full text-center text-xs font-medium text-slate-600 hover:text-slate-900 py-1 hover:underline" type="button">
+                Ver planes de descuento y convenios empresariales →
+              </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- END: Main Area -->
+</body></html>

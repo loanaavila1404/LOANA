@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-slate-50" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ERP Brusben - Personas y estudiantes</title>
+<!-- Font Inter from Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS v3 with Forms and Container Queries plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              red: '#c4121a',
+              redHover: '#a60f16',
+              sidebar: '#181a1f',
+              sidebarHover: '#23262d'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+<style data-purpose="custom-scrollbars">
+    /* Subtle scrollbar design for high density data table */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+<meta content="web_dashboard" name="shell-type"/></head>
+<body class="h-full flex overflow-hidden text-slate-800 antialiased font-sans bg-[#f8fafc]">
+<!-- BEGIN: Sidebar -->
+<aside class="w-64 bg-brand-sidebar text-slate-300 flex flex-col shrink-0 select-none z-30 justify-between border-r border-slate-800">
+<!-- Top Brand & Navigation section -->
+<div>
+<!-- Institutional Logo Area -->
+<div class="p-4 flex items-center justify-between border-b border-slate-800/80">
+<div class="flex items-center gap-3">
+<!-- Institutional Brand Mark -->
+<div class="w-9 h-9 rounded-lg bg-brand-red flex items-center justify-center text-white shadow-sm shrink-0">
+<svg class="w-5 h-5 fill-current" viewbox="0 0 24 24">
+<path d="M12 3L1 9l11 6 9-4.91V17h2V9M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"></path>
+</svg>
+</div>
+<div class="leading-tight">
+<div class="text-white font-bold tracking-wide text-sm flex items-center gap-1.5">
+              BRUSBEN <span class="text-[10px] px-1 py-0.5 rounded bg-slate-800 text-slate-300 font-medium">E.I.R.L.</span>
+</div>
+<div class="text-[9px] text-slate-400 font-medium tracking-tight uppercase">Capacitarse es superarse</div>
+</div>
+</div>
+<!-- Collapse chevron -->
+<button aria-label="Colapsar menú lateral" class="p-1.5 text-slate-400 hover:text-white rounded hover:bg-slate-800/60 transition-colors" type="button">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M15 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</div>
+<!-- Navigation Links -->
+<nav aria-label="Menú principal de navegación" class="p-3 space-y-1">
+<!-- Inicio -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-brand-sidebarHover text-xs font-medium transition-all group" href="#">
+<svg class="w-4 h-4 stroke-[1.8] group-hover:text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Inicio</span>
+</a>
+<!-- CRM Comercial -->
+<a class="flex items-center justify-between px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-brand-sidebarHover text-xs font-medium transition-all group" href="#">
+<div class="flex items-center gap-3">
+<svg class="w-4 h-4 stroke-[1.8]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>CRM Comercial</span>
+</div>
+<span class="bg-brand-red text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center">12</span>
+</a>
+<!-- Personas y estudiantes (ACTIVO) -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-brand-sidebarHover text-xs font-medium transition-all group" href="#">
+<svg class="w-4 h-4 stroke-[2]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Personas y estudiantes</span>
+</a>
+<!-- Oferta académica -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-brand-sidebarHover text-xs font-medium transition-all group" href="#">
+<svg class="w-4 h-4 stroke-[1.8]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Oferta académica</span>
+</a>
+<!-- Matrículas -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-brand-sidebarHover text-xs font-medium transition-all group" href="#">
+<svg class="w-4 h-4 stroke-[1.8]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Matrículas</span>
+</a>
+<!-- Usuarios y accesos -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-brand-sidebarHover text-xs font-medium transition-all group" href="#">
+<svg class="w-4 h-4 stroke-[1.8]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Usuarios y accesos</span>
+</a>
+<!-- Auditoría -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-brand-sidebarHover text-xs font-medium transition-all group" href="#">
+<svg class="w-4 h-4 stroke-[1.8]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Auditoría</span>
+</a>
+<!-- Mi perfil -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-brand-sidebarHover text-xs font-medium transition-all group" href="#">
+<svg class="w-4 h-4 stroke-[1.8]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Mi perfil</span>
+</a>
+</nav>
+</div>
+<!-- Sidebar Footer -->
+<div class="p-4 border-t border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
+<span>ERP Brusben v2.4.0</span>
+<span class="flex items-center gap-1.5 text-emerald-400 font-medium">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        Operativo
+      </span>
+</div>
+</aside>
+<!-- END: Sidebar -->
+<!-- BEGIN: Main Area -->
+<div class="flex-1 flex flex-col h-full overflow-hidden">
+<!-- BEGIN: TopHeader -->
+<header class="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between shrink-0 z-20">
+<!-- Breadcrumb & Global Search -->
+<div class="flex items-center gap-6">
+<!-- Breadcrumb navigation -->
+<nav class="flex items-center gap-2 text-xs text-slate-500 font-medium">
+<span class="text-slate-400">ERP Brusben</span>
+<span class="text-slate-300">/</span>
+<span class="text-slate-700 font-semibold">Personas y estudiantes</span>
+<span class="text-slate-300">/</span>
+<span class="text-slate-900 font-bold">Directorio institucional</span>
+</nav>
+<!-- Search Bar -->
+<div class="relative w-80">
+<span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</span>
+<input class="w-full text-xs pl-9 pr-12 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-brand-red focus:border-brand-red focus:bg-white transition-all" placeholder="Buscar por DNI, estudiante, código... (Ctrl+K)" type="text"/>
+<span class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none">
+<kbd class="text-[10px] font-sans text-slate-400 bg-white border border-slate-200 px-1.5 py-0.5 rounded shadow-2xs">Ctrl+K</kbd>
+</span>
+</div>
+</div>
+<!-- Right Controls: Campus Selector, Notifications & Profile -->
+<div class="flex items-center gap-4">
+<!-- Campus Selector -->
+<button class="flex items-center gap-2 text-xs font-medium text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-lg transition-colors" type="button">
+<svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Sede Central • Lima</span>
+<svg class="w-3 h-3 text-slate-400 ml-1" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+<!-- Divider -->
+<div class="h-6 w-px bg-slate-200"></div>
+<!-- Notification Bell with Ping -->
+<button aria-label="Notificaciones" class="relative p-1.5 text-slate-500 hover:text-slate-800 rounded-lg hover:bg-slate-100 transition-colors" type="button">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-brand-red"></span>
+</button>
+<!-- User Profile Pill -->
+<div class="flex items-center gap-3 pl-1">
+<div class="text-right hidden sm:block leading-tight">
+<div class="text-xs font-semibold text-slate-900">Loana Avila Neyra</div>
+<div class="text-[10px] text-emerald-600 font-medium flex items-center justify-end gap-1">
+              Superadministración
+              <svg class="w-2.5 h-2.5 fill-current" viewbox="0 0 20 20">
+<path clip-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" fill-rule="evenodd"></path>
+</svg>
+</div>
+</div>
+<!-- Avatar Initials -->
+<div class="w-9 h-9 rounded-full bg-slate-200 border border-slate-300 text-slate-700 font-bold text-xs flex items-center justify-center">
+            LA
+          </div>
+<!-- Sign out icon button -->
+<button class="p-1 text-slate-400 hover:text-slate-700 transition-colors ml-1" title="Cerrar sesión" type="button">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+</button>
+</div>
+</div>
+</header>
+<!-- END: TopHeader -->
+<!-- Scrollable Workspace Body -->
+<main class="flex-1 overflow-y-auto p-6 space-y-6" data-purpose="workspace-content"><div class="flex flex-col w-full">
+<!-- Script para sincronizar el estado activo del App Shell de forma no destructiva -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const links = document.querySelectorAll("aside nav a");
+      links.forEach(link => {
+        if (link.textContent.includes("Oferta académica")) {
+          link.classList.remove("text-slate-400", "hover:bg-brand-sidebarHover");
+          link.classList.add("bg-[#c4121a]", "text-white", "font-semibold", "shadow-sm");
+        } else if (link.textContent.includes("Personas y estudiantes")) {
+          link.classList.remove("bg-[#c4121a]", "text-white", "font-semibold");
+          link.classList.add("text-slate-400");
+        }
+      });
+      // Actualizar breadcrumb del shell si está presente
+      const breadcrumbs = document.querySelectorAll("header nav span");
+      if (breadcrumbs.length >= 5) {
+        breadcrumbs[2].textContent = "Oferta académica";
+        breadcrumbs[4].textContent = "Catálogo de programas y cursos";
+      }
+    });
+  </script>
+<!-- Encabezado de Sección y Acciones Maestras -->
+<div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-6">
+<div class="space-y-1">
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded bg-primary-fixed text-on-primary-fixed text-title-eyebrow font-title-eyebrow uppercase">
+          Catálogo Curricular e Institucional
+        </span>
+<span class="text-secondary text-label-xs font-label-xs flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+          Periodo Académico 2026-I Activo
+        </span>
+</div>
+<h1 class="text-headline-lg font-headline-lg text-on-surface">Oferta académica</h1>
+<p class="text-body-sm font-body-sm text-secondary max-w-3xl">
+        Administración de programas técnicos, planes de estudio, mallas curriculares, cursos modulares, horarios y control centralizado de vacantes por periodo académico.
+      </p>
+</div>
+<!-- Botones de Acción Globales -->
+<div class="flex items-center flex-wrap gap-2.5">
+<button class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-surface-container-lowest text-on-surface hover:bg-surface-container-low shadow-sm text-label-md font-label-md transition-colors" type="button">
+<span class="material-symbols-outlined text-secondary text-[18px]">download</span>
+        Exportar catálogo
+      </button>
+<button class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-surface-container-lowest text-on-surface hover:bg-surface-container-low shadow-sm text-label-md font-label-md transition-colors" type="button">
+<span class="material-symbols-outlined text-secondary text-[18px]">calendar_month</span>
+        Gestionar periodos y ciclos
+      </button>
+<button class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-container hover:bg-primary text-on-primary shadow-sm text-label-md font-label-md transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">add_circle</span>
+        + Nuevo programa técnico
+      </button>
+</div>
+</div>
+<!-- Métricas KPI Principales -->
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-3">
+<!-- Total Programas Activos -->
+<div class="relative bg-surface-container-lowest rounded-xl p-4 shadow-sm overflow-hidden flex flex-col justify-between">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary-container"></div>
+<div class="flex items-start justify-between">
+<div class="space-y-0.5">
+<span class="text-title-eyebrow font-title-eyebrow text-secondary uppercase">Total programas activos</span>
+<div class="text-metric-val font-metric-val text-on-surface tracking-tight">18</div>
+</div>
+<div class="w-9 h-9 rounded-lg bg-primary-fixed/40 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">school</span>
+</div>
+</div>
+<div class="mt-3 flex items-center justify-between text-label-xs font-label-xs text-secondary pt-2">
+<span class="text-on-surface font-semibold">14 Carreras Técnicas</span>
+<span class="text-secondary">•</span>
+<span>4 Certificaciones</span>
+</div>
+</div>
+<!-- Cursos y Módulos Dictados -->
+<div class="relative bg-surface-container-lowest rounded-xl p-4 shadow-sm overflow-hidden flex flex-col justify-between">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-emerald-600"></div>
+<div class="flex items-start justify-between">
+<div class="space-y-0.5">
+<span class="text-title-eyebrow font-title-eyebrow text-secondary uppercase">Cursos y módulos dictados</span>
+<div class="text-metric-val font-metric-val text-on-surface tracking-tight">124</div>
+</div>
+<div class="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">auto_stories</span>
+</div>
+</div>
+<div class="mt-3 flex items-center justify-between text-label-xs font-label-xs text-emerald-800 pt-2">
+<span>En malla curricular activa</span>
+<span class="font-medium bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded">+6 vs 2025-II</span>
+</div>
+</div>
+<!-- Secciones / Grupos Abiertos -->
+<div class="relative bg-surface-container-lowest rounded-xl p-4 shadow-sm overflow-hidden flex flex-col justify-between">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-amber-500"></div>
+<div class="flex items-start justify-between">
+<div class="space-y-0.5">
+<span class="text-title-eyebrow font-title-eyebrow text-secondary uppercase">Secciones / Grupos abiertos</span>
+<div class="text-metric-val font-metric-val text-on-surface tracking-tight">46</div>
+</div>
+<div class="w-9 h-9 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">groups</span>
+</div>
+</div>
+<div class="mt-3 flex items-center justify-between text-label-xs font-label-xs text-secondary pt-2">
+<span>Ciclo 2026-I en curso</span>
+<span class="text-amber-800 font-semibold">9 Sedes/Aulas</span>
+</div>
+</div>
+<!-- Ocupación de Vacantes -->
+<div class="relative bg-surface-container-lowest rounded-xl p-4 shadow-sm overflow-hidden flex flex-col justify-between">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-tertiary-container"></div>
+<div class="flex items-start justify-between">
+<div class="space-y-0.5">
+<span class="text-title-eyebrow font-title-eyebrow text-secondary uppercase">Ocupación de vacantes</span>
+<div class="flex items-baseline gap-2">
+<span class="text-metric-val font-metric-val text-on-surface">84.6%</span>
+<span class="text-label-xs font-label-xs text-secondary">780 / 922</span>
+</div>
+</div>
+<div class="w-9 h-9 rounded-lg bg-tertiary-fixed text-tertiary flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">pie_chart</span>
+</div>
+</div>
+<!-- Barra de progreso discreta -->
+<div class="mt-3 pt-2">
+<div class="w-full bg-surface-container-high rounded-full h-1.5 overflow-hidden">
+<div class="bg-tertiary-container h-1.5 rounded-full" style="width: 84.6%"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Cinta Compacta de Resumen Operativo -->
+<div class="bg-surface-container-low rounded-lg p-2.5 mb-5 flex flex-wrap items-center justify-between gap-y-2 text-label-xs font-label-xs text-secondary">
+<div class="flex flex-wrap items-center gap-x-4 gap-y-1">
+<span class="flex items-center gap-1.5 text-on-surface">
+<span class="material-symbols-outlined text-[15px] text-primary">location_on</span>
+        Programas presenciales: <strong class="font-semibold">10</strong>
+</span>
+<span class="text-outline-variant">•</span>
+<span class="flex items-center gap-1.5 text-on-surface">
+<span class="material-symbols-outlined text-[15px] text-tertiary">devices</span>
+        Semipresenciales: <strong class="font-semibold">5</strong>
+</span>
+<span class="text-outline-variant">•</span>
+<span class="flex items-center gap-1.5 text-on-surface">
+<span class="material-symbols-outlined text-[15px] text-amber-700">wifi</span>
+        Virtuales sincrónicos: <strong class="font-semibold">3</strong>
+</span>
+<span class="text-outline-variant">•</span>
+<span class="flex items-center gap-1.5 text-on-surface">
+<span class="material-symbols-outlined text-[15px] text-secondary">schedule</span>
+        Horas pedagógicas totales: <strong class="font-semibold">4,800 hrs</strong>
+</span>
+</div>
+<div class="flex items-center gap-1.5 text-emerald-800 bg-surface-container-lowest px-2.5 py-1 rounded shadow-xs font-medium">
+<span class="material-symbols-outlined text-[14px]">verified</span>
+      Certificaciones con aval institucional: 100% reguladas
+    </div>
+</div>
+<!-- Navegación por Pestañas de Vista Curricular -->
+<div class="flex items-center gap-1 overflow-x-auto pb-1 mb-4">
+<button class="px-3.5 py-2 rounded-lg bg-surface-container-lowest text-primary-container font-label-md text-label-md shadow-xs flex items-center gap-2 shrink-0" type="button">
+<span class="material-symbols-outlined text-[18px]">menu_book</span>
+<span>Programas y Carreras</span>
+<span class="bg-primary-fixed text-primary px-1.5 py-0.5 rounded-full text-label-xs font-label-xs">18</span>
+</button>
+<button class="px-3.5 py-2 rounded-lg text-secondary hover:text-on-surface hover:bg-surface-container-low font-label-md text-label-md flex items-center gap-2 shrink-0 transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">view_module</span>
+<span>Cursos y Módulos independientes</span>
+<span class="bg-surface-container text-secondary px-1.5 py-0.5 rounded-full text-label-xs font-label-xs">124</span>
+</button>
+<button class="px-3.5 py-2 rounded-lg text-secondary hover:text-on-surface hover:bg-surface-container-low font-label-md text-label-md flex items-center gap-2 shrink-0 transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">account_tree</span>
+<span>Mallas curriculares &amp; Planes</span>
+</button>
+<button class="px-3.5 py-2 rounded-lg text-secondary hover:text-on-surface hover:bg-surface-container-low font-label-md text-label-md flex items-center gap-2 shrink-0 transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">schedule</span>
+<span>Horarios y Aulas</span>
+</button>
+<button class="px-3.5 py-2 rounded-lg text-secondary hover:text-on-surface hover:bg-surface-container-low font-label-md text-label-md flex items-center gap-2 shrink-0 transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">event_repeat</span>
+<span>Periodos académicos</span>
+</button>
+</div>
+<!-- Barra de Búsqueda y Filtros de Alta Densidad -->
+<div class="bg-surface-container-lowest rounded-xl p-3.5 shadow-sm mb-4">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+<!-- Input de Búsqueda Rápida -->
+<div class="md:col-span-4 relative">
+<span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-secondary">
+<span class="material-symbols-outlined text-[18px]">search</span>
+</span>
+<input class="w-full text-body-sm font-body-sm pl-9 pr-3 py-2 bg-surface-container-low rounded-lg text-on-surface placeholder-secondary focus:outline-none focus:bg-surface-container-lowest transition-all" placeholder="Buscar por código, programa o especialidad..." type="text"/>
+</div>
+<!-- Filtro Área Técnica -->
+<div class="md:col-span-2">
+<select class="w-full text-label-sm font-label-sm py-2 px-3 bg-surface-container-low rounded-lg text-on-surface focus:outline-none">
+<option value="">Área: Todas</option>
+<option value="soldadura">Metalmecánica &amp; Soldadura</option>
+<option value="mineria">Seguridad &amp; Minería</option>
+<option value="maquinaria">Maquinaria Pesada</option>
+<option value="electricidad">Electricidad Industrial</option>
+<option value="mecanica">Mecánica Diésel</option>
+<option value="logistica">Logística Técnica</option>
+</select>
+</div>
+<!-- Filtro Modalidad -->
+<div class="md:col-span-2">
+<select class="w-full text-label-sm font-label-sm py-2 px-3 bg-surface-container-low rounded-lg text-on-surface focus:outline-none">
+<option value="">Modalidad: Todas</option>
+<option value="presencial">Presencial (Sede)</option>
+<option value="semipresencial">Semipresencial</option>
+<option value="virtual">Virtual sincrónico</option>
+</select>
+</div>
+<!-- Filtro Duración -->
+<div class="md:col-span-2">
+<select class="w-full text-label-sm font-label-sm py-2 px-3 bg-surface-container-low rounded-lg text-on-surface focus:outline-none">
+<option value="">Duración: Todas</option>
+<option value="cortos">Módulos cortos (&lt; 4 meses)</option>
+<option value="6m">Medio año (6 meses)</option>
+<option value="10m">10 meses (4 ciclos)</option>
+<option value="1y">1 año o más</option>
+</select>
+</div>
+<!-- Filtro Estado y Switch de Vista -->
+<div class="md:col-span-2 flex items-center justify-end gap-2">
+<select class="w-full text-label-sm font-label-sm py-2 px-2.5 bg-surface-container-low rounded-lg text-on-surface focus:outline-none">
+<option value="">Estado: Todos</option>
+<option selected="" value="matricula">En matrícula</option>
+<option value="curso">En curso</option>
+<option value="diseno">En diseño</option>
+</select>
+<button class="p-2 rounded-lg bg-surface-container-low hover:bg-surface-container text-secondary hover:text-on-surface transition-colors" title="Refrescar lista" type="button">
+<span class="material-symbols-outlined text-[18px]">sync</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Contenedor de Tabla Densa de Programas Técnicos -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="bg-surface-container-low text-secondary text-title-eyebrow font-title-eyebrow uppercase tracking-wider h-10">
+<th class="px-4 py-2.5 w-10 text-center">
+<input class="rounded text-primary focus:ring-0 focus:outline-none cursor-pointer" type="checkbox"/>
+</th>
+<th class="px-4 py-2.5">Programa / Código</th>
+<th class="px-4 py-2.5">Plan curricular</th>
+<th class="px-4 py-2.5">Modalidad &amp; Turnos</th>
+<th class="px-4 py-2.5">Duración &amp; Créditos</th>
+<th class="px-4 py-2.5">Secciones &amp; Cupos</th>
+<th class="px-4 py-2.5">Aranceles / Inversión</th>
+<th class="px-4 py-2.5">Estado</th>
+<th class="px-4 py-2.5 text-right">Acciones</th>
+</tr>
+</thead>
+<tbody class="divide-y-0 text-on-surface">
+<!-- FILA 1: Soldadura Estructural y TIG Avanzada -->
+<tr class="hover:bg-surface-container-low/70 transition-colors">
+<td class="px-4 py-3 text-center">
+<input class="rounded text-primary focus:ring-0 focus:outline-none cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-4 py-3">
+<div class="flex items-start gap-2.5">
+<div class="w-8 h-8 rounded bg-primary-fixed text-primary flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[18px]">build</span>
+</div>
+<div class="space-y-0.5">
+<div class="flex items-center gap-1.5">
+<span class="text-body-md font-headline-sm text-on-surface font-semibold">Soldadura Estructural y TIG Avanzada</span>
+<span class="px-1.5 py-0.2 rounded bg-primary-container text-on-primary text-label-xs font-label-xs">Alta Demanda</span>
+</div>
+<div class="flex items-center gap-2 text-label-xs font-label-xs text-secondary">
+<span class="font-mono text-primary font-medium">PROG-SOL-01</span>
+<span>•</span>
+<span>Metalmecánica</span>
+</div>
+</div>
+</div>
+</td>
+<td class="px-4 py-3">
+<div class="text-body-sm font-label-md text-on-surface">Plan 2026-I (Rev. 3)</div>
+<div class="text-label-xs font-label-xs text-secondary">8 módulos • 720 hrs ped.</div>
+</td>
+<td class="px-4 py-3">
+<div class="flex items-center gap-1 text-body-sm font-label-md text-on-surface">
+<span class="material-symbols-outlined text-[15px] text-primary">location_on</span>
+                Presencial • Sede Lima
+              </div>
+<div class="text-label-xs font-label-xs text-secondary">Noche y Sabatino</div>
+</td>
+<td class="px-4 py-3">
+<div class="text-body-sm font-label-md text-on-surface">8 Meses (3 Ciclos)</div>
+<div class="text-label-xs font-label-xs text-secondary">42 Créditos inst.</div>
+</td>
+<td class="px-4 py-3">
+<div class="space-y-1">
+<div class="flex items-center justify-between text-label-xs font-label-xs">
+<span class="font-semibold text-on-surface">4 grupos</span>
+<span class="font-mono text-emerald-800 font-bold">76/80 (95%)</span>
+</div>
+<div class="w-28 bg-surface-container-high rounded-full h-1.5 overflow-hidden">
+<div class="bg-emerald-600 h-1.5 rounded-full" style="width: 95%"></div>
+</div>
+</div>
+</td>
+<td class="px-4 py-3">
+<div class="text-body-sm font-label-md font-semibold text-on-surface">S/ 380.00 <span class="text-label-xs font-normal text-secondary">/ mes</span></div>
+<div class="text-label-xs font-label-xs text-secondary">Matrícula: S/ 150.00</div>
+</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-label-xs font-label-xs font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                En matrícula
+              </span>
+</td>
+<td class="px-4 py-3 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="p-1.5 rounded-lg hover:bg-surface-container text-secondary hover:text-on-surface transition-colors" title="Ver malla curricular" type="button">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+</button>
+<button class="p-1.5 rounded-lg hover:bg-surface-container text-secondary hover:text-on-surface transition-colors" title="Editar programa" type="button">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button class="p-1.5 rounded-lg hover:bg-surface-container text-secondary hover:text-on-surface transition-colors" title="Gestionar secciones y horarios" type="button">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+</button>
+<button class="p-1.5 rounded-lg hover:bg-surface-container text-secondary hover:text-on-surface transition-colors" title="Más opciones" type="button">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- FILA 2: Seguridad Industrial y Minera (SOMA) -->
+<tr class="bg-surface-container-lowest hover:bg-surface-container-low/70 transition-colors">
+<td class="px-4 py-3 text-center">
+<input class="rounded text-primary focus:ring-0 focus:outline-none cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-4 py-3">
+<div class="flex items-start gap-2.5">
+<div class="w-8 h-8 rounded bg-amber-50 text-amber-700 flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[18px]">health_and_safety</span>
+</div>
+<div class="space-y-0.5">
+<div class="flex items-center gap-1.5">
+<span class="text-body-md font-headline-sm text-on-surface font-semibold">Seguridad Industrial y Minera (SOMA)</span>
+</div>
+<div class="flex items-center gap-2 text-label-xs font-label-xs text-secondary">
+<span class="font-mono text-primary font-medium">PROG-SOM-02</span>
+<span>•</span>
+<span>Minería &amp; SSO</span>
+</div>
+</div>
+</div>
+</td>
+<td class="px-4 py-3">
+<div class="text-body-sm font-label-md text-on-surface">Plan 2025-II (Rev. 2)</div>
+<div class="text-label-xs font-label-xs text-secondary">6 módulos • 540 hrs ped.</div>
+</td>
+<td class="px-4 py-3">
+<div class="flex items-center gap-1 text-body-sm font-label-md text-on-surface">
+<span class="material-symbols-outlined text-[15px] text-tertiary">devices</span>
+                Semipresencial
+              </div>
+<div class="text-label-xs font-label-xs text-secondary">Sabatino / Aula Virtual</div>
+</td>
+<td class="px-4 py-3">
+<div class="text-body-sm font-label-md text-on-surface">6 Meses (2 Ciclos)</div>
+<div class="text-label-xs font-label-xs text-secondary">36 Créditos inst.</div>
+</td>
+<td class="px-4 py-3">
+<div class="space-y-1">
+<div class="flex items-center justify-between text-label-xs font-label-xs">
+<span class="font-semibold text-on-surface">3 grupos</span>
+<span class="font-mono text-emerald-800 font-bold">58/60 (96%)</span>
+</div>
+<div class="w-28 bg-surface-container-high rounded-full h-1.5 overflow-hidden">
+<div class="bg-emerald-600 h-1.5 rounded-full" style="width: 96%"></div>
+</div>
+</div>
+</td>
+<td class="px-4 py-3">
+<div class="text-body-sm font-label-md font-semibold text-on-surface">S/ 350.00 <span class="text-label-xs font-normal text-secondary">/ mes</span></div>
+<div class="text-label-xs font-label-xs text-secondary">Matrícula: S/ 130.00</div>
+</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-label-xs font-label-xs font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                En matrícula
+              </span>
+</td>
+<td class="px-4 py-3 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="p-1.5 rounded-lg hover:bg-surface-container text-secondary hover:text-on-surface transition-colors" title="Ver malla curricular" type="button">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+</button>
+<button class="p-1.5 rounded-lg hover:bg-surface-container text-secondary hover:text-on-surface transition-colors" title="Editar programa" type="button">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button class="p-1.5 rounded-lg hover:bg-surface-container text-secondary hover:text-on-surface transition-colors" title="Gestionar secciones y horarios" type="button">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+</button>
+<button class="p-1.5 rounded-lg hover:bg-surface-container text-secondary hover:text-on-surface transition-colors" title="Más opciones" type="button">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- FILA 3: Operación de Maquinaria Pesada -->
+<tr class="hover:bg-surface-container-low/70 transition-colors">
+<td class="px-4 py-3 text-center">
+<input class="rounded text-primary focus:ring-0 focus:outline-none cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-4 py-3">
+<div class="flex items-start gap-2.5">
+<div class="w-8 h-8 rounded bg-primary-fixed text-primary flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[18px]">precision_manufacturing</span>
+</div>
+<div class="space-y-0.5">
+<div class="flex items-center gap-1.5">
+<span class="text-body-md font-headline-sm text-on-surface font-semibold">Operación de Maquinaria Pesada</span>
+<span class="px-1.5 py-0.2 rounded bg-surface-container text-secondary text-label-xs font-label-xs">Línea Amarilla</span>
+</div>
+<div class="flex items-center gap-2 text-label-xs font-label-xs text-secondary">
+<span class="font-mono text-primary font-medium">PROG-MAQ-03</span>
+<span>•</span>
+<span>Maquinaria &amp; Minería</span>
+</div>
+</div>
+</div>
+</td>
+<td class="px-4 py-3">
+<div class="text-body-sm font-label-md text-on-surface">Plan 2026-I (Integral)</div>
+<div class="text-label-xs font-label-xs text-secondary">10 módulos • 960 hrs ped.</div>
+</td>
+<td class="px-4 py-3">
+<div class="flex items-center gap-1 text-body-sm font-label-md text-on-surface">
+<span class="material-symbols-outlined text-[15px] text-primary">location_on</span>
+                Presencial + Campo Práctico
+              </div>
+<div class="text-label-xs font-label-xs text-secondary">Turno Mañana Intensivo</div>
+</td>
+<td class="px-4 py-3">
+<div class="text-body-sm font-label-md text-on-surface">12 Meses (4 Ciclos)</div>
+<div class="text-label-xs font-label-xs text-secondary">60 Créditos inst.</div>
+</td>
+<td class="px-4 py-3">
+<div class="space-y-1">
+<div class="flex items-center justify-between text-label-xs font-label-xs">
+<span class="font-semibold text-on-surface">2 grupos</span>
+<span class="font-mono text-tertiary font-bold">42/45 (93%)</span>
+</div>
+<div class="w-28 bg-surface-container-high rounded-full h-1.5 overflow-hidden">
+<div class="bg-tertiary-container h-1.5 rounded-full" style="width: 93%"></div>
+</div>
+</div>
+</td>
+<td class="px-4 py-3">
+<div class="text-body-sm font-label-md font-semibold text-on-surface">S/ 450.00 <span class="text-label-xs font-normal text-secondary">/ mes</span></div>
+<div class="text-label-xs font-label-xs text-secondary">Matrícula: S/ 180.00</div>
+</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-tertiary-fixed text-tertiary text-label-xs font-label-xs font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                En curso
+              </span>
+</td>
+<td class="px-4 py-3 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="p-1.5 rounded-lg hover:bg-surface-container text-secondary hover:text-on-surface transition-colors" title="Ver malla curricular" type="button">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+</button>
+<button class="p-1.5 rounded-lg hover:bg-surface-container text-secondary hover:text-on-surface transition-colors" title="Editar programa" type="button">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button class="p-1.5 rounded-lg hover:bg-surface-container text-secondary hover:text-on-surface transition-colors" title="Gestionar secciones y horarios" type="button">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+</button>
+<button class="p-1.5 rounded-lg hover:bg-surface-container text-secondary hover:text-on-surface transition-colors" title="Más opciones" type="button">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- FILA 4: Electricidad y Tableros Industriales -->
+<tr class="bg-surface-container-lowest hover:bg-surface-container-low/70 transition-colors">
+<td class="px-4 py-3 text-center">
+<input class="rounded text-primary focus:ring-0 focus:outline-none cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-4 py-3">
+<div class="flex items-start gap-2.5">
+<div class="w-8 h-8 rounded bg-amber-50 text-amber-700 flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[18px]">bolt</span>
+</div>
+<div class="space-y-0.5">
+<div class="flex items-center gap-1.5">
+<span class="text-body-md font-headline-sm text-on-surface font-semibold">Electricidad y Tableros Industriales</span>
+</div>
+<div class="flex items-center gap-2 text-label-xs font-label-xs text-secondary">
+<span class="font-mono text-primary font-medium">PROG-ELE-04</span>
+<span>•</span>
+<span>Electrotecnia</span>
+</div>
+</div>
+</div>
+</td>
+<td class="px-4 py-3">
+<div class="text-body-sm font-label-md text-on-surface">Plan 2025-I (Rev. 1)</div>
+<div class="text-label-xs font-label-xs text-secondary">6 módulos • 500 hrs ped.</div>
+</td>
+<td class="px-4 py-3">
+<div class="flex items-center gap-1 text-body-sm font-label-md text-on-surface">
+<span class="material-symbols-outlined text-[15px] text-tertiary">devices</span>
+                Híbrido • Laboratorio Sede
+              </div>
+<div class="text-label-xs font-label-xs text-secondary">Turno Noche</div>
+</td>
+<td class="px-4 py-3">
+<div class="text-body-sm font-label-md text-on-surface">6 Meses (2 Ciclos)</div>
+<div class="text-label-xs font-label-xs text-secondary">32 Créditos inst.</div>
+</td>
+<td class="px-4 py-3">
+<div class="space-y-1">
+<div class="flex items-center justify-between text-label-xs font-label-xs">
+<span class="font-semibold text-on-surface">2 grupos</span>
+<span class="font-mono text-emerald-800 font-bold">30/40 (75%)</span>
+</div>
+<div class="w-28 bg-surface-container-high rounded-full h-1.5 overflow-hidden">
+<div class="bg-emerald-600 h-1.5 rounded-full" style="width: 75%"></div>
+</div>
+</div>
+</td>
+<td class="px-4 py-3">
+<div class="text-body-sm font-label-md font-semibold text-on-surface">S/ 320.00 <span class="text-label-xs font-normal text-secondary">/ mes</span></div>
+<div class="text-label-xs font-label-xs text-secondary">Matrícula: S/ 120.00</div>
+</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-label-xs font-label-xs font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                En matrícula
+              </span>
+</td>
+<td class="px-4 py-3 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="p-1.5 rounded-lg hover:bg-surface-container text-secondary hover:text-on-surface transition-colors" title="Ver malla curricular" type="button">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+</button>
+<button class="p-1.5 rounded-lg hover:bg-surface-container text-secondary hover:text-on-surface transition-colors" title="Editar programa" type="button">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button class="p-1.5 rounded-lg hover:bg-surface-container text-secondary hover:text-on-surface transition-colors" title="Gestionar secciones y horarios" type="button">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+</button>
+<button class="p-1.5 rounded-lg hover:bg-surface-container text-secondary hover:text-on-surface transition-colors" title="Más opciones" type="button">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- FILA 5: Mantenimiento Mecánico y Motores Diesel -->
+<tr class="hover:bg-surface-container-low/70 transition-colors">
+<td class="px-4 py-3 text-center">
+<input class="rounded text-primary focus:ring-0 focus:outline-none cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-4 py-3">
+<div class="flex items-start gap-2.5">
+<div class="w-8 h-8 rounded bg-primary-fixed text-primary flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[18px]">settings</span>
+</div>
+<div class="space-y-0.5">
+<div class="flex items-center gap-1.5">
+<span class="text-body-md font-headline-sm text-on-surface font-semibold">Mantenimiento Mecánico y Motores Diesel</span>
+</div>
+<div class="flex items-center gap-2 text-label-xs font-label-xs text-secondary">
+<span class="font-mono text-primary font-medium">PROG-MEC-05</span>
+<span>•</span>
+<span>Mecánica Automotriz/Diésel</span>
+</div>
+</div>
+</div>
+</td>
+<td class="px-4 py-3">
+<div class="text-body-sm font-label-md text-on-surface">Plan 2026-I</div>
+<div class="text-label-xs font-label-xs text-secondary">8 módulos • 800 hrs ped.</div>
+</td>
+<td class="px-4 py-3">
+<div class="flex items-center gap-1 text-body-sm font-label-md text-on-surface">
+<span class="material-symbols-outlined text-[15px] text-primary">location_on</span>
+                Presencial • Taller Mecánico
+              </div>
+<div class="text-label-xs font-label-xs text-secondary">Mañana y Noche</div>
+</td>
+<td class="px-4 py-3">
+<div class="text-body-sm font-label-md text-on-surface">10 Meses (3 Ciclos)</div>
+<div class="text-label-xs font-label-xs text-secondary">50 Créditos inst.</div>
+</td>
+<td class="px-4 py-3">
+<div class="space-y-1">
+<div class="flex items-center justify-between text-label-xs font-label-xs">
+<span class="font-semibold text-on-surface">2 grupos</span>
+<span class="font-mono text-emerald-800 font-bold">38/40 (95%)</span>
+</div>
+<div class="w-28 bg-surface-container-high rounded-full h-1.5 overflow-hidden">
+<div class="bg-emerald-600 h-1.5 rounded-full" style="width: 95%"></div>
+</div>
+</div>
+</td>
+<td class="px-4 py-3">
+<div class="text-body-sm font-label-md font-semibold text-on-surface">S/ 400.00 <span class="text-label-xs font-normal text-secondary">/ mes</span></div>
+<div class="text-label-xs font-label-xs text-secondary">Matrícula: S/ 150.00</div>
+</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-label-xs font-label-xs font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                En matrícula
+              </span>
+</td>
+<td class="px-4 py-3 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="p-1.5 rounded-lg hover:bg-surface-container text-secondary hover:text-on-surface transition-colors" title="Ver malla curricular" type="button">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+</button>
+<button class="p-1.5 rounded-lg hover:bg-surface-container text-secondary hover:text-on-surface transition-colors" title="Editar programa" type="button">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button class="p-1.5 rounded-lg hover:bg-surface-container text-secondary hover:text-on-surface transition-colors" title="Gestionar secciones y horarios" type="button">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+</button>
+<button class="p-1.5 rounded-lg hover:bg-surface-container text-secondary hover:text-on-surface transition-colors" title="Más opciones" type="button">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- FILA 6: Gestión de Almacenes y Logística Minera -->
+<tr class="bg-surface-container-lowest hover:bg-surface-container-low/70 transition-colors">
+<td class="px-4 py-3 text-center">
+<input class="rounded text-primary focus:ring-0 focus:outline-none cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-4 py-3">
+<div class="flex items-start gap-2.5">
+<div class="w-8 h-8 rounded bg-surface-container text-secondary flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[18px]">inventory_2</span>
+</div>
+<div class="space-y-0.5">
+<div class="flex items-center gap-1.5">
+<span class="text-body-md font-headline-sm text-on-surface font-semibold">Gestión de Almacenes y Logística Minera</span>
+</div>
+<div class="flex items-center gap-2 text-label-xs font-label-xs text-secondary">
+<span class="font-mono text-primary font-medium">PROG-LOG-06</span>
+<span>•</span>
+<span>Gestión Operativa</span>
+</div>
+</div>
+</div>
+</td>
+<td class="px-4 py-3">
+<div class="text-body-sm font-label-md text-on-surface">Plan 2025-R2</div>
+<div class="text-label-xs font-label-xs text-secondary">4 módulos • 320 hrs ped.</div>
+</td>
+<td class="px-4 py-3">
+<div class="flex items-center gap-1 text-body-sm font-label-md text-on-surface">
+<span class="material-symbols-outlined text-[15px] text-amber-700">wifi</span>
+                Virtual Sincrónico
+              </div>
+<div class="text-label-xs font-label-xs text-secondary">Noche y Fines de semana</div>
+</td>
+<td class="px-4 py-3">
+<div class="text-body-sm font-label-md text-on-surface">4 Meses (Modular)</div>
+<div class="text-label-xs font-label-xs text-secondary">24 Créditos inst.</div>
+</td>
+<td class="px-4 py-3">
+<div class="space-y-1">
+<div class="flex items-center justify-between text-label-xs font-label-xs">
+<span class="font-semibold text-on-surface">3 grupos</span>
+<span class="font-mono text-emerald-800 font-bold">85/100 (85%)</span>
+</div>
+<div class="w-28 bg-surface-container-high rounded-full h-1.5 overflow-hidden">
+<div class="bg-emerald-600 h-1.5 rounded-full" style="width: 85%"></div>
+</div>
+</div>
+</td>
+<td class="px-4 py-3">
+<div class="text-body-sm font-label-md font-semibold text-on-surface">S/ 280.00 <span class="text-label-xs font-normal text-secondary">/ mes</span></div>
+<div class="text-label-xs font-label-xs text-secondary">Matrícula: S/ 100.00</div>
+</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-label-xs font-label-xs font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                En matrícula
+              </span>
+</td>
+<td class="px-4 py-3 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="p-1.5 rounded-lg hover:bg-surface-container text-secondary hover:text-on-surface transition-colors" title="Ver malla curricular" type="button">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+</button>
+<button class="p-1.5 rounded-lg hover:bg-surface-container text-secondary hover:text-on-surface transition-colors" title="Editar programa" type="button">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button class="p-1.5 rounded-lg hover:bg-surface-container text-secondary hover:text-on-surface transition-colors" title="Gestionar secciones y horarios" type="button">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+</button>
+<button class="p-1.5 rounded-lg hover:bg-surface-container text-secondary hover:text-on-surface transition-colors" title="Más opciones" type="button">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Paginador Institucional Inferior -->
+<div class="bg-surface-container-low px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3 text-label-xs font-label-xs text-secondary">
+<div class="flex items-center gap-4">
+<span>Mostrando <strong class="text-on-surface">6</strong> de <strong class="text-on-surface">18</strong> programas técnicos registrados</span>
+<div class="flex items-center gap-1.5">
+<span>Filas por página:</span>
+<select class="bg-surface-container-lowest text-on-surface text-label-xs font-label-xs py-0.5 px-2 rounded focus:outline-none">
+<option value="10">10</option>
+<option value="20">20</option>
+<option value="50">50</option>
+</select>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="flex items-center gap-1 text-emerald-700 bg-surface-container-lowest px-2 py-1 rounded shadow-2xs">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+          Base de datos sincronizada
+        </span>
+<div class="inline-flex items-center rounded-lg bg-surface-container-lowest shadow-2xs overflow-hidden">
+<button class="px-2.5 py-1 text-secondary hover:text-on-surface hover:bg-surface-container-low disabled:opacity-40" disabled="" type="button">
+            Anterior
+          </button>
+<button class="px-3 py-1 bg-primary-container text-on-primary font-bold" type="button">
+            1
+          </button>
+<button class="px-3 py-1 text-on-surface hover:bg-surface-container-low" type="button">
+            2
+          </button>
+<button class="px-2.5 py-1 text-secondary hover:text-on-surface hover:bg-surface-container-low" type="button">
+            Siguiente
+          </button>
+</div>
+</div>
+</div>
+</div>
+</div></main>
+</div>
+<!-- END: Main Area -->
+</body></html>

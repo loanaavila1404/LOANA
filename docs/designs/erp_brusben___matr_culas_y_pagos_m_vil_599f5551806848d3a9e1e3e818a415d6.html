@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-[#F8F9FB]" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>ERP Brusben - Matrículas y Pagos</title>
+<!-- Tailwind CSS CDN con plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Configuración de estilos base -->
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#fef2f2',
+              100: '#fee2e2',
+              500: '#ef4444',
+              600: '#dc2626',
+              700: '#C4121A', /* Rojo Institucional Brusben */
+              800: '#991b1b',
+              900: '#7f1d1d',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+<!-- BEGIN: Custom CSS -->
+<style data-purpose="custom-scrollbars">
+    /* Ocultar barra de scroll para elementos tipo chips táctiles en iOS */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+<style data-purpose="ios-tap-optimizations">
+    /* Optimización táctil para dispositivos móviles */
+    * {
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      touch-action: manipulation;
+    }
+  </style>
+<!-- END: Custom CSS -->
+</head>
+<body class="min-h-full font-sans text-slate-800 antialiased selection:bg-brand-700 selection:text-white pb-24">
+<!-- BEGIN: TopHeader -->
+<header class="sticky top-0 z-40 bg-white border-b border-slate-200 px-4 py-2.5 flex items-center justify-between shadow-xs">
+<!-- Botón Menú Hamburguesa -->
+<button aria-label="Abrir menú de navegación" class="p-2 -ml-1 text-slate-600 hover:text-slate-900 rounded-lg active:bg-slate-100 transition-colors" type="button">
+<svg class="w-6 h-6 stroke-current" fill="none" stroke-width="2" viewbox="0 0 24 24">
+<path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+<!-- Logotipo Brusben con Eslogan -->
+<div class="flex items-center gap-2 border border-slate-200 rounded-lg px-2.5 py-1 bg-white shadow-2xs">
+<div class="w-7 h-7 bg-brand-700 rounded-md flex items-center justify-center text-white font-black text-sm tracking-tighter">
+        B
+      </div>
+<div class="flex flex-col text-left">
+<span class="text-xs font-black tracking-wider text-slate-900 leading-tight">BRUSBEN <span class="text-[9px] font-medium text-slate-500">E.I.R.L.</span></span>
+<span class="text-[7.5px] font-bold text-brand-700 uppercase tracking-tight">Capacitarse es superarse</span>
+</div>
+</div>
+<!-- Acciones Rápidas de Usuario (Notificaciones y Avatar) -->
+<div class="flex items-center gap-2">
+<!-- Campana con indicador rojo -->
+<button aria-label="Notificaciones" class="relative p-2 text-slate-600 hover:text-slate-900 rounded-full active:bg-slate-100 transition-colors" type="button">
+<svg class="w-5 h-5 fill-none stroke-current" stroke-width="2" viewbox="0 0 24 24">
+<path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-brand-700 rounded-full ring-2 ring-white"></span>
+</button>
+<!-- Avatar Usuario -->
+<div class="relative flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 text-slate-800 font-bold text-xs border border-slate-300">
+        LA
+        <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full ring-2 ring-white" title="En línea"></span>
+</div>
+</div>
+</header>
+<!-- END: TopHeader -->
+<!-- BEGIN: MainContent -->
+<main class="px-4 py-3 space-y-4 max-w-md mx-auto">
+<!-- Encabezado de Página Institucional -->
+<section class="space-y-1.5" data-purpose="page-title-section">
+<div class="flex items-center justify-between text-xs">
+<span class="text-[10px] font-black uppercase tracking-wider text-brand-700">Gestión financiera y matrículas</span>
+<div class="inline-flex items-center gap-1 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-full text-slate-600 text-[11px] font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+<span>Sede Central • Lima</span>
+</div>
+</div>
+<h1 class="text-2xl font-bold tracking-tight text-slate-900">Matrículas y pagos</h1>
+<p class="text-xs text-slate-500 leading-relaxed">
+        Control de matrículas, validación de vouchers y estado de cuotas por periodo.
+      </p>
+</section>
+<!-- Botones de Acción Primaria y Secundaria -->
+<section class="space-y-2" data-purpose="primary-action-buttons">
+<button class="w-full bg-brand-700 hover:bg-brand-800 active:bg-brand-900 text-white font-semibold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow-sm text-sm transition-colors" type="button">
+<svg class="w-4 h-4 stroke-current" fill="none" stroke-width="2.5" viewbox="0 0 24 24">
+<path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>+ Nueva matrícula</span>
+</button>
+<div class="grid grid-cols-2 gap-2">
+<button class="border border-slate-200 bg-white hover:bg-slate-50 active:bg-slate-100 text-slate-700 text-xs font-semibold py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 transition-colors" type="button">
+<svg class="w-3.5 h-3.5 text-slate-500 stroke-current" fill="none" stroke-width="2" viewbox="0 0 24 24">
+<path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Conciliar BCP / Yape</span>
+</button>
+<button class="border border-slate-200 bg-white hover:bg-slate-50 active:bg-slate-100 text-slate-700 text-xs font-semibold py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 transition-colors" type="button">
+<svg class="w-3.5 h-3.5 text-slate-500 stroke-current" fill="none" stroke-width="2" viewbox="0 0 24 24">
+<path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Exportar reporte</span>
+</button>
+</div>
+</section>
+<!-- BEGIN: FinancialMetricsGrid -->
+<!-- Grid 2x2 para KPIs de Recaudación y Matrículas -->
+<section class="grid grid-cols-2 gap-2.5" data-purpose="metrics-kpi-grid">
+<!-- KPI 1: Recaudado -->
+<article class="bg-white p-3 rounded-xl border border-slate-200 border-l-[3.5px] border-l-brand-700 shadow-2xs">
+<div class="flex items-center justify-between text-[11px] font-semibold text-slate-500 uppercase tracking-tight">
+<span>Recaudado Mes</span>
+<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<rect height="14" rx="2" width="20" x="2" y="5"></rect>
+<line x1="2" x2="22" y1="10" y2="10"></line>
+</svg>
+</div>
+<div class="mt-1">
+<span class="text-base font-bold text-slate-900 leading-none">S/ 148,650</span>
+<div class="mt-1 flex items-center gap-1">
+<span class="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded">↑ 14.2%</span>
+<span class="text-[10px] text-slate-400">Meta: 180k</span>
+</div>
+</div>
+</article>
+<!-- KPI 2: Matrículas Ciclo -->
+<article class="bg-white p-3 rounded-xl border border-slate-200 border-l-[3.5px] border-l-blue-600 shadow-2xs">
+<div class="flex items-center justify-between text-[11px] font-semibold text-slate-500 uppercase tracking-tight">
+<span>Matrículas 2026-I</span>
+<svg class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke-linecap="round" stroke-linejoin="round"></path>
+<circle cx="8.5" cy="7" r="4"></circle>
+<path d="M20 8v6M23 11h-6" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<div class="mt-1">
+<div class="flex items-baseline gap-1">
+<span class="text-base font-bold text-slate-900">892</span>
+<span class="text-[10px] text-slate-500">alumnos</span>
+</div>
+<div class="mt-1 text-[10px] text-slate-500 truncate">
+<span class="font-medium text-slate-700">71.4%</span> de 1,250 cupos
+          </div>
+</div>
+</article>
+<!-- KPI 3: Vouchers Pendientes -->
+<article class="bg-white p-3 rounded-xl border border-slate-200 border-l-[3.5px] border-l-amber-500 shadow-2xs">
+<div class="flex items-center justify-between text-[11px] font-semibold text-slate-500 uppercase tracking-tight">
+<span>Por Validar</span>
+<svg class="w-3.5 h-3.5 text-amber-500" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<div class="mt-1">
+<div class="flex items-baseline gap-1">
+<span class="text-base font-bold text-slate-900">38</span>
+<span class="text-[10px] text-amber-700 font-medium bg-amber-50 px-1 rounded">pendientes</span>
+</div>
+<p class="mt-1 text-[10px] text-slate-500">
+            S/ 14,280 por conciliar
+          </p>
+</div>
+</article>
+<!-- KPI 4: Morosidad -->
+<article class="bg-white p-3 rounded-xl border border-slate-200 border-l-[3.5px] border-l-rose-600 shadow-2xs">
+<div class="flex items-center justify-between text-[11px] font-semibold text-slate-500 uppercase tracking-tight">
+<span>Morosidad</span>
+<svg class="w-3.5 h-3.5 text-rose-500" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<div class="mt-1">
+<span class="text-base font-bold text-rose-700 leading-none">S/ 24,190</span>
+<p class="mt-1 text-[10px] text-rose-600 font-medium">
+            54 cuotas (6.1%)
+          </p>
+</div>
+</article>
+</section>
+<!-- END: FinancialMetricsGrid -->
+<!-- BEGIN: DailyCollectionStrip -->
+<!-- Cinta resumen de la cobranza diaria -->
+<div class="bg-emerald-50/70 border border-emerald-200 rounded-xl p-2.5 text-xs text-slate-700 space-y-1.5" data-purpose="daily-summary">
+<div class="flex items-center justify-between font-medium">
+<div class="flex items-center gap-1.5 text-emerald-900">
+<svg class="w-4 h-4 text-emerald-700" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="font-bold">Cobranza del día:</span> S/ 18,450.00
+        </div>
+<span class="bg-emerald-200 text-emerald-800 text-[10px] font-semibold px-2 py-0.5 rounded-full">93.9% Cumplimiento</span>
+</div>
+<div class="flex items-center justify-between text-[11px] text-slate-600 border-t border-emerald-200/60 pt-1.5">
+<span>📄 42 Boletas / 8 Facturas</span>
+<span class="text-[10px] text-emerald-800 font-medium">62% BCP • 24% Yape • 14% POS</span>
+</div>
+</div>
+<!-- END: DailyCollectionStrip -->
+<!-- BEGIN: FilterSection -->
+<section class="space-y-2.5 pt-1" data-purpose="filters-and-tabs">
+<!-- Pestañas Horizontales con scroll -->
+<div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 text-xs font-semibold whitespace-nowrap">
+<button class="bg-brand-700 text-white px-3 py-1.5 rounded-lg shadow-2xs flex items-center gap-1.5">
+<span>Todas</span>
+<span class="bg-brand-900/40 text-[10px] px-1.5 py-0.2 rounded-full">892</span>
+</button>
+<button class="bg-white border border-slate-200 text-slate-600 px-3 py-1.5 rounded-lg active:bg-slate-100 flex items-center gap-1">
+<span>Al día</span>
+<span class="text-slate-400 text-[10px]">710</span>
+</button>
+<button class="bg-white border border-slate-200 text-amber-800 bg-amber-50/50 px-3 py-1.5 rounded-lg active:bg-amber-100 flex items-center gap-1">
+<span>Por validar</span>
+<span class="bg-amber-100 text-amber-900 text-[10px] px-1.5 rounded-full font-bold">38</span>
+</button>
+<button class="bg-white border border-slate-200 text-slate-600 px-3 py-1.5 rounded-lg active:bg-slate-100 flex items-center gap-1">
+<span>Por vencer</span>
+<span class="text-slate-400 text-[10px]">90</span>
+</button>
+<button class="bg-white border border-slate-200 text-rose-700 px-3 py-1.5 rounded-lg active:bg-rose-50 flex items-center gap-1">
+<span>Morosos</span>
+<span class="bg-rose-100 text-rose-800 text-[10px] px-1.5 rounded-full font-bold">54</span>
+</button>
+</div>
+<!-- Barra de búsqueda con icono -->
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<input class="block w-full pl-9 pr-3 py-2 border border-slate-200 rounded-xl text-xs bg-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-brand-700 focus:border-brand-700" placeholder="Buscar por estudiante, DNI, comprobante..." type="text"/>
+</div>
+<!-- Selectores de filtrado rápido y botón de ajustes -->
+<div class="grid grid-cols-12 gap-1.5 text-xs">
+<select class="col-span-5 bg-white border border-slate-200 text-slate-700 rounded-lg py-1.5 px-2 text-xs focus:ring-1 focus:ring-brand-700 focus:border-brand-700">
+<option>Ciclo 2026-I</option>
+<option>Ciclo 2025-II</option>
+<option>Todos</option>
+</select>
+<select class="col-span-5 bg-white border border-slate-200 text-slate-700 rounded-lg py-1.5 px-2 text-xs focus:ring-1 focus:ring-brand-700 focus:border-brand-700">
+<option>Todos los programas</option>
+<option>Soldadura TIG</option>
+<option>Seguridad SOMA</option>
+<option>Maquinaria Pesada</option>
+</select>
+<button aria-label="Filtros avanzados" class="col-span-2 bg-white border border-slate-200 text-slate-600 rounded-lg flex items-center justify-center hover:bg-slate-50 active:bg-slate-100" type="button">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+</div>
+</section>
+<!-- END: FilterSection -->
+<!-- BEGIN: StudentsPaymentsCardList -->
+<section class="space-y-3 pt-1" data-purpose="payment-records-cards">
+<!-- TARJETA 1: Carlos Mendoza Ruiz (Al Día) -->
+<article class="bg-white rounded-xl border border-slate-200 p-3.5 shadow-2xs space-y-3">
+<!-- Cabecera de la tarjeta: Identidad y Status -->
+<div class="flex items-start justify-between gap-2">
+<div class="flex items-center gap-2.5">
+<div class="w-9 h-9 rounded-full bg-brand-700 text-white font-bold text-xs flex items-center justify-center shrink-0">
+              CM
+            </div>
+<div>
+<h3 class="text-sm font-bold text-slate-900 leading-tight">Carlos Mendoza Ruiz</h3>
+<p class="text-[11px] text-slate-500">DNI: 47891234 • Cel: 984 512 882</p>
+</div>
+</div>
+<span class="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-200">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            Al día
+          </span>
+</div>
+<!-- Info Académica -->
+<div class="bg-slate-50 rounded-lg p-2 border border-slate-100 text-xs space-y-1">
+<div class="flex items-center justify-between text-slate-600">
+<span class="font-medium text-slate-800">Soldadura Estructural y TIG</span>
+<span class="text-[10px] bg-white border border-slate-200 px-1.5 py-0.5 rounded font-mono text-slate-500">MAT-2026-0841</span>
+</div>
+<p class="text-[11px] text-slate-500">Presencial Noche • Regular</p>
+</div>
+<!-- Progreso de Cuotas y Finanzas -->
+<div class="space-y-1.5">
+<div class="flex items-center justify-between text-xs">
+<span class="text-slate-600 font-medium">3 de 6 cuotas pagadas (50%)</span>
+<span class="font-bold text-slate-900">Total: S/ 2,430.00</span>
+</div>
+<div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+<div class="bg-emerald-600 h-2 rounded-full w-1/2"></div>
+</div>
+<div class="flex items-center justify-between text-[11px] text-slate-500 pt-0.5">
+<span>Saldo: <strong class="text-slate-800">S/ 1,190.00</strong></span>
+<span class="text-slate-500">Próx. cuota 4: 25 Ene 2026</span>
+</div>
+</div>
+<!-- Botones de Acción de Tarjeta -->
+<div class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-100">
+<button class="w-full py-1.5 px-3 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center justify-center gap-1.5" type="button">
+<svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+            Expediente
+          </button>
+<button class="w-full py-1.5 px-3 bg-slate-900 text-white rounded-lg text-xs font-semibold hover:bg-slate-800 flex items-center justify-center gap-1.5" type="button">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+            Registrar pago
+          </button>
+</div>
+</article>
+<!-- TARJETA 2: Yuliana Paredes Quispe (Voucher Pendiente) -->
+<article class="bg-white rounded-xl border border-amber-200 p-3.5 shadow-2xs space-y-3 relative">
+<div class="flex items-start justify-between gap-2">
+<div class="flex items-center gap-2.5">
+<div class="w-9 h-9 rounded-full bg-blue-100 text-blue-800 font-bold text-xs flex items-center justify-center shrink-0">
+              YP
+            </div>
+<div>
+<h3 class="text-sm font-bold text-slate-900 leading-tight">Yuliana Paredes Quispe</h3>
+<p class="text-[11px] text-slate-500">DNI: 72341902 • Cel: 991 302 441</p>
+</div>
+</div>
+<span class="inline-flex items-center gap-1 bg-amber-50 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-200">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+            Voucher pend.
+          </span>
+</div>
+<div class="bg-slate-50 rounded-lg p-2 border border-slate-100 text-xs space-y-1">
+<div class="flex items-center justify-between text-slate-600">
+<span class="font-medium text-slate-800">Seguridad Industrial y Minera</span>
+<span class="text-[10px] bg-white border border-slate-200 px-1.5 py-0.5 rounded font-mono text-slate-500">MAT-2026-0840</span>
+</div>
+<p class="text-[11px] text-slate-500">Semipresencial Sabatino</p>
+</div>
+<!-- Alerta de voucher subido por conciliar -->
+<div class="bg-amber-50/80 border border-amber-200 rounded-lg p-2 flex items-center justify-between text-[11px] text-amber-900">
+<div class="flex items-center gap-1.5">
+<span>📱</span>
+<span>Voucher Yape <strong>S/ 450.00</strong> por verificar</span>
+</div>
+<span class="text-[10px] text-amber-700 underline font-medium">Ver imagen</span>
+</div>
+<div class="space-y-1.5">
+<div class="flex items-center justify-between text-xs">
+<span class="text-slate-600 font-medium">1 de 4 cuotas (25%)</span>
+<span class="font-bold text-slate-900">Saldo: S/ 1,350.00</span>
+</div>
+<div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+<div class="bg-blue-600 h-2 rounded-full w-1/4"></div>
+</div>
+</div>
+<!-- Botones de Acción: Validar Voucher Destacado -->
+<div class="grid grid-cols-12 gap-2 pt-1 border-t border-slate-100">
+<button class="col-span-7 py-2 px-3 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-lg text-xs flex items-center justify-center gap-1.5 shadow-2xs" type="button">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewbox="0 0 24 24">
+<path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+            Validar voucher
+          </button>
+<button aria-label="WhatsApp" class="col-span-2 py-1.5 px-2 border border-slate-200 text-emerald-600 rounded-lg text-xs font-semibold flex items-center justify-center hover:bg-emerald-50" type="button">
+<svg class="w-4 h-4 fill-current" viewbox="0 0 24 24">
+<path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.669-.699c.969.54 2.08.827 3.201.828h.005c3.18 0 5.767-2.587 5.768-5.767 0-3.18-2.587-5.766-5.768-5.766zm-4.757 5.767c0-2.623 2.134-4.757 4.757-4.757 2.624 0 4.758 2.134 4.758 4.757 0 2.624-2.134 4.758-4.758 4.758-1.002 0-1.956-.309-2.759-.844l-.234-.157-1.547.406.413-1.51-.153-.243c-.613-.974-.937-2.029-.937-3.167z"></path>
+</svg>
+</button>
+<button class="col-span-3 py-1.5 px-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center justify-center" type="button">
+            Expediente
+          </button>
+</div>
+</article>
+<!-- TARJETA 3: Jorge Alanya Cárdenas (Moroso) -->
+<article class="bg-white rounded-xl border border-rose-200 p-3.5 shadow-2xs space-y-3">
+<div class="flex items-start justify-between gap-2">
+<div class="flex items-center gap-2.5">
+<div class="w-9 h-9 rounded-full bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center shrink-0">
+              JA
+            </div>
+<div>
+<h3 class="text-sm font-bold text-slate-900 leading-tight">Jorge Alanya Cárdenas</h3>
+<p class="text-[11px] text-slate-500">DNI: 70912445 • Cel: 978 201 190</p>
+</div>
+</div>
+<span class="inline-flex items-center gap-1 bg-rose-50 text-rose-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-rose-200">
+<span class="w-1.5 h-1.5 rounded-full bg-rose-600"></span>
+            Cuota 3 vencida
+          </span>
+</div>
+<div class="bg-slate-50 rounded-lg p-2 border border-slate-100 text-xs space-y-1">
+<div class="flex items-center justify-between text-slate-600">
+<span class="font-medium text-slate-800">Operador de Retroexcavadora</span>
+<span class="text-[10px] bg-white border border-slate-200 px-1.5 py-0.5 rounded font-mono text-slate-500">MAT-2026-0839</span>
+</div>
+<p class="text-[11px] text-slate-500">Cantera Lurín • Domingo Intensivo</p>
+</div>
+<!-- Notificación de deuda -->
+<div class="bg-rose-50 border border-rose-100 rounded-lg p-2 text-xs flex items-center justify-between text-rose-800">
+<span>Deuda vencida: <strong>S/ 620.00</strong></span>
+<span class="text-[10px] font-bold text-rose-600 uppercase">Venció hace 4 días</span>
+</div>
+<div class="space-y-1">
+<div class="flex items-center justify-between text-xs text-slate-600">
+<span>2 de 5 cuotas pagadas</span>
+<span class="text-slate-500 text-[11px]">Total: S/ 3,100.00</span>
+</div>
+<div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+<div class="bg-rose-600 h-2 rounded-full w-2/5"></div>
+</div>
+</div>
+<!-- Botones de Cobranza -->
+<div class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-100">
+<button class="w-full py-2 px-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1" type="button">
+<span>📲 Cobrar WhatsApp</span>
+</button>
+<button class="w-full py-2 px-2 border border-brand-700 text-brand-700 hover:bg-brand-50 rounded-lg text-xs font-bold flex items-center justify-center gap-1" type="button">
+<span>Registrar pago</span>
+</button>
+</div>
+</article>
+<!-- TARJETA 4: María Vargas Huamán (Pagado 100%) -->
+<article class="bg-white rounded-xl border border-slate-200 p-3.5 shadow-2xs space-y-3">
+<div class="flex items-start justify-between gap-2">
+<div class="flex items-center gap-2.5">
+<div class="w-9 h-9 rounded-full bg-purple-100 text-purple-800 font-bold text-xs flex items-center justify-center shrink-0">
+              MV
+            </div>
+<div>
+<h3 class="text-sm font-bold text-slate-900 leading-tight">María Vargas Huamán</h3>
+<p class="text-[11px] text-slate-500">DNI: 75128490 • Cel: 914 883 201</p>
+</div>
+</div>
+<span class="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-200">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            Completado
+          </span>
+</div>
+<div class="bg-slate-50 rounded-lg p-2 border border-slate-100 text-xs space-y-1">
+<div class="flex items-center justify-between text-slate-600">
+<span class="font-medium text-slate-800">Electricidad y Tableros</span>
+<span class="text-[10px] bg-white border border-slate-200 px-1.5 py-0.5 rounded font-mono text-slate-500">MAT-2026-0838</span>
+</div>
+<p class="text-[11px] text-slate-500">Virtual Sincrónico • Nocturno</p>
+</div>
+<div class="space-y-1.5">
+<div class="flex items-center justify-between text-xs">
+<span class="text-emerald-700 font-semibold">4/4 Pagadas (100%)</span>
+<span class="font-medium text-slate-500">Saldo: S/ 0.00</span>
+</div>
+<div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+<div class="bg-emerald-500 h-2 rounded-full w-full"></div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-100">
+<button class="w-full py-1.5 px-2 border border-slate-200 text-slate-700 rounded-lg text-xs font-semibold hover:bg-slate-50 flex items-center justify-center gap-1" type="button">
+            📜 Constancia
+          </button>
+<button class="w-full py-1.5 px-2 border border-slate-200 text-slate-700 rounded-lg text-xs font-semibold hover:bg-slate-50 flex items-center justify-center gap-1" type="button">
+            🎓 Certificado
+          </button>
+</div>
+</article>
+</section>
+<!-- END: StudentsPaymentsCardList -->
+<!-- BEGIN: MobilePagination -->
+<!-- Indicador de total y paginador estándar -->
+<nav aria-label="Navegación de páginas" class="pt-3 pb-6 flex flex-col items-center gap-2">
+<span class="text-xs text-slate-500 font-medium">
+        Mostrando 4 de 892 matrículas
+      </span>
+<div class="inline-flex items-center gap-1">
+<button class="w-8 h-8 rounded-lg border border-slate-200 bg-white text-slate-400 flex items-center justify-center disabled:opacity-50" disabled="">
+          ‹
+        </button>
+<button class="w-8 h-8 rounded-lg bg-brand-700 text-white font-bold text-xs flex items-center justify-center shadow-2xs">
+          1
+        </button>
+<button class="w-8 h-8 rounded-lg border border-slate-200 bg-white text-slate-700 font-medium text-xs flex items-center justify-center hover:bg-slate-50">
+          2
+        </button>
+<button class="w-8 h-8 rounded-lg border border-slate-200 bg-white text-slate-700 font-medium text-xs flex items-center justify-center hover:bg-slate-50">
+          3
+        </button>
+<span class="text-slate-400 px-1 text-xs">...</span>
+<button class="w-8 h-8 rounded-lg border border-slate-200 bg-white text-slate-700 font-medium text-xs flex items-center justify-center hover:bg-slate-50">
+          89
+        </button>
+<button class="w-8 h-8 rounded-lg border border-slate-200 bg-white text-slate-700 flex items-center justify-center hover:bg-slate-50">
+          ›
+        </button>
+</div>
+</nav>
+<!-- END: MobilePagination -->
+</main>
+<!-- END: MainContent -->
+<!-- BEGIN: BottomNavigation -->
+<!-- Barra fija inferior según diseño móvil de Brusben -->
+<nav aria-label="Menú de navegación principal" class="fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 z-50 px-2 py-1 shadow-lg">
+<div class="max-w-md mx-auto grid grid-cols-5 items-center">
+<!-- Tab Inicio -->
+<a class="flex flex-col items-center justify-center py-1 text-slate-500 hover:text-slate-900 active:scale-95 transition-transform" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="text-[10px] font-medium mt-0.5">Inicio</span>
+</a>
+<!-- Tab CRM con Badge -->
+<a class="flex flex-col items-center justify-center py-1 text-slate-500 hover:text-slate-900 relative active:scale-95 transition-transform" href="#">
+<div class="relative">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="absolute -top-1.5 -right-2 bg-brand-700 text-white font-bold text-[9px] w-4 h-4 rounded-full flex items-center justify-center">12</span>
+</div>
+<span class="text-[10px] font-medium mt-0.5">CRM</span>
+</a>
+<!-- Tab Matrículas y Pagos (ACTIVO) -->
+<a aria-current="page" class="flex flex-col items-center justify-center py-1 text-brand-700 font-bold active:scale-95 transition-transform" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewbox="0 0 24 24">
+<path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="text-[10px] font-bold mt-0.5">Matrículas</span>
+</a>
+<!-- Tab Alumnos / Oferta -->
+<a class="flex flex-col items-center justify-center py-1 text-slate-500 hover:text-slate-900 active:scale-95 transition-transform" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M12 14l9-5-9-5-9 5 9 5z" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="text-[10px] font-medium mt-0.5">Oferta</span>
+</a>
+<!-- Tab Menú / Más -->
+<a class="flex flex-col items-center justify-center py-1 text-slate-500 hover:text-slate-900 active:scale-95 transition-transform" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="text-[10px] font-medium mt-0.5">Menú</span>
+</a>
+</div>
+</nav>
+<!-- END: BottomNavigation -->
+</body></html>

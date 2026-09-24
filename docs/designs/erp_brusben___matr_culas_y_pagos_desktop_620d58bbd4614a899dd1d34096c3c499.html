@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-slate-50" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ERP Brusben - Módulo de Matrículas y Pagos</title>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS v3 with Forms and Container Queries plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "on-secondary-fixed": "#1a1c21",
+            "on-background": "#191c1e",
+            "surface-variant": "#e1e2e4",
+            "surface-bright": "#f8f9fb",
+            "tertiary-fixed-dim": "#b4c5ff",
+            "surface-container-highest": "#e1e2e4",
+            "primary": "#9a000d",
+            "surface-container": "#edeef0",
+            "error": "#ba1a1a",
+            "surface-container-lowest": "#ffffff",
+            "on-surface-variant": "#5c403c",
+            "secondary-fixed": "#e2e2e9",
+            "outline": "#916f6b",
+            "on-secondary-fixed-variant": "#45474c",
+            "inverse-surface": "#2e3132",
+            "on-error": "#ffffff",
+            "secondary": "#5d5e64",
+            "surface-tint": "#be0a17",
+            "on-surface": "#191c1e",
+            "on-tertiary-fixed": "#00174b",
+            "on-secondary": "#ffffff",
+            "on-tertiary": "#ffffff",
+            "tertiary": "#0041b0",
+            "surface": "#f8f9fb",
+            "on-error-container": "#93000a",
+            "on-primary": "#ffffff",
+            "on-primary-fixed-variant": "#93000c",
+            "background": "#f8f9fb",
+            "on-primary-fixed": "#410002",
+            "on-tertiary-container": "#d6ddff",
+            "inverse-on-surface": "#f0f1f3",
+            "surface-container-low": "#f3f4f6",
+            "on-tertiary-fixed-variant": "#003ea8",
+            "error-container": "#ffdad6",
+            "primary-fixed": "#ffdad6",
+            "surface-dim": "#d9dadc",
+            "primary-fixed-dim": "#ffb4ab",
+            "inverse-primary": "#ffb4ab",
+            "tertiary-container": "#0c57df",
+            "secondary-container": "#dfdfe6",
+            "secondary-fixed-dim": "#c6c6cd",
+            "surface-container-high": "#e7e8ea",
+            "primary-container": "#c4121a",
+            "tertiary-fixed": "#dbe1ff",
+            "on-secondary-container": "#616268",
+            "outline-variant": "#e6bdb8",
+            "on-primary-container": "#ffd5d0"
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          spacing: {
+            "margin": "1.5rem",
+            "space-xl": "1.5rem",
+            "space-sm": "0.5rem",
+            "gutter": "1rem",
+            "space-xs": "0.25rem",
+            "space-md": "0.75rem",
+            "space-lg": "1rem",
+            "gutter-dense": "0.75rem"
+          },
+          fontFamily: {
+            "label-sm": ["Inter"],
+            "label-xs": ["Inter"],
+            "headline-sm": ["Inter"],
+            "title-eyebrow": ["Inter"],
+            "headline-md": ["Inter"],
+            "label-md": ["Inter"],
+            "display": ["Inter"],
+            "body-sm": ["Inter"],
+            "metric-val": ["Inter"],
+            "body-md": ["Inter"],
+            "headline-lg": ["Inter"],
+            "body-lg": ["Inter"]
+          },
+          fontSize: {
+            "label-sm": ["12px", { lineHeight: "16px", fontWeight: "500" }],
+            "label-xs": ["11px", { lineHeight: "14px", fontWeight: "600" }],
+            "headline-sm": ["16px", { lineHeight: "22px", fontWeight: "600" }],
+            "title-eyebrow": ["11px", { lineHeight: "14px", letterSpacing: "0.08em", fontWeight: "700" }],
+            "headline-md": ["18px", { lineHeight: "24px", letterSpacing: "-0.01em", fontWeight: "600" }],
+            "label-md": ["13px", { lineHeight: "16px", fontWeight: "500" }],
+            "display": ["24px", { lineHeight: "32px", letterSpacing: "-0.02em", fontWeight: "700" }],
+            "body-sm": ["13px", { lineHeight: "18px", fontWeight: "400" }],
+            "metric-val": ["28px", { lineHeight: "32px", letterSpacing: "-0.03em", fontWeight: "700" }],
+            "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }],
+            "headline-lg": ["20px", { lineHeight: "28px", letterSpacing: "-0.01em", fontWeight: "700" }],
+            "body-lg": ["15px", { lineHeight: "22px", fontWeight: "400" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 18px;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="h-full flex overflow-hidden text-on-background antialiased font-body-md bg-background">
+<!-- BEGIN: Institutional Dark Sidebar -->
+<aside class="w-[260px] bg-[#181A1F] text-slate-300 flex flex-col shrink-0 select-none z-30 justify-between border-r border-slate-800">
+<div>
+<!-- Institutional Logo Area (White Clean Container) -->
+<div class="p-3.5 border-b border-slate-800/80">
+<div class="bg-surface-container-lowest rounded-lg p-2.5 flex items-center gap-2.5 shadow-sm border border-slate-200">
+<div class="w-8 h-8 rounded bg-primary-container flex items-center justify-center text-on-primary shrink-0 shadow-sm">
+<svg class="w-5 h-5 fill-current" viewbox="0 0 24 24">
+<path d="M12 3L1 9l11 6 9-4.91V17h2V9M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"></path>
+</svg>
+</div>
+<div class="leading-none overflow-hidden">
+<div class="text-on-background font-headline-sm text-label-md flex items-center gap-1 tracking-tight">
+              BRUSBEN <span class="text-[9px] px-1 py-0.5 rounded bg-slate-100 text-secondary font-bold">E.I.R.L.</span>
+</div>
+<div class="text-[8px] text-primary-container font-title-eyebrow tracking-wider mt-0.5">CAPACITARSE ES SUPERARSE</div>
+</div>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav aria-label="Menú principal de navegación" class="p-3 space-y-1">
+<!-- Inicio -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-[#23262d] font-label-md text-label-sm transition-all group" href="#">
+<span class="material-symbols-outlined text-slate-400 group-hover:text-white">dashboard</span>
+<span>Inicio</span>
+</a>
+<!-- CRM Comercial -->
+<a class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-[#23262d] font-label-md text-label-sm transition-all group" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-slate-400 group-hover:text-white">filter_alt</span>
+<span>CRM Comercial</span>
+</div>
+<span class="bg-primary-container text-on-primary text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center">12</span>
+</a>
+<!-- Personas y estudiantes -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-[#23262d] font-label-md text-label-sm transition-all group" href="#">
+<span class="material-symbols-outlined text-slate-400 group-hover:text-white">group</span>
+<span>Personas y estudiantes</span>
+</a>
+<!-- Oferta académica -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-[#23262d] font-label-md text-label-sm transition-all group" href="#">
+<span class="material-symbols-outlined text-slate-400 group-hover:text-white">school</span>
+<span>Oferta académica</span>
+</a>
+<!-- Matrículas (ACTIVO) -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary-container text-on-primary font-headline-sm text-label-sm shadow-sm transition-all" href="#">
+<span class="material-symbols-outlined text-on-primary" style="font-variation-settings: 'FILL' 1;">assignment</span>
+<span>Matrículas</span>
+</a>
+<!-- Usuarios y accesos -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-[#23262d] font-label-md text-label-sm transition-all group" href="#">
+<span class="material-symbols-outlined text-slate-400 group-hover:text-white">badge</span>
+<span>Usuarios y accesos</span>
+</a>
+<!-- Auditoría -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-[#23262d] font-label-md text-label-sm transition-all group" href="#">
+<span class="material-symbols-outlined text-slate-400 group-hover:text-white">fact_check</span>
+<span>Auditoría</span>
+</a>
+<!-- Mi perfil -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-[#23262d] font-label-md text-label-sm transition-all group" href="#">
+<span class="material-symbols-outlined text-slate-400 group-hover:text-white">account_circle</span>
+<span>Mi perfil</span>
+</a>
+</nav>
+</div>
+<!-- Sidebar Footer -->
+<div class="p-3.5 border-t border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
+<span>ERP Brusben v2.4.0</span>
+<span class="flex items-center gap-1.5 text-emerald-400 font-medium">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        Operativo
+      </span>
+</div>
+</aside>
+<!-- END: Sidebar -->
+<!-- BEGIN: Main Area -->
+<div class="flex-1 flex flex-col h-full overflow-hidden">
+<!-- Header Bar -->
+<header class="h-16 bg-surface-container-lowest border-b border-surface-container-highest px-6 flex items-center justify-between shrink-0 z-20">
+<!-- Breadcrumb & Global Search -->
+<div class="flex items-center gap-6">
+<nav class="flex items-center gap-2 font-label-sm text-label-sm text-secondary">
+<span class="text-secondary">ERP Brusben</span>
+<span class="text-surface-variant">/</span>
+<span class="text-on-background font-semibold">Matrículas y pagos</span>
+<span class="text-surface-variant">/</span>
+<span class="text-on-background font-bold">Gestión financiera y académica de matrículas</span>
+</nav>
+<!-- Search Bar -->
+<div class="relative w-80">
+<span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-secondary">
+<span class="material-symbols-outlined">search</span>
+</span>
+<input class="w-full font-body-sm text-label-sm pl-9 pr-14 py-1.5 bg-surface border border-secondary-fixed rounded-lg text-on-background placeholder:text-secondary focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary focus:bg-surface-container-lowest transition-all" placeholder="Buscar por DNI, N° matrícula o comprobante... (Ctrl+K)" type="text"/>
+<span class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none">
+<kbd class="text-[10px] text-secondary bg-surface-container-lowest border border-secondary-fixed px-1.5 py-0.5 rounded shadow-xs font-medium">Ctrl+K</kbd>
+</span>
+</div>
+</div>
+<!-- Header Right Controls -->
+<div class="flex items-center gap-4">
+<!-- Campus Selector -->
+<button class="flex items-center gap-2 font-label-md text-label-sm text-on-background bg-surface hover:bg-surface-container border border-secondary-fixed px-3 py-1.5 rounded-lg transition-colors" type="button">
+<span class="material-symbols-outlined text-secondary">location_on</span>
+<span>Sede Central • Lima</span>
+<span class="material-symbols-outlined text-secondary text-sm">expand_more</span>
+</button>
+<div class="h-6 w-px bg-surface-variant"></div>
+<!-- Notification Bell -->
+<button aria-label="Notificaciones" class="relative p-2 text-secondary hover:text-on-background rounded-lg hover:bg-surface-container transition-colors" type="button">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary-container"></span>
+</button>
+<!-- User Profile Pill -->
+<div class="flex items-center gap-3 pl-1">
+<div class="text-right leading-tight hidden md:block">
+<div class="font-headline-sm text-label-sm text-on-background">Loana Avila Neyra</div>
+<div class="text-[10px] text-emerald-700 font-bold flex items-center justify-end gap-1">
+              Superadministración
+              <span class="material-symbols-outlined text-xs" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<div class="w-8 h-8 rounded-full bg-secondary-container border border-secondary-fixed text-on-secondary-fixed font-bold font-label-xs flex items-center justify-center">
+            LA
+          </div>
+<button class="p-1.5 text-secondary hover:text-primary transition-colors" title="Cerrar sesión" type="button">
+<span class="material-symbols-outlined">logout</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Scrollable Workspace Body -->
+<main class="flex-1 overflow-y-auto p-6 space-y-5" data-purpose="workspace-content">
+<!-- ENCABEZADO DE PÁGINA Y ACCIONES RÁPIDAS -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div>
+<div class="font-title-eyebrow text-title-eyebrow text-primary tracking-wider uppercase mb-1">
+            GESTIÓN FINANCIERA Y CONTROL DE EXPEDIENTES
+          </div>
+<h1 class="font-display text-display text-on-background tracking-tight">
+            Matrículas y pagos
+          </h1>
+<p class="font-body-sm text-body-sm text-secondary mt-1">
+            Control centralizado de matrículas regulares, prematrículas, planes de cuotas, emisión de boletas/facturas y validación de pagos bancarios por periodo.
+          </p>
+</div>
+<div class="flex items-center gap-2.5 shrink-0">
+<button class="flex items-center gap-2 font-label-md text-label-sm text-on-background bg-surface-container-lowest hover:bg-surface border border-secondary-fixed px-3.5 py-2 rounded-lg shadow-xs transition-colors" type="button">
+<span class="material-symbols-outlined text-secondary">file_download</span>
+<span>Exportar reporte financiero</span>
+</button>
+<button class="flex items-center gap-2 font-label-md text-label-sm text-on-background bg-surface-container-lowest hover:bg-surface border border-secondary-fixed px-3.5 py-2 rounded-lg shadow-xs transition-colors" type="button">
+<span class="material-symbols-outlined text-tertiary">sync_alt</span>
+<span>Conciliar banco / BCP / Yape</span>
+</button>
+<button class="flex items-center gap-2 font-label-md text-label-sm text-on-primary bg-primary-container hover:bg-primary px-4 py-2 rounded-lg shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-primary/40" type="button">
+<span class="material-symbols-outlined">add</span>
+<span>+ Nueva matrícula</span>
+</button>
+</div>
+</div>
+<!-- 4 TARJETAS DE INDICADORES FINANCIEROS Y DE MATRÍCULA (KPIS) -->
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<!-- KPI 1 -->
+<div class="bg-surface-container-lowest p-4 rounded-lg border border-surface-container-highest border-l-4 border-l-primary-container shadow-xs">
+<div class="flex items-center justify-between text-secondary">
+<span class="font-label-sm text-label-sm uppercase tracking-wide">Total Recaudado Mes</span>
+<span class="material-symbols-outlined text-primary-container">payments</span>
+</div>
+<div class="font-metric-val text-metric-val text-on-background mt-2">S/ 148,650.00</div>
+<div class="flex items-center justify-between mt-2 pt-2 border-t border-surface-container-high text-[11px]">
+<span class="text-emerald-700 font-semibold flex items-center gap-0.5">
+<span class="material-symbols-outlined text-xs">trending_up</span> +14.2% vs mes anterior
+            </span>
+<span class="text-secondary font-medium">Meta: S/ 180,000</span>
+</div>
+</div>
+<!-- KPI 2 -->
+<div class="bg-surface-container-lowest p-4 rounded-lg border border-surface-container-highest border-l-4 border-l-tertiary shadow-xs">
+<div class="flex items-center justify-between text-secondary">
+<span class="font-label-sm text-label-sm uppercase tracking-wide">Matrículas Ciclo 2026-I</span>
+<span class="material-symbols-outlined text-tertiary">how_to_reg</span>
+</div>
+<div class="font-metric-val text-metric-val text-on-background mt-2">892 <span class="text-sm font-normal text-secondary">estudiantes</span></div>
+<div class="flex items-center justify-between mt-2 pt-2 border-t border-surface-container-high text-[11px]">
+<span class="text-on-background font-semibold">71.4% de 1,250 cupos</span>
+<span class="text-secondary">810 Regulares • 82 Becas</span>
+</div>
+</div>
+<!-- KPI 3 -->
+<div class="bg-surface-container-lowest p-4 rounded-lg border border-surface-container-highest border-l-4 border-l-amber-500 shadow-xs">
+<div class="flex items-center justify-between text-secondary">
+<span class="font-label-sm text-label-sm uppercase tracking-wide">Pagos por Validar / Vouchers</span>
+<span class="material-symbols-outlined text-amber-600">receipt_long</span>
+</div>
+<div class="font-metric-val text-metric-val text-amber-800 mt-2">38 <span class="text-sm font-normal text-secondary">vouchers pend.</span></div>
+<div class="flex items-center justify-between mt-2 pt-2 border-t border-surface-container-high text-[11px]">
+<span class="text-amber-800 font-semibold">S/ 14,280.00 por auditar</span>
+<span class="text-secondary font-medium">BCP / Yape</span>
+</div>
+</div>
+<!-- KPI 4 -->
+<div class="bg-surface-container-lowest p-4 rounded-lg border border-surface-container-highest border-l-4 border-l-error shadow-xs">
+<div class="flex items-center justify-between text-secondary">
+<span class="font-label-sm text-label-sm uppercase tracking-wide">Morosidad / Cuotas Vencidas</span>
+<span class="material-symbols-outlined text-error">warning</span>
+</div>
+<div class="font-metric-val text-metric-val text-error mt-2">S/ 24,190.00</div>
+<div class="flex items-center justify-between mt-2 pt-2 border-t border-surface-container-high text-[11px]">
+<span class="text-error font-semibold">54 cuotas vencidas</span>
+<span class="text-secondary">6.1% morosidad</span>
+</div>
+</div>
+</section>
+<!-- CINTA INFERIOR DE MÉTRICAS OPERATIVAS RÁPIDAS -->
+<div class="bg-surface-container-high/60 border border-surface-container-highest rounded-lg px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-label-sm font-label-sm text-on-surface-variant">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-emerald-600 text-sm">point_of_sale</span>
+<span>Cobranza del día: <strong class="text-on-background font-semibold">S/ 18,450.00</strong></span>
+</div>
+<div class="h-3.5 w-px bg-surface-variant hidden sm:block"></div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary text-sm">receipt</span>
+<span>Comprobantes hoy: <strong class="text-on-background font-semibold">42 Boletas / 8 Facturas</strong></span>
+</div>
+<div class="h-3.5 w-px bg-surface-variant hidden md:block"></div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-sm">task_alt</span>
+<span>Tasa de cumplimiento a fecha: <strong class="text-emerald-700 font-semibold">93.9%</strong></span>
+</div>
+<div class="h-3.5 w-px bg-surface-variant hidden lg:block"></div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-container text-sm">pie_chart</span>
+<span>Canales: <strong class="text-on-background font-medium">62% BCP • 24% Yape/Plin • 14% POS Sede</strong></span>
+</div>
+</div>
+<!-- BARRA DE HERRAMIENTAS Y PESTAÑAS DE ESTADO -->
+<div class="bg-surface-container-lowest rounded-lg border border-surface-container-highest p-3.5 space-y-3 shadow-xs">
+<!-- Pestañas de filtrado rápido -->
+<div class="flex items-center gap-1.5 border-b border-surface-container-high pb-2.5 overflow-x-auto text-label-sm font-label-md">
+<button class="px-3 py-1.5 rounded-md bg-primary-container text-on-primary font-semibold flex items-center gap-2 shadow-xs" type="button">
+<span>Todas las matrículas</span>
+<span class="bg-white/20 text-on-primary px-1.5 py-0.5 rounded text-[10px]">892</span>
+</button>
+<button class="px-3 py-1.5 rounded-md text-secondary hover:text-on-background hover:bg-surface-container font-medium flex items-center gap-2" type="button">
+<span>Al día / Sin deuda</span>
+<span class="bg-surface-container-highest text-secondary px-1.5 py-0.5 rounded text-[10px]">710</span>
+</button>
+<button class="px-3 py-1.5 rounded-md text-amber-800 bg-amber-50 hover:bg-amber-100 font-semibold flex items-center gap-2" type="button">
+<span>Vouchers por validar</span>
+<span class="bg-amber-500 text-white px-1.5 py-0.5 rounded-full text-[10px] font-bold">38</span>
+</button>
+<button class="px-3 py-1.5 rounded-md text-secondary hover:text-on-background hover:bg-surface-container font-medium flex items-center gap-2" type="button">
+<span>Cuotas por vencer</span>
+<span class="bg-surface-container-highest text-secondary px-1.5 py-0.5 rounded text-[10px]">90</span>
+</button>
+<button class="px-3 py-1.5 rounded-md text-error hover:bg-red-50 font-semibold flex items-center gap-2" type="button">
+<span>Morosos / Con deuda</span>
+<span class="bg-error-container text-on-error-container px-1.5 py-0.5 rounded text-[10px]">54</span>
+</button>
+</div>
+<!-- Filtros operativos -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-2.5 items-center">
+<div class="md:col-span-4 relative">
+<span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-secondary">
+<span class="material-symbols-outlined text-base">search</span>
+</span>
+<input class="w-full font-body-sm text-label-sm pl-9 pr-3 py-1.5 bg-surface border border-secondary-fixed rounded-lg text-on-background placeholder:text-secondary focus:ring-1 focus:ring-primary focus:border-primary" placeholder="Filtrar por estudiante, DNI, comprobante..." type="text"/>
+</div>
+<div class="md:col-span-2">
+<select class="w-full font-body-sm text-label-sm py-1.5 px-2.5 bg-surface border border-secondary-fixed rounded-lg text-on-background focus:ring-1 focus:ring-primary focus:border-primary">
+<option>Todas las sedes</option>
+<option>Sede Central Lima</option>
+<option>Cantera Lurín</option>
+<option>Sede Norte</option>
+</select>
+</div>
+<div class="md:col-span-2">
+<select class="w-full font-body-sm text-label-sm py-1.5 px-2.5 bg-surface border border-secondary-fixed rounded-lg text-on-background focus:ring-1 focus:ring-primary focus:border-primary">
+<option>Todos los programas</option>
+<option>Soldadura Estructural</option>
+<option>SOMA Seguridad Ind.</option>
+<option>Maquinaria Pesada</option>
+<option>Electricidad Industrial</option>
+</select>
+</div>
+<div class="md:col-span-2">
+<select class="w-full font-body-sm text-label-sm py-1.5 px-2.5 bg-surface border border-secondary-fixed rounded-lg text-on-background focus:ring-1 focus:ring-primary focus:border-primary">
+<option>Ciclo 2026-I</option>
+<option>Ciclo 2025-II</option>
+<option>Cursos Modulares</option>
+</select>
+</div>
+<div class="md:col-span-2 flex items-center gap-1.5 justify-end">
+<button class="p-1.5 text-secondary hover:text-on-background hover:bg-surface-container rounded border border-secondary-fixed" title="Refrescar lista" type="button">
+<span class="material-symbols-outlined">refresh</span>
+</button>
+<button class="flex items-center gap-1 font-label-md text-label-sm text-secondary hover:text-on-background px-2.5 py-1.5 rounded border border-secondary-fixed hover:bg-surface-container" type="button">
+<span class="material-symbols-outlined text-base">tune</span>
+<span>Filtros</span>
+</button>
+</div>
+</div>
+</div>
+<!-- CONTENIDO PRINCIPAL: DOS COLUMNAS (TABLA 70% + PANEL DE DETALLE 30%) -->
+<div class="grid grid-cols-1 xl:grid-cols-10 gap-5 items-start">
+<!-- TABLA DENSA (70% - 7 Columnas en xl) -->
+<div class="xl:col-span-7 bg-surface-container-lowest rounded-lg border border-surface-container-highest shadow-xs overflow-hidden flex flex-col justify-between">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface border-b border-surface-container-highest font-title-eyebrow text-title-eyebrow text-secondary uppercase tracking-wider text-[11px]">
+<th class="py-2.5 pl-4 pr-2 w-10 text-center">
+<input class="rounded border-secondary-fixed text-primary focus:ring-primary h-3.5 w-3.5" type="checkbox"/>
+</th>
+<th class="py-2.5 px-3">Estudiante / DNI</th>
+<th class="py-2.5 px-3">Matrícula / Código</th>
+<th class="py-2.5 px-3">Programa técnico &amp; Modalidad</th>
+<th class="py-2.5 px-3">Plan / Cuotas</th>
+<th class="py-2.5 px-3">Total / Saldo</th>
+<th class="py-2.5 px-3 text-center">Estado</th>
+<th class="py-2.5 pr-4 pl-2 text-right">Acciones</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-high font-body-sm text-label-sm">
+<!-- Fila 1 (SELECCIONADA / ACTIVA) -->
+<tr class="bg-red-50/40 hover:bg-red-50/70 transition-colors border-l-4 border-l-primary-container">
+<td class="py-2.5 pl-3 pr-2 text-center">
+<input checked="" class="rounded border-secondary-fixed text-primary focus:ring-primary h-3.5 w-3.5" type="checkbox"/>
+</td>
+<td class="py-2.5 px-3">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary font-bold text-xs flex items-center justify-center shrink-0">
+                        CM
+                      </div>
+<div>
+<div class="font-headline-sm text-label-sm text-on-background font-semibold">Carlos Mendoza Ruiz</div>
+<div class="text-[11px] text-secondary">DNI 47891234 • 984 512 882</div>
+</div>
+</div>
+</td>
+<td class="py-2.5 px-3">
+<div class="font-medium text-on-background">MAT-2026-0841</div>
+<div class="text-[10px] text-secondary">08 Ene 2026 • Regular</div>
+</td>
+<td class="py-2.5 px-3">
+<div class="text-on-background font-medium truncate max-w-[190px]">Soldadura Estructural y TIG</div>
+<span class="inline-block text-[10px] px-1.5 py-0.2 rounded bg-surface-container text-on-surface-variant font-medium">Presencial Noche</span>
+</td>
+<td class="py-2.5 px-3">
+<div class="flex items-center justify-between text-[11px] mb-1">
+<span class="font-semibold text-emerald-700">3/6 pagadas</span>
+<span class="text-secondary">50%</span>
+</div>
+<div class="w-24 bg-surface-container-highest rounded-full h-1.5 overflow-hidden">
+<div class="bg-emerald-600 h-1.5 rounded-full" style="width: 50%"></div>
+</div>
+</td>
+<td class="py-2.5 px-3">
+<div class="font-semibold text-on-background">S/ 2,430.00</div>
+<div class="text-[11px] text-secondary">Saldo: <span class="text-emerald-700 font-semibold">S/ 1,190.00</span></div>
+</td>
+<td class="py-2.5 px-3 text-center">
+<span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                      Al día
+                    </span>
+</td>
+<td class="py-2.5 pr-4 pl-2 text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="p-1 text-secondary hover:text-on-background hover:bg-surface-container rounded" title="Ver boleta" type="button">
+<span class="material-symbols-outlined text-base">receipt_long</span>
+</button>
+<button class="p-1 text-primary-container hover:bg-red-50 rounded" title="Registrar cuota" type="button">
+<span class="material-symbols-outlined text-base">add_card</span>
+</button>
+<button class="p-1 text-secondary hover:text-on-background rounded" title="Opciones" type="button">
+<span class="material-symbols-outlined text-base">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Fila 2 -->
+<tr class="hover:bg-surface transition-colors">
+<td class="py-2.5 pl-4 pr-2 text-center">
+<input class="rounded border-secondary-fixed text-primary focus:ring-primary h-3.5 w-3.5" type="checkbox"/>
+</td>
+<td class="py-2.5 px-3">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-full bg-surface-container-high text-on-surface-variant font-bold text-xs flex items-center justify-center shrink-0">
+                        YP
+                      </div>
+<div>
+<div class="font-headline-sm text-label-sm text-on-background font-semibold">Yuliana Paredes Quispe</div>
+<div class="text-[11px] text-secondary">DNI 72341902 • 991 302 441</div>
+</div>
+</div>
+</td>
+<td class="py-2.5 px-3">
+<div class="font-medium text-on-background">MAT-2026-0840</div>
+<div class="text-[10px] text-secondary">08 Ene 2026 • Regular</div>
+</td>
+<td class="py-2.5 px-3">
+<div class="text-on-background font-medium truncate max-w-[190px]">SOMA Supervisor de Seguridad</div>
+<span class="inline-block text-[10px] px-1.5 py-0.2 rounded bg-surface-container text-on-surface-variant font-medium">Semipresencial Sabatino</span>
+</td>
+<td class="py-2.5 px-3">
+<div class="flex items-center justify-between text-[11px] mb-1">
+<span class="font-semibold text-tertiary">1/4 pagadas</span>
+<span class="text-secondary">25%</span>
+</div>
+<div class="w-24 bg-surface-container-highest rounded-full h-1.5 overflow-hidden">
+<div class="bg-tertiary h-1.5 rounded-full" style="width: 25%"></div>
+</div>
+</td>
+<td class="py-2.5 px-3">
+<div class="font-semibold text-on-background">S/ 1,800.00</div>
+<div class="text-[11px] text-amber-700">Saldo: <span class="font-semibold">S/ 1,350.00</span></div>
+</td>
+<td class="py-2.5 px-3 text-center">
+<span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-200">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                      Validando voucher
+                    </span>
+</td>
+<td class="py-2.5 pr-4 pl-2 text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="p-1 text-secondary hover:text-on-background hover:bg-surface-container rounded" title="Ver boleta" type="button">
+<span class="material-symbols-outlined text-base">receipt_long</span>
+</button>
+<button class="p-1 text-primary hover:bg-red-50 rounded" title="Validar voucher" type="button">
+<span class="material-symbols-outlined text-base">verified</span>
+</button>
+<button class="p-1 text-secondary hover:text-on-background rounded" title="Opciones" type="button">
+<span class="material-symbols-outlined text-base">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Fila 3 -->
+<tr class="hover:bg-surface transition-colors">
+<td class="py-2.5 pl-4 pr-2 text-center">
+<input class="rounded border-secondary-fixed text-primary focus:ring-primary h-3.5 w-3.5" type="checkbox"/>
+</td>
+<td class="py-2.5 px-3">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container font-bold text-xs flex items-center justify-center shrink-0">
+                        JA
+                      </div>
+<div>
+<div class="font-headline-sm text-label-sm text-on-background font-semibold">Jorge Alanya Cárdenas</div>
+<div class="text-[11px] text-secondary">DNI 45102983 • 977 441 902</div>
+</div>
+</div>
+</td>
+<td class="py-2.5 px-3">
+<div class="font-medium text-on-background">MAT-2026-0839</div>
+<div class="text-[10px] text-secondary">07 Ene 2026 • Renovación</div>
+</td>
+<td class="py-2.5 px-3">
+<div class="text-on-background font-medium truncate max-w-[190px]">Operación de Retroexcavadora</div>
+<span class="inline-block text-[10px] px-1.5 py-0.2 rounded bg-surface-container text-on-surface-variant font-medium">Cantera Lurín Intensivo</span>
+</td>
+<td class="py-2.5 px-3">
+<div class="flex items-center justify-between text-[11px] mb-1">
+<span class="font-semibold text-error">2/5 pagadas</span>
+<span class="text-error font-medium">Cuota 3 vencida</span>
+</div>
+<div class="w-24 bg-surface-container-highest rounded-full h-1.5 overflow-hidden">
+<div class="bg-error h-1.5 rounded-full" style="width: 40%"></div>
+</div>
+</td>
+<td class="py-2.5 px-3">
+<div class="font-semibold text-on-background">S/ 3,100.00</div>
+<div class="text-[11px] text-error font-medium">Vencido: <strong>S/ 620.00</strong></div>
+</td>
+<td class="py-2.5 px-3 text-center">
+<span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold bg-red-50 text-error border border-red-200">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+                      Vencida (8d)
+                    </span>
+</td>
+<td class="py-2.5 pr-4 pl-2 text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="p-1 text-secondary hover:text-on-background hover:bg-surface-container rounded" title="Ver boleta" type="button">
+<span class="material-symbols-outlined text-base">receipt_long</span>
+</button>
+<button class="p-1 text-error hover:bg-red-50 rounded" title="Notificar mora WhatsApp" type="button">
+<span class="material-symbols-outlined text-base">send_to_mobile</span>
+</button>
+<button class="p-1 text-secondary hover:text-on-background rounded" title="Opciones" type="button">
+<span class="material-symbols-outlined text-base">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Fila 4 -->
+<tr class="hover:bg-surface transition-colors">
+<td class="py-2.5 pl-4 pr-2 text-center">
+<input class="rounded border-secondary-fixed text-primary focus:ring-primary h-3.5 w-3.5" type="checkbox"/>
+</td>
+<td class="py-2.5 px-3">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-full bg-surface-container-high text-on-surface-variant font-bold text-xs flex items-center justify-center shrink-0">
+                        MV
+                      </div>
+<div>
+<div class="font-headline-sm text-label-sm text-on-background font-semibold">María Vargas Huamán</div>
+<div class="text-[11px] text-secondary">DNI 70192831 • 966 210 553</div>
+</div>
+</div>
+</td>
+<td class="py-2.5 px-3">
+<div class="font-medium text-on-background">MAT-2026-0838</div>
+<div class="text-[10px] text-secondary">06 Ene 2026 • Regular</div>
+</td>
+<td class="py-2.5 px-3">
+<div class="text-on-background font-medium truncate max-w-[190px]">Electricidad y Tableros Industriales</div>
+<span class="inline-block text-[10px] px-1.5 py-0.2 rounded bg-surface-container text-on-surface-variant font-medium">Presencial Tarde</span>
+</td>
+<td class="py-2.5 px-3">
+<div class="flex items-center justify-between text-[11px] mb-1">
+<span class="font-semibold text-amber-700">1/3 pagadas</span>
+<span class="text-secondary">33%</span>
+</div>
+<div class="w-24 bg-surface-container-highest rounded-full h-1.5 overflow-hidden">
+<div class="bg-amber-600 h-1.5 rounded-full" style="width: 33%"></div>
+</div>
+</td>
+<td class="py-2.5 px-3">
+<div class="font-semibold text-on-background">S/ 1,950.00</div>
+<div class="text-[11px] text-secondary">Vence 18 Ene (S/ 650)</div>
+</td>
+<td class="py-2.5 px-3 text-center">
+<span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-200">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-600"></span>
+                      Por vencer (5d)
+                    </span>
+</td>
+<td class="py-2.5 pr-4 pl-2 text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="p-1 text-secondary hover:text-on-background hover:bg-surface-container rounded" title="Ver boleta" type="button">
+<span class="material-symbols-outlined text-base">receipt_long</span>
+</button>
+<button class="p-1 text-primary-container hover:bg-red-50 rounded" title="Registrar cuota" type="button">
+<span class="material-symbols-outlined text-base">add_card</span>
+</button>
+<button class="p-1 text-secondary hover:text-on-background rounded" title="Opciones" type="button">
+<span class="material-symbols-outlined text-base">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Fila 5 -->
+<tr class="hover:bg-surface transition-colors">
+<td class="py-2.5 pl-4 pr-2 text-center">
+<input class="rounded border-secondary-fixed text-primary focus:ring-primary h-3.5 w-3.5" type="checkbox"/>
+</td>
+<td class="py-2.5 px-3">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-full bg-surface-container-high text-on-surface-variant font-bold text-xs flex items-center justify-center shrink-0">
+                        LR
+                      </div>
+<div>
+<div class="font-headline-sm text-label-sm text-on-background font-semibold">Luis Ramos Morales</div>
+<div class="text-[11px] text-secondary">DNI 41209384 • 955 810 220</div>
+</div>
+</div>
+</td>
+<td class="py-2.5 px-3">
+<div class="font-medium text-on-background">MAT-2026-0837</div>
+<div class="text-[10px] text-secondary">06 Ene 2026 • Regular</div>
+</td>
+<td class="py-2.5 px-3">
+<div class="text-on-background font-medium truncate max-w-[190px]">Mantenimiento Preventivo Mina</div>
+<span class="inline-block text-[10px] px-1.5 py-0.2 rounded bg-surface-container text-on-surface-variant font-medium">Virtual Sincrónico</span>
+</td>
+<td class="py-2.5 px-3">
+<div class="flex items-center justify-between text-[11px] mb-1">
+<span class="font-semibold text-emerald-700">3/3 pagadas</span>
+<span class="text-emerald-700 font-bold">100%</span>
+</div>
+<div class="w-24 bg-surface-container-highest rounded-full h-1.5 overflow-hidden">
+<div class="bg-emerald-600 h-1.5 rounded-full" style="width: 100%"></div>
+</div>
+</td>
+<td class="py-2.5 px-3">
+<div class="font-semibold text-on-background">S/ 1,400.00</div>
+<div class="text-[11px] text-emerald-700 font-semibold">Cancelado total</div>
+</td>
+<td class="py-2.5 px-3 text-center">
+<span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                      Pagado 100%
+                    </span>
+</td>
+<td class="py-2.5 pr-4 pl-2 text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="p-1 text-secondary hover:text-on-background hover:bg-surface-container rounded" title="Ver boleta" type="button">
+<span class="material-symbols-outlined text-base">receipt_long</span>
+</button>
+<button class="p-1 text-secondary hover:text-on-background rounded" title="Constancia de no adeudo" type="button">
+<span class="material-symbols-outlined text-base">verified_user</span>
+</button>
+<button class="p-1 text-secondary hover:text-on-background rounded" title="Opciones" type="button">
+<span class="material-symbols-outlined text-base">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Paginación institucional en el pie de la tabla -->
+<div class="px-4 py-3 bg-surface border-t border-surface-container-highest flex items-center justify-between text-label-sm font-label-sm text-secondary">
+<div>
+              Mostrando <span class="font-semibold text-on-background">1 - 5</span> de <span class="font-semibold text-on-background">892</span> registros de matrícula
+            </div>
+<div class="flex items-center gap-2">
+<span class="text-xs">Filas por pág:</span>
+<select class="text-xs py-1 px-2 bg-surface-container-lowest border border-secondary-fixed rounded text-on-background">
+<option>5</option>
+<option>10</option>
+<option>25</option>
+<option>50</option>
+</select>
+<div class="flex items-center gap-1 ml-2">
+<button class="p-1 rounded border border-secondary-fixed text-secondary hover:text-on-background hover:bg-surface-container disabled:opacity-40" disabled="" type="button">
+<span class="material-symbols-outlined text-sm">chevron_left</span>
+</button>
+<button class="px-2.5 py-0.5 rounded bg-primary-container text-on-primary font-bold text-xs" type="button">1</button>
+<button class="px-2.5 py-0.5 rounded hover:bg-surface-container text-secondary text-xs" type="button">2</button>
+<button class="px-2.5 py-0.5 rounded hover:bg-surface-container text-secondary text-xs" type="button">3</button>
+<span class="text-secondary text-xs">...</span>
+<button class="px-2.5 py-0.5 rounded hover:bg-surface-container text-secondary text-xs" type="button">179</button>
+<button class="p-1 rounded border border-secondary-fixed text-secondary hover:text-on-background hover:bg-surface-container" type="button">
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- PANEL LATERAL DE DETALLE DE MATRÍCULA & CRONOGRAMA DE PAGOS (30% - 3 Columnas en xl) -->
+<div class="xl:col-span-3 bg-surface-container-lowest rounded-lg border border-surface-container-highest shadow-xs overflow-hidden space-y-4">
+<!-- Cabecera del Panel -->
+<div class="p-4 bg-surface border-b border-surface-container-highest">
+<div class="flex items-center justify-between">
+<span class="text-[10px] font-title-eyebrow tracking-wider text-secondary uppercase font-bold">EXPEDIENTE DE PAGO SELECCIONADO</span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                Al día
+              </span>
+</div>
+<div class="flex items-start gap-3 mt-3">
+<div class="w-11 h-11 rounded-lg bg-primary-container text-on-primary font-bold text-base flex items-center justify-center shrink-0 shadow-xs">
+                CM
+              </div>
+<div class="overflow-hidden">
+<h2 class="font-headline-sm text-headline-sm text-on-background leading-snug truncate">Carlos Mendoza Ruiz</h2>
+<div class="text-[12px] text-secondary">MAT-2026-0841 • DNI 47891234</div>
+<div class="text-[11px] text-primary-container font-semibold mt-0.5">Soldadura Estructural y TIG Avanzada</div>
+</div>
+</div>
+<div class="mt-3 flex items-center justify-between text-[11px] text-secondary bg-surface-container-lowest p-2 rounded border border-surface-container-highest">
+<span>Sede Central Lima</span>
+<span>•</span>
+<span>Ciclo 2026-I</span>
+<span>•</span>
+<span class="font-semibold text-on-background">Nocturno</span>
+</div>
+</div>
+<!-- Resumen Financiero -->
+<div class="px-4 space-y-2 font-body-sm text-label-sm">
+<div class="font-title-eyebrow text-[11px] text-secondary uppercase tracking-wider font-bold">DESGLOSE FINANCIERO</div>
+<div class="bg-surface p-3 rounded-lg border border-surface-container-highest space-y-1.5">
+<div class="flex justify-between text-secondary">
+<span>Costo del programa (6 cuotas):</span>
+<span class="text-on-background font-medium">S/ 2,280.00</span>
+</div>
+<div class="flex justify-between text-secondary">
+<span>Matrícula administrativa:</span>
+<span class="text-on-background font-medium">S/ 150.00</span>
+</div>
+<div class="flex justify-between text-emerald-700">
+<span>Descuento pronto pago:</span>
+<span class="font-semibold">- S/ 100.00</span>
+</div>
+<div class="border-t border-surface-container-high pt-1.5 flex justify-between font-bold text-on-background">
+<span>Total neto pactado:</span>
+<span class="text-primary-container">S/ 2,330.00</span>
+</div>
+<div class="flex justify-between text-xs pt-1 border-t border-dashed border-surface-container-highest">
+<span class="text-emerald-700 font-medium">Total pagado acumulado:</span>
+<span class="text-emerald-700 font-bold">S/ 1,140.00</span>
+</div>
+<div class="flex justify-between text-xs">
+<span class="text-secondary font-medium">Saldo restante a vencer:</span>
+<span class="text-on-background font-bold">S/ 1,190.00</span>
+</div>
+</div>
+</div>
+<!-- Cronograma Interactivo de Cuotas -->
+<div class="px-4 space-y-2.5">
+<div class="flex items-center justify-between">
+<span class="font-title-eyebrow text-[11px] text-secondary uppercase tracking-wider font-bold">CRONOGRAMA DE CUOTAS (6)</span>
+<span class="text-[11px] text-emerald-700 font-semibold">3 / 6 canceladas</span>
+</div>
+<div class="space-y-2 max-h-56 overflow-y-auto pr-1">
+<!-- Cuota 1 -->
+<div class="p-2 rounded border border-emerald-200 bg-emerald-50/50 flex items-center justify-between text-xs">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-emerald-600 text-base" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<div>
+<div class="font-semibold text-on-background">Cuota 01 • S/ 380.00</div>
+<div class="text-[10px] text-secondary">Boleta B001-002341 • BCP (15 Dic)</div>
+</div>
+</div>
+<span class="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded">Pagado</span>
+</div>
+<!-- Cuota 2 -->
+<div class="p-2 rounded border border-emerald-200 bg-emerald-50/50 flex items-center justify-between text-xs">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-emerald-600 text-base" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<div>
+<div class="font-semibold text-on-background">Cuota 02 • S/ 380.00</div>
+<div class="text-[10px] text-secondary">Boleta B001-002890 • Yape (15 Ene)</div>
+</div>
+</div>
+<span class="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded">Pagado</span>
+</div>
+<!-- Cuota 3 -->
+<div class="p-2 rounded border border-emerald-200 bg-emerald-50/50 flex items-center justify-between text-xs">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-emerald-600 text-base" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<div>
+<div class="font-semibold text-on-background">Cuota 03 • S/ 380.00</div>
+<div class="text-[10px] text-secondary">Boleta B001-003412 • POS (14 Feb)</div>
+</div>
+</div>
+<span class="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded">Pagado</span>
+</div>
+<!-- Cuota 4 (Pendiente actual) -->
+<div class="p-2 rounded border border-amber-300 bg-amber-50/40 flex items-center justify-between text-xs">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-amber-600 text-base">schedule</span>
+<div>
+<div class="font-semibold text-on-background">Cuota 04 • S/ 380.00</div>
+<div class="text-[10px] text-amber-800 font-medium">Vence: 15 Mar 2026</div>
+</div>
+</div>
+<button class="text-[10px] font-bold text-white bg-primary-container hover:bg-primary px-2 py-1 rounded transition-colors" type="button">
+                  Cobrar
+                </button>
+</div>
+<!-- Cuota 5 -->
+<div class="p-2 rounded border border-surface-container-highest bg-surface flex items-center justify-between text-xs opacity-75">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-base">lock</span>
+<div>
+<div class="font-medium text-secondary">Cuota 05 • S/ 380.00</div>
+<div class="text-[10px] text-secondary">Vence: 15 Abr 2026</div>
+</div>
+</div>
+<span class="text-[10px] text-secondary">Futura</span>
+</div>
+<!-- Cuota 6 -->
+<div class="p-2 rounded border border-surface-container-highest bg-surface flex items-center justify-between text-xs opacity-75">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-base">lock</span>
+<div>
+<div class="font-medium text-secondary">Cuota 06 • S/ 380.00</div>
+<div class="text-[10px] text-secondary">Vence: 15 May 2026</div>
+</div>
+</div>
+<span class="text-[10px] text-secondary">Futura</span>
+</div>
+</div>
+</div>
+<!-- Acciones del Panel -->
+<div class="p-4 bg-surface border-t border-surface-container-highest space-y-2">
+<button class="w-full flex items-center justify-center gap-2 font-label-md text-label-sm text-on-primary bg-primary-container hover:bg-primary py-2 rounded-lg font-medium shadow-xs transition-colors" type="button">
+<span class="material-symbols-outlined text-base">receipt</span>
+<span>Emitir nuevo comprobante / Cobrar</span>
+</button>
+<button class="w-full flex items-center justify-center gap-2 font-label-md text-label-sm text-on-background bg-surface-container-lowest hover:bg-surface border border-secondary-fixed py-2 rounded-lg font-medium shadow-2xs transition-colors" type="button">
+<span class="material-symbols-outlined text-base text-secondary">picture_as_pdf</span>
+<span>Descargar estado de cuenta PDF</span>
+</button>
+<div class="text-center pt-1">
+<a class="text-xs text-secondary hover:text-primary-container underline font-medium inline-flex items-center gap-1" href="#">
+<span class="material-symbols-outlined text-xs">contract</span> Ver contrato institucional de matrícula
+              </a>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- END: Main Area -->
+</body></html>

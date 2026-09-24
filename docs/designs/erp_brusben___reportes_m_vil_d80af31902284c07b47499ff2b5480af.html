@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>ERP Brusben - Reportes y Estadísticas</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Inter Font -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "tertiary-fixed": "#dbe1ff",
+            "outline-variant": "#e6bdb8",
+            "outline": "#916f6b",
+            "on-surface-variant": "#5c403c",
+            "on-tertiary-fixed-variant": "#003ea8",
+            "on-tertiary-fixed": "#00174b",
+            "surface-variant": "#e1e2e4",
+            "on-primary-fixed": "#410002",
+            "surface-container-lowest": "#ffffff",
+            "inverse-surface": "#2e3132",
+            "secondary": "#5d5e64",
+            "secondary-fixed-dim": "#c6c6cd",
+            "tertiary": "#0041b0",
+            "primary-container": "#c4121a",
+            "on-primary": "#ffffff",
+            "surface-container": "#edeef0",
+            "on-secondary-fixed-variant": "#45474c",
+            "on-secondary": "#ffffff",
+            "secondary-fixed": "#e2e2e9",
+            "inverse-primary": "#ffb4ab",
+            "surface-container-low": "#f3f4f6",
+            "surface-tint": "#be0a17",
+            "on-background": "#191c1e",
+            "primary-fixed": "#ffdad6",
+            "inverse-on-surface": "#f0f1f3",
+            "on-error": "#ffffff",
+            "on-tertiary": "#ffffff",
+            "surface-container-high": "#e7e8ea",
+            "on-secondary-fixed": "#1a1c21",
+            "on-secondary-container": "#616268",
+            "on-primary-container": "#ffd5d0",
+            "primary-fixed-dim": "#ffb4ab",
+            "on-error-container": "#93000a",
+            "on-primary-fixed-variant": "#93000c",
+            "secondary-container": "#dfdfe6",
+            "on-surface": "#191c1e",
+            "surface-bright": "#f8f9fb",
+            "background": "#f8f9fb",
+            "surface-container-highest": "#e1e2e4",
+            "surface-dim": "#d9dadc",
+            "primary": "#9a000d",
+            "error-container": "#ffdad6",
+            "tertiary-container": "#0c57df",
+            "surface": "#f8f9fb",
+            "on-tertiary-container": "#d6ddff",
+            "tertiary-fixed-dim": "#b4c5ff",
+            "error": "#ba1a1a"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-xs": "0.25rem",
+            "margin": "1.5rem",
+            "space-md": "0.75rem",
+            "space-xl": "1.5rem",
+            "space-sm": "0.5rem",
+            "space-lg": "1rem",
+            "gutter-dense": "0.75rem",
+            "gutter": "1rem"
+          },
+          "fontFamily": {
+            "label-md": ["Inter"],
+            "label-sm": ["Inter"],
+            "body-lg": ["Inter"],
+            "metric-val": ["Inter"],
+            "body-md": ["Inter"],
+            "label-xs": ["Inter"],
+            "body-sm": ["Inter"],
+            "headline-lg": ["Inter"],
+            "display": ["Inter"],
+            "title-eyebrow": ["Inter"],
+            "headline-sm": ["Inter"],
+            "headline-md": ["Inter"]
+          },
+          "fontSize": {
+            "label-md": ["13px", { "lineHeight": "16px", "fontWeight": "500" }],
+            "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+            "body-lg": ["15px", { "lineHeight": "22px", "fontWeight": "400" }],
+            "metric-val": ["28px", { "lineHeight": "32px", "letterSpacing": "-0.03em", "fontWeight": "700" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "label-xs": ["11px", { "lineHeight": "14px", "fontWeight": "600" }],
+            "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+            "headline-lg": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+            "display": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "title-eyebrow": ["11px", { "lineHeight": "14px", "letterSpacing": "0.08em", "fontWeight": "700" }],
+            "headline-sm": ["16px", { "lineHeight": "22px", "fontWeight": "600" }],
+            "headline-md": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    body {
+      font-family: 'Inter', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-[#181A1F] text-on-surface flex justify-center items-start min-h-screen p-0 sm:py-6 antialiased selection:bg-primary-container selection:text-white">
+<!-- Mobile Frame Screen Container (390 x 844 px ratio simulation) -->
+<div class="w-full max-w-[390px] min-h-screen sm:min-h-[844px] bg-background flex flex-col relative overflow-hidden shadow-2xl sm:rounded-[32px] sm:border-[8px] sm:border-[#252830]">
+<!-- Status Bar Safe Area Simulation (iOS Style) -->
+<div class="h-10 w-full bg-surface-container-lowest px-6 flex items-center justify-between text-on-surface shrink-0 z-40">
+<span class="font-label-sm text-label-sm font-semibold tracking-tight">9:41</span>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[15px]">signal_cellular_4_bar</span>
+<span class="material-symbols-outlined text-[15px]">wifi</span>
+<span class="material-symbols-outlined text-[17px]">battery_full</span>
+</div>
+</div>
+<!-- 1. Cabecera móvil institucional -->
+<header class="bg-surface-container-lowest border-b border-[#E2E4E9] sticky top-0 z-30 shrink-0">
+<!-- Top Bar: Hamburger, Brand Capsule, Bell & User Avatar -->
+<div class="px-4 py-2.5 flex items-center justify-between gap-2">
+<button aria-label="Abrir menú de navegación" class="w-9 h-9 rounded-lg flex items-center justify-center text-secondary hover:bg-surface-container-low transition-colors" type="button">
+<span class="material-symbols-outlined text-[22px]">menu</span>
+</button>
+<!-- Brand Capsule -->
+<div class="flex items-center gap-2 px-2.5 py-1 rounded-full border border-[#E2E4E9] bg-surface-container-low">
+<div class="w-6 h-6 rounded-full bg-primary-container flex items-center justify-center text-white shadow-xs">
+<span class="material-symbols-outlined text-[15px]" style="font-variation-settings: 'FILL' 1;">school</span>
+</div>
+<div class="flex flex-col leading-none text-left">
+<span class="font-title-eyebrow text-[9px] text-primary-container font-extrabold tracking-wider">BRUSBEN E.I.R.L.</span>
+<span class="text-[7.5px] font-semibold text-secondary tracking-tight">CAPACITARSE ES SUPERARSE</span>
+</div>
+</div>
+<div class="flex items-center gap-1.5">
+<button aria-label="Notificaciones" class="w-8 h-8 rounded-lg relative flex items-center justify-center text-secondary hover:bg-surface-container-low" type="button">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+<span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-primary-container ring-2 ring-white"></span>
+</button>
+<div class="w-8 h-8 rounded-full bg-[#181A1F] text-white flex items-center justify-center font-label-xs text-label-xs font-bold ring-2 ring-surface-variant" title="Loana Avila Neyra - Superadministración">
+            LA
+          </div>
+</div>
+</div>
+<!-- Institutional Eyebrow & Main Screen Title -->
+<div class="px-4 pb-3 pt-1 border-t border-[#F0F2F5]">
+<div class="flex items-center justify-between mb-1">
+<span class="font-title-eyebrow text-title-eyebrow text-secondary uppercase tracking-wider text-[10px]">
+            CENTRO DE INFORMACIÓN Y ANALÍTICA
+          </span>
+<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#ECFDF5] text-[#065F46] font-label-xs text-[10px] font-semibold border border-[#A7F3D0]">
+<span class="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse"></span>
+            Datos Oficiales
+          </span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface font-bold tracking-tight">
+          Reportes y Estadísticas
+        </h1>
+<p class="font-body-sm text-body-sm text-secondary line-clamp-1 mt-0.5">
+          Métricas consolidadas de captación, matrículas vigentes y recaudación.
+        </p>
+<!-- Main Mobile Action Buttons -->
+<div class="grid grid-cols-2 gap-2 mt-3">
+<button class="flex items-center justify-center gap-1.5 bg-primary-container hover:bg-[#9F0E15] active:scale-[0.98] text-white py-2 px-3 rounded-lg font-label-sm text-label-sm font-semibold shadow-sm transition-all" type="button">
+<span class="material-symbols-outlined text-[16px]">download</span>
+            Exportar reporte
+          </button>
+<button class="flex items-center justify-center gap-1.5 bg-surface-container-lowest border border-[#D1D5DB] hover:bg-surface-container-low text-on-surface py-2 px-3 rounded-lg font-label-sm text-label-sm font-semibold transition-all" type="button">
+<span class="material-symbols-outlined text-[16px] text-secondary">tune</span>
+            Filtrar período
+          </button>
+</div>
+</div>
+</header>
+<!-- Scrollable Main Work Surface Canvas -->
+<main class="flex-1 overflow-y-auto no-scrollbar pb-24 px-4 pt-3.5 space-y-4">
+<!-- 2. Barra de filtros compacta y selector de período -->
+<section class="bg-surface-container-lowest border border-[#E2E4E9] rounded-xl p-3 shadow-xs space-y-2.5">
+<div class="flex items-center justify-between pb-2 border-b border-[#F0F2F5]">
+<div class="flex items-center gap-1.5 text-on-surface">
+<span class="material-symbols-outlined text-[18px] text-primary-container">calendar_month</span>
+<span class="font-label-md text-label-md font-bold text-[#111827]">Ciclo 2026-I (Ene - Jun 2026)</span>
+</div>
+<button class="text-secondary hover:text-on-surface" type="button">
+<span class="material-symbols-outlined text-[18px]">expand_more</span>
+</button>
+</div>
+<!-- Filter Pills Horizontal Scroll -->
+<div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 text-[11px]">
+<button class="shrink-0 px-2.5 py-1 rounded-full bg-surface-container-high text-on-surface font-label-xs font-semibold flex items-center gap-1 border border-transparent">
+<span>Sedes: Todas (3)</span>
+<span class="material-symbols-outlined text-[12px]">expand_more</span>
+</button>
+<button class="shrink-0 px-2.5 py-1 rounded-full bg-surface-container-low text-secondary font-label-xs font-semibold flex items-center gap-1 border border-[#E2E4E9]">
+<span>Áreas: Todas</span>
+<span class="material-symbols-outlined text-[12px]">expand_more</span>
+</button>
+<button class="shrink-0 px-2.5 py-1 rounded-full bg-surface-container-low text-secondary font-label-xs font-semibold flex items-center gap-1 border border-[#E2E4E9]">
+<span>Modalidad</span>
+<span class="material-symbols-outlined text-[12px]">expand_more</span>
+</button>
+</div>
+<div class="flex items-center justify-between text-[11px] pt-1 text-secondary">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-secondary">sync</span>
+<span>Hoy 10:15 AM (En vivo)</span>
+</div>
+<span class="text-primary-container font-medium">Reajuste automático</span>
+</div>
+</section>
+<!-- 3. Tarjetas de KPIs principales (Grid 2x2 responsivo) -->
+<section class="grid grid-cols-2 gap-2.5">
+<!-- Tarjeta 1: Ingresos -->
+<div class="bg-surface-container-lowest border border-[#E2E4E9] border-l-4 border-l-primary-container rounded-lg p-2.5 shadow-xs flex flex-col justify-between">
+<div>
+<span class="font-title-eyebrow text-[10px] uppercase text-secondary font-bold tracking-tight block truncate">INGRESOS TOTALES</span>
+<div class="mt-1 flex items-baseline gap-1">
+<span class="font-headline-sm text-[16px] font-bold text-on-surface tracking-tight leading-tight">S/ 482.7k</span>
+</div>
+<div class="flex items-center gap-1 mt-0.5 text-[11px] font-semibold text-[#065F46]">
+<span class="material-symbols-outlined text-[13px]">arrow_upward</span>
+<span>+14.8%</span>
+</div>
+</div>
+<div class="mt-2.5 pt-2 border-t border-[#F0F2F5]">
+<div class="flex justify-between text-[10px] text-secondary font-medium mb-1">
+<span>Meta S/ 550k</span>
+<span class="font-bold text-on-surface">87.7%</span>
+</div>
+<div class="w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full rounded-full" style="width: 87.7%;"></div>
+</div>
+</div>
+</div>
+<!-- Tarjeta 2: Alumnos -->
+<div class="bg-surface-container-lowest border border-[#E2E4E9] border-l-4 border-l-tertiary rounded-lg p-2.5 shadow-xs flex flex-col justify-between">
+<div>
+<span class="font-title-eyebrow text-[10px] uppercase text-secondary font-bold tracking-tight block truncate">MATRICULADOS</span>
+<div class="mt-1 flex items-baseline gap-1">
+<span class="font-headline-sm text-[16px] font-bold text-on-surface tracking-tight leading-tight">892 Alumn.</span>
+</div>
+<div class="flex items-center gap-1 mt-0.5 text-[11px] font-semibold text-[#065F46]">
+<span class="material-symbols-outlined text-[13px]">arrow_upward</span>
+<span>+8.2%</span>
+</div>
+</div>
+<div class="mt-2.5 pt-2 border-t border-[#F0F2F5]">
+<div class="flex justify-between text-[10px] text-secondary font-medium mb-1">
+<span>Cap. 1,054</span>
+<span class="font-bold text-on-surface">84.6%</span>
+</div>
+<div class="w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
+<div class="bg-tertiary h-full rounded-full" style="width: 84.6%;"></div>
+</div>
+</div>
+</div>
+<!-- Tarjeta 3: Conversión CRM -->
+<div class="bg-surface-container-lowest border border-[#E2E4E9] border-l-4 border-l-[#10B981] rounded-lg p-2.5 shadow-xs flex flex-col justify-between">
+<div>
+<span class="font-title-eyebrow text-[10px] uppercase text-secondary font-bold tracking-tight block truncate">CONVERSIÓN CRM</span>
+<div class="mt-1 flex items-baseline gap-1">
+<span class="font-headline-sm text-[16px] font-bold text-on-surface tracking-tight leading-tight">28.4%</span>
+</div>
+<div class="text-[10.5px] text-secondary font-medium mt-0.5">
+              Cierre: <span class="font-semibold text-on-surface">6.2 d</span>
+</div>
+</div>
+<div class="mt-2.5 pt-2 border-t border-[#F0F2F5] flex items-center justify-between text-[10.5px]">
+<span class="text-secondary">Prospectos</span>
+<span class="font-bold text-on-surface bg-surface-container px-1.5 py-0.5 rounded">428 leads</span>
+</div>
+</div>
+<!-- Tarjeta 4: Morosidad -->
+<div class="bg-surface-container-lowest border border-[#E2E4E9] border-l-4 border-l-[#F59E0B] rounded-lg p-2.5 shadow-xs flex flex-col justify-between">
+<div>
+<span class="font-title-eyebrow text-[10px] uppercase text-secondary font-bold tracking-tight block truncate">ÍNDICE MOROSIDAD</span>
+<div class="mt-1 flex items-baseline gap-1">
+<span class="font-headline-sm text-[16px] font-bold text-on-surface tracking-tight leading-tight">4.8%</span>
+</div>
+<div class="flex items-center gap-1 mt-0.5 text-[11px] font-semibold text-[#065F46]">
+<span class="material-symbols-outlined text-[13px]">trending_down</span>
+<span>-1.5% bajo control</span>
+</div>
+</div>
+<div class="mt-2.5 pt-2 border-t border-[#F0F2F5] flex items-center justify-between text-[10.5px]">
+<span class="text-secondary">Observado</span>
+<span class="font-bold text-[#DC2626]">S/ 24,190</span>
+</div>
+</div>
+</section>
+<!-- 4. Pestañas de análisis (Tab Bar horizontal desplazable) -->
+<section class="border-b border-[#E2E4E9] -mx-4 px-4 bg-surface-container-lowest sticky top-[138px] z-20">
+<nav aria-label="Pestañas de Reportes" class="flex space-x-5 overflow-x-auto no-scrollbar font-label-sm text-label-sm">
+<button class="py-2.5 border-b-2 border-primary-container text-primary-container font-bold whitespace-nowrap flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">insights</span>
+            Resumen Ejecutivo
+          </button>
+<button class="py-2.5 border-b-2 border-transparent text-secondary hover:text-on-surface whitespace-nowrap">
+            Matrículas &amp; Alumnos
+          </button>
+<button class="py-2.5 border-b-2 border-transparent text-secondary hover:text-on-surface whitespace-nowrap">
+            Finanzas &amp; Cobranzas
+          </button>
+<button class="py-2.5 border-b-2 border-transparent text-secondary hover:text-on-surface whitespace-nowrap">
+            CRM Comercial
+          </button>
+</nav>
+</section>
+<!-- 5. Gráfico 1: Tendencia de Matrículas e Ingresos -->
+<section class="bg-surface-container-lowest border border-[#E2E4E9] rounded-xl p-3.5 shadow-xs">
+<div class="flex items-center justify-between mb-2">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-bold text-[14px]">
+              Tendencia Mensual
+            </h2>
+<p class="text-[11px] text-secondary">Matrículas e ingresos semestrales</p>
+</div>
+<div class="bg-surface-container-low p-0.5 rounded-lg flex border border-[#E2E4E9] text-[10.5px]">
+<button class="px-2 py-0.5 rounded bg-surface-container-lowest font-bold text-on-surface shadow-2xs">Mes</button>
+<button class="px-2 py-0.5 text-secondary">Quincenal</button>
+</div>
+</div>
+<!-- Indicador de pico -->
+<div class="my-2 p-2 bg-[#FEF2F2] border border-[#FECACA] rounded-lg flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary-container text-[16px]">workspace_premium</span>
+<span class="text-[11px] font-bold text-[#991B1B]">Pico Enero 2026:</span>
+</div>
+<span class="text-[12px] font-extrabold text-primary-container">S/ 148,650 (248 alumnos)</span>
+</div>
+<!-- Pure HTML/SVG Chart Layout -->
+<div class="h-44 w-full relative mt-3 pt-4">
+<!-- SVG Trend Line and Bars -->
+<svg class="w-full h-32 overflow-visible" fill="none" viewbox="0 0 320 120" xmlns="http://www.w3.org/2000/svg">
+<!-- Grid Lines -->
+<line stroke="#F3F4F6" stroke-dasharray="2 2" stroke-width="1" x1="0" x2="320" y1="10" y2="10"></line>
+<line stroke="#F3F4F6" stroke-dasharray="2 2" stroke-width="1" x1="0" x2="320" y1="50" y2="50"></line>
+<line stroke="#F3F4F6" stroke-dasharray="2 2" stroke-width="1" x1="0" x2="320" y1="90" y2="90"></line>
+<!-- Bar Chart: Recaudación (Rojo Brusben) -->
+<!-- Nov 25 -->
+<rect fill="#C4121A" fill-opacity="0.85" height="45" rx="2" width="16" x="18" y="55"></rect>
+<!-- Dic 25 -->
+<rect fill="#C4121A" fill-opacity="0.85" height="58" rx="2" width="16" x="71" y="42"></rect>
+<!-- Ene 26 (Pico) -->
+<rect fill="#C4121A" height="90" rx="2" width="16" x="124" y="10"></rect>
+<!-- Feb 26 -->
+<rect fill="#C4121A" fill-opacity="0.85" height="68" rx="2" width="16" x="177" y="32"></rect>
+<!-- Mar 26 -->
+<rect fill="#C4121A" fill-opacity="0.85" height="76" rx="2" width="16" x="230" y="24"></rect>
+<!-- Abr 26 (Proyectado) -->
+<rect fill="#E2E4E9" height="52" rx="2" width="16" x="283" y="48"></rect>
+<!-- Line: Alumnos Matriculados (Azul terciario) -->
+<path d="M26 68 L79 50 L132 18 L185 38 L238 29 L291 58" stroke="#0041B0" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+<!-- Nodes -->
+<circle cx="26" cy="68" fill="#FFFFFF" r="3" stroke="#0041B0" stroke-width="2"></circle>
+<circle cx="79" cy="50" fill="#FFFFFF" r="3" stroke="#0041B0" stroke-width="2"></circle>
+<circle cx="132" cy="18" fill="#0041B0" r="4" stroke="#FFFFFF" stroke-width="2"></circle>
+<circle cx="185" cy="38" fill="#FFFFFF" r="3" stroke="#0041B0" stroke-width="2"></circle>
+<circle cx="238" cy="29" fill="#FFFFFF" r="3" stroke="#0041B0" stroke-width="2"></circle>
+<circle cx="291" cy="58" fill="#9CA3AF" r="3" stroke="#FFFFFF" stroke-width="2"></circle>
+</svg>
+<!-- X-Axis Labels -->
+<div class="flex justify-between px-1 text-[10px] text-secondary font-semibold mt-1">
+<span>Nov</span>
+<span>Dic</span>
+<span class="text-primary-container font-bold">Ene 26</span>
+<span>Feb</span>
+<span>Mar</span>
+<span>Abr (P)</span>
+</div>
+</div>
+<!-- Legend -->
+<div class="flex items-center justify-center gap-5 pt-3 border-t border-[#F0F2F5] text-[11px]">
+<div class="flex items-center gap-1.5">
+<span class="w-3 h-3 rounded bg-primary-container"></span>
+<span class="text-on-surface font-medium">Recaudación (S/)</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-3.5 h-1 rounded bg-[#0041B0]"></span>
+<span class="text-on-surface font-medium">Nuevos Alumnos</span>
+</div>
+</div>
+</section>
+<!-- 5. Gráfico 2: Distribución por Área de Formación -->
+<section class="bg-surface-container-lowest border border-[#E2E4E9] rounded-xl p-3.5 shadow-xs space-y-3">
+<div class="flex items-center justify-between">
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-bold text-[14px]">
+            Distribución por Área de Formación
+          </h2>
+<span class="text-[11px] text-secondary font-medium">Ciclo 2026-I</span>
+</div>
+<!-- Category Item 1 -->
+<div class="p-2.5 rounded-lg bg-surface-container-low border border-[#E2E4E9] space-y-1.5">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="font-label-md text-label-md font-bold text-on-surface text-[12.5px]">Metalmecánica &amp; Soldadura</span>
+</div>
+<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9.5px] font-bold bg-[#FEF2F2] text-[#991B1B] border border-[#FECACA]">
+              Cupos Agotados
+            </span>
+</div>
+<div class="flex items-center justify-between text-[11.5px] text-secondary">
+<span class="font-bold text-on-surface">S/ 183,400 <span class="font-normal text-secondary">(38%)</span></span>
+<span>320 alumnos matriculados</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full rounded-full" style="width: 38%;"></div>
+</div>
+</div>
+<!-- Category Item 2 -->
+<div class="p-2.5 rounded-lg bg-surface-container-low border border-[#E2E4E9] space-y-1.5">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md font-bold text-on-surface text-[12.5px]">Maquinaria Pesada &amp; Minería</span>
+<span class="text-[10px] font-semibold text-[#0041B0] bg-[#DBE1FF] px-1.5 py-0.2 rounded">
+              92% simulador
+            </span>
+</div>
+<div class="flex items-center justify-between text-[11.5px] text-secondary">
+<span class="font-bold text-on-surface">S/ 149,650 <span class="font-normal text-secondary">(31%)</span></span>
+<span>245 alumnos matriculados</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-[#0041B0] h-full rounded-full" style="width: 31%;"></div>
+</div>
+</div>
+<!-- Category Item 3 -->
+<div class="p-2.5 rounded-lg bg-surface-container-low border border-[#E2E4E9] space-y-1.5">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md font-bold text-on-surface text-[12.5px]">Seguridad Industrial &amp; SOMA</span>
+<span class="text-[10px] text-secondary font-medium">182 alumnos</span>
+</div>
+<div class="flex items-center justify-between text-[11.5px] text-secondary">
+<span class="font-bold text-on-surface">S/ 91,700 <span class="font-normal text-secondary">(19%)</span></span>
+<span>Alta tasa certificación</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-[#4B5563] h-full rounded-full" style="width: 19%;"></div>
+</div>
+</div>
+<!-- Category Item 4 -->
+<div class="p-2.5 rounded-lg bg-surface-container-low border border-[#E2E4E9] space-y-1.5">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md font-bold text-on-surface text-[12.5px]">Electricidad &amp; Automatización</span>
+<span class="text-[10px] text-secondary font-medium">145 alumnos</span>
+</div>
+<div class="flex items-center justify-between text-[11.5px] text-secondary">
+<span class="font-bold text-on-surface">S/ 58,000 <span class="font-normal text-secondary">(12%)</span></span>
+<span>Nuevo laboratorio</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-[#9CA3AF] h-full rounded-full" style="width: 12%;"></div>
+</div>
+</div>
+</section>
+<!-- 6. Tabla Resumen Móvil: Rendimiento por Sede -->
+<section class="bg-surface-container-lowest border border-[#E2E4E9] rounded-xl p-3.5 shadow-xs space-y-3">
+<div class="flex items-center justify-between">
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-bold text-[14px]">
+            Rendimiento por Sede Operativa
+          </h2>
+<span class="material-symbols-outlined text-secondary text-[18px]">location_on</span>
+</div>
+<!-- Sede 1 -->
+<div class="p-2.5 rounded-lg border border-[#E2E4E9] flex items-center justify-between hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-lg bg-[#FEF2F2] text-primary-container flex items-center justify-center font-bold text-xs border border-[#FECACA]">
+              LC
+            </div>
+<div>
+<h3 class="font-label-md text-label-md font-bold text-on-surface">Sede Central Lima</h3>
+<p class="text-[11px] text-secondary">480 alumnos inscritos</p>
+</div>
+</div>
+<div class="text-right">
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold text-[13px] block">S/ 264,100</span>
+<span class="inline-flex items-center gap-0.5 text-[10px] font-bold text-[#065F46] bg-[#ECFDF5] px-1.5 py-0.5 rounded">
+<span class="material-symbols-outlined text-[10px]">check</span> 91% meta
+            </span>
+</div>
+</div>
+<!-- Sede 2 -->
+<div class="p-2.5 rounded-lg border border-[#E2E4E9] flex items-center justify-between hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-lg bg-surface-container text-secondary flex items-center justify-center font-bold text-xs border border-[#E2E4E9]">
+              NO
+            </div>
+<div>
+<h3 class="font-label-md text-label-md font-bold text-on-surface">Sede Cono Norte (Olivos)</h3>
+<p class="text-[11px] text-secondary">252 alumnos inscritos</p>
+</div>
+</div>
+<div class="text-right">
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold text-[13px] block">S/ 132,450</span>
+<span class="inline-flex items-center gap-0.5 text-[10px] font-bold text-[#065F46] bg-[#ECFDF5] px-1.5 py-0.5 rounded">
+<span class="material-symbols-outlined text-[10px]">check</span> 84% meta
+            </span>
+</div>
+</div>
+<!-- Sede 3 -->
+<div class="p-2.5 rounded-lg border border-[#E2E4E9] flex items-center justify-between hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-lg bg-surface-container text-secondary flex items-center justify-center font-bold text-xs border border-[#E2E4E9]">
+              SU
+            </div>
+<div>
+<h3 class="font-label-md text-label-md font-bold text-on-surface">Sede Sur (S.J. Miraflores)</h3>
+<p class="text-[11px] text-secondary">160 alumnos inscritos</p>
+</div>
+</div>
+<div class="text-right">
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold text-[13px] block">S/ 86,200</span>
+<span class="inline-flex items-center gap-0.5 text-[10px] font-bold text-[#92400E] bg-[#FFFBEB] px-1.5 py-0.5 rounded">
+              78% meta
+            </span>
+</div>
+</div>
+<!-- Quick Audit Footer Notice -->
+<div class="pt-1 flex items-center justify-between text-[10.5px] text-secondary">
+<span>Total consolidado: S/ 482,750</span>
+<a class="text-primary-container font-semibold hover:underline flex items-center" href="#">
+            Ver desglose auditoría
+            <span class="material-symbols-outlined text-[13px]">chevron_right</span>
+</a>
+</div>
+</section>
+</main>
+<!-- 7. Barra de navegación inferior móvil fija (Bottom Navigation Bar) -->
+<!-- Prohibiting top/bottom border line per design system; using elevated shadow and clean background -->
+<nav class="absolute bottom-0 left-0 right-0 h-16 bg-surface-container-lowest shadow-[0_-4px_16px_rgba(0,0,0,0.06)] px-2 flex items-center justify-around z-50">
+<!-- Inicio -->
+<a class="flex flex-col items-center justify-center flex-1 py-1 text-secondary hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span class="font-label-xs text-[10.5px] mt-0.5">Inicio</span>
+</a>
+<!-- CRM Comercial -->
+<a class="flex flex-col items-center justify-center flex-1 py-1 text-secondary hover:text-on-surface relative transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">contact_phone</span>
+<span class="absolute top-0.5 right-4 px-1 rounded-full bg-primary-container text-white text-[8px] font-bold leading-tight">12</span>
+<span class="font-label-xs text-[10.5px] mt-0.5">CRM</span>
+</a>
+<!-- Matrículas -->
+<a class="flex flex-col items-center justify-center flex-1 py-1 text-secondary hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">how_to_reg</span>
+<span class="font-label-xs text-[10.5px] mt-0.5">Matrículas</span>
+</a>
+<!-- Alumnos -->
+<a class="flex flex-col items-center justify-center flex-1 py-1 text-secondary hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">group</span>
+<span class="font-label-xs text-[10.5px] mt-0.5">Alumnos</span>
+</a>
+<!-- Reportes (Activo) -->
+<a class="flex flex-col items-center justify-center flex-1 py-1 text-primary-container font-bold relative" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">analytics</span>
+<span class="font-label-xs text-[10.5px] mt-0.5">Reportes</span>
+<!-- Indicador activo sutil -->
+<span class="w-1 h-1 rounded-full bg-primary-container absolute bottom-1"></span>
+</a>
+</nav>
+</div>
+</body></html>

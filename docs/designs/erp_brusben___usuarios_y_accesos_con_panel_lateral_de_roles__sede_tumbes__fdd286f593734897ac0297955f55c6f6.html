@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ERP Brusben - Usuarios y accesos Desktop (Gestión RBAC)</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-surface-variant": "#5c403c",
+            "error": "#ba1a1a",
+            "tertiary-fixed-dim": "#b4c5ff",
+            "on-tertiary-fixed": "#00174b",
+            "on-error-container": "#93000a",
+            "surface-container-lowest": "#ffffff",
+            "secondary-fixed": "#e2e2e9",
+            "secondary-fixed-dim": "#c6c6cd",
+            "on-tertiary-fixed-variant": "#003ea8",
+            "on-error": "#ffffff",
+            "inverse-primary": "#ffb4ab",
+            "on-primary-container": "#ffd5d0",
+            "error-container": "#ffdad6",
+            "on-surface": "#191c1e",
+            "primary-fixed-dim": "#ffb4ab",
+            "on-tertiary": "#ffffff",
+            "inverse-surface": "#2e3132",
+            "surface-variant": "#e1e2e4",
+            "surface-container-low": "#f3f4f6",
+            "on-secondary-fixed": "#1a1c21",
+            "on-secondary-container": "#616268",
+            "secondary-container": "#dfdfe6",
+            "secondary": "#5d5e64",
+            "outline": "#916f6b",
+            "tertiary-fixed": "#dbe1ff",
+            "surface-tint": "#be0a17",
+            "outline-variant": "#e6bdb8",
+            "surface-container-high": "#e7e8ea",
+            "on-primary-fixed-variant": "#93000c",
+            "background": "#f8f9fb",
+            "primary-container": "#c4121a",
+            "on-primary-fixed": "#410002",
+            "surface-dim": "#d9dadc",
+            "on-secondary-fixed-variant": "#45474c",
+            "on-secondary": "#ffffff",
+            "on-background": "#191c1e",
+            "surface-container": "#edeef0",
+            "tertiary": "#0041b0",
+            "primary-fixed": "#ffdad6",
+            "on-tertiary-container": "#d6ddff",
+            "on-primary": "#ffffff",
+            "surface-container-highest": "#e1e2e4",
+            "inverse-on-surface": "#f0f1f3",
+            "tertiary-container": "#0c57df",
+            "surface-bright": "#f8f9fb",
+            "primary": "#9a000d"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-xl": "1.5rem",
+            "margin": "1.5rem",
+            "space-xs": "0.25rem",
+            "space-md": "0.75rem",
+            "space-sm": "0.5rem",
+            "space-lg": "1rem",
+            "gutter": "1rem",
+            "gutter-dense": "0.75rem"
+          },
+          "fontFamily": {
+            "body-lg": ["Inter", "sans-serif"],
+            "headline-md": ["Inter", "sans-serif"],
+            "display": ["Inter", "sans-serif"],
+            "body-md": ["Inter", "sans-serif"],
+            "headline-sm": ["Inter", "sans-serif"],
+            "metric-val": ["Inter", "sans-serif"],
+            "headline-lg": ["Inter", "sans-serif"],
+            "label-sm": ["Inter", "sans-serif"],
+            "body-sm": ["Inter", "sans-serif"],
+            "label-xs": ["Inter", "sans-serif"],
+            "label-md": ["Inter", "sans-serif"],
+            "title-eyebrow": ["Inter", "sans-serif"]
+          },
+          "fontSize": {
+            "body-lg": ["15px", { "lineHeight": "22px", "fontWeight": "400" }],
+            "headline-md": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "display": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "headline-sm": ["16px", { "lineHeight": "22px", "fontWeight": "600" }],
+            "metric-val": ["28px", { "lineHeight": "32px", "letterSpacing": "-0.03em", "fontWeight": "700" }],
+            "headline-lg": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+            "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+            "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+            "label-xs": ["11px", { "lineHeight": "14px", "fontWeight": "600" }],
+            "label-md": ["13px", { "lineHeight": "16px", "fontWeight": "500" }],
+            "title-eyebrow": ["11px", { "lineHeight": "14px", "letterSpacing": "0.08em", "fontWeight": "700" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      vertical-align: middle;
+      display: inline-block;
+      line-height: 1;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #c6c6cd;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #9ca3af;
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface h-full flex overflow-hidden font-body-md text-body-md antialiased select-none relative">
+<!-- 1. MENÚ LATERAL IZQUIERDO OSCURO (#181A1F) CON LOS 9 MÓDULOS OFICIALES -->
+<aside class="w-[260px] min-w-[260px] bg-[#181A1F] text-slate-300 flex flex-col justify-between border-r border-slate-800 z-30 select-none">
+<div class="flex flex-col">
+<!-- Header del Sidebar con Logotipo Institucional Brusben E.I.R.L. -->
+<div class="h-16 px-4 flex items-center justify-between border-b border-slate-800">
+<div class="flex items-center gap-2.5">
+<div class="bg-white px-2 py-1 rounded flex items-center justify-center shadow-sm">
+<div class="flex items-center gap-1">
+<span class="font-headline-md text-primary-container font-extrabold tracking-tighter">B</span>
+<div class="flex flex-col leading-none">
+<span class="font-headline-sm text-primary-container font-black tracking-tight text-[11px]">BRUSBEN</span>
+<span class="text-[7px] text-slate-500 font-semibold tracking-wider">E.I.R.L.</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col">
+<span class="text-[9px] uppercase font-semibold text-slate-400 tracking-wider">CAPACITARSE ES</span>
+<span class="text-[9px] uppercase font-bold text-red-400 tracking-widest">SUPERARSE</span>
+</div>
+</div>
+<button class="text-slate-400 hover:text-white p-1 rounded transition-colors" title="Colapsar menú">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+</button>
+</div>
+<!-- Menú de Navegación Vertical Oficial (9 módulos exactos) -->
+<nav class="p-3 space-y-1">
+<!-- 1. Inicio -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded text-slate-400 hover:bg-slate-800 hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-white">home</span>
+<span class="font-label-md text-label-md">Inicio</span>
+</a>
+<!-- 2. CRM Comercial (badge 12) -->
+<a class="flex items-center justify-between px-3 py-2.5 rounded text-slate-400 hover:bg-slate-800 hover:text-white transition-colors group" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-white">contact_mail</span>
+<span class="font-label-md text-label-md">CRM Comercial</span>
+</div>
+<span class="bg-primary-container text-white text-[11px] font-bold px-1.5 py-0.2 rounded-full">12</span>
+</a>
+<!-- 3. Personas y estudiantes -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded text-slate-400 hover:bg-slate-800 hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-white">group</span>
+<span class="font-label-md text-label-md">Personas y estudiantes</span>
+</a>
+<!-- 4. Oferta académica -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded text-slate-400 hover:bg-slate-800 hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-white">menu_book</span>
+<span class="font-label-md text-label-md">Oferta académica</span>
+</a>
+<!-- 5. Matrículas y pagos -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded text-slate-400 hover:bg-slate-800 hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-white">payments</span>
+<span class="font-label-md text-label-md">Matrículas y pagos</span>
+</a>
+<!-- 6. Reportes -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded text-slate-400 hover:bg-slate-800 hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-white">analytics</span>
+<span class="font-label-md text-label-md">Reportes</span>
+</a>
+<!-- 7. Usuarios y accesos (Activo con fondo #C4121A) -->
+<a class="flex items-center justify-between px-3 py-2.5 rounded bg-primary-container text-white font-medium shadow-sm" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px] text-white">admin_panel_settings</span>
+<span class="font-label-md text-label-md font-semibold">Usuarios y accesos</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+</a>
+<!-- 8. Auditoría -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded text-slate-400 hover:bg-slate-800 hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-white">receipt_long</span>
+<span class="font-label-md text-label-md">Auditoría</span>
+</a>
+<!-- 9. Mi perfil -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded text-slate-400 hover:bg-slate-800 hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-white">account_circle</span>
+<span class="font-label-md text-label-md">Mi perfil</span>
+</a>
+</nav>
+</div>
+<!-- Footer Sidebar con versión dinámica -->
+<div class="p-4 border-t border-slate-800 bg-[#131518]">
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-label-xs text-label-xs font-semibold text-slate-400">ERP Brusben v{{APP_VERSION}}</span>
+<span class="text-[10px] text-slate-500">Compilación 2026.1</span>
+</div>
+<div class="flex items-center gap-1.5 bg-emerald-950/60 border border-emerald-800/60 px-2 py-0.5 rounded-full">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+<span class="text-[10px] font-medium text-emerald-400 whitespace-nowrap">Sistema en línea • Operativo</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- CONTENEDOR PRINCIPAL DERECHO -->
+<div class="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-background">
+<!-- 2. CABECERA SUPERIOR BLANCA (TOP NAV) -->
+<header class="h-16 bg-surface-container-lowest border-b border-[#E2E4E9] flex items-center justify-between px-6 z-20 shrink-0">
+<!-- Breadcrumb y Sede Central · Tumbes -->
+<div class="flex items-center gap-4">
+<nav class="flex items-center gap-2 text-slate-500 font-label-sm text-label-sm">
+<span class="hover:text-primary-container cursor-pointer transition-colors">ERP Brusben</span>
+<span class="text-slate-300">/</span>
+<span class="text-slate-700 font-medium">Usuarios y accesos</span>
+<span class="text-slate-300">/</span>
+<span class="text-slate-900 font-semibold bg-slate-100 px-2 py-0.5 rounded">Control de usuarios y permisos</span>
+</nav>
+<div class="h-4 w-px bg-slate-200"></div>
+<!-- Selector de Sede Oficial -->
+<div class="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded text-slate-700 font-label-xs text-label-xs font-medium cursor-pointer hover:bg-slate-100 transition-colors">
+<span class="material-symbols-outlined text-red-600 text-[16px]">location_on</span>
+<span class="font-semibold text-slate-800">Sede Central · Tumbes</span>
+<span class="material-symbols-outlined text-slate-400 text-[14px]">expand_more</span>
+</div>
+</div>
+<!-- Buscador predictivo global, notificaciones y perfil de usuario -->
+<div class="flex items-center gap-4">
+<!-- Buscador Global predictivo -->
+<div class="relative w-80">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">search</span>
+<input class="w-full bg-slate-50 border border-[#D1D5DB] rounded-lg pl-9 pr-3 py-1.5 font-body-sm text-body-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-all" placeholder="Buscar usuario, rol, DNI, correo... (Ctrl+K)" type="text"/>
+</div>
+<!-- Notificaciones -->
+<div class="relative">
+<button class="w-8 h-8 rounded-lg border border-slate-200 bg-white flex items-center justify-center text-slate-600 hover:bg-slate-50 relative transition-colors">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+<span class="absolute -top-1 -right-1 w-4 h-4 bg-primary-container text-white text-[10px] font-bold rounded-full flex items-center justify-center">3</span>
+</button>
+</div>
+<div class="h-6 w-px bg-slate-200"></div>
+<!-- Perfil Loana Avila Neyra -->
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-red-800 text-white font-bold text-[12px] flex items-center justify-center border-2 border-red-200 shadow-sm">
+            LA
+          </div>
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="font-label-md text-label-md font-semibold text-slate-900 leading-tight">Loana Avila Neyra</span>
+<span class="material-symbols-outlined text-emerald-600 text-[15px]" title="Cuenta Verificada">verified</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="font-label-xs text-label-xs text-primary-container font-semibold">Superadministración</span>
+</div>
+</div>
+<button class="ml-2 text-slate-400 hover:text-primary-container transition-colors p-1.5 rounded-lg hover:bg-slate-100" title="Cerrar sesión">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+</button>
+</div>
+</div>
+</header>
+<!-- ÁREA DE CONTENIDO PRINCIPAL CON VISTA DE FONDO -->
+<main class="flex-1 overflow-y-auto px-6 py-5 custom-scrollbar space-y-5 bg-background">
+<!-- 3. ENCABEZADO DE PÁGINA -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-surface-container-lowest p-5 rounded-xl border border-[#E2E4E9] shadow-[0_1px_3px_0_rgba(0,0,0,0.04)]">
+<div class="space-y-1">
+<div class="flex items-center gap-2.5">
+<span class="font-title-eyebrow text-title-eyebrow text-primary-container uppercase tracking-wider">SEGURIDAD INSTITUCIONAL Y CONTROL DE ACCESOS</span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              Directorio Activo Sincronizado
+            </span>
+</div>
+<h1 class="font-display text-display text-slate-900 tracking-tight">Usuarios y accesos</h1>
+<p class="font-body-sm text-body-sm text-slate-600 max-w-3xl">
+            Administración centralizada de cuentas de colaboradores, asignación de roles jerárquicos y control de privilegios por módulo en ERP Brusben.
+          </p>
+</div>
+<div class="flex items-center gap-2.5 shrink-0">
+<button class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white border border-[#D1D5DB] rounded-lg text-slate-700 font-label-md text-label-md hover:bg-slate-50 transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[18px] text-slate-500">download</span>
+            Exportar auditoría
+          </button>
+<button class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white border border-[#D1D5DB] rounded-lg text-slate-700 font-label-md text-label-md hover:bg-slate-50 transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[18px] text-slate-500">security</span>
+            Matriz de permisos
+          </button>
+<button class="inline-flex items-center gap-1.5 px-4 py-2 bg-primary-container rounded-lg text-white font-label-md text-label-md font-medium hover:bg-red-800 transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[18px]">person_add</span>
+            + Nuevo usuario
+          </button>
+</div>
+</div>
+<!-- 4. TARJETAS DE INDICADORES KPI -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+<!-- KPI 1: Total usuarios activos -->
+<div class="bg-surface-container-lowest rounded-xl border border-[#E2E4E9] p-4 shadow-[0_1px_3px_0_rgba(0,0,0,0.04)] border-l-4 border-l-primary-container flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-body-sm text-body-sm font-medium text-slate-500">Total usuarios activos</span>
+<span class="material-symbols-outlined text-slate-400 text-[20px]">badge</span>
+</div>
+<div class="my-2 flex items-baseline gap-2">
+<span class="font-metric-val text-metric-val text-slate-900 font-bold">48</span>
+<span class="text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded text-[11px] font-semibold flex items-center">
+<span class="material-symbols-outlined text-[13px]">arrow_upward</span> +4 este mes
+            </span>
+</div>
+<span class="font-label-xs text-label-xs text-slate-500">Colaboradores con cuenta activa</span>
+</div>
+<!-- KPI 2: Superadministradores -->
+<div class="bg-surface-container-lowest rounded-xl border border-[#E2E4E9] p-4 shadow-[0_1px_3px_0_rgba(0,0,0,0.04)] border-l-4 border-l-purple-700 flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-body-sm text-body-sm font-medium text-slate-500">Superadministradores</span>
+<span class="px-1.5 py-0.5 bg-red-100 text-red-800 text-[10px] font-bold rounded">Alta Seguridad</span>
+</div>
+<div class="my-2 flex items-baseline gap-2">
+<span class="font-metric-val text-metric-val text-slate-900 font-bold">3</span>
+<span class="text-purple-700 text-[11px] font-medium">Control Absoluto</span>
+</div>
+<span class="font-label-xs text-label-xs text-slate-500">Acceso total y configuración de sistema</span>
+</div>
+<!-- KPI 3: Personal operativo y docente -->
+<div class="bg-surface-container-lowest rounded-xl border border-[#E2E4E9] p-4 shadow-[0_1px_3px_0_rgba(0,0,0,0.04)] border-l-4 border-l-emerald-600 flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-body-sm text-body-sm font-medium text-slate-500">Personal operativo y docente</span>
+<span class="material-symbols-outlined text-slate-400 text-[20px]">groups</span>
+</div>
+<div class="my-2 flex items-baseline gap-2">
+<span class="font-metric-val text-metric-val text-slate-900 font-bold">39</span>
+<span class="text-slate-500 text-[11px] font-medium">Sedes activas</span>
+</div>
+<span class="font-label-xs text-label-xs text-slate-500">24 Docentes • 15 Administrativos y Asesores</span>
+</div>
+<!-- KPI 4: Cuentas bloqueadas / Inactivas -->
+<div class="bg-surface-container-lowest rounded-xl border border-[#E2E4E9] p-4 shadow-[0_1px_3px_0_rgba(0,0,0,0.04)] border-l-4 border-l-amber-500 flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-body-sm text-body-sm font-medium text-slate-500">Cuentas bloqueadas / Inactivas</span>
+<span class="px-1.5 py-0.5 bg-amber-100 text-amber-800 text-[10px] font-bold rounded">Atención</span>
+</div>
+<div class="my-2 flex items-baseline gap-2">
+<span class="font-metric-val text-metric-val text-amber-700 font-bold">6</span>
+<span class="text-amber-700 text-[11px] font-medium">Revisión requerida</span>
+</div>
+<span class="font-label-xs text-label-xs text-slate-500">2 por intentos fallidos • 4 por baja laboral</span>
+</div>
+</div>
+<!-- Cinta de métricas y auditoría en tiempo real -->
+<div class="bg-slate-100 border border-[#E2E4E9] rounded-lg px-4 py-2 flex flex-wrap items-center justify-between text-[12px] text-slate-600 font-medium">
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-slate-500 text-[16px]">sensors</span>
+<span>Sesiones activas hoy: <strong class="text-slate-900">32</strong></span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-emerald-600 text-[16px]">verified_user</span>
+<span>Autenticación 2FA activa: <strong class="text-slate-900">87.5%</strong></span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-slate-500 text-[16px]">update</span>
+<span>Última auditoría de seguridad: <strong class="text-slate-900">Hoy 08:30 AM</strong></span>
+</div>
+</div>
+<div class="flex items-center gap-1.5 text-primary-container font-semibold">
+<span class="material-symbols-outlined text-[16px]">shield</span>
+<span>Roles configurados: 6 niveles institucionales</span>
+</div>
+</div>
+<!-- 5. TABLA DE USUARIOS INSTITUCIONALES (Con Ana María Torres resaltada) -->
+<div class="bg-surface-container-lowest rounded-xl border border-[#E2E4E9] overflow-hidden shadow-[0_1px_3px_0_rgba(0,0,0,0.04)]">
+<div class="p-3 border-b border-[#E2E4E9] flex items-center justify-between bg-slate-50">
+<div class="flex items-center gap-2">
+<span class="font-label-md font-semibold text-slate-800">Listado de usuarios autorizados</span>
+<span class="bg-slate-200 text-slate-700 text-[11px] px-2 py-0.5 rounded-full font-bold">Sede Central · Tumbes</span>
+</div>
+<div class="text-[12px] text-slate-500">
+            Editando privilegios de <span class="font-bold text-primary-container">Ana María Torres</span>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-slate-50 border-b border-[#E2E4E9] text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+<th class="w-10 px-3 py-3 text-center">
+<input class="rounded border-slate-300 text-primary-container focus:ring-primary-container" type="checkbox"/>
+</th>
+<th class="px-3 py-3">USUARIO / DNI</th>
+<th class="px-3 py-3">ROL Y PRIVILEGIOS</th>
+<th class="px-3 py-3">SEDE Y ÁREA</th>
+<th class="px-3 py-3">ÚLTIMO ACCESO Y DISPOSITIVO</th>
+<th class="px-3 py-3">SEGURIDAD 2FA</th>
+<th class="px-3 py-3">ESTADO</th>
+<th class="px-3 py-3 text-right">ACCIONES</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-200 text-body-sm font-body-sm text-slate-700">
+<!-- Fila 1: Loana Avila Neyra -->
+<tr class="hover:bg-slate-50/80 transition-colors">
+<td class="px-3 py-2.5 text-center">
+<input class="rounded border-slate-300 text-primary-container focus:ring-primary-container" type="checkbox"/>
+</td>
+<td class="px-3 py-2.5">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-full bg-red-800 text-white font-bold text-[12px] flex items-center justify-center shrink-0 border border-red-300">
+                      LA
+                    </div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="font-label-md text-label-md font-semibold text-slate-900">Loana Avila Neyra</span>
+<span class="w-2 h-2 rounded-full bg-emerald-500" title="Sesión activa ahora"></span>
+</div>
+<div class="flex items-center gap-2 text-[11px] text-slate-500 font-medium">
+<span>DNI: 47891234</span>
+<span>•</span>
+<span class="text-slate-600">l.avila@brusben.edu.pe</span>
+</div>
+</div>
+</div>
+</td>
+<td class="px-3 py-2.5">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-red-100 text-primary-container text-[11px] font-bold border border-red-200 w-fit">
+<span class="material-symbols-outlined text-[13px]">shield</span>
+                    SUPERADMINISTRACIÓN
+                  </span>
+</td>
+<td class="px-3 py-2.5">
+<div class="text-[12px] font-medium text-slate-800">Sede Central · Tumbes</div>
+<div class="text-[11px] text-slate-500">Superadministración TI</div>
+</td>
+<td class="px-3 py-2.5">
+<div class="text-[12px] font-medium text-emerald-700 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">desktop_windows</span>
+                    En línea
+                  </div>
+</td>
+<td class="px-3 py-2.5">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-semibold">
+<span class="material-symbols-outlined text-[12px]">check_circle</span> 2FA Activo
+                  </span>
+</td>
+<td class="px-3 py-2.5">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-semibold">
+                    Activo
+                  </span>
+</td>
+<td class="px-3 py-2.5 text-right">
+<span class="material-symbols-outlined text-slate-400">more_vert</span>
+</td>
+</tr>
+<!-- Fila 2: Carlos Benites Rivas -->
+<tr class="hover:bg-slate-50/80 transition-colors">
+<td class="px-3 py-2.5 text-center">
+<input class="rounded border-slate-300 text-primary-container focus:ring-primary-container" type="checkbox"/>
+</td>
+<td class="px-3 py-2.5">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-full bg-blue-900 text-white font-bold text-[12px] flex items-center justify-center shrink-0 border border-blue-200">
+                      CB
+                    </div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="font-label-md text-label-md font-semibold text-slate-900">Carlos Benites Rivas</span>
+</div>
+<div class="flex items-center gap-2 text-[11px] text-slate-500 font-medium">
+<span>DNI: 10893412</span>
+<span>•</span>
+<span class="text-slate-600">c.benites@brusben.edu.pe</span>
+</div>
+</div>
+</div>
+</td>
+<td class="px-3 py-2.5">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-800 text-[11px] font-bold border border-blue-200 w-fit">
+<span class="material-symbols-outlined text-[13px]">corporate_fare</span>
+                    DIRECCIÓN GENERAL
+                  </span>
+</td>
+<td class="px-3 py-2.5">
+<div class="text-[12px] font-medium text-slate-800">Sede Central · Tumbes</div>
+<div class="text-[11px] text-slate-500">Dirección Institucional</div>
+</td>
+<td class="px-3 py-2.5">
+<div class="text-[12px] text-slate-700">Hoy 08:45 AM</div>
+</td>
+<td class="px-3 py-2.5">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-semibold">
+<span class="material-symbols-outlined text-[12px]">check_circle</span> 2FA Activo
+                  </span>
+</td>
+<td class="px-3 py-2.5">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-semibold">
+                    Activo
+                  </span>
+</td>
+<td class="px-3 py-2.5 text-right">
+<span class="material-symbols-outlined text-slate-400">more_vert</span>
+</td>
+</tr>
+<!-- Fila 3: Ana María Torres (SELECCIONADA / EN EDICIÓN ACTIVA) -->
+<tr class="bg-red-50/60 border-l-4 border-l-primary-container">
+<td class="px-3 py-2.5 text-center">
+<input checked="" class="rounded border-primary-container text-primary-container focus:ring-primary-container" type="checkbox"/>
+</td>
+<td class="px-3 py-2.5">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-full bg-amber-600 text-white font-bold text-[12px] flex items-center justify-center shrink-0 border-2 border-primary-container shadow-sm">
+                      AT
+                    </div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="font-label-md text-label-md font-bold text-primary-container">Ana María Torres</span>
+<span class="px-1.5 py-0.2 bg-red-100 text-red-800 text-[10px] font-semibold rounded">En Edición</span>
+</div>
+<div class="flex items-center gap-2 text-[11px] text-slate-600 font-medium">
+<span>DNI: 71829304</span>
+<span>•</span>
+<span class="text-slate-700 font-semibold">a.torres@brusben.edu.pe</span>
+</div>
+</div>
+</div>
+</td>
+<td class="px-3 py-2.5">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 text-[11px] font-bold border border-amber-300 w-fit">
+<span class="material-symbols-outlined text-[13px]">support_agent</span>
+                    ASESOR COMERCIAL SENIOR
+                  </span>
+</td>
+<td class="px-3 py-2.5">
+<div class="text-[12px] font-medium text-slate-800">Sede Central · Tumbes</div>
+<div class="text-[11px] text-slate-500">CRM &amp; Admisiones</div>
+</td>
+<td class="px-3 py-2.5">
+<div class="text-[12px] text-slate-700">Hace 12 min</div>
+</td>
+<td class="px-3 py-2.5">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-semibold">
+<span class="material-symbols-outlined text-[12px]">check_circle</span> 2FA Activo
+                  </span>
+</td>
+<td class="px-3 py-2.5">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-semibold">
+                    Activo
+                  </span>
+</td>
+<td class="px-3 py-2.5 text-right">
+<span class="material-symbols-outlined text-primary-container font-bold">edit</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</main>
+</div>
+<!-- 6. PANEL LATERAL DESLIZANTE (DRAWER DERECHO ~500px) PARA GESTIÓN RBAC -->
+<!-- Backdrop semi-transparente que enmarca el foco contextual -->
+<div class="fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] z-40 transition-opacity flex justify-end">
+<!-- Contenedor del Drawer -->
+<div class="w-full max-w-[510px] bg-white h-full shadow-2xl flex flex-col border-l border-slate-300 z-50 animate-in slide-in-from-right duration-200 select-none">
+<!-- Encabezado del Drawer -->
+<div class="px-6 py-4 border-b border-[#E2E4E9] bg-slate-50 flex items-center justify-between shrink-0">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-red-50 border border-red-200 text-primary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[24px]">security</span>
+</div>
+<div>
+<h2 class="font-headline-sm text-headline-sm text-slate-900 font-bold leading-tight">Gestión de Acceso y Permisos</h2>
+<p class="font-label-xs text-label-xs text-slate-500">Expediente de seguridad institucional y matriz RBAC</p>
+</div>
+</div>
+<button class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition-colors" title="Cerrar panel">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<!-- Pestañas internas del panel -->
+<div class="flex border-b border-[#E2E4E9] bg-white px-6 shrink-0 text-[13px] font-semibold">
+<button class="py-3 px-3 text-primary-container border-b-2 border-primary-container flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[17px]">badge</span>
+          Cambiar Rol / RBAC
+        </button>
+<button class="py-3 px-3 text-slate-500 hover:text-slate-800 border-b-2 border-transparent hover:border-slate-300 flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[17px]">checklist</span>
+          Permisos Granulares (+)
+        </button>
+<button class="py-3 px-3 text-slate-500 hover:text-slate-800 border-b-2 border-transparent hover:border-slate-300 flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[17px]">lock_reset</span>
+          Bloqueo / Seguridad
+        </button>
+</div>
+<!-- Cuerpo deslizable del Drawer -->
+<div class="flex-1 overflow-y-auto p-6 space-y-5 custom-scrollbar">
+<!-- Ficha del usuario en edición -->
+<div class="bg-slate-50 rounded-xl border border-slate-200 p-4">
+<div class="flex items-center gap-3.5">
+<div class="w-12 h-12 rounded-full bg-amber-600 text-white font-bold text-body-lg flex items-center justify-center shrink-0 border-2 border-amber-200 shadow-sm">
+              AT
+            </div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between gap-2">
+<h3 class="font-headline-sm text-headline-sm text-slate-900 font-bold truncate">Ana María Torres</h3>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Activo
+                </span>
+</div>
+<div class="flex items-center gap-2 mt-0.5">
+<span class="text-[11px] font-semibold px-2 py-0.2 rounded bg-amber-100 text-amber-900">Asesor Comercial Senior</span>
+</div>
+</div>
+</div>
+<div class="mt-3.5 pt-3 border-t border-slate-200/80 grid grid-cols-2 gap-2 text-[12px] text-slate-600">
+<div>
+<span class="text-slate-400 block text-[10px] uppercase font-semibold">DNI Colaborador</span>
+<span class="font-medium text-slate-800">71829304</span>
+</div>
+<div>
+<span class="text-slate-400 block text-[10px] uppercase font-semibold">Correo Institucional</span>
+<span class="font-medium text-slate-800 truncate block">a.torres@brusben.edu.pe</span>
+</div>
+<div class="col-span-2 pt-1">
+<span class="text-slate-400 block text-[10px] uppercase font-semibold">Sede Asignada</span>
+<span class="font-medium text-slate-800 flex items-center gap-1">
+<span class="material-symbols-outlined text-red-600 text-[14px]">location_on</span>
+                Sede Central · Tumbes
+              </span>
+</div>
+</div>
+</div>
+<!-- Selector de Rol Jerárquico RBAC -->
+<div class="space-y-3">
+<div class="flex items-center justify-between">
+<label class="font-label-md text-label-md font-bold text-slate-800">
+              Seleccionar Rol Institucional RBAC
+            </label>
+<span class="text-[11px] text-primary-container font-semibold">4 perfiles jerárquicos</span>
+</div>
+<div class="space-y-2.5">
+<!-- 1. Asesor Comercial / CRM Ventas (Seleccionado actual) -->
+<label class="relative flex flex-col p-3.5 border-2 border-primary-container bg-red-50/20 rounded-xl cursor-pointer shadow-sm">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-lg bg-red-100 text-primary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[18px]">support_agent</span>
+</div>
+<div>
+<span class="font-label-md text-label-md font-bold text-slate-900 block leading-tight">Asesor Comercial / CRM Ventas</span>
+<span class="text-[10px] font-semibold text-primary-container">Nivel Operativo 2 • Asignado actualmente</span>
+</div>
+</div>
+<input checked="" class="mt-0.5 text-primary-container focus:ring-primary-container" name="rbac_role" type="radio"/>
+</div>
+<p class="text-[11px] text-slate-600 mt-2 leading-relaxed">
+                Captación institucional, asignación de llamadas a prospectos, matriculación preliminar y seguimiento comercial.
+              </p>
+</label>
+<!-- 2. Coordinación Académica & Docente -->
+<label class="relative flex flex-col p-3.5 border border-[#D1D5DB] hover:border-slate-400 bg-white rounded-xl cursor-pointer transition-all">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-lg bg-cyan-100 text-cyan-800 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[18px]">school</span>
+</div>
+<div>
+<span class="font-label-md text-label-md font-bold text-slate-900 block leading-tight">Coordinación Académica &amp; Docente</span>
+<span class="text-[10px] font-semibold text-slate-500">Nivel Técnico 3</span>
+</div>
+</div>
+<input class="mt-0.5 text-primary-container focus:ring-primary-container" name="rbac_role" type="radio"/>
+</div>
+<p class="text-[11px] text-slate-600 mt-2 leading-relaxed">
+                Programación de módulos lectivos, asignación de docentes, supervisión de notas y actas.
+              </p>
+</label>
+<!-- 3. Dirección General Institucional -->
+<label class="relative flex flex-col p-3.5 border border-[#D1D5DB] hover:border-slate-400 bg-white rounded-xl cursor-pointer transition-all">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-lg bg-blue-100 text-blue-800 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[18px]">corporate_fare</span>
+</div>
+<div>
+<span class="font-label-md text-label-md font-bold text-slate-900 block leading-tight">Dirección General Institucional</span>
+<span class="text-[10px] font-semibold text-slate-500">Nivel Directivo 4</span>
+</div>
+</div>
+<input class="mt-0.5 text-primary-container focus:ring-primary-container" name="rbac_role" type="radio"/>
+</div>
+<p class="text-[11px] text-slate-600 mt-2 leading-relaxed">
+                Auditoría directiva, balances de caja consolidados, convenios y resoluciones gerenciales.
+              </p>
+</label>
+<!-- 4. Superadministración (Nivel Crítico 5) -->
+<label class="relative flex flex-col p-3.5 border border-slate-200 hover:border-red-300 bg-slate-50/60 rounded-xl cursor-pointer transition-all">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-lg bg-purple-100 text-purple-900 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[18px]">shield</span>
+</div>
+<div>
+<span class="font-label-md text-label-md font-bold text-slate-900 block leading-tight">Superadministración</span>
+<span class="text-[10px] font-semibold text-red-700">Control Maestro - Nivel Crítico 5</span>
+</div>
+</div>
+<input class="mt-0.5 text-primary-container focus:ring-primary-container" name="rbac_role" type="radio"/>
+</div>
+<div class="mt-2 flex items-center gap-1.5 px-2 py-1 bg-red-100/70 text-red-900 rounded text-[11px] font-medium border border-red-200">
+<span class="material-symbols-outlined text-[14px] text-primary-container">lock</span>
+                Requiere autorización 2FA física obligatoria
+              </div>
+</label>
+</div>
+</div>
+<!-- Sección: Vista previa de privilegios resultantes en tiempo real -->
+<div class="space-y-2.5 pt-1">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md font-bold text-slate-800">
+              Vista previa de privilegios en tiempo real
+            </span>
+<span class="text-[10px] uppercase font-bold text-slate-400">Efectivo al guardar</span>
+</div>
+<div class="grid grid-cols-2 gap-2.5">
+<!-- Módulo 1: CRM y Prospectos -->
+<div class="p-2.5 bg-slate-50 rounded-lg border border-slate-200 flex flex-col justify-between gap-1.5">
+<div class="flex items-center gap-1.5 text-[12px] font-semibold text-slate-800">
+<span class="material-symbols-outlined text-slate-500 text-[16px]">contact_mail</span>
+                CRM y Prospectos
+              </div>
+<div>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[11px] font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Lectura / Escritura
+                </span>
+</div>
+</div>
+<!-- Módulo 2: Matrículas y Alumnos -->
+<div class="p-2.5 bg-slate-50 rounded-lg border border-slate-200 flex flex-col justify-between gap-1.5">
+<div class="flex items-center gap-1.5 text-[12px] font-semibold text-slate-800">
+<span class="material-symbols-outlined text-slate-500 text-[16px]">school</span>
+                Matrículas y Alumnos
+              </div>
+<div>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-100 text-blue-800 text-[11px] font-bold">
+                  Solo Creación
+                </span>
+</div>
+</div>
+<!-- Módulo 3: Tesorería / Pagos -->
+<div class="p-2.5 bg-slate-50 rounded-lg border border-slate-200 flex flex-col justify-between gap-1.5">
+<div class="flex items-center gap-1.5 text-[12px] font-semibold text-slate-800">
+<span class="material-symbols-outlined text-slate-500 text-[16px]">payments</span>
+                Tesorería / Pagos
+              </div>
+<div>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-200 text-slate-600 text-[11px] font-medium">
+                  Sin Acceso
+                </span>
+</div>
+</div>
+<!-- Módulo 4: Usuarios y Accesos -->
+<div class="p-2.5 bg-slate-50 rounded-lg border border-slate-200 flex flex-col justify-between gap-1.5">
+<div class="flex items-center gap-1.5 text-[12px] font-semibold text-slate-800">
+<span class="material-symbols-outlined text-slate-500 text-[16px]">admin_panel_settings</span>
+                Usuarios y Accesos
+              </div>
+<div>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-red-100 text-red-700 text-[11px] font-semibold">
+                  Bloqueado
+                </span>
+</div>
+</div>
+</div>
+</div>
+<!-- Auditor de guardia / Seguridad de transacción -->
+<div class="p-3 bg-slate-100 rounded-lg border border-slate-200 flex items-center justify-between text-[11px] text-slate-600">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-500 text-[16px]">verified</span>
+<span>Auditor de guardia: <strong class="text-slate-900">Loana Avila Neyra</strong></span>
+</div>
+<span class="font-mono text-slate-500 bg-white px-1.5 py-0.5 rounded border border-slate-300">ID: #8921-TUM</span>
+</div>
+</div>
+<!-- Pie fijo del Drawer con acciones -->
+<div class="px-6 py-4 bg-slate-50 border-t border-[#E2E4E9] flex items-center justify-between shrink-0">
+<button class="px-4 py-2 bg-white border border-[#D1D5DB] rounded-lg text-slate-700 font-label-md text-label-md hover:bg-slate-100 transition-colors">
+          Cancelar
+        </button>
+<button class="px-5 py-2.5 bg-primary-container rounded-lg text-white font-label-md text-label-md font-semibold hover:bg-red-800 transition-colors shadow-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">check</span>
+          Aplicar y Guardar Cambios
+        </button>
+</div>
+</div>
+</div>
+</body></html>

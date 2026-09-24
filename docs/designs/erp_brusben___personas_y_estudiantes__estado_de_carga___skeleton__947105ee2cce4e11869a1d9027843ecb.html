@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-background" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ERP Brusben - Personas y estudiantes (Cargando)</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "inverse-primary": "#ffb4ab",
+            "tertiary-fixed": "#dbe1ff",
+            "inverse-surface": "#2e3132",
+            "background": "#f8f9fb",
+            "surface": "#f8f9fb",
+            "on-surface": "#191c1e",
+            "error": "#ba1a1a",
+            "surface-dim": "#d9dadc",
+            "surface-container-low": "#f3f4f6",
+            "secondary-fixed": "#e2e2e9",
+            "primary": "#9a000d",
+            "on-background": "#191c1e",
+            "surface-container-highest": "#e1e2e4",
+            "secondary-fixed-dim": "#c6c6cd",
+            "on-tertiary": "#ffffff",
+            "secondary-container": "#dfdfe6",
+            "on-primary-container": "#ffd5d0",
+            "on-primary": "#ffffff",
+            "on-secondary": "#ffffff",
+            "outline-variant": "#e6bdb8",
+            "surface-container-high": "#e7e8ea",
+            "on-secondary-fixed": "#1a1c21",
+            "surface-bright": "#f8f9fb",
+            "surface-container": "#edeef0",
+            "on-tertiary-fixed-variant": "#003ea8",
+            "secondary": "#5d5e64",
+            "on-tertiary-container": "#d6ddff",
+            "on-secondary-container": "#616268",
+            "surface-tint": "#be0a17",
+            "on-tertiary-fixed": "#00174b",
+            "on-surface-variant": "#5c403c",
+            "primary-fixed": "#ffdad6",
+            "tertiary": "#0041b0",
+            "tertiary-fixed-dim": "#b4c5ff",
+            "on-primary-fixed-variant": "#93000c",
+            "error-container": "#ffdad6",
+            "tertiary-container": "#0c57df",
+            "primary-container": "#c4121a",
+            "inverse-on-surface": "#f0f1f3",
+            "primary-fixed-dim": "#ffb4ab",
+            "on-secondary-fixed-variant": "#45474c",
+            "surface-variant": "#e1e2e4",
+            "on-error-container": "#93000a",
+            "on-error": "#ffffff",
+            "on-primary-fixed": "#410002",
+            "outline": "#916f6b",
+            "surface-container-lowest": "#ffffff"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "gutter": "1rem",
+            "space-xs": "0.25rem",
+            "space-lg": "1rem",
+            "space-sm": "0.5rem",
+            "space-md": "0.75rem",
+            "margin": "1.5rem",
+            "gutter-dense": "0.75rem",
+            "space-xl": "1.5rem"
+          },
+          "fontFamily": {
+            "label-md": ["Inter"],
+            "headline-md": ["Inter"],
+            "headline-lg": ["Inter"],
+            "label-xs": ["Inter"],
+            "display": ["Inter"],
+            "body-sm": ["Inter"],
+            "headline-sm": ["Inter"],
+            "title-eyebrow": ["Inter"],
+            "label-sm": ["Inter"],
+            "body-md": ["Inter"],
+            "body-lg": ["Inter"],
+            "metric-val": ["Inter"]
+          },
+          "fontSize": {
+            "label-md": ["13px", { "lineHeight": "16px", "fontWeight": "500" }],
+            "headline-md": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "headline-lg": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+            "label-xs": ["11px", { "lineHeight": "14px", "fontWeight": "600" }],
+            "display": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+            "headline-sm": ["16px", { "lineHeight": "22px", "fontWeight": "600" }],
+            "title-eyebrow": ["11px", { "lineHeight": "14px", "letterSpacing": "0.08em", "fontWeight": "700" }],
+            "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "body-lg": ["15px", { "lineHeight": "22px", "fontWeight": "400" }],
+            "metric-val": ["28px", { "lineHeight": "32px", "letterSpacing": "-0.03em", "fontWeight": "700" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    /* Institutional Shimmer Wave Animation */
+    @keyframes brusben-shimmer {
+      0% {
+        transform: translateX(-100%);
+      }
+      100% {
+        transform: translateX(100%);
+      }
+    }
+    
+    .shimmer-mask {
+      position: relative;
+      overflow: hidden;
+      background-color: #E7E8EA;
+    }
+
+    .shimmer-mask::after {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      transform: translateX(-100%);
+      background-image: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0,
+        rgba(255, 255, 255, 0.45) 40%,
+        rgba(255, 255, 255, 0.7) 50%,
+        rgba(255, 255, 255, 0.45) 60%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      animation: brusben-shimmer 1.8s infinite cubic-bezier(0.4, 0, 0.2, 1);
+      content: '';
+    }
+
+    /* Indeterminate Progress Bar */
+    @keyframes indeterminate-bar {
+      0% {
+        left: -35%;
+        right: 100%;
+      }
+      60% {
+        left: 100%;
+        right: -90%;
+      }
+      100% {
+        left: 100%;
+        right: -90%;
+      }
+    }
+    @keyframes indeterminate-bar-short {
+      0% {
+        left: -200%;
+        right: 100%;
+      }
+      60% {
+        left: 107%;
+        right: -8%;
+      }
+      100% {
+        left: 107%;
+        right: -8%;
+      }
+    }
+    .indeterminate-progress {
+      position: relative;
+      height: 3px;
+      overflow: hidden;
+      background-color: #FED7D7;
+    }
+    .indeterminate-progress::before {
+      content: '';
+      position: absolute;
+      background-color: #C4121A;
+      top: 0;
+      bottom: 0;
+      will-change: left, right;
+      animation: indeterminate-bar 2.1s cubic-bezier(0.65, 0.815, 0.735, 0.395) infinite;
+    }
+    .indeterminate-progress::after {
+      content: '';
+      position: absolute;
+      background-color: #9A000D;
+      top: 0;
+      bottom: 0;
+      will-change: left, right;
+      animation: indeterminate-bar-short 2.1s cubic-bezier(0.165, 0.84, 0.44, 1) infinite;
+      animation-delay: 1.15s;
+    }
+  </style>
+</head>
+<body class="h-full flex overflow-hidden font-body-md text-on-surface bg-background antialiased selection:bg-primary-container selection:text-white">
+<!-- =========================================================================
+       1. SIDEBAR INSTITUCIONAL (PERSISTENTE #181A1F - 260px)
+       ========================================================================= -->
+<aside class="w-[260px] min-w-[260px] bg-[#181A1F] text-white flex flex-col justify-between border-r border-[#26282E] z-30 select-none">
+<!-- Top Branding & Navigation -->
+<div class="flex flex-col">
+<!-- Logo Container Institucional Brusben E.I.R.L. -->
+<div class="h-16 px-4 bg-white flex items-center gap-3 border-b border-[#E2E4E9]">
+<div class="w-10 h-10 rounded bg-[#C4121A] flex items-center justify-center text-white font-headline-md shadow-sm">
+<span class="font-headline-lg text-headline-lg tracking-tighter">B</span>
+</div>
+<div class="flex flex-col justify-center overflow-hidden">
+<span class="font-headline-sm text-headline-sm font-bold tracking-tight text-[#111827] leading-none">BRUSBEN <span class="text-[#C4121A]">E.I.R.L.</span></span>
+<span class="font-label-xs text-[9px] tracking-wider text-[#6B7280] uppercase mt-1 truncate">Capacitarse es superarse</span>
+</div>
+</div>
+<!-- Módulos de Navegación -->
+<div class="px-3 pt-4">
+<p class="px-3 pb-2 text-[10px] font-title-eyebrow tracking-widest text-[#6B7280] uppercase">Módulos Administrativos</p>
+<nav class="space-y-1">
+<!-- 1. Inicio -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-[#9CA3AF] hover:text-white hover:bg-[#22252B] transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] text-[#9CA3AF] group-hover:text-white">space_dashboard</span>
+<span class="font-label-md text-label-md">Inicio</span>
+</a>
+<!-- 2. CRM Comercial -->
+<a class="flex items-center justify-between px-3 py-2 rounded-lg text-[#9CA3AF] hover:text-white hover:bg-[#22252B] transition-colors group" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px] text-[#9CA3AF] group-hover:text-white">hub</span>
+<span class="font-label-md text-label-md">CRM Comercial</span>
+</div>
+<span class="px-1.5 py-0.5 rounded-full bg-[#374151] text-[#E5E7EB] font-label-xs text-[10px]">12</span>
+</a>
+<!-- 3. Personas y estudiantes (ACTIVO INSTITUCIONAL) -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary-container text-white shadow-sm font-label-md" href="#">
+<span class="material-symbols-outlined text-[20px] text-white">groups</span>
+<span class="font-label-md text-label-md font-semibold tracking-tight">Personas y estudiantes</span>
+</a>
+<!-- 4. Oferta académica -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-[#9CA3AF] hover:text-white hover:bg-[#22252B] transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] text-[#9CA3AF] group-hover:text-white">menu_book</span>
+<span class="font-label-md text-label-md">Oferta académica</span>
+</a>
+<!-- 5. Matrículas y pagos -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-[#9CA3AF] hover:text-white hover:bg-[#22252B] transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] text-[#9CA3AF] group-hover:text-white">receipt_long</span>
+<span class="font-label-md text-label-md">Matrículas y pagos</span>
+</a>
+<!-- 6. Reportes -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-[#9CA3AF] hover:text-white hover:bg-[#22252B] transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] text-[#9CA3AF] group-hover:text-white">analytics</span>
+<span class="font-label-md text-label-md">Reportes</span>
+</a>
+<div class="pt-3 pb-1">
+<div class="h-[1px] bg-[#26282E] mx-2"></div>
+<p class="px-3 pt-3 pb-1 text-[10px] font-title-eyebrow tracking-widest text-[#6B7280] uppercase">SISTEMA Y CONTROL</p>
+</div>
+<!-- 7. Usuarios y accesos -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-[#9CA3AF] hover:text-white hover:bg-[#22252B] transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] text-[#9CA3AF] group-hover:text-white">admin_panel_settings</span>
+<span class="font-label-md text-label-md">Usuarios y accesos</span>
+</a>
+<!-- 8. Auditoría -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-[#9CA3AF] hover:text-white hover:bg-[#22252B] transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] text-[#9CA3AF] group-hover:text-white">policy</span>
+<span class="font-label-md text-label-md">Auditoría</span>
+</a>
+<!-- 9. Mi perfil -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-[#9CA3AF] hover:text-white hover:bg-[#22252B] transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] text-[#9CA3AF] group-hover:text-white">account_circle</span>
+<span class="font-label-md text-label-md">Mi perfil</span>
+</a>
+</nav>
+</div>
+</div>
+<!-- Pie de sidebar: Estado sincro y versión -->
+<div class="p-3 border-t border-[#26282E] bg-[#14161A]/80">
+<div class="flex items-center justify-between px-2 py-1.5 rounded bg-[#1C1F26] border border-[#2D313A]">
+<div class="flex items-center gap-2">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+</span>
+<span class="text-[11px] font-label-xs text-emerald-400 font-medium tracking-tight">Sincronizando...</span>
+</div>
+<span class="text-[10px] font-mono text-[#9CA3AF]">v2.6.4</span>
+</div>
+</div>
+</aside>
+<!-- =========================================================================
+       2. CANVAS PRINCIPAL Y HEADER SUPERIOR
+       ========================================================================= -->
+<div class="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-background">
+<!-- Top Header Bar (64px) -->
+<header class="h-16 bg-surface-container-lowest border-b border-[#E2E4E9] flex items-center justify-between px-6 z-20 shrink-0">
+<!-- Izquierda: Breadcrumbs y Sede -->
+<div class="flex items-center gap-4 min-w-0">
+<nav class="flex items-center text-[12px] font-label-sm text-secondary truncate">
+<span class="text-on-surface font-medium hover:text-primary-container cursor-pointer">ERP Brusben</span>
+<span class="mx-2 text-outline-variant font-light">/</span>
+<span class="text-on-surface font-medium">Personas y estudiantes</span>
+<span class="mx-2 text-outline-variant font-light">/</span>
+<span class="text-primary font-semibold truncate">Directorio institucional</span>
+</nav>
+<div class="h-4 w-[1px] bg-[#E2E4E9]"></div>
+<!-- Selector de Sede Oficial -->
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container-low border border-[#E2E4E9] text-on-surface text-[12px] font-label-sm">
+<span class="material-symbols-outlined text-[16px] text-primary-container">location_on</span>
+<span class="font-medium text-[#111827]">Sede Central · Tumbes</span>
+<span class="material-symbols-outlined text-[14px] text-secondary">expand_more</span>
+</div>
+</div>
+<!-- Derecha: Buscador Global, Alertas y Perfil de Usuario -->
+<div class="flex items-center gap-3">
+<!-- Ctrl + K Search -->
+<button class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#E2E4E9] bg-surface-container-lowest text-secondary text-[12px] hover:border-[#CBD5E1] transition-all shadow-sm">
+<span class="material-symbols-outlined text-[16px] text-[#64748B]">search</span>
+<span class="text-secondary font-normal">Buscar en ERP...</span>
+<kbd class="ml-2 font-mono text-[10px] bg-surface-container px-1.5 py-0.5 rounded border border-[#CBD5E1] text-secondary">Ctrl+K</kbd>
+</button>
+<!-- Notificaciones -->
+<button class="relative w-8 h-8 rounded-lg flex items-center justify-center text-secondary hover:bg-surface-container-low hover:text-on-surface transition-colors" title="Notificaciones del sistema">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+<span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-primary-container ring-2 ring-white"></span>
+</button>
+<div class="h-6 w-[1px] bg-[#E2E4E9]"></div>
+<!-- Tarjeta de Usuario Superadministración -->
+<div class="flex items-center gap-2.5 pl-1">
+<div class="w-8 h-8 rounded-full bg-primary-container text-white flex items-center justify-center font-label-sm font-bold shadow-sm ring-1 ring-white">
+            LA
+          </div>
+<div class="flex flex-col text-left leading-tight hidden lg:flex">
+<span class="text-[13px] font-label-md font-semibold text-[#111827]">Loana Avila Neyra</span>
+<span class="text-[11px] font-label-xs text-primary-container font-medium">Superadministración</span>
+</div>
+<button class="text-secondary hover:text-on-surface p-1 rounded hover:bg-surface-container-low" title="Cerrar sesión">
+<span class="material-symbols-outlined text-[18px]">logout</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Barra de progreso indeterminada fina (Sincronización activa) -->
+<div class="indeterminate-progress w-full"></div>
+<!-- Banner Informativo de Conexión en Tiempo Real -->
+<div class="bg-[#FFF5F5] border-b border-[#FED7D7] px-6 py-2 flex items-center justify-between text-[12px] text-[#9B1C1C]">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-primary-container animate-spin">sync</span>
+<span class="font-medium">Sincronizando registros con base de datos institucional en vivo... <span class="font-normal text-[#771D1D]">(Google Apps Script / Sheets API v4)</span></span>
+</div>
+<div class="flex items-center gap-3 text-[11px] text-[#9B1C1C]">
+<span class="flex items-center gap-1 font-mono">
+<span class="w-1.5 h-1.5 rounded-full bg-[#E53E3E] animate-pulse"></span>
+          Respuesta estimada: ~1.2s
+        </span>
+<span class="text-[#CBD5E1]">|</span>
+<span class="font-medium">Latencia: 48ms</span>
+</div>
+</div>
+<!-- =========================================================================
+         CONTENIDO PRINCIPAL EN SKELETON SHIMMER (ESTADO DE CARGA)
+         ========================================================================= -->
+<main class="flex-1 overflow-y-auto p-6 space-y-5 bg-[#F5F6F8]">
+<!-- Fila de Encabezado de Página & Botones de Acción -->
+<div class="flex items-center justify-between">
+<div>
+<!-- Skeleton Title & Subtitle -->
+<div class="h-6 w-64 rounded-md shimmer-mask mb-2"></div>
+<div class="h-4 w-96 rounded shimmer-mask"></div>
+</div>
+<div class="flex items-center gap-2.5">
+<!-- Botón Secundario Skeleton (Exportar) -->
+<div class="h-9 w-28 rounded-lg border border-[#D1D5DB] bg-white flex items-center justify-center gap-2 px-3 shadow-sm">
+<span class="material-symbols-outlined text-[16px] text-secondary opacity-40">download</span>
+<div class="h-3 w-12 rounded shimmer-mask"></div>
+</div>
+<!-- Botón Primario Skeleton (+ Nuevo Estudiante) -->
+<div class="h-9 w-36 rounded-lg bg-primary-container/60 flex items-center justify-center gap-2 px-3 shadow-sm">
+<span class="material-symbols-outlined text-[18px] text-white">person_add</span>
+<div class="h-3 w-16 rounded bg-white/40"></div>
+</div>
+</div>
+</div>
+<!-- =========================================================================
+           4 TARJETAS DE INDICADORES CLAVE (KPIs) EN SKELETON
+           ========================================================================= -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<!-- KPI 1: Total Inscritos -->
+<div class="bg-white rounded-lg p-4 border border-[#E2E4E9] border-l-4 border-l-primary-container shadow-[0_1px_3px_0_rgba(0,0,0,0.04)] flex flex-col justify-between">
+<div class="flex items-center justify-between mb-2">
+<div class="h-3.5 w-28 rounded shimmer-mask"></div>
+<div class="w-8 h-8 rounded-lg bg-surface-container-low flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px] text-secondary opacity-40">groups</span>
+</div>
+</div>
+<div class="my-1">
+<div class="h-8 w-24 rounded-md shimmer-mask"></div>
+</div>
+<div class="flex items-center gap-2 pt-2 border-t border-[#F1F3F5] mt-2">
+<div class="h-3 w-32 rounded shimmer-mask"></div>
+</div>
+</div>
+<!-- KPI 2: Estudiantes Activos -->
+<div class="bg-white rounded-lg p-4 border border-[#E2E4E9] border-l-4 border-l-emerald-600 shadow-[0_1px_3px_0_rgba(0,0,0,0.04)] flex flex-col justify-between">
+<div class="flex items-center justify-between mb-2">
+<div class="h-3.5 w-32 rounded shimmer-mask"></div>
+<div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px] text-emerald-600 opacity-40">check_circle</span>
+</div>
+</div>
+<div class="my-1">
+<div class="h-8 w-20 rounded-md shimmer-mask"></div>
+</div>
+<div class="flex items-center gap-2 pt-2 border-t border-[#F1F3F5] mt-2">
+<div class="h-3 w-28 rounded shimmer-mask"></div>
+</div>
+</div>
+<!-- KPI 3: En Reserva / Inactivos -->
+<div class="bg-white rounded-lg p-4 border border-[#E2E4E9] border-l-4 border-l-amber-500 shadow-[0_1px_3px_0_rgba(0,0,0,0.04)] flex flex-col justify-between">
+<div class="flex items-center justify-between mb-2">
+<div class="h-3.5 w-36 rounded shimmer-mask"></div>
+<div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px] text-amber-500 opacity-40">pause_circle</span>
+</div>
+</div>
+<div class="my-1">
+<div class="h-8 w-16 rounded-md shimmer-mask"></div>
+</div>
+<div class="flex items-center gap-2 pt-2 border-t border-[#F1F3F5] mt-2">
+<div class="h-3 w-36 rounded shimmer-mask"></div>
+</div>
+</div>
+<!-- KPI 4: Expedientes Incompletos -->
+<div class="bg-white rounded-lg p-4 border border-[#E2E4E9] border-l-4 border-l-error shadow-[0_1px_3px_0_rgba(0,0,0,0.04)] flex flex-col justify-between">
+<div class="flex items-center justify-between mb-2">
+<div class="h-3.5 w-36 rounded shimmer-mask"></div>
+<div class="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px] text-error opacity-40">pending_actions</span>
+</div>
+</div>
+<div class="my-1">
+<div class="h-8 w-14 rounded-md shimmer-mask"></div>
+</div>
+<div class="flex items-center gap-2 pt-2 border-t border-[#F1F3F5] mt-2">
+<div class="h-3 w-24 rounded shimmer-mask"></div>
+</div>
+</div>
+</div>
+<!-- =========================================================================
+           BARRA DE FILTROS Y PESTAÑAS (SKELETON WRAPPER)
+           ========================================================================= -->
+<div class="bg-white rounded-lg border border-[#E2E4E9] p-3 space-y-3 shadow-[0_1px_3px_0_rgba(0,0,0,0.04)]">
+<!-- Pestañas Superiores en Skeleton -->
+<div class="flex items-center gap-4 border-b border-[#E2E4E9] pb-2.5">
+<div class="h-7 w-24 rounded-full bg-primary-container/10 flex items-center justify-center">
+<div class="h-3 w-16 rounded bg-primary-container/30"></div>
+</div>
+<div class="h-7 w-24 rounded-full shimmer-mask"></div>
+<div class="h-7 w-28 rounded-full shimmer-mask"></div>
+<div class="h-7 w-20 rounded-full shimmer-mask"></div>
+<div class="h-7 w-24 rounded-full shimmer-mask"></div>
+</div>
+<!-- Controles de Filtrado: Búsqueda, Selectores y Acciones -->
+<div class="grid grid-cols-12 gap-3 pt-1">
+<!-- Búsqueda rápida por DNI, Nombre o Código -->
+<div class="col-span-4 relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-[18px] text-secondary opacity-40">search</span>
+<div class="w-full h-9 pl-9 pr-3 rounded-lg border border-[#D1D5DB] bg-surface-container-low/60 flex items-center">
+<div class="h-3.5 w-44 rounded shimmer-mask"></div>
+</div>
+</div>
+<!-- Selector: Programa de estudio -->
+<div class="col-span-2 h-9 rounded-lg border border-[#D1D5DB] bg-white flex items-center justify-between px-3">
+<div class="h-3.5 w-24 rounded shimmer-mask"></div>
+<span class="material-symbols-outlined text-[16px] text-secondary opacity-40">unfold_more</span>
+</div>
+<!-- Selector: Ciclo / Módulo -->
+<div class="col-span-2 h-9 rounded-lg border border-[#D1D5DB] bg-white flex items-center justify-between px-3">
+<div class="h-3.5 w-20 rounded shimmer-mask"></div>
+<span class="material-symbols-outlined text-[16px] text-secondary opacity-40">unfold_more</span>
+</div>
+<!-- Selector: Modalidad (Presencial / Semi) -->
+<div class="col-span-2 h-9 rounded-lg border border-[#D1D5DB] bg-white flex items-center justify-between px-3">
+<div class="h-3.5 w-24 rounded shimmer-mask"></div>
+<span class="material-symbols-outlined text-[16px] text-secondary opacity-40">unfold_more</span>
+</div>
+<!-- Botones Limpiar / Más Filtros -->
+<div class="col-span-2 flex items-center justify-end gap-2">
+<div class="h-9 w-9 rounded-lg border border-[#D1D5DB] flex items-center justify-center bg-white shadow-sm">
+<span class="material-symbols-outlined text-[18px] text-secondary opacity-40">filter_alt</span>
+</div>
+<div class="h-9 w-9 rounded-lg border border-[#D1D5DB] flex items-center justify-center bg-white shadow-sm">
+<span class="material-symbols-outlined text-[18px] text-secondary opacity-40">refresh</span>
+</div>
+</div>
+</div>
+</div>
+<!-- =========================================================================
+           TABLA INSTITUCIONAL DENSA EN SKELETON SHIMMER (7 FILAS)
+           ========================================================================= -->
+<div class="bg-white rounded-lg border border-[#E2E4E9] overflow-hidden shadow-[0_1px_3px_0_rgba(0,0,0,0.04)]">
+<!-- Table Element -->
+<div class="w-full overflow-x-auto">
+<table class="w-full text-left border-collapse min-w-[1020px]">
+<!-- Table Header Row (Alta Densidad Institucional) -->
+<thead>
+<tr class="bg-[#F9FAFB] border-b border-[#E2E4E9] h-10 select-none text-[#4B5563]">
+<th class="w-10 px-3 text-center">
+<input class="rounded border-[#D1D5DB] text-primary focus:ring-0 opacity-40" disabled="" type="checkbox"/>
+</th>
+<th class="px-3 text-[11px] font-title-eyebrow uppercase tracking-wider text-[#4B5563]">
+<div class="flex items-center gap-1.5 cursor-pointer">
+<span>Estudiante / Identificación</span>
+<span class="material-symbols-outlined text-[14px] text-secondary opacity-40">sort</span>
+</div>
+</th>
+<th class="px-3 text-[11px] font-title-eyebrow uppercase tracking-wider text-[#4B5563]">Cód. Matrícula</th>
+<th class="px-3 text-[11px] font-title-eyebrow uppercase tracking-wider text-[#4B5563]">Programa &amp; Especialidad</th>
+<th class="px-3 text-[11px] font-title-eyebrow uppercase tracking-wider text-[#4B5563]">Modalidad / Turno</th>
+<th class="px-3 text-[11px] font-title-eyebrow uppercase tracking-wider text-[#4B5563]">Estado Académico</th>
+<th class="px-3 text-[11px] font-title-eyebrow uppercase tracking-wider text-[#4B5563]">Docs / Expediente</th>
+<th class="px-3 text-right text-[11px] font-title-eyebrow uppercase tracking-wider text-[#4B5563]">Acciones</th>
+</tr>
+</thead>
+<!-- Table Body Skeleton Shimmer -->
+<tbody class="divide-y divide-[#E2E4E9] bg-white">
+<!-- FILA 1 -->
+<tr class="h-12 hover:bg-[#F8FAFC] transition-colors">
+<td class="px-3 text-center">
+<div class="w-4 h-4 rounded border border-[#E2E4E9] mx-auto shimmer-mask"></div>
+</td>
+<td class="px-3">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full shimmer-mask shrink-0"></div>
+<div class="space-y-1">
+<div class="h-3.5 w-40 rounded shimmer-mask"></div>
+<div class="h-2.5 w-24 rounded shimmer-mask"></div>
+</div>
+</div>
+</td>
+<td class="px-3">
+<div class="h-5 w-24 rounded bg-surface-container-low shimmer-mask"></div>
+</td>
+<td class="px-3">
+<div class="space-y-1">
+<div class="h-3.5 w-48 rounded shimmer-mask"></div>
+<div class="h-2.5 w-20 rounded shimmer-mask"></div>
+</div>
+</td>
+<td class="px-3">
+<div class="h-3.5 w-28 rounded shimmer-mask"></div>
+</td>
+<td class="px-3">
+<div class="h-5 w-20 rounded-full shimmer-mask"></div>
+</td>
+<td class="px-3">
+<div class="flex items-center gap-1.5">
+<div class="h-2.5 w-16 rounded shimmer-mask"></div>
+<div class="w-4 h-4 rounded-full shimmer-mask"></div>
+</div>
+</td>
+<td class="px-3 text-right">
+<div class="flex items-center justify-end gap-1">
+<div class="w-7 h-7 rounded shimmer-mask"></div>
+<div class="w-7 h-7 rounded shimmer-mask"></div>
+</div>
+</td>
+</tr>
+<!-- FILA 2 -->
+<tr class="h-12 hover:bg-[#F8FAFC] transition-colors">
+<td class="px-3 text-center">
+<div class="w-4 h-4 rounded border border-[#E2E4E9] mx-auto shimmer-mask"></div>
+</td>
+<td class="px-3">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full shimmer-mask shrink-0"></div>
+<div class="space-y-1">
+<div class="h-3.5 w-44 rounded shimmer-mask"></div>
+<div class="h-2.5 w-20 rounded shimmer-mask"></div>
+</div>
+</div>
+</td>
+<td class="px-3">
+<div class="h-5 w-24 rounded bg-surface-container-low shimmer-mask"></div>
+</td>
+<td class="px-3">
+<div class="space-y-1">
+<div class="h-3.5 w-36 rounded shimmer-mask"></div>
+<div class="h-2.5 w-24 rounded shimmer-mask"></div>
+</div>
+</td>
+<td class="px-3">
+<div class="h-3.5 w-24 rounded shimmer-mask"></div>
+</td>
+<td class="px-3">
+<div class="h-5 w-20 rounded-full shimmer-mask"></div>
+</td>
+<td class="px-3">
+<div class="flex items-center gap-1.5">
+<div class="h-2.5 w-16 rounded shimmer-mask"></div>
+<div class="w-4 h-4 rounded-full shimmer-mask"></div>
+</div>
+</td>
+<td class="px-3 text-right">
+<div class="flex items-center justify-end gap-1">
+<div class="w-7 h-7 rounded shimmer-mask"></div>
+<div class="w-7 h-7 rounded shimmer-mask"></div>
+</div>
+</td>
+</tr>
+<!-- FILA 3 -->
+<tr class="h-12 hover:bg-[#F8FAFC] transition-colors">
+<td class="px-3 text-center">
+<div class="w-4 h-4 rounded border border-[#E2E4E9] mx-auto shimmer-mask"></div>
+</td>
+<td class="px-3">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full shimmer-mask shrink-0"></div>
+<div class="space-y-1">
+<div class="h-3.5 w-36 rounded shimmer-mask"></div>
+<div class="h-2.5 w-28 rounded shimmer-mask"></div>
+</div>
+</div>
+</td>
+<td class="px-3">
+<div class="h-5 w-24 rounded bg-surface-container-low shimmer-mask"></div>
+</td>
+<td class="px-3">
+<div class="space-y-1">
+<div class="h-3.5 w-52 rounded shimmer-mask"></div>
+<div class="h-2.5 w-16 rounded shimmer-mask"></div>
+</div>
+</td>
+<td class="px-3">
+<div class="h-3.5 w-32 rounded shimmer-mask"></div>
+</td>
+<td class="px-3">
+<div class="h-5 w-20 rounded-full shimmer-mask"></div>
+</td>
+<td class="px-3">
+<div class="flex items-center gap-1.5">
+<div class="h-2.5 w-16 rounded shimmer-mask"></div>
+<div class="w-4 h-4 rounded-full shimmer-mask"></div>
+</div>
+</td>
+<td class="px-3 text-right">
+<div class="flex items-center justify-end gap-1">
+<div class="w-7 h-7 rounded shimmer-mask"></div>
+<div class="w-7 h-7 rounded shimmer-mask"></div>
+</div>
+</td>
+</tr>
+<!-- FILA 4 -->
+<tr class="h-12 hover:bg-[#F8FAFC] transition-colors">
+<td class="px-3 text-center">
+<div class="w-4 h-4 rounded border border-[#E2E4E9] mx-auto shimmer-mask"></div>
+</td>
+<td class="px-3">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full shimmer-mask shrink-0"></div>
+<div class="space-y-1">
+<div class="h-3.5 w-48 rounded shimmer-mask"></div>
+<div class="h-2.5 w-24 rounded shimmer-mask"></div>
+</div>
+</div>
+</td>
+<td class="px-3">
+<div class="h-5 w-24 rounded bg-surface-container-low shimmer-mask"></div>
+</td>
+<td class="px-3">
+<div class="space-y-1">
+<div class="h-3.5 w-40 rounded shimmer-mask"></div>
+<div class="h-2.5 w-20 rounded shimmer-mask"></div>
+</div>
+</td>
+<td class="px-3">
+<div class="h-3.5 w-20 rounded shimmer-mask"></div>
+</td>
+<td class="px-3">
+<div class="h-5 w-20 rounded-full shimmer-mask"></div>
+</td>
+<td class="px-3">
+<div class="flex items-center gap-1.5">
+<div class="h-2.5 w-16 rounded shimmer-mask"></div>
+<div class="w-4 h-4 rounded-full shimmer-mask"></div>
+</div>
+</td>
+<td class="px-3 text-right">
+<div class="flex items-center justify-end gap-1">
+<div class="w-7 h-7 rounded shimmer-mask"></div>
+<div class="w-7 h-7 rounded shimmer-mask"></div>
+</div>
+</td>
+</tr>
+<!-- FILA 5 -->
+<tr class="h-12 hover:bg-[#F8FAFC] transition-colors">
+<td class="px-3 text-center">
+<div class="w-4 h-4 rounded border border-[#E2E4E9] mx-auto shimmer-mask"></div>
+</td>
+<td class="px-3">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full shimmer-mask shrink-0"></div>
+<div class="space-y-1">
+<div class="h-3.5 w-36 rounded shimmer-mask"></div>
+<div class="h-2.5 w-20 rounded shimmer-mask"></div>
+</div>
+</div>
+</td>
+<td class="px-3">
+<div class="h-5 w-24 rounded bg-surface-container-low shimmer-mask"></div>
+</td>
+<td class="px-3">
+<div class="space-y-1">
+<div class="h-3.5 w-44 rounded shimmer-mask"></div>
+<div class="h-2.5 w-28 rounded shimmer-mask"></div>
+</div>
+</td>
+<td class="px-3">
+<div class="h-3.5 w-28 rounded shimmer-mask"></div>
+</td>
+<td class="px-3">
+<div class="h-5 w-20 rounded-full shimmer-mask"></div>
+</td>
+<td class="px-3">
+<div class="flex items-center gap-1.5">
+<div class="h-2.5 w-16 rounded shimmer-mask"></div>
+<div class="w-4 h-4 rounded-full shimmer-mask"></div>
+</div>
+</td>
+<td class="px-3 text-right">
+<div class="flex items-center justify-end gap-1">
+<div class="w-7 h-7 rounded shimmer-mask"></div>
+<div class="w-7 h-7 rounded shimmer-mask"></div>
+</div>
+</td>
+</tr>
+<!-- FILA 6 -->
+<tr class="h-12 hover:bg-[#F8FAFC] transition-colors">
+<td class="px-3 text-center">
+<div class="w-4 h-4 rounded border border-[#E2E4E9] mx-auto shimmer-mask"></div>
+</td>
+<td class="px-3">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full shimmer-mask shrink-0"></div>
+<div class="space-y-1">
+<div class="h-3.5 w-40 rounded shimmer-mask"></div>
+<div class="h-2.5 w-24 rounded shimmer-mask"></div>
+</div>
+</div>
+</td>
+<td class="px-3">
+<div class="h-5 w-24 rounded bg-surface-container-low shimmer-mask"></div>
+</td>
+<td class="px-3">
+<div class="space-y-1">
+<div class="h-3.5 w-32 rounded shimmer-mask"></div>
+<div class="h-2.5 w-20 rounded shimmer-mask"></div>
+</div>
+</td>
+<td class="px-3">
+<div class="h-3.5 w-24 rounded shimmer-mask"></div>
+</td>
+<td class="px-3">
+<div class="h-5 w-20 rounded-full shimmer-mask"></div>
+</td>
+<td class="px-3">
+<div class="flex items-center gap-1.5">
+<div class="h-2.5 w-16 rounded shimmer-mask"></div>
+<div class="w-4 h-4 rounded-full shimmer-mask"></div>
+</div>
+</td>
+<td class="px-3 text-right">
+<div class="flex items-center justify-end gap-1">
+<div class="w-7 h-7 rounded shimmer-mask"></div>
+<div class="w-7 h-7 rounded shimmer-mask"></div>
+</div>
+</td>
+</tr>
+<!-- FILA 7 -->
+<tr class="h-12 hover:bg-[#F8FAFC] transition-colors">
+<td class="px-3 text-center">
+<div class="w-4 h-4 rounded border border-[#E2E4E9] mx-auto shimmer-mask"></div>
+</td>
+<td class="px-3">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full shimmer-mask shrink-0"></div>
+<div class="space-y-1">
+<div class="h-3.5 w-44 rounded shimmer-mask"></div>
+<div class="h-2.5 w-20 rounded shimmer-mask"></div>
+</div>
+</div>
+</td>
+<td class="px-3">
+<div class="h-5 w-24 rounded bg-surface-container-low shimmer-mask"></div>
+</td>
+<td class="px-3">
+<div class="space-y-1">
+<div class="h-3.5 w-48 rounded shimmer-mask"></div>
+<div class="h-2.5 w-24 rounded shimmer-mask"></div>
+</div>
+</td>
+<td class="px-3">
+<div class="h-3.5 w-28 rounded shimmer-mask"></div>
+</td>
+<td class="px-3">
+<div class="h-5 w-20 rounded-full shimmer-mask"></div>
+</td>
+<td class="px-3">
+<div class="flex items-center gap-1.5">
+<div class="h-2.5 w-16 rounded shimmer-mask"></div>
+<div class="w-4 h-4 rounded-full shimmer-mask"></div>
+</div>
+</td>
+<td class="px-3 text-right">
+<div class="flex items-center justify-end gap-1">
+<div class="w-7 h-7 rounded shimmer-mask"></div>
+<div class="w-7 h-7 rounded shimmer-mask"></div>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Paginador Inferior Skeleton -->
+<div class="px-4 py-3 bg-[#F9FAFB] border-t border-[#E2E4E9] flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="h-3.5 w-48 rounded shimmer-mask"></div>
+</div>
+<div class="flex items-center gap-2">
+<div class="h-8 w-20 rounded-md shimmer-mask"></div>
+<div class="h-8 w-8 rounded-md shimmer-mask"></div>
+<div class="h-8 w-8 rounded-md shimmer-mask"></div>
+<div class="h-8 w-8 rounded-md shimmer-mask"></div>
+<div class="h-8 w-20 rounded-md shimmer-mask"></div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

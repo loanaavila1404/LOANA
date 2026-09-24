@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ERP Brusben - Personas y Estudiantes</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "outline": "#916f6b",
+            "on-error": "#ffffff",
+            "surface-container-low": "#f3f4f6",
+            "on-secondary-fixed": "#1a1c21",
+            "on-secondary": "#ffffff",
+            "on-primary-fixed-variant": "#93000c",
+            "surface-tint": "#be0a17",
+            "on-surface": "#191c1e",
+            "on-background": "#191c1e",
+            "inverse-primary": "#ffb4ab",
+            "secondary-fixed": "#e2e2e9",
+            "on-tertiary": "#ffffff",
+            "error-container": "#ffdad6",
+            "on-primary-fixed": "#410002",
+            "surface-container": "#edeef0",
+            "surface-container-highest": "#e1e2e4",
+            "primary-fixed": "#ffdad6",
+            "primary-container": "#c4121a",
+            "on-error-container": "#93000a",
+            "tertiary-fixed-dim": "#b4c5ff",
+            "on-surface-variant": "#5c403c",
+            "on-secondary-container": "#616268",
+            "on-primary-container": "#ffd5d0",
+            "inverse-surface": "#2e3132",
+            "surface-variant": "#e1e2e4",
+            "secondary": "#5d5e64",
+            "on-tertiary-fixed-variant": "#003ea8",
+            "secondary-fixed-dim": "#c6c6cd",
+            "tertiary-container": "#0c57df",
+            "primary": "#9a000d",
+            "outline-variant": "#e6bdb8",
+            "tertiary-fixed": "#dbe1ff",
+            "inverse-on-surface": "#f0f1f3",
+            "surface-container-high": "#e7e8ea",
+            "on-secondary-fixed-variant": "#45474c",
+            "on-tertiary-container": "#d6ddff",
+            "primary-fixed-dim": "#ffb4ab",
+            "on-primary": "#ffffff",
+            "surface-container-lowest": "#ffffff",
+            "surface": "#f8f9fb",
+            "secondary-container": "#dfdfe6",
+            "surface-bright": "#f8f9fb",
+            "on-tertiary-fixed": "#00174b",
+            "background": "#f8f9fb",
+            "error": "#ba1a1a",
+            "tertiary": "#0041b0",
+            "surface-dim": "#d9dadc"
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          spacing: {
+            "space-xs": "0.25rem",
+            "space-md": "0.75rem",
+            "gutter-dense": "0.75rem",
+            "space-xl": "1.5rem",
+            "gutter": "1rem",
+            "margin": "1.5rem",
+            "space-sm": "0.5rem",
+            "space-lg": "1rem"
+          },
+          fontFamily: {
+            "metric-val": ["Inter"],
+            "label-md": ["Inter"],
+            "label-xs": ["Inter"],
+            "label-sm": ["Inter"],
+            "headline-sm": ["Inter"],
+            "body-sm": ["Inter"],
+            "body-md": ["Inter"],
+            "headline-lg": ["Inter"],
+            "title-eyebrow": ["Inter"],
+            "display": ["Inter"],
+            "body-lg": ["Inter"],
+            "headline-md": ["Inter"]
+          },
+          fontSize: {
+            "metric-val": ["28px", { lineHeight: "32px", letterSpacing: "-0.03em", fontWeight: "700" }],
+            "label-md": ["13px", { lineHeight: "16px", fontWeight: "500" }],
+            "label-xs": ["11px", { lineHeight: "14px", fontWeight: "600" }],
+            "label-sm": ["12px", { lineHeight: "16px", fontWeight: "500" }],
+            "headline-sm": ["16px", { lineHeight: "22px", fontWeight: "600" }],
+            "body-sm": ["13px", { lineHeight: "18px", fontWeight: "400" }],
+            "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }],
+            "headline-lg": ["20px", { lineHeight: "28px", letterSpacing: "-0.01em", fontWeight: "700" }],
+            "title-eyebrow": ["11px", { lineHeight: "14px", letterSpacing: "0.08em", fontWeight: "700" }],
+            "display": ["24px", { lineHeight: "32px", letterSpacing: "-0.02em", fontWeight: "700" }],
+            "body-lg": ["15px", { lineHeight: "22px", fontWeight: "400" }],
+            "headline-md": ["18px", { lineHeight: "24px", letterSpacing: "-0.01em", fontWeight: "600" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 20px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .material-symbols-fill {
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+    }
+  </style>
+</head>
+<body class="h-full bg-background text-on-surface font-body-md text-body-md antialiased flex overflow-hidden">
+<!-- Sidebar Lateral Oscuro (#181A1F) -->
+<aside class="w-[260px] flex-shrink-0 bg-[#181A1F] text-[#9CA3AF] flex flex-col justify-between select-none z-20 border-r border-[#2A2E37]">
+<div>
+<!-- Brand Logo Container -->
+<div class="h-16 px-4 flex items-center border-b border-[#2A2E37]">
+<div class="w-full bg-surface-container-lowest rounded px-3 py-1.5 flex items-center gap-2.5 shadow-sm">
+<div class="w-7 h-7 rounded bg-primary-container flex items-center justify-center text-on-primary font-bold text-xs tracking-tighter shrink-0">
+            B
+          </div>
+<div class="flex flex-col min-w-0">
+<span class="text-[#111827] font-bold text-[11px] leading-tight tracking-tight truncate">BRUSBEN E.I.R.L.</span>
+<span class="text-[#6B7280] text-[9px] uppercase tracking-wider font-semibold truncate">Capacitarse es superarse</span>
+</div>
+</div>
+</div>
+<!-- Navigation Tree -->
+<nav class="p-3 space-y-1">
+<div class="px-3 pb-2 pt-1 font-title-eyebrow text-title-eyebrow text-[#6B7280] tracking-widest">
+          GESTIÓN INSTITUCIONAL
+        </div>
+<!-- 1. Inicio -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-[#9CA3AF] hover:text-[#E5E7EB] hover:bg-[#22252B] transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[#9CA3AF]">dashboard</span>
+<span>Inicio</span>
+</a>
+<!-- 2. CRM Comercial -->
+<a class="flex items-center justify-between px-3 py-2 rounded-lg text-[#9CA3AF] hover:text-[#E5E7EB] hover:bg-[#22252B] transition-colors font-label-md text-label-md" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[#9CA3AF]">hub</span>
+<span>CRM Comercial</span>
+</div>
+<span class="bg-[#2A2E37] text-[#E5E7EB] text-[10px] font-bold px-1.5 py-0.5 rounded">12</span>
+</a>
+<!-- 3. Personas y estudiantes (ACTIVO) -->
+<a class="flex items-center justify-between px-3 py-2 rounded-lg bg-primary-container text-on-primary font-medium transition-all shadow-sm" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-on-primary material-symbols-fill">group</span>
+<span class="text-[#FFFFFF]">Personas y estudiantes</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+</a>
+<!-- 4. Oferta académica -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-[#9CA3AF] hover:text-[#E5E7EB] hover:bg-[#22252B] transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[#9CA3AF]">school</span>
+<span>Oferta académica</span>
+</a>
+<!-- 5. Matrículas y pagos -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-[#9CA3AF] hover:text-[#E5E7EB] hover:bg-[#22252B] transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[#9CA3AF]">receipt_long</span>
+<span>Matrículas y pagos</span>
+</a>
+<!-- 6. Reportes -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-[#9CA3AF] hover:text-[#E5E7EB] hover:bg-[#22252B] transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[#9CA3AF]">bar_chart</span>
+<span>Reportes</span>
+</a>
+<div class="px-3 pb-1 pt-3 font-title-eyebrow text-title-eyebrow text-[#6B7280] tracking-widest">
+          SISTEMA &amp; CONTROL
+        </div>
+<!-- 7. Usuarios y accesos -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-[#9CA3AF] hover:text-[#E5E7EB] hover:bg-[#22252B] transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[#9CA3AF]">admin_panel_settings</span>
+<span>Usuarios y accesos</span>
+</a>
+<!-- 8. Auditoría -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-[#9CA3AF] hover:text-[#E5E7EB] hover:bg-[#22252B] transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[#9CA3AF]">history</span>
+<span>Auditoría</span>
+</a>
+<!-- 9. Mi perfil -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-[#9CA3AF] hover:text-[#E5E7EB] hover:bg-[#22252B] transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[#9CA3AF]">account_circle</span>
+<span>Mi perfil</span>
+</a>
+</nav>
+</div>
+<!-- Sidebar Footer -->
+<div class="p-3 border-t border-[#2A2E37] bg-[#141519]">
+<div class="flex items-center justify-between text-xs px-2 py-1.5">
+<div class="flex items-center gap-2">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+</span>
+<span class="font-label-xs text-label-xs text-[#9CA3AF]">Sistema en línea</span>
+</div>
+<span class="font-mono text-[10px] text-[#6B7280] font-semibold">v2.4.1</span>
+</div>
+</div>
+</aside>
+<!-- Main Canvas Wrapper -->
+<div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-background">
+<!-- Topbar Header -->
+<header class="h-16 bg-surface-container-lowest border-b border-[#E2E4E9] px-6 flex items-center justify-between shrink-0 z-10">
+<!-- Breadcrumb & Sede Selection -->
+<div class="flex items-center gap-4 min-w-0">
+<div class="flex items-center gap-1.5 text-xs text-[#6B7280] whitespace-nowrap">
+<span class="font-label-sm text-label-sm hover:text-on-surface cursor-pointer">ERP Brusben</span>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+<span class="font-label-sm text-label-sm hover:text-on-surface cursor-pointer">Personas y estudiantes</span>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+<span class="font-label-sm text-label-sm font-semibold text-on-surface">Directorio institucional</span>
+</div>
+<div class="h-4 w-px bg-[#E2E4E9]"></div>
+<!-- Sede Selector -->
+<div class="flex items-center gap-1.5 px-2.5 py-1 bg-surface-container-low border border-[#E2E4E9] rounded-lg text-xs font-medium text-on-surface hover:bg-surface-container transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-primary text-sm">apartment</span>
+<span>Sede Central · Tumbes</span>
+<span class="material-symbols-outlined text-xs text-secondary">expand_more</span>
+</div>
+</div>
+<!-- Quick Search, Notifications, User Profile -->
+<div class="flex items-center gap-3">
+<!-- Quick Search -->
+<div class="relative w-64">
+<span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-secondary text-sm">search</span>
+<input class="w-full h-8 pl-8 pr-3 bg-surface-container-low border border-[#E2E4E9] rounded-lg text-xs placeholder:text-secondary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" placeholder="Buscar en ERP... Ctrl+K" type="text"/>
+</div>
+<!-- Notification Icon -->
+<button class="relative w-8 h-8 flex items-center justify-center rounded-lg text-secondary hover:bg-surface-container-low border border-transparent hover:border-[#E2E4E9] transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-primary-container rounded-full ring-2 ring-white"></span>
+</button>
+<div class="h-6 w-px bg-[#E2E4E9]"></div>
+<!-- User Information -->
+<div class="flex items-center gap-3 pl-1">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-full bg-[#181A1F] text-white flex items-center justify-center text-xs font-bold ring-2 ring-offset-1 ring-primary-container/30">
+              LA
+            </div>
+<div class="flex flex-col text-left">
+<span class="text-xs font-semibold text-on-surface leading-tight">Loana Avila Neyra</span>
+<span class="text-[10px] text-primary font-medium leading-tight">Superadministración</span>
+</div>
+</div>
+<button class="w-8 h-8 flex items-center justify-center text-secondary hover:text-error hover:bg-error-container/30 rounded-lg transition-colors ml-1" title="Cerrar sesión">
+<span class="material-symbols-outlined text-base">logout</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Workspace Container -->
+<main class="flex-1 overflow-y-auto p-6 space-y-4">
+<!-- Sync Banner / Aviso sutil en tiempo real -->
+<div class="bg-surface-container-lowest border border-[#E2E4E9] rounded-lg px-4 py-2.5 flex items-center justify-between shadow-[0_1px_3px_0_rgba(0,0,0,0.02)]">
+<div class="flex items-center gap-2.5 text-xs text-on-surface">
+<span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-emerald-50 text-emerald-600">
+<span class="material-symbols-outlined text-sm">sync</span>
+</span>
+<span>
+<strong class="font-semibold text-on-surface">Sincronización activa:</strong> Conexión en tiempo real con Google Sheets y Apps Script establecida correctamente.
+          </span>
+</div>
+<div class="flex items-center gap-2 text-[11px] text-secondary">
+<span>Último sondeo: hace 12 seg</span>
+<button class="hover:text-primary transition-colors flex items-center gap-1 font-medium">
+<span class="material-symbols-outlined text-xs">refresh</span> Forzar refresco
+          </button>
+</div>
+</div>
+<!-- Module Title & Action Bar -->
+<div class="flex items-center justify-between">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface">Personas y estudiantes</h1>
+<p class="font-body-sm text-body-sm text-secondary mt-0.5">
+            Padrón general de alumnos, expedientes académicos y directorio institucional.
+          </p>
+</div>
+<div class="flex items-center gap-2">
+<!-- Button Importar -->
+<button class="h-9 px-3.5 bg-surface-container-lowest border border-[#D1D5DB] hover:bg-surface-container-low text-on-surface rounded-lg font-label-md text-label-md flex items-center gap-2 shadow-sm transition-colors">
+<span class="material-symbols-outlined text-secondary">upload_file</span>
+<span>Importar nómina (Excel/CSV)</span>
+</button>
+<!-- Button Exportar (inactivo) -->
+<button class="h-9 px-3.5 bg-surface-container-low border border-[#E2E4E9] text-[#9CA3AF] rounded-lg font-label-md text-label-md flex items-center gap-2 cursor-not-allowed opacity-60" disabled="">
+<span class="material-symbols-outlined">download</span>
+<span>Exportar padrón</span>
+</button>
+<!-- Button Primario + Nuevo Estudiante -->
+<button class="h-9 px-4 bg-primary-container hover:bg-[#9F0E15] text-on-primary font-label-md text-label-md font-medium rounded-lg flex items-center gap-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[#E52E38] transition-all">
+<span class="material-symbols-outlined text-base">person_add</span>
+<span>+ Nuevo estudiante</span>
+</button>
+</div>
+</div>
+<!-- KPI Metrics Grid (All in State 0) -->
+<div class="grid grid-cols-4 gap-4">
+<!-- KPI 1 -->
+<div class="bg-surface-container-lowest p-4 rounded-lg border border-[#E2E4E9] border-l-[4px] border-l-primary-container shadow-[0_1px_3px_0_rgba(0,0,0,0.03)]">
+<div class="flex items-center justify-between text-secondary mb-1">
+<span class="font-label-sm text-label-sm font-medium">Estudiantes registrados</span>
+<span class="material-symbols-outlined text-base text-secondary">group</span>
+</div>
+<div class="font-metric-val text-metric-val text-on-surface">0</div>
+<div class="text-[11px] text-secondary mt-1 flex items-center gap-1 font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary-fixed-dim"></span>
+            Sin registros en el ciclo
+          </div>
+</div>
+<!-- KPI 2 -->
+<div class="bg-surface-container-lowest p-4 rounded-lg border border-[#E2E4E9] border-l-[4px] border-l-emerald-600 shadow-[0_1px_3px_0_rgba(0,0,0,0.03)]">
+<div class="flex items-center justify-between text-secondary mb-1">
+<span class="font-label-sm text-label-sm font-medium">Estudiantes activos</span>
+<span class="material-symbols-outlined text-base text-emerald-600">verified</span>
+</div>
+<div class="font-metric-val text-metric-val text-on-surface">0</div>
+<div class="text-[11px] text-secondary mt-1 flex items-center gap-1">
+<span>0% de la matrícula total</span>
+</div>
+</div>
+<!-- KPI 3 -->
+<div class="bg-surface-container-lowest p-4 rounded-lg border border-[#E2E4E9] border-l-[4px] border-l-[#9CA3AF] shadow-[0_1px_3px_0_rgba(0,0,0,0.03)]">
+<div class="flex items-center justify-between text-secondary mb-1">
+<span class="font-label-sm text-label-sm font-medium">En reserva / Inactivos</span>
+<span class="material-symbols-outlined text-base text-secondary">pause_circle</span>
+</div>
+<div class="font-metric-val text-metric-val text-on-surface">0</div>
+<div class="text-[11px] text-secondary mt-1 flex items-center gap-1">
+<span>Bajas o aplazamientos: 0</span>
+</div>
+</div>
+<!-- KPI 4 -->
+<div class="bg-surface-container-lowest p-4 rounded-lg border border-[#E2E4E9] border-l-[4px] border-l-amber-500 shadow-[0_1px_3px_0_rgba(0,0,0,0.03)]">
+<div class="flex items-center justify-between text-secondary mb-1">
+<span class="font-label-sm text-label-sm font-medium">Expedientes pendientes</span>
+<span class="material-symbols-outlined text-base text-amber-600">pending_actions</span>
+</div>
+<div class="font-metric-val text-metric-val text-on-surface">0</div>
+<div class="text-[11px] text-secondary mt-1 flex items-center gap-1">
+<span>Documentos por validar: 0</span>
+</div>
+</div>
+</div>
+<!-- Table Section Container with Filter Bar & Empty State -->
+<div class="bg-surface-container-lowest border border-[#E2E4E9] rounded-lg shadow-[0_1px_3px_0_rgba(0,0,0,0.04)] overflow-hidden flex flex-col">
+<!-- Filter Header Bar -->
+<div class="p-3 border-b border-[#E2E4E9] bg-surface-container-lowest flex items-center justify-between gap-3 flex-wrap">
+<div class="flex items-center gap-2.5 flex-1 min-w-[320px]">
+<!-- Search field -->
+<div class="relative w-72">
+<span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-secondary text-sm">search</span>
+<input class="w-full h-9 pl-8 pr-3 bg-surface-container-lowest border border-[#D1D5DB] rounded-lg text-xs placeholder:text-secondary focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container" placeholder="Filtrar por DNI, nombres o apellidos..." type="text"/>
+</div>
+<!-- Filter Ciclo -->
+<div class="relative">
+<select class="h-9 pl-2.5 pr-7 bg-surface-container-lowest border border-[#D1D5DB] rounded-lg text-xs text-on-surface focus:outline-none focus:border-primary-container appearance-none cursor-pointer">
+<option>Ciclo: Todos los ciclos</option>
+<option>Ciclo 2025-I</option>
+<option>Ciclo 2024-II</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-secondary text-xs pointer-events-none">expand_more</span>
+</div>
+<!-- Filter Programa -->
+<div class="relative">
+<select class="h-9 pl-2.5 pr-7 bg-surface-container-lowest border border-[#D1D5DB] rounded-lg text-xs text-on-surface focus:outline-none focus:border-primary-container appearance-none cursor-pointer">
+<option>Programa: Todos los programas</option>
+<option>Computación &amp; Informática</option>
+<option>Administración de Negocios</option>
+<option>Seguridad Industrial &amp; Minería</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-secondary text-xs pointer-events-none">expand_more</span>
+</div>
+<!-- Filter Sede -->
+<div class="relative">
+<select class="h-9 pl-2.5 pr-7 bg-surface-container-lowest border border-[#D1D5DB] rounded-lg text-xs text-on-surface focus:outline-none focus:border-primary-container appearance-none cursor-pointer">
+<option>Sede: Central (Tumbes)</option>
+<option>Sede: Filial Piura</option>
+<option>Sede: Filial Chiclayo</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-secondary text-xs pointer-events-none">expand_more</span>
+</div>
+</div>
+<!-- Clear Filters Button (Disabled state) -->
+<button class="h-9 px-3 text-xs text-[#9CA3AF] border border-[#E2E4E9] rounded-lg bg-surface-container-low flex items-center gap-1.5 cursor-not-allowed" disabled="">
+<span class="material-symbols-outlined text-sm">filter_alt_off</span>
+<span>Limpiar filtros</span>
+</button>
+</div>
+<!-- High-density Data Table Structure -->
+<div class="w-full overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-[#F9FAFB] border-b border-[#E2E4E9] text-[11px] uppercase tracking-wider text-[#6B7280] font-semibold select-none">
+<th class="py-2.5 pl-4 pr-2 w-10 text-center">
+<input class="w-3.5 h-3.5 rounded border-gray-300 text-primary-container focus:ring-0 opacity-50 cursor-not-allowed" disabled="" type="checkbox"/>
+</th>
+<th class="py-2.5 px-3">
+<div class="flex items-center gap-1 cursor-default">
+<span>Estudiante / Identificación</span>
+<span class="material-symbols-outlined text-xs text-gray-400">unfold_more</span>
+</div>
+</th>
+<th class="py-2.5 px-3">Cód. Matrícula</th>
+<th class="py-2.5 px-3">Programa &amp; Especialidad</th>
+<th class="py-2.5 px-3">Modalidad / Sede</th>
+<th class="py-2.5 px-3 text-center">Estado Académico</th>
+<th class="py-2.5 pr-4 pl-3 text-right">Acciones</th>
+</tr>
+</thead>
+<tbody>
+<!-- Empty State Central Area -->
+<tr>
+<td class="py-20 px-4 text-center" colspan="7">
+<div class="max-w-md mx-auto flex flex-col items-center justify-center">
+<!-- Illustrative vector icon container -->
+<div class="w-16 h-16 rounded-2xl bg-surface-container-low border border-[#E2E4E9] flex items-center justify-center mb-4 text-[#9CA3AF] relative">
+<div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-3xl text-secondary">folder_open</span>
+</div>
+<span class="absolute -top-1 -right-1 w-4 h-4 bg-primary-container/10 border border-primary-container/30 text-primary-container rounded-full flex items-center justify-center text-[10px] font-bold">!</span>
+</div>
+<!-- Main Title -->
+<h3 class="font-headline-md text-headline-md text-on-surface mb-2">
+                      No se encontraron estudiantes registrados
+                    </h3>
+<!-- Descriptive Message -->
+<p class="font-body-sm text-body-sm text-secondary leading-relaxed mb-6">
+                      Actualmente no hay estudiantes cargados en la sede seleccionada o para el ciclo académico actual. Puedes registrar un nuevo alumno manualmente o importar una nómina masiva desde un archivo Excel.
+                    </p>
+<!-- Primary & Secondary CTA Buttons -->
+<div class="flex items-center gap-3">
+<button class="h-9 px-4 bg-primary-container hover:bg-[#9F0E15] text-on-primary font-label-md text-label-md font-medium rounded-lg flex items-center gap-2 shadow-sm transition-all">
+<span class="material-symbols-outlined text-sm">person_add</span>
+<span>+ Registrar primer estudiante</span>
+</button>
+<button class="h-9 px-4 bg-surface-container-lowest border border-[#D1D5DB] hover:bg-surface-container-low text-on-surface font-label-md text-label-md rounded-lg flex items-center gap-2 shadow-sm transition-all">
+<span class="material-symbols-outlined text-secondary text-sm">table_view</span>
+<span>Importar padrón desde Excel / CSV</span>
+</button>
+</div>
+<!-- Tertiary Link -->
+<div class="mt-4">
+<button class="text-xs text-secondary hover:text-primary-container underline transition-colors">
+                        Restablecer filtros de búsqueda
+                      </button>
+</div>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Footer / Pagination Controls (Disabled/Zero State) -->
+<div class="px-4 py-3 border-t border-[#E2E4E9] bg-[#F9FAFB] flex items-center justify-between text-xs text-secondary">
+<div>
+            Mostrando <span class="font-semibold text-on-surface">0</span> a <span class="font-semibold text-on-surface">0</span> de <span class="font-semibold text-on-surface">0</span> resultados
+          </div>
+<div class="flex items-center gap-2">
+<span class="text-xs">Filas por página:</span>
+<select class="h-7 px-2 bg-surface-container-lowest border border-[#D1D5DB] rounded text-xs text-secondary opacity-60 cursor-not-allowed" disabled="">
+<option>25</option>
+<option>50</option>
+<option>100</option>
+</select>
+<div class="flex items-center gap-1 ml-2">
+<button class="w-7 h-7 flex items-center justify-center rounded border border-[#E2E4E9] bg-surface-container-lowest text-gray-300 cursor-not-allowed" disabled="">
+<span class="material-symbols-outlined text-sm">first_page</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded border border-[#E2E4E9] bg-surface-container-lowest text-gray-300 cursor-not-allowed" disabled="">
+<span class="material-symbols-outlined text-sm">chevron_left</span>
+</button>
+<span class="px-2 py-0.5 text-xs text-gray-400">Página 1 de 1</span>
+<button class="w-7 h-7 flex items-center justify-center rounded border border-[#E2E4E9] bg-surface-container-lowest text-gray-300 cursor-not-allowed" disabled="">
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded border border-[#E2E4E9] bg-surface-container-lowest text-gray-300 cursor-not-allowed" disabled="">
+<span class="material-symbols-outlined text-sm">last_page</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

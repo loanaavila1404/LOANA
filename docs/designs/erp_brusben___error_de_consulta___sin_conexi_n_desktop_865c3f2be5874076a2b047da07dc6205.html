@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-surface" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ERP Brusben - Error de Consulta / Sin Conexión</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "on-secondary": "#ffffff",
+            "error": "#ba1a1a",
+            "surface-bright": "#f8f9fb",
+            "on-tertiary-container": "#d6ddff",
+            "surface-container-highest": "#e1e2e4",
+            "secondary-fixed-dim": "#c6c6cd",
+            "on-background": "#191c1e",
+            "inverse-surface": "#2e3132",
+            "surface-container": "#edeef0",
+            "outline": "#916f6b",
+            "surface-container-low": "#f3f4f6",
+            "background": "#f8f9fb",
+            "tertiary-fixed-dim": "#b4c5ff",
+            "on-surface-variant": "#5c403c",
+            "tertiary": "#0041b0",
+            "on-tertiary": "#ffffff",
+            "on-error": "#ffffff",
+            "tertiary-fixed": "#dbe1ff",
+            "error-container": "#ffdad6",
+            "tertiary-container": "#0c57df",
+            "outline-variant": "#e6bdb8",
+            "primary-fixed": "#ffdad6",
+            "on-surface": "#191c1e",
+            "on-primary": "#ffffff",
+            "surface-container-lowest": "#ffffff",
+            "secondary-container": "#dfdfe6",
+            "surface-container-high": "#e7e8ea",
+            "on-primary-fixed-variant": "#93000c",
+            "on-tertiary-fixed": "#00174b",
+            "secondary-fixed": "#e2e2e9",
+            "primary-container": "#c4121a",
+            "on-tertiary-fixed-variant": "#003ea8",
+            "inverse-primary": "#ffb4ab",
+            "on-error-container": "#93000a",
+            "surface": "#f8f9fb",
+            "on-secondary-container": "#616268",
+            "surface-variant": "#e1e2e4",
+            "on-secondary-fixed": "#1a1c21",
+            "surface-tint": "#be0a17",
+            "surface-dim": "#d9dadc",
+            "secondary": "#5d5e64",
+            "primary-fixed-dim": "#ffb4ab",
+            "on-primary-fixed": "#410002",
+            "inverse-on-surface": "#f0f1f3",
+            "primary": "#9a000d",
+            "on-primary-container": "#ffd5d0",
+            "on-secondary-fixed-variant": "#45474c"
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          spacing: {
+            "space-xs": "0.25rem",
+            "space-sm": "0.5rem",
+            "space-md": "0.75rem",
+            "space-lg": "1rem",
+            "space-xl": "1.5rem",
+            "gutter": "1rem",
+            "gutter-dense": "0.75rem",
+            "margin": "1.5rem"
+          },
+          fontFamily: {
+            "label-xs": ["Inter"],
+            "headline-md": ["Inter"],
+            "body-md": ["Inter"],
+            "label-sm": ["Inter"],
+            "label-md": ["Inter"],
+            "headline-lg": ["Inter"],
+            "display": ["Inter"],
+            "headline-sm": ["Inter"],
+            "body-lg": ["Inter"],
+            "title-eyebrow": ["Inter"],
+            "metric-val": ["Inter"],
+            "body-sm": ["Inter"]
+          },
+          fontSize: {
+            "label-xs": ["11px", { lineHeight: "14px", fontWeight: "600" }],
+            "headline-md": ["18px", { lineHeight: "24px", letterSpacing: "-0.01em", fontWeight: "600" }],
+            "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }],
+            "label-sm": ["12px", { lineHeight: "16px", fontWeight: "500" }],
+            "label-md": ["13px", { lineHeight: "16px", fontWeight: "500" }],
+            "headline-lg": ["20px", { lineHeight: "28px", letterSpacing: "-0.01em", fontWeight: "700" }],
+            "display": ["24px", { lineHeight: "32px", letterSpacing: "-0.02em", fontWeight: "700" }],
+            "headline-sm": ["16px", { lineHeight: "22px", fontWeight: "600" }],
+            "body-lg": ["15px", { lineHeight: "22px", fontWeight: "400" }],
+            "title-eyebrow": ["11px", { lineHeight: "14px", letterSpacing: "0.08em", fontWeight: "700" }],
+            "metric-val": ["28px", { lineHeight: "32px", letterSpacing: "-0.03em", fontWeight: "700" }],
+            "body-sm": ["13px", { lineHeight: "18px", fontWeight: "400" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 20px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 5px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #181A1F;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #2e3138;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="h-full flex overflow-hidden bg-surface text-on-surface antialiased select-none font-body-md text-body-md">
+<!-- ASIDE: Dark Sidebar (260px) -->
+<aside class="w-[260px] bg-[#181A1F] flex flex-col flex-shrink-0 z-30 justify-between border-r border-[#262930]">
+<div class="flex flex-col h-full overflow-hidden">
+<!-- Institutional Logo Card Container -->
+<div class="p-3 border-b border-[#282B33]">
+<div class="bg-surface-container-lowest rounded-lg p-2.5 flex items-center gap-2.5 shadow-sm border border-[#E2E4E9]">
+<div class="w-9 h-9 rounded bg-primary-container flex items-center justify-center flex-shrink-0 text-on-primary font-bold text-lg tracking-tight shadow-inner">
+            B
+          </div>
+<div class="flex flex-col min-w-0">
+<span class="text-[12px] font-extrabold tracking-tight text-[#111827] truncate uppercase leading-tight">BRUSBEN E.I.R.L.</span>
+<span class="text-[9px] font-semibold text-primary uppercase tracking-wider leading-none mt-0.5">Capacitarse es Superarse</span>
+</div>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="flex-1 overflow-y-auto custom-scrollbar px-3 py-3 space-y-1">
+<div class="px-2 pb-1.5 pt-1">
+<p class="font-title-eyebrow text-title-eyebrow text-[#6B7280] uppercase tracking-wider">Módulos de Gestión</p>
+</div>
+<!-- Item: Inicio -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-[#9CA3AF] hover:text-[#FFFFFF] hover:bg-[#22252B] transition-colors group" href="#">
+<span class="material-symbols-outlined text-[#9CA3AF] group-hover:text-white" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md truncate">Inicio</span>
+</a>
+<!-- Item: CRM Comercial -->
+<a class="flex items-center justify-between px-3 py-2 rounded-lg text-[#9CA3AF] hover:text-[#FFFFFF] hover:bg-[#22252B] transition-colors group" href="#">
+<div class="flex items-center gap-3 min-w-0">
+<span class="material-symbols-outlined text-[#9CA3AF] group-hover:text-white" data-icon="contacts">contacts</span>
+<span class="font-label-md text-label-md truncate">CRM Comercial</span>
+</div>
+<span class="px-1.5 py-0.5 text-[10px] font-bold bg-[#2A2E37] text-white rounded">12</span>
+</a>
+<!-- Item: Personas y estudiantes (ACTIVO) -->
+<a aria-current="page" class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary-container text-white font-medium shadow-sm transition-all" href="#">
+<span class="material-symbols-outlined text-white" data-icon="school" data-weight="fill" style="font-variation-settings: 'FILL' 1;">school</span>
+<span class="font-label-md text-label-md truncate flex-1">Personas y estudiantes</span>
+<span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+</a>
+<!-- Item: Oferta académica -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-[#9CA3AF] hover:text-[#FFFFFF] hover:bg-[#22252B] transition-colors group" href="#">
+<span class="material-symbols-outlined text-[#9CA3AF] group-hover:text-white" data-icon="menu_book">menu_book</span>
+<span class="font-label-md text-label-md truncate">Oferta académica</span>
+</a>
+<!-- Item: Matrículas y pagos -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-[#9CA3AF] hover:text-[#FFFFFF] hover:bg-[#22252B] transition-colors group" href="#">
+<span class="material-symbols-outlined text-[#9CA3AF] group-hover:text-white" data-icon="credit_card">credit_card</span>
+<span class="font-label-md text-label-md truncate">Matrículas y pagos</span>
+</a>
+<!-- Item: Reportes -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-[#9CA3AF] hover:text-[#FFFFFF] hover:bg-[#22252B] transition-colors group" href="#">
+<span class="material-symbols-outlined text-[#9CA3AF] group-hover:text-white" data-icon="bar_chart">bar_chart</span>
+<span class="font-label-md text-label-md truncate">Reportes</span>
+</a>
+<div class="px-2 pt-4 pb-1">
+<p class="font-title-eyebrow text-title-eyebrow text-[#6B7280] uppercase tracking-wider">Configuración &amp; Control</p>
+</div>
+<!-- Item: Usuarios y accesos -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-[#9CA3AF] hover:text-[#FFFFFF] hover:bg-[#22252B] transition-colors group" href="#">
+<span class="material-symbols-outlined text-[#9CA3AF] group-hover:text-white" data-icon="admin_panel_settings">admin_panel_settings</span>
+<span class="font-label-md text-label-md truncate">Usuarios y accesos</span>
+</a>
+<!-- Item: Auditoría -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-[#9CA3AF] hover:text-[#FFFFFF] hover:bg-[#22252B] transition-colors group" href="#">
+<span class="material-symbols-outlined text-[#9CA3AF] group-hover:text-white" data-icon="verified_user">verified_user</span>
+<span class="font-label-md text-label-md truncate">Auditoría</span>
+</a>
+<!-- Item: Mi perfil -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-[#9CA3AF] hover:text-[#FFFFFF] hover:bg-[#22252B] transition-colors group" href="#">
+<span class="material-symbols-outlined text-[#9CA3AF] group-hover:text-white" data-icon="manage_accounts">manage_accounts</span>
+<span class="font-label-md text-label-md truncate">Mi perfil</span>
+</a>
+</nav>
+<!-- Sidebar Footer Status Box -->
+<div class="p-3 border-t border-[#262930] bg-[#141519]">
+<div class="p-2.5 rounded-lg bg-[#1F2228] border border-[#2D313A] flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<span class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-error animate-ping"></span>
+<span class="font-label-xs text-label-xs text-[#FCA5A5] font-semibold">Sin conexión API</span>
+</span>
+<span class="font-label-xs text-label-xs text-[#9CA3AF]">Timeout</span>
+</div>
+<p class="text-[11px] text-[#9CA3AF] leading-tight">Google Sheets API no responde</p>
+<div class="pt-1.5 mt-0.5 border-t border-[#2B2F38] flex items-center justify-between text-[10px] text-[#6B7280]">
+<span>Build 2025.4.1</span>
+<span class="font-mono text-[#9CA3AF]">v2.4.8-prod</span>
+</div>
+</div>
+</div>
+</div>
+</aside>
+<!-- MAIN CANVAS -->
+<div class="flex-1 flex flex-col h-full overflow-hidden bg-surface">
+<!-- TOP HEADER -->
+<header class="h-16 bg-surface-container-lowest border-b border-[#E2E4E9] flex items-center justify-between px-6 flex-shrink-0 z-20">
+<!-- Breadcrumbs & Location -->
+<div class="flex items-center gap-4">
+<nav class="flex items-center gap-1.5 text-[#6B7280] font-label-md text-label-md">
+<span class="hover:text-on-surface cursor-pointer">ERP Brusben</span>
+<span class="material-symbols-outlined text-[16px] text-[#9CA3AF]" data-icon="chevron_right">chevron_right</span>
+<span class="hover:text-on-surface cursor-pointer">Personas y estudiantes</span>
+<span class="material-symbols-outlined text-[16px] text-[#9CA3AF]" data-icon="chevron_right">chevron_right</span>
+<span class="text-on-surface font-semibold">Directorio institucional</span>
+</nav>
+<span class="text-[#D1D5DB]">|</span>
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-surface-container-low border border-[#E2E4E9] text-secondary text-label-sm font-label-sm">
+<span class="material-symbols-outlined text-[15px] text-primary" data-icon="location_on">location_on</span>
+<span>Sede Central · Tumbes</span>
+</div>
+</div>
+<!-- Header Search, Alert & User Profile -->
+<div class="flex items-center gap-4">
+<!-- Disabled Fast Search Ctrl+K -->
+<div class="relative w-64 opacity-60 cursor-not-allowed">
+<div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-[#9CA3AF] text-[18px]" data-icon="search">search</span>
+</div>
+<input class="block w-full pl-9 pr-14 py-1.5 text-[12px] bg-surface-container-low border border-[#D1D5DB] rounded-lg text-secondary placeholder-[#9CA3AF] cursor-not-allowed select-none" disabled="" placeholder="Búsqueda general (desconectado)" type="text"/>
+<div class="absolute inset-y-0 right-0 pr-2 flex items-center">
+<kbd class="px-1.5 py-0.5 text-[10px] font-medium text-[#9CA3AF] bg-[#FFFFFF] border border-[#E2E4E9] rounded shadow-xs">Ctrl+K</kbd>
+</div>
+</div>
+<!-- Connection Error Alert Indicator in Header -->
+<div class="relative flex items-center">
+<button class="relative p-2 rounded-lg text-error hover:bg-error-container/30 transition-colors" title="1 fallo crítico del sistema">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-error ring-2 ring-white animate-pulse"></span>
+</button>
+</div>
+<div class="h-6 w-px bg-[#E2E4E9]"></div>
+<!-- User Identity Block -->
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary-container text-white flex items-center justify-center font-semibold text-xs border border-white shadow-xs">
+            LA
+          </div>
+<div class="flex flex-col text-left">
+<span class="font-label-md text-label-md text-on-surface font-semibold leading-tight">Loana Avila Neyra</span>
+<span class="font-label-xs text-label-xs text-primary font-medium">Superadministración</span>
+</div>
+<button class="p-1.5 ml-1 rounded-md text-[#6B7280] hover:text-error hover:bg-surface-container transition-colors" title="Cerrar sesión">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+</button>
+</div>
+</div>
+</header>
+<!-- CRITICAL SYSTEM ALERT BANNER -->
+<div class="bg-[#FEF2F2] border-b border-[#FECACA] px-6 py-2.5 flex items-center justify-between flex-shrink-0 shadow-xs">
+<div class="flex items-center gap-3">
+<span class="w-7 h-7 rounded-md bg-[#FEE2E2] flex items-center justify-center text-error flex-shrink-0">
+<span class="material-symbols-outlined text-[18px]" data-icon="sync_problem">sync_problem</span>
+</span>
+<div class="flex items-center gap-2">
+<span class="font-label-md text-label-md font-bold text-[#991B1B]">Fallo de sincronización:</span>
+<span class="font-body-sm text-body-sm text-[#7F1D1D]">
+            No se pudo establecer conexión con el servicio de base de datos institucional (Google Sheets / Google Apps Script API). Último intento fallido: <span class="font-semibold">hace 12 segundos</span>. Código de estado:
+          </span>
+<span class="font-mono text-label-xs font-semibold px-2 py-0.5 rounded bg-[#FEE2E2] text-[#991B1B] border border-[#FCA5A5]">
+            ERR_CONNECTION_TIMED_OUT (504)
+          </span>
+</div>
+</div>
+<div class="flex items-center gap-2.5">
+<button class="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-[#991B1B] hover:bg-[#7F1D1D] text-white font-label-xs text-label-xs font-semibold shadow-xs transition-colors" onclick="location.reload()">
+<span class="material-symbols-outlined text-[14px]" data-icon="refresh">refresh</span>
+          Reintentar ahora
+        </button>
+<button class="p-1 text-[#991B1B] hover:text-[#7F1D1D] rounded transition-colors" title="Ocultar advertencia temporalmente">
+<span class="material-symbols-outlined text-[18px]" data-icon="close">close</span>
+</button>
+</div>
+</div>
+<!-- MAIN SCROLLABLE CONTENT CANVAS -->
+<main class="flex-1 overflow-y-auto p-6 space-y-6 bg-surface">
+<!-- Section Title & Global Top Actions -->
+<div class="flex items-center justify-between">
+<div>
+<div class="flex items-center gap-2.5">
+<h1 class="font-headline-lg text-headline-lg text-on-surface">Personas y estudiantes</h1>
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#FEF2F2] text-error border border-[#FECACA]">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+              Servicio Desconectado
+            </span>
+</div>
+<p class="font-body-sm text-body-sm text-secondary mt-0.5">Padrón general de alumnos, expedientes académicos y directorio institucional.</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-surface-container-low border border-[#D1D5DB] text-[#9CA3AF] font-label-md text-label-md cursor-not-allowed" disabled="">
+<span class="material-symbols-outlined text-[18px]" data-icon="file_download">file_download</span>
+            Exportar Padrón
+          </button>
+<button class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#E5E7EB] text-[#9CA3AF] font-label-md text-label-md cursor-not-allowed shadow-none" disabled="">
+<span class="material-symbols-outlined text-[18px]" data-icon="person_add">person_add</span>
+            Nuevo Registro
+          </button>
+</div>
+</div>
+<!-- 4-COLUMN METRICS ROW (Error State Indicators) -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+<!-- Metric 1: Alumnos Registrados -->
+<div class="bg-surface-container-lowest rounded-lg p-4 border border-[#E2E4E9] border-l-4 border-l-[#D1D5DB] shadow-sm flex flex-col justify-between relative overflow-hidden">
+<div class="flex items-center justify-between text-secondary">
+<span class="font-label-sm text-label-sm font-medium">Total de Alumnos</span>
+<span class="material-symbols-outlined text-[20px] text-[#9CA3AF]" data-icon="groups">groups</span>
+</div>
+<div class="my-2 flex items-baseline gap-2">
+<span class="font-metric-val text-metric-val text-[#9CA3AF] tracking-tight">—</span>
+<span class="font-label-xs text-label-xs text-[#DC2626] font-semibold flex items-center">
+<span class="material-symbols-outlined text-[14px]" data-icon="cloud_off">cloud_off</span>
+              Sin datos
+            </span>
+</div>
+<div class="text-[12px] text-[#9CA3AF] flex items-center justify-between border-t border-[#F3F4F6] pt-2">
+<span>Última copia local</span>
+<span class="font-mono text-[11px]">Ayer 18:30</span>
+</div>
+</div>
+<!-- Metric 2: Matrículas Activas -->
+<div class="bg-surface-container-lowest rounded-lg p-4 border border-[#E2E4E9] border-l-4 border-l-[#D1D5DB] shadow-sm flex flex-col justify-between relative overflow-hidden">
+<div class="flex items-center justify-between text-secondary">
+<span class="font-label-sm text-label-sm font-medium">Matrículas Vigentes</span>
+<span class="material-symbols-outlined text-[20px] text-[#9CA3AF]" data-icon="assignment_turned_in">assignment_turned_in</span>
+</div>
+<div class="my-2 flex items-baseline gap-2">
+<span class="font-metric-val text-metric-val text-[#9CA3AF] tracking-tight">—</span>
+<span class="font-label-xs text-label-xs text-[#DC2626] font-semibold flex items-center">
+<span class="material-symbols-outlined text-[14px]" data-icon="error_outline">error_outline</span>
+              No sincronizado
+            </span>
+</div>
+<div class="text-[12px] text-[#9CA3AF] flex items-center justify-between border-t border-[#F3F4F6] pt-2">
+<span>Periodo lectivo</span>
+<span class="font-semibold text-secondary">2025 - I</span>
+</div>
+</div>
+<!-- Metric 3: Nuevos Postulantes -->
+<div class="bg-surface-container-lowest rounded-lg p-4 border border-[#E2E4E9] border-l-4 border-l-[#D1D5DB] shadow-sm flex flex-col justify-between relative overflow-hidden">
+<div class="flex items-center justify-between text-secondary">
+<span class="font-label-sm text-label-sm font-medium">Expedientes Pendientes</span>
+<span class="material-symbols-outlined text-[20px] text-[#9CA3AF]" data-icon="pending_actions">pending_actions</span>
+</div>
+<div class="my-2 flex items-baseline gap-2">
+<span class="font-metric-val text-metric-val text-[#9CA3AF] tracking-tight">—</span>
+<span class="font-label-xs text-label-xs text-[#DC2626] font-semibold flex items-center">
+<span class="material-symbols-outlined text-[14px]" data-icon="cloud_off">cloud_off</span>
+              Inaccesible
+            </span>
+</div>
+<div class="text-[12px] text-[#9CA3AF] flex items-center justify-between border-t border-[#F3F4F6] pt-2">
+<span>Cola de revisión</span>
+<span class="text-secondary font-mono text-[11px]">Buffer: 0</span>
+</div>
+</div>
+<!-- Metric 4: Estado del Conector Sheets API -->
+<div class="bg-surface-container-lowest rounded-lg p-4 border border-[#FECACA] border-l-4 border-l-primary-container shadow-sm flex flex-col justify-between relative overflow-hidden bg-gradient-to-br from-white to-[#FEF2F2]">
+<div class="flex items-center justify-between text-[#991B1B]">
+<span class="font-label-sm text-label-sm font-semibold">Estado de API Institucional</span>
+<span class="material-symbols-outlined text-[20px] text-error" data-icon="signal_wifi_connected_no_internet_4">signal_wifi_connected_no_internet_4</span>
+</div>
+<div class="my-2 flex items-baseline gap-2">
+<span class="font-headline-sm text-headline-sm text-error font-bold tracking-tight">TIMEOUT 504</span>
+</div>
+<div class="text-[12px] text-[#991B1B] flex items-center justify-between border-t border-[#FECACA] pt-2">
+<span>Latencia: &gt; 30,000 ms</span>
+<span class="font-semibold text-error">Fallido</span>
+</div>
+</div>
+</div>
+<!-- MAIN DATA CONTAINER (ERROR & EMPTY STATE CARD) -->
+<div class="bg-surface-container-lowest rounded-lg border border-[#E2E4E9] shadow-sm flex flex-col overflow-hidden">
+<!-- Table Search / Filter Controls (Disabled Context) -->
+<div class="p-4 border-b border-[#E2E4E9] bg-surface-container-lowest flex flex-wrap items-center justify-between gap-4">
+<div class="flex items-center gap-3 flex-1 min-w-[300px]">
+<div class="relative w-80">
+<span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#9CA3AF]">
+<span class="material-symbols-outlined text-[18px]" data-icon="search">search</span>
+</span>
+<input class="w-full pl-9 pr-3 py-1.5 text-[13px] bg-surface-container-low border border-[#D1D5DB] rounded-md text-secondary placeholder-[#9CA3AF] cursor-not-allowed" disabled="" placeholder="Filtrar por DNI, nombres o código..." type="text"/>
+</div>
+<div class="flex items-center gap-2">
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-white border border-[#D1D5DB] text-secondary font-label-sm text-label-sm opacity-60 cursor-not-allowed" disabled="">
+<span class="material-symbols-outlined text-[16px]" data-icon="tune">tune</span>
+                Filtros avanzados
+              </button>
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-white border border-[#D1D5DB] text-secondary font-label-sm text-label-sm opacity-60 cursor-not-allowed" disabled="">
+<span class="material-symbols-outlined text-[16px]" data-icon="filter_alt">filter_alt</span>
+                Carrera / Programa
+              </button>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-label-xs text-label-xs text-[#DC2626] flex items-center gap-1 bg-[#FEF2F2] px-2.5 py-1 rounded border border-[#FECACA]">
+<span class="w-2 h-2 rounded-full bg-error"></span>
+              Google Apps Script: Inaccesible
+            </span>
+</div>
+</div>
+<!-- Muted Table Headers (Shows structure existed) -->
+<div class="border-b border-[#E2E4E9] bg-[#F9FAFB] grid grid-cols-12 px-6 py-2.5 text-secondary font-label-xs text-label-xs uppercase tracking-wider">
+<div class="col-span-1 flex items-center">
+<input class="rounded border-[#D1D5DB] text-primary cursor-not-allowed opacity-40" disabled="" type="checkbox"/>
+</div>
+<div class="col-span-4 font-semibold">Estudiante / Documento</div>
+<div class="col-span-3 font-semibold">Programa Académico</div>
+<div class="col-span-2 font-semibold">Sede / Modalidad</div>
+<div class="col-span-1 font-semibold">Estado</div>
+<div class="col-span-1 text-right font-semibold">Acciones</div>
+</div>
+<!-- RICH INSTITUTIONAL ERROR STATE PRESENTATION -->
+<div class="py-16 px-6 flex flex-col items-center justify-center text-center bg-white min-h-[420px]">
+<!-- Visual Hero Icon with Ambient Alert Aura -->
+<div class="relative mb-6">
+<div class="w-24 h-24 rounded-full bg-[#FEF2F2] flex items-center justify-center text-primary-container shadow-inner border border-[#FECACA]">
+<span class="material-symbols-outlined text-[48px]" data-icon="wifi_off">wifi_off</span>
+</div>
+<div class="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-primary-container text-white flex items-center justify-center shadow-md border-2 border-white">
+<span class="material-symbols-outlined text-[18px]" data-icon="cloud_alert">cloud_alert</span>
+</div>
+</div>
+<!-- Main Diagnostic Heading -->
+<h2 class="font-headline-md text-headline-md text-on-surface font-bold tracking-tight mb-2">
+            Error al consultar los registros institucionales
+          </h2>
+<!-- Descriptive Body Text -->
+<p class="font-body-md text-body-md text-secondary max-w-lg mb-4 leading-relaxed">
+            Ocurrió un problema de enlace con el servidor de datos de <strong class="text-on-surface font-semibold">Google Apps Script API</strong>. Es posible que la conexión a internet sea inestable o que la hoja de cálculo institucional maestra esté temporalmente saturada.
+          </p>
+<!-- Technical Diagnostic Pill Box -->
+<div class="inline-flex flex-wrap items-center justify-center gap-2 p-2 rounded-lg bg-surface-container-low border border-[#E2E4E9] font-mono text-[12px] text-secondary mb-8 max-w-xl">
+<span class="font-semibold text-error flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="code">code</span>
+              ERR_NETWORK_TIMEOUT
+            </span>
+<span class="text-[#D1D5DB]">•</span>
+<span class="text-on-surface">Endpoint: <code class="text-primary font-semibold">/macros/s/AKfy...exec</code></span>
+<span class="text-[#D1D5DB]">•</span>
+<span class="text-[#6B7280]">Status: 504 Gateway Timeout</span>
+</div>
+<!-- Action Buttons Row -->
+<div class="flex flex-wrap items-center justify-center gap-3">
+<button class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary-container hover:bg-primary text-white font-label-md text-label-md font-semibold shadow-sm transition-all focus:ring-2 focus:ring-offset-2 focus:ring-primary" onclick="location.reload()">
+<span class="material-symbols-outlined text-[18px]" data-icon="refresh">refresh</span>
+              Reintentar consulta de datos
+            </button>
+<button class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white border border-[#D1D5DB] text-on-surface hover:bg-[#F9FAFB] font-label-md text-label-md font-semibold shadow-xs transition-colors">
+<span class="material-symbols-outlined text-[18px] text-[#6B7280]" data-icon="headset_mic">headset_mic</span>
+              Reportar a Soporte TI Brusben
+            </button>
+</div>
+<!-- Alternative Mode Link -->
+<div class="mt-6 flex items-center gap-2 text-label-sm font-label-sm text-[#6B7280]">
+<span>¿Necesita consultar información de emergencia?</span>
+<a class="text-primary hover:text-primary-container font-semibold underline underline-offset-4 flex items-center gap-1" href="#">
+<span>Probar modo offline o consultar registros en caché</span>
+<span class="material-symbols-outlined text-[14px]" data-icon="arrow_forward">arrow_forward</span>
+</a>
+</div>
+</div>
+<!-- Table Footer: Record Summary & Service Status -->
+<div class="px-6 py-3 bg-[#F9FAFB] border-t border-[#E2E4E9] flex items-center justify-between text-secondary font-label-sm text-label-sm">
+<div class="flex items-center gap-2">
+<span class="font-medium text-on-surface">0</span> registros encontrados en la vista activa
+            <span class="text-[#D1D5DB]">•</span>
+<span class="text-error font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px]" data-icon="cancel">cancel</span>
+              Sincronización abortada por tiempo de espera
+            </span>
+</div>
+<div class="flex items-center gap-4">
+<span class="text-[12px] text-[#9CA3AF]">Servidor Google Sheets: <strong class="text-secondary font-medium">Sheets v4 API</strong></span>
+<div class="h-4 w-px bg-[#E2E4E9]"></div>
+<div class="flex items-center gap-1">
+<button class="p-1 rounded text-[#9CA3AF] cursor-not-allowed" disabled="">
+<span class="material-symbols-outlined text-[18px]" data-icon="chevron_left">chevron_left</span>
+</button>
+<span class="px-2 py-0.5 text-xs text-[#9CA3AF]">Pág 1 de 1</span>
+<button class="p-1 rounded text-[#9CA3AF] cursor-not-allowed" disabled="">
+<span class="material-symbols-outlined text-[18px]" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Informative Troubleshooting Callout Accordion/Box -->
+<div class="p-4 rounded-lg bg-surface-container-low border border-[#E2E4E9] flex items-start gap-4">
+<span class="w-8 h-8 rounded-lg bg-white border border-[#E2E4E9] flex items-center justify-center text-primary flex-shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[20px]" data-icon="info">info</span>
+</span>
+<div class="space-y-1">
+<h4 class="font-headline-sm text-headline-sm text-on-surface font-semibold text-[14px]">Recomendaciones de administración para restablecer el servicio</h4>
+<p class="font-body-sm text-body-sm text-secondary leading-relaxed">
+            1. Verifique que la cuenta autorizada de Google Workspace con acceso al archivo no haya revocado el token de Google Apps Script.<br/>
+            2. Compruebe la cuota diaria de llamadas de Apps Script en la consola de Google Cloud de Brusben.<br/>
+            3. Si el problema persiste tras 5 minutos, contacte directamente al departamento de Sistemas Central Brusben.
+          </p>
+</div>
+</div>
+</main>
+</div>
+</body></html>

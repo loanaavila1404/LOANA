@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ERP Brusben - Auditoría del Sistema e Historial de Eventos</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Inter Font -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration verbatim -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "secondary-fixed-dim": "#c6c6cd",
+            "outline-variant": "#e6bdb8",
+            "on-error": "#ffffff",
+            "surface-container-lowest": "#ffffff",
+            "on-secondary-fixed": "#1a1c21",
+            "tertiary": "#0041b0",
+            "on-tertiary-fixed-variant": "#003ea8",
+            "inverse-primary": "#ffb4ab",
+            "tertiary-container": "#0c57df",
+            "outline": "#916f6b",
+            "on-primary-fixed": "#410002",
+            "secondary-container": "#dfdfe6",
+            "on-tertiary-container": "#d6ddff",
+            "primary-container": "#c4121a",
+            "surface": "#f8f9fb",
+            "on-tertiary": "#ffffff",
+            "on-secondary": "#ffffff",
+            "surface-container": "#edeef0",
+            "on-primary": "#ffffff",
+            "error": "#ba1a1a",
+            "inverse-surface": "#2e3132",
+            "on-surface-variant": "#5c403c",
+            "surface-container-low": "#f3f4f6",
+            "primary-fixed-dim": "#ffb4ab",
+            "inverse-on-surface": "#f0f1f3",
+            "on-primary-container": "#ffd5d0",
+            "on-tertiary-fixed": "#00174b",
+            "on-primary-fixed-variant": "#93000c",
+            "surface-tint": "#be0a17",
+            "error-container": "#ffdad6",
+            "on-secondary-container": "#616268",
+            "surface-container-high": "#e7e8ea",
+            "primary-fixed": "#ffdad6",
+            "surface-container-highest": "#e1e2e4",
+            "on-secondary-fixed-variant": "#45474c",
+            "on-surface": "#191c1e",
+            "surface-dim": "#d9dadc",
+            "tertiary-fixed-dim": "#b4c5ff",
+            "surface-bright": "#f8f9fb",
+            "on-background": "#191c1e",
+            "secondary-fixed": "#e2e2e9",
+            "tertiary-fixed": "#dbe1ff",
+            "surface-variant": "#e1e2e4",
+            "on-error-container": "#93000a",
+            "secondary": "#5d5e64",
+            "primary": "#9a000d",
+            "background": "#f8f9fb"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "gutter": "1rem",
+            "space-lg": "1rem",
+            "space-xl": "1.5rem",
+            "gutter-dense": "0.75rem",
+            "space-md": "0.75rem",
+            "space-xs": "0.25rem",
+            "space-sm": "0.5rem",
+            "margin": "1.5rem"
+          },
+          "fontFamily": {
+            "label-md": ["Inter"],
+            "display": ["Inter"],
+            "metric-val": ["Inter"],
+            "headline-md": ["Inter"],
+            "title-eyebrow": ["Inter"],
+            "label-xs": ["Inter"],
+            "headline-sm": ["Inter"],
+            "headline-lg": ["Inter"],
+            "label-sm": ["Inter"],
+            "body-lg": ["Inter"],
+            "body-md": ["Inter"],
+            "body-sm": ["Inter"]
+          },
+          "fontSize": {
+            "label-md": ["13px", { "lineHeight": "16px", "fontWeight": "500" }],
+            "display": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "metric-val": ["28px", { "lineHeight": "32px", "letterSpacing": "-0.03em", "fontWeight": "700" }],
+            "headline-md": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "title-eyebrow": ["11px", { "lineHeight": "14px", "letterSpacing": "0.08em", "fontWeight": "700" }],
+            "label-xs": ["11px", { "lineHeight": "14px", "fontWeight": "600" }],
+            "headline-sm": ["16px", { "lineHeight": "22px", "fontWeight": "600" }],
+            "headline-lg": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+            "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+            "body-lg": ["15px", { "lineHeight": "22px", "fontWeight": "400" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 18px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #f1f2f4;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #c6c6cd;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body class="bg-surface font-body-sm text-on-surface h-full flex overflow-hidden antialiased">
+<!-- ========================================================================= -->
+<!-- SIDEBAR: Asymmetric Persistent Navigation (260px Fixed)                   -->
+<!-- ========================================================================= -->
+<aside class="w-[260px] min-w-[260px] bg-[#181A1F] text-inverse-on-surface flex flex-col justify-between select-none z-30 shadow-md">
+<!-- Top Brand & Navigation Section -->
+<div class="flex flex-col">
+<!-- Institutional Logo Area -->
+<div class="h-16 px-4 bg-white border-b border-[#E2E4E9] flex items-center gap-3">
+<div class="w-9 h-9 bg-primary-container text-white flex items-center justify-center font-display rounded shadow-sm">
+<span class="material-symbols-outlined text-[22px]" data-icon="school">school</span>
+</div>
+<div class="flex flex-col overflow-hidden">
+<span class="font-headline-sm text-[13px] leading-tight text-[#111827] tracking-tight truncate font-bold">BRUSBEN E.I.R.L.</span>
+<span class="font-title-eyebrow text-[9px] text-primary-container uppercase tracking-wider truncate">Capacitarse es Superarse</span>
+</div>
+</div>
+<!-- Navigation Hierarchy -->
+<div class="px-3 pt-4">
+<div class="px-3 pb-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Plataforma ERP</div>
+<nav class="space-y-1"><!-- Item: Inicio -->
+<a class="flex items-center gap-3 px-3 py-2 rounded text-[#9CA3AF] hover:text-white hover:bg-[#22252B] transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="dashboard">dashboard</span>
+<span>Inicio</span>
+</a>
+<!-- Item: CRM Comercial -->
+<a class="flex items-center gap-3 px-3 py-2 rounded text-[#9CA3AF] hover:text-white hover:bg-[#22252B] transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="hub">hub</span>
+<span>CRM Comercial</span>
+</a>
+<!-- Item: Personas y estudiantes -->
+<a class="flex items-center gap-3 px-3 py-2 rounded text-[#9CA3AF] hover:text-white hover:bg-[#22252B] transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="group">group</span>
+<span>Personas y estudiantes</span>
+</a>
+<!-- Item: Oferta académica -->
+<a class="flex items-center gap-3 px-3 py-2 rounded text-[#9CA3AF] hover:text-white hover:bg-[#22252B] transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="menu_book">menu_book</span>
+<span>Oferta académica</span>
+</a>
+<!-- Item: Matrículas y pagos -->
+<a class="flex items-center gap-3 px-3 py-2 rounded text-[#9CA3AF] hover:text-white hover:bg-[#22252B] transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="assignment">assignment</span>
+<span>Matrículas y pagos</span>
+</a>
+<!-- Item: Reportes -->
+<a class="flex items-center gap-3 px-3 py-2 rounded text-[#9CA3AF] hover:text-white hover:bg-[#22252B] transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="bar_chart">bar_chart</span>
+<span>Reportes</span>
+</a>
+<!-- Item: Usuarios y accesos -->
+<a class="flex items-center gap-3 px-3 py-2 rounded text-[#9CA3AF] hover:text-white hover:bg-[#22252B] transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="admin_panel_settings">admin_panel_settings</span>
+<span>Usuarios y accesos</span>
+</a>
+<!-- Item: Auditoría (ACTIVE) -->
+<a class="flex items-center justify-between px-3 py-2 rounded bg-primary-container text-white shadow-sm font-label-md text-label-md" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[18px]" data-icon="security" style="font-variation-settings: 'FILL' 1;">security</span>
+<span class="font-semibold">Auditoría</span>
+</div>
+<span class="w-2 h-2 rounded-full bg-white"></span>
+</a>
+<!-- Item: Mi perfil -->
+<a class="flex items-center gap-3 px-3 py-2 rounded text-[#9CA3AF] hover:text-white hover:bg-[#22252B] transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="account_circle">account_circle</span>
+<span>Mi perfil</span>
+</a></nav>
+</div>
+</div>
+<!-- Bottom Sidebar Status Information -->
+<div class="p-3 border-t border-[#252830] bg-[#141519]"><div class="bg-[#1D2026] p-2.5 rounded border border-[#2B2F38] mb-2 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+<span class="text-[11px] font-semibold text-gray-200">Sistema en línea • Operativo</span>
+</div>
+<span class="text-[10px] text-gray-400 font-mono">v{{APP_VERSION}}</span>
+</div>
+<div class="text-[10px] text-gray-400 text-center font-mono">
+        Centro de Capacitaciones Brusben • Tumbes
+</div></div>
+</aside>
+<!-- ========================================================================= -->
+<!-- MAIN WORKSPACE CONTAINER                                                  -->
+<!-- ========================================================================= -->
+<div class="flex-1 flex flex-col h-full overflow-hidden min-w-0">
+<!-- Top Administrative Header -->
+<header class="h-16 min-h-[64px] bg-white border-b border-[#E2E4E9] px-6 flex items-center justify-between z-20">
+<!-- Breadcrumbs & Campus Identifier -->
+<div class="flex items-center gap-4">
+<nav class="flex items-center gap-2 text-label-sm text-secondary font-label-sm">
+<span>ERP Brusben</span>
+<span class="text-secondary-fixed-dim">/</span>
+<span>Seguridad y control</span>
+<span class="text-secondary-fixed-dim">/</span>
+<span class="text-on-surface font-semibold">Auditoría del sistema</span>
+</nav>
+<div class="h-4 w-px bg-[#E2E4E9]"></div>
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-surface-container-low border border-[#E2E4E9] rounded text-[11px] font-medium text-on-surface"><span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span><span>Sede Central • Tumbes</span></div>
+</div>
+<!-- Header Center: Quick Search Utility -->
+<div class="flex-1 max-w-md mx-6">
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-secondary text-[16px]" data-icon="search">search</span>
+<input class="w-full h-9 pl-9 pr-14 bg-surface border border-[#D1D5DB] rounded text-body-sm font-body-sm placeholder:text-gray-400 focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-colors" placeholder="Buscar por eventos, IDs, usuarios o IPs..." type="text"/>
+<kbd class="absolute right-2 px-1.5 py-0.5 text-[10px] font-mono text-gray-500 bg-white border border-gray-300 rounded shadow-xs">Ctrl+K</kbd>
+</div>
+</div>
+<!-- Header Right: Notifications and Administrator Account -->
+<div class="flex items-center gap-3">
+<!-- Notification Bell -->
+<button class="relative w-9 h-9 flex items-center justify-center text-secondary hover:text-on-surface hover:bg-surface-container rounded transition-colors" title="Notificaciones del sistema">
+<span class="material-symbols-outlined text-[20px]" data-icon="notifications">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-4 h-4 bg-primary-container text-white text-[9px] font-bold rounded-full flex items-center justify-center border-2 border-white">3</span>
+</button>
+<div class="h-6 w-px bg-[#E2E4E9]"></div>
+<!-- Administrator User Profile Card -->
+<div class="flex items-center gap-3 pl-1">
+<div class="relative">
+<div class="w-8 h-8 rounded-full bg-primary-container text-white flex items-center justify-center font-semibold text-xs tracking-tight">
+              LA
+            </div>
+<span class="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-500 border border-white"></span>
+</div>
+<div class="flex flex-col text-left">
+<span class="text-body-sm font-semibold text-on-surface leading-tight">Loana Avila Neyra</span>
+<span class="text-[11px] text-secondary leading-tight">Superadministración</span>
+</div>
+<button class="w-8 h-8 flex items-center justify-center text-secondary hover:text-error hover:bg-red-50 rounded transition-colors" title="Cerrar sesión">
+<span class="material-symbols-outlined text-[18px]" data-icon="logout">logout</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Scrollable Workspace Body -->
+<main class="flex-1 overflow-y-auto custom-scroll bg-[#F5F6F8] p-6 space-y-4">
+<!-- ========================================================================= -->
+<!-- SECTION 1: HEADER & ACTIONS                                              -->
+<!-- ========================================================================= -->
+<div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 bg-white p-5 rounded-lg border border-[#E2E4E9] shadow-[0_1px_3px_0_rgba(0,0,0,0.04)]"><div>
+<div class="flex items-center gap-2 mb-1">
+<span class="font-title-eyebrow text-title-eyebrow text-primary uppercase">Seguridad institucional y auditoría</span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              Diff Engine v2.4 • Retención 365 días
+            </span>
+</div>
+<h1 class="font-display text-display text-on-surface tracking-tight">Detalle de Auditoría &amp; Comparación de Datos (Diff Engine)</h1>
+<p class="font-body-sm text-body-sm text-secondary mt-0.5 max-w-3xl">
+            Inspección granular de mutación de registros, trazabilidad de campos modificados, hash criptográfico inmutable y rollback supervisado en ERP Brusben.
+          </p>
+</div>
+<div class="flex items-center gap-2 flex-wrap">
+<button class="h-9 px-3.5 bg-white border border-[#D1D5DB] hover:bg-gray-50 text-on-surface rounded font-label-md text-label-md flex items-center gap-2 shadow-xs transition-colors">
+<span class="material-symbols-outlined text-[16px] text-secondary" data-icon="undo">undo</span>
+<span>Deshacer / Rollback supervisado</span>
+</button>
+<button class="h-9 px-3.5 bg-primary-container text-white hover:bg-red-700 rounded font-label-md text-label-md flex items-center gap-2 shadow-xs transition-colors font-medium">
+<span class="material-symbols-outlined text-[16px] text-white" data-icon="picture_as_pdf">picture_as_pdf</span>
+<span>Exportar acta pericial (PDF)</span>
+</button>
+<button class="h-9 px-3.5 bg-white border border-[#D1D5DB] hover:bg-gray-50 text-on-surface rounded font-label-md text-label-md flex items-center gap-2 shadow-xs transition-colors">
+<span class="material-symbols-outlined text-[16px] text-secondary" data-icon="data_object">data_object</span>
+<span>Ver payload JSON crudo</span>
+</button>
+</div></div>
+<!-- ========================================================================= -->
+<!-- SECTION 2: 4-COLUMN KPI METRIC CARDS                                      -->
+<!-- ========================================================================= -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+<!-- KPI 1 -->
+<div class="bg-white p-4 rounded-lg border border-[#E2E4E9] border-l-4 border-l-[#C4121A] shadow-[0_1px_3px_0_rgba(0,0,0,0.04)] flex flex-col justify-between">
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-md text-label-md text-secondary font-medium">Total eventos hoy</span>
+<span class="material-symbols-outlined text-gray-400 text-[18px]" data-icon="receipt_long">receipt_long</span>
+</div>
+<div class="flex items-baseline gap-2 my-1">
+<span class="font-metric-val text-metric-val text-on-surface font-bold">14,820</span>
+<span class="inline-flex items-center text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">
+              +8.4%
+            </span>
+</div>
+<div class="text-[11px] text-secondary flex items-center gap-1.5 pt-1 border-t border-gray-100">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+<span>98.2% transacciones exitosas</span>
+</div>
+</div>
+<!-- KPI 2 -->
+<div class="bg-white p-4 rounded-lg border border-[#E2E4E9] border-l-4 border-l-tertiary shadow-[0_1px_3px_0_rgba(0,0,0,0.04)] flex flex-col justify-between">
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-md text-label-md text-secondary font-medium">Accesos y sesiones</span>
+<span class="material-symbols-outlined text-gray-400 text-[18px]" data-icon="login">login</span>
+</div>
+<div class="flex items-baseline gap-2 my-1">
+<span class="font-metric-val text-metric-val text-on-surface font-bold">342</span>
+<span class="text-body-sm text-secondary font-medium">(32 activas ahora)</span>
+</div>
+<div class="text-[11px] text-secondary flex items-center gap-1.5 pt-1 border-t border-gray-100">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+<span>2FA completado al 94.6%</span>
+</div>
+</div>
+<!-- KPI 3 -->
+<div class="bg-white p-4 rounded-lg border border-[#E2E4E9] border-l-4 border-l-amber-500 shadow-[0_1px_3px_0_rgba(0,0,0,0.04)] flex flex-col justify-between">
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-md text-label-md text-secondary font-medium">Modificaciones críticas</span>
+<span class="material-symbols-outlined text-gray-400 text-[18px]" data-icon="edit_document">edit_document</span>
+</div>
+<div class="flex items-baseline gap-2 my-1">
+<span class="font-metric-val text-metric-val text-on-surface font-bold">28</span>
+<span class="text-body-sm text-secondary font-medium">cambios en BD</span>
+</div>
+<div class="text-[11px] text-secondary flex items-center gap-1.5 pt-1 border-t border-gray-100">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+<span>Matrículas, aranceles y roles</span>
+</div>
+</div>
+<!-- KPI 4 -->
+<div class="bg-white p-4 rounded-lg border border-[#E2E4E9] border-l-4 border-l-rose-500 shadow-[0_1px_3px_0_rgba(0,0,0,0.04)] flex flex-col justify-between">
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-md text-label-md text-secondary font-medium">Errores y excepciones</span>
+<span class="material-symbols-outlined text-gray-400 text-[18px]" data-icon="warning">warning</span>
+</div>
+<div class="flex items-baseline gap-2 my-1">
+<span class="font-metric-val text-metric-val text-on-surface font-bold">3</span>
+<span class="text-label-xs font-semibold text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded">1 Media, 2 Bajas</span>
+</div>
+<div class="text-[11px] text-secondary flex items-center gap-1.5 pt-1 border-t border-gray-100">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+<span>0 caídas de servicio • 100% resueltos</span>
+</div>
+</div>
+</div>
+<!-- ========================================================================= -->
+<!-- SECTION 3: OPERATIONAL AUDIT DAEMON STATUS BAR                            -->
+<!-- ========================================================================= -->
+<div class="bg-[#181A1F] text-inverse-on-surface px-4 py-2.5 rounded-lg flex flex-wrap items-center justify-between gap-3 text-[11px] font-mono shadow-xs border border-[#2B2F38]"><div class="flex items-center gap-3">
+<span class="flex h-2 w-2 relative">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+</span>
+<span class="text-white font-medium">Diff Engine Daemon Activo (Sync Google Apps Script / Drive)</span>
+<span class="text-gray-500">•</span>
+<span class="text-gray-400">Última verificación inmutable: <span class="text-white font-semibold">Hace 4 seg</span></span>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-1 text-gray-400">
+<span class="material-symbols-outlined text-[14px]" data-icon="lan">lan</span>
+<span>Red Institucional:</span>
+<span class="text-emerald-400 font-semibold">190.238.45.12 (Sede Central • Tumbes)</span>
+</div>
+<div class="h-3 w-px bg-gray-700"></div>
+<div class="flex items-center gap-1 text-gray-400">
+<span class="material-symbols-outlined text-[14px] text-emerald-400" data-icon="lock">lock</span>
+<span class="text-emerald-300 font-medium">Firma Criptográfica SHA-256 Validada</span>
+</div>
+</div></div>
+<!-- ========================================================================= -->
+<!-- SECTION 4: ADVANCED FILTERS AND TAB SEGMENTS                              -->
+<!-- ========================================================================= -->
+<div class="bg-white p-4 rounded-lg border border-[#E2E4E9] shadow-[0_1px_3px_0_rgba(0,0,0,0.04)] space-y-3">
+<!-- Segmented Tab Nav -->
+<div class="flex items-center justify-between border-b border-[#E2E4E9] pb-3 overflow-x-auto">
+<div class="flex items-center gap-2">
+<button class="px-3 py-1.5 rounded-md font-label-md text-label-md bg-primary-container text-white font-medium shadow-xs">
+              Todos los logs (14,820)
+            </button>
+<button class="px-3 py-1.5 rounded-md font-label-md text-label-md text-secondary hover:text-on-surface hover:bg-surface-container font-medium transition-colors">
+              Modificaciones de datos (1,240)
+            </button>
+<button class="px-3 py-1.5 rounded-md font-label-md text-label-md text-secondary hover:text-on-surface hover:bg-surface-container font-medium transition-colors">
+              Accesos y seguridad (3,410)
+            </button>
+<button class="px-3 py-1.5 rounded-md font-label-md text-label-md text-secondary hover:text-on-surface hover:bg-surface-container font-medium transition-colors">
+              Operaciones financieras (890)
+            </button>
+<button class="px-3 py-1.5 rounded-md font-label-md text-label-md text-rose-700 bg-rose-50 hover:bg-rose-100 font-medium transition-colors">
+              Errores y excepciones (3)
+            </button>
+</div>
+<div class="flex items-center gap-2 text-label-sm text-secondary">
+<span class="material-symbols-outlined text-[16px] text-emerald-600" data-icon="sync">sync</span>
+<span>Auto-refresh: 15s</span>
+</div>
+</div>
+<!-- Filter Selectors Bar -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-2.5 items-center pt-1">
+<!-- Text Search Field -->
+<div class="md:col-span-4 relative">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-secondary text-[16px]" data-icon="search">search</span>
+<input class="w-full h-9 pl-9 pr-3 bg-white border border-[#D1D5DB] rounded text-body-sm font-body-sm placeholder:text-gray-400 focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container" placeholder="Buscar por usuario, IP, DNI, acción o ID de registro..." type="text"/>
+</div>
+<!-- Filter: Severidad -->
+<div class="md:col-span-2">
+<select class="w-full h-9 px-2.5 bg-white border border-[#D1D5DB] rounded text-body-sm font-body-sm text-on-surface focus:outline-none focus:border-primary-container">
+<option>Severidad: Todas</option>
+<option>INFO (Informativo)</option>
+<option>WARNING (Alerta)</option>
+<option>ERROR (Error)</option>
+<option>CRITICAL (Crítico)</option>
+</select>
+</div>
+<!-- Filter: Módulo -->
+<div class="md:col-span-2">
+<select class="w-full h-9 px-2.5 bg-white border border-[#D1D5DB] rounded text-body-sm font-body-sm text-on-surface focus:outline-none focus:border-primary-container">
+<option>Módulo: Todos</option>
+<option>Matrículas y Pagos</option>
+<option>Personas y Alumnos</option>
+<option>Oferta Académica</option>
+<option>CRM y Leads</option>
+<option>Usuarios y Permisos</option>
+</select>
+</div>
+<!-- Filter: Responsable -->
+<div class="md:col-span-2">
+<select class="w-full h-9 px-2.5 bg-white border border-[#D1D5DB] rounded text-body-sm font-body-sm text-on-surface focus:outline-none focus:border-primary-container">
+<option>Usuario: Todos</option>
+<option>Loana Avila Neyra</option>
+<option>Carlos Benites</option>
+<option>Sistema Batch (Daemon)</option>
+<option>API Gateway Public</option>
+</select>
+</div>
+<!-- Filter: Fecha & Reset -->
+<div class="md:col-span-2 flex items-center gap-1.5">
+<div class="flex-1 h-9 px-2 bg-surface border border-[#D1D5DB] rounded text-[11px] font-medium text-on-surface flex items-center justify-between">
+<span class="truncate">Hoy, 24 Oct</span>
+<span class="material-symbols-outlined text-[14px] text-gray-500" data-icon="today">today</span>
+</div>
+<button class="h-9 w-9 bg-white border border-[#D1D5DB] hover:bg-surface-container rounded text-secondary hover:text-on-surface flex items-center justify-center transition-colors" title="Restablecer filtros">
+<span class="material-symbols-outlined text-[16px]" data-icon="filter_alt_off">filter_alt_off</span>
+</button>
+</div>
+</div>
+</div>
+<!-- ========================================================================= -->
+<!-- SECTION 5: SPLIT WORKBENCH - AUDIT DATA TABLE (70%) & DIFF INSPECTOR (30%)-->
+<!-- ========================================================================= -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start"><!-- ==================== LEFT COLUMN: DIFF ENGINE VISOR (8/12) ==================== -->
+<div class="lg:col-span-8 space-y-4">
+<!-- Card: Active Event Context Banner -->
+<div class="bg-white rounded-lg border border-[#E2E4E9] shadow-[0_1px_3px_0_rgba(0,0,0,0.04)] overflow-hidden">
+<div class="px-4 py-3 bg-[#F9FAFB] border-b border-[#E2E4E9] flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<span class="w-2.5 h-2.5 rounded-full bg-primary-container"></span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold">Evento Bajo Inspección: Modificación de Registro</span>
+<span class="px-2 py-0.5 rounded text-[11px] font-mono font-semibold bg-red-50 text-primary-container border border-red-200">#LOG-88492</span>
+</div>
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Transacción Confirmada
+</span>
+</div>
+<!-- Context Details Grid -->
+<div class="p-4 grid grid-cols-1 md:grid-cols-4 gap-3 text-[12px] bg-white border-b border-[#E2E4E9]">
+<div>
+<span class="text-secondary block text-[11px]">Expediente / Folio</span>
+<span class="font-mono font-bold text-primary text-[13px]">MAT-2026-0841</span>
+</div>
+<div>
+<span class="text-secondary block text-[11px]">Titular de Matrícula</span>
+<span class="font-semibold text-on-surface">Carlos Mendoza Ruiz</span>
+<span class="text-[10px] text-gray-500 font-mono block">DNI: 70891244</span>
+</div>
+<div>
+<span class="text-secondary block text-[11px]">Operador Responsable</span>
+<span class="font-semibold text-on-surface">Loana Avila Neyra</span>
+<span class="text-[10px] text-emerald-700 font-medium block">Superadministración</span>
+</div>
+<div>
+<span class="text-secondary block text-[11px]">Sede y Fecha Precisa</span>
+<span class="font-medium text-on-surface">Sede Central · Tumbes</span>
+<span class="text-[10px] text-gray-500 font-mono block">24/10/2026 10:42:15.842</span>
+</div>
+</div>
+<!-- Diff Toolbar -->
+<div class="px-4 py-2.5 bg-surface flex flex-wrap items-center justify-between gap-2 border-b border-[#E2E4E9] text-label-sm">
+<div class="flex items-center gap-2">
+<span class="font-semibold text-on-surface flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-primary" data-icon="difference">difference</span> Comparación Git-Style (Side-by-Side Unified)
+</span>
+<span class="text-[11px] bg-emerald-100 text-emerald-800 font-mono font-semibold px-2 py-0.5 rounded">3 mutaciones detectadas</span>
+</div>
+<div class="flex items-center gap-2 text-[11px] text-secondary">
+<span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-red-100 border border-red-300"></span> Anterior (Eliminado / Modificado)</span>
+<span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-emerald-100 border border-emerald-300"></span> Nuevo (Confirmado en BD)</span>
+</div>
+</div>
+<!-- DIFF VISOR ENGINE BODY -->
+<div class="p-4 space-y-4 bg-[#F8FAFC]">
+<!-- FIELD 1: monto_descuento_arancel -->
+<div class="border border-[#E2E4E9] rounded-lg overflow-hidden bg-white shadow-xs">
+<div class="bg-gray-50 px-3.5 py-2 border-b border-[#E2E4E9] flex items-center justify-between text-[12px]">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[15px] text-secondary" data-icon="code">code</span>
+<span class="font-mono font-bold text-on-surface">monto_descuento_arancel</span>
+<span class="text-[10px] text-gray-400 font-mono">Decimal(10,2)</span>
+</div>
+<span class="text-[10px] uppercase font-bold text-primary tracking-wider">Regla Arancelaria</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-[#E2E4E9] text-[12px] font-mono">
+<div class="p-3 bg-red-50/40">
+<div class="text-[10px] uppercase font-bold text-red-600 mb-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]" data-icon="remove_circle">remove_circle</span> Valor Anterior
+</div>
+<div class="flex items-baseline justify-between">
+<span class="text-red-700 line-through text-[14px] font-bold">S/ 0.00</span>
+<span class="text-[10px] text-red-600 bg-red-100 px-1.5 py-0.5 rounded font-sans">Tarifa estándar sin beneficio</span>
+</div>
+</div>
+<div class="p-3 bg-emerald-50/40">
+<div class="text-[10px] uppercase font-bold text-emerald-700 mb-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]" data-icon="add_circle">add_circle</span> Valor Nuevo (Actual)
+</div>
+<div class="flex items-baseline justify-between">
+<span class="text-emerald-800 text-[14px] font-bold">S/ 100.00</span>
+<span class="text-[10px] text-emerald-800 bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded font-sans font-semibold">Beca Pronto Pago aplicada</span>
+</div>
+</div>
+</div>
+</div>
+<!-- FIELD 2: modalidad_pago_seleccionada -->
+<div class="border border-[#E2E4E9] rounded-lg overflow-hidden bg-white shadow-xs">
+<div class="bg-gray-50 px-3.5 py-2 border-b border-[#E2E4E9] flex items-center justify-between text-[12px]">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[15px] text-secondary" data-icon="code">code</span>
+<span class="font-mono font-bold text-on-surface">modalidad_pago_seleccionada</span>
+<span class="text-[10px] text-gray-400 font-mono">Varchar(100)</span>
+</div>
+<span class="text-[10px] uppercase font-bold text-amber-700 tracking-wider">Plan de Cuotas</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-[#E2E4E9] text-[12px] font-mono">
+<div class="p-3 bg-red-50/40">
+<div class="text-[10px] uppercase font-bold text-red-600 mb-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]" data-icon="remove_circle">remove_circle</span> Valor Anterior
+</div>
+<div class="text-red-700 line-through font-semibold">
+"Pago al Contado (1 cuota total)"
+</div>
+</div>
+<div class="p-3 bg-emerald-50/40">
+<div class="text-[10px] uppercase font-bold text-emerald-700 mb-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]" data-icon="add_circle">add_circle</span> Valor Nuevo (Actual)
+</div>
+<div class="text-emerald-900 font-bold flex items-center justify-between">
+<span>"Plan Financiamiento en Cuotas (6 cuotas de S/ 380.00)"</span>
+</div>
+</div>
+</div>
+</div>
+<!-- FIELD 3: estado_expediente_academico -->
+<div class="border border-[#E2E4E9] rounded-lg overflow-hidden bg-white shadow-xs">
+<div class="bg-gray-50 px-3.5 py-2 border-b border-[#E2E4E9] flex items-center justify-between text-[12px]">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[15px] text-secondary" data-icon="code">code</span>
+<span class="font-mono font-bold text-on-surface">estado_expediente_academico</span>
+<span class="text-[10px] text-gray-400 font-mono">Enum_State</span>
+</div>
+<span class="text-[10px] uppercase font-bold text-tertiary tracking-wider">Ciclo de Admisión</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-[#E2E4E9] text-[12px] font-mono">
+<div class="p-3 bg-red-50/40">
+<div class="text-[10px] uppercase font-bold text-red-600 mb-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]" data-icon="remove_circle">remove_circle</span> Valor Anterior
+</div>
+<span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold bg-rose-100 text-rose-800 line-through border border-rose-300">[OBSERVADO_FALTA_REQUISITO]</span>
+</div>
+<div class="p-3 bg-emerald-50/40">
+<div class="text-[10px] uppercase font-bold text-emerald-700 mb-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]" data-icon="add_circle">add_circle</span> Valor Nuevo (Actual)
+</div>
+<span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-100 text-emerald-900 border border-emerald-300">[REGULARIZADO_APROBADO_DIRECCION]</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Institutional Justification Banner -->
+<div class="p-4 bg-white border-t border-[#E2E4E9] text-[12px] flex items-start gap-3">
+<span class="material-symbols-outlined text-secondary text-[20px]" data-icon="assignment_turned_in">assignment_turned_in</span>
+<div>
+<span class="font-semibold text-on-surface block">Motivo &amp; Justificación Institucional del Cambio:</span>
+<p class="text-secondary mt-0.5 leading-relaxed">
+"Regularización de expediente por entrega extemporánea de certificado de estudios secundarios y aplicación de convenio institucional de beca pronto pago autorizada mediante Resolución Directoral RD-2026-041-TB."
+</p>
+</div>
+</div>
+</div>
+</div>
+<!-- ==================== RIGHT COLUMN: METADATA & PERICIAL CONTROLS (4/12) ==================== -->
+<div class="lg:col-span-4 space-y-4">
+<!-- Panel: Transacción Forense y Certificación -->
+<div class="bg-white rounded-lg border border-[#E2E4E9] shadow-[0_1px_3px_0_rgba(0,0,0,0.04)] overflow-hidden">
+<div class="p-3.5 border-b border-[#E2E4E9] bg-surface flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]" data-icon="verified">verified</span>
+<h3 class="font-headline-sm text-[13px] text-on-surface font-bold">Metadatos Periciales</h3>
+</div>
+<span class="text-[10px] font-mono text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-semibold border border-emerald-200">Inmutable</span>
+</div>
+<div class="p-4 space-y-3 text-[11px]">
+<div class="space-y-1">
+<span class="text-secondary block font-medium">ID de Transacción Global</span>
+<div class="p-2 bg-gray-50 border border-[#E2E4E9] rounded font-mono font-bold text-on-surface flex items-center justify-between">
+<span>#LOG-88492-2026</span>
+<button class="text-primary hover:underline text-[10px]" title="Copiar ID">Copiar</button>
+</div>
+</div>
+<div class="space-y-1">
+<span class="text-secondary block font-medium">Hash Criptográfico SHA-256</span>
+<div class="p-2 bg-gray-50 border border-[#E2E4E9] rounded font-mono text-[10px] text-gray-700 break-all select-all">
+sha256:8f9b4c20e1189a77cd52be41b9a9f02901a8ef1c4e78a631fbb9c20a89d71
+</div>
+</div>
+<div class="space-y-1">
+<span class="text-secondary block font-medium">IP de Origen &amp; Red Local</span>
+<div class="p-2 bg-gray-50 border border-[#E2E4E9] rounded text-on-surface font-mono">
+190.238.45.12 (Red Institucional Sede Central · Tumbes)
+</div>
+</div>
+<div class="space-y-1">
+<span class="text-secondary block font-medium">Firma Digital de Sesión</span>
+<div class="p-2 bg-surface-container-low border border-[#E2E4E9] rounded text-secondary flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-emerald-600" data-icon="fingerprint">fingerprint</span>
+<span>Token OAuth2 Activo • 2FA Hardware Token</span>
+</div>
+</div>
+</div>
+<!-- Actions Box -->
+<div class="p-4 bg-[#F9FAFB] border-t border-[#E2E4E9] space-y-2">
+<button class="w-full h-9 px-3 bg-primary-container text-white rounded font-label-md text-label-md flex items-center justify-center gap-2 hover:bg-red-700 transition-colors shadow-xs font-semibold">
+<span class="material-symbols-outlined text-[16px]" data-icon="picture_as_pdf">picture_as_pdf</span>
+<span>Exportar acta pericial (PDF)</span>
+</button>
+<button class="w-full h-9 px-3 bg-white border border-[#D1D5DB] text-on-surface hover:bg-gray-100 rounded font-label-md text-label-md flex items-center justify-center gap-2 transition-colors">
+<span class="material-symbols-outlined text-[16px] text-secondary" data-icon="history">history</span>
+<span>Deshacer / Rollback supervisado</span>
+</button>
+</div>
+</div>
+<!-- Panel: Payload JSON Crudo -->
+<div class="bg-white rounded-lg border border-[#E2E4E9] shadow-[0_1px_3px_0_rgba(0,0,0,0.04)] overflow-hidden">
+<div class="p-3 border-b border-[#E2E4E9] bg-surface flex items-center justify-between">
+<span class="text-[11px] font-mono font-bold text-secondary uppercase">JSON Payload de Mutación</span>
+<button class="text-[10px] text-primary hover:underline font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]" data-icon="content_copy">content_copy</span> Copiar
+</button>
+</div>
+<div class="p-3 bg-[#181A1F]">
+<pre class="text-[10.5px] font-mono text-emerald-400 overflow-x-auto leading-relaxed">{
+  "event_id": "LOG-88492",
+  "sede": "Sede Central · Tumbes",
+  "folio": "MAT-2026-0841",
+  "estudiante": "Carlos Mendoza Ruiz",
+  "usuario_responsable": "Loana Avila Neyra",
+  "cambios_aplicados": {
+    "monto_descuento_arancel": {
+      "prev": 0.00,
+      "post": 100.00,
+      "glosa": "Beca Pronto Pago aplicada"
+    },
+    "modalidad_pago_seleccionada": {
+      "prev": "Pago al Contado (1 cuota total)",
+      "post": "Plan Financiamiento en Cuotas (6 cuotas de S/ 380.00)"
+    },
+    "estado_expediente_academico": {
+      "prev": "OBSERVADO_FALTA_REQUISITO",
+      "post": "REGULARIZADO_APROBADO_DIRECCION"
+    }
+  }
+}</pre>
+</div>
+</div>
+</div></div>
+</main>
+</div>
+</body></html>

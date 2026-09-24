@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ERP Brusben - Usuarios y accesos Desktop</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-surface-variant": "#5c403c",
+            "error": "#ba1a1a",
+            "tertiary-fixed-dim": "#b4c5ff",
+            "on-tertiary-fixed": "#00174b",
+            "on-error-container": "#93000a",
+            "surface-container-lowest": "#ffffff",
+            "secondary-fixed": "#e2e2e9",
+            "secondary-fixed-dim": "#c6c6cd",
+            "on-tertiary-fixed-variant": "#003ea8",
+            "on-error": "#ffffff",
+            "inverse-primary": "#ffb4ab",
+            "on-primary-container": "#ffd5d0",
+            "error-container": "#ffdad6",
+            "on-surface": "#191c1e",
+            "primary-fixed-dim": "#ffb4ab",
+            "on-tertiary": "#ffffff",
+            "inverse-surface": "#2e3132",
+            "surface-variant": "#e1e2e4",
+            "surface-container-low": "#f3f4f6",
+            "on-secondary-fixed": "#1a1c21",
+            "on-secondary-container": "#616268",
+            "secondary-container": "#dfdfe6",
+            "secondary": "#5d5e64",
+            "outline": "#916f6b",
+            "tertiary-fixed": "#dbe1ff",
+            "surface-tint": "#be0a17",
+            "outline-variant": "#e6bdb8",
+            "surface-container-high": "#e7e8ea",
+            "on-primary-fixed-variant": "#93000c",
+            "background": "#f8f9fb",
+            "primary-container": "#c4121a",
+            "on-primary-fixed": "#410002",
+            "surface-dim": "#d9dadc",
+            "on-secondary-fixed-variant": "#45474c",
+            "on-secondary": "#ffffff",
+            "on-background": "#191c1e",
+            "surface-container": "#edeef0",
+            "tertiary": "#0041b0",
+            "primary-fixed": "#ffdad6",
+            "on-tertiary-container": "#d6ddff",
+            "on-primary": "#ffffff",
+            "surface-container-highest": "#e1e2e4",
+            "inverse-on-surface": "#f0f1f3",
+            "tertiary-container": "#0c57df",
+            "surface-bright": "#f8f9fb",
+            "primary": "#9a000d"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-xl": "1.5rem",
+            "margin": "1.5rem",
+            "space-xs": "0.25rem",
+            "space-md": "0.75rem",
+            "space-sm": "0.5rem",
+            "space-lg": "1rem",
+            "gutter": "1rem",
+            "gutter-dense": "0.75rem"
+          },
+          "fontFamily": {
+            "body-lg": ["Inter"],
+            "headline-md": ["Inter"],
+            "display": ["Inter"],
+            "body-md": ["Inter"],
+            "headline-sm": ["Inter"],
+            "metric-val": ["Inter"],
+            "headline-lg": ["Inter"],
+            "label-sm": ["Inter"],
+            "body-sm": ["Inter"],
+            "label-xs": ["Inter"],
+            "label-md": ["Inter"],
+            "title-eyebrow": ["Inter"]
+          },
+          "fontSize": {
+            "body-lg": ["15px", { "lineHeight": "22px", "fontWeight": "400" }],
+            "headline-md": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "display": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "headline-sm": ["16px", { "lineHeight": "22px", "fontWeight": "600" }],
+            "metric-val": ["28px", { "lineHeight": "32px", "letterSpacing": "-0.03em", "fontWeight": "700" }],
+            "headline-lg": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+            "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+            "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+            "label-xs": ["11px", { "lineHeight": "14px", "fontWeight": "600" }],
+            "label-md": ["13px", { "lineHeight": "16px", "fontWeight": "500" }],
+            "title-eyebrow": ["11px", { "lineHeight": "14px", "letterSpacing": "0.08em", "fontWeight": "700" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      vertical-align: middle;
+      display: inline-block;
+      line-height: 1;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #c6c6cd;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #9ca3af;
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface h-full flex overflow-hidden font-body-md text-body-md antialiased select-none">
+<!-- 1. MENÚ LATERAL IZQUIERDO OSCURO (#181A1F) -->
+<aside class="w-[260px] min-w-[260px] bg-[#181A1F] text-slate-300 flex flex-col justify-between border-r border-slate-800 z-30 select-none">
+<div class="flex flex-col">
+<!-- Header del Sidebar con Logotipo Institucional Brusben -->
+<div class="h-16 px-4 flex items-center justify-between border-b border-slate-800">
+<div class="flex items-center gap-2.5">
+<div class="bg-white px-2 py-1 rounded flex items-center justify-center shadow-sm">
+<div class="flex items-center gap-1">
+<span class="font-headline-md text-primary-container font-extrabold tracking-tighter">B</span>
+<div class="flex flex-col leading-none">
+<span class="font-headline-sm text-primary-container font-black tracking-tight text-[11px]">BRUSBEN</span>
+<span class="text-[7px] text-slate-500 font-semibold tracking-wider">E.I.R.L.</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col">
+<span class="text-[10px] uppercase font-semibold text-slate-400 tracking-wider">CAPACITARSE ES</span>
+<span class="text-[10px] uppercase font-bold text-red-400 tracking-widest">SUPERARSE</span>
+</div>
+</div>
+<button class="text-slate-400 hover:text-white p-1 rounded transition-colors" title="Colapsar menú">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+</button>
+</div>
+<!-- Menú de Navegación Vertical -->
+<nav class="p-3 space-y-1">
+<!-- Inicio -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded text-slate-400 hover:bg-slate-800 hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-white">home</span>
+<span class="font-label-md text-label-md">Inicio</span>
+</a>
+<!-- CRM Comercial con Badge 12 -->
+<a class="flex items-center justify-between px-3 py-2.5 rounded text-slate-400 hover:bg-slate-800 hover:text-white transition-colors group" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-white">contact_mail</span>
+<span class="font-label-md text-label-md">CRM Comercial</span>
+</div>
+<span class="bg-primary-container text-white text-[11px] font-bold px-1.5 py-0.2 rounded-full">12</span>
+</a>
+<!-- Personas y estudiantes -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded text-slate-400 hover:bg-slate-800 hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-white">group</span>
+<span class="font-label-md text-label-md">Personas y estudiantes</span>
+</a>
+<!-- Oferta académica -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded text-slate-400 hover:bg-slate-800 hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-white">menu_book</span>
+<span class="font-label-md text-label-md">Oferta académica</span>
+</a>
+<!-- Matrículas -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded text-slate-400 hover:bg-slate-800 hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-white">school</span>
+<span class="font-label-md text-label-md">Matrículas</span>
+</a>
+<!-- Usuarios y accesos (ACTIVO CON FONDO ROJO INSTITUCIONAL #C4121A) -->
+<a class="flex items-center justify-between px-3 py-2.5 rounded bg-primary-container text-white font-medium shadow-sm" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px] text-white">admin_panel_settings</span>
+<span class="font-label-md text-label-md font-semibold">Usuarios y accesos</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+</a>
+<!-- Auditoría -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded text-slate-400 hover:bg-slate-800 hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-white">receipt_long</span>
+<span class="font-label-md text-label-md">Auditoría</span>
+</a>
+<!-- Mi perfil -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded text-slate-400 hover:bg-slate-800 hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-white">account_circle</span>
+<span class="font-label-md text-label-md">Mi perfil</span>
+</a>
+</nav>
+</div>
+<!-- Footer Sidebar -->
+<div class="p-4 border-t border-slate-800 bg-[#131518]">
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-label-xs text-label-xs font-semibold text-slate-400">ERP Brusben v2.4.0</span>
+<span class="text-[10px] text-slate-500">Compilación 2026.1</span>
+</div>
+<div class="flex items-center gap-1.5 bg-emerald-950/60 border border-emerald-800/60 px-2 py-0.5 rounded-full">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+<span class="text-[11px] font-medium text-emerald-400">Operativo</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- CONTENEDOR PRINCIPAL DERECHO -->
+<div class="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-background">
+<!-- 2. CABECERA SUPERIOR BLANCA (TOP NAV) -->
+<header class="h-16 bg-surface-container-lowest border-b border-[#E2E4E9] flex items-center justify-between px-6 z-20 shrink-0">
+<!-- Breadcrumb y Sede -->
+<div class="flex items-center gap-4">
+<nav class="flex items-center gap-2 text-slate-500 font-label-sm text-label-sm">
+<span class="hover:text-primary-container cursor-pointer transition-colors">ERP Brusben</span>
+<span class="text-slate-300">/</span>
+<span class="text-slate-700 font-medium">Usuarios y accesos</span>
+<span class="text-slate-300">/</span>
+<span class="text-slate-900 font-semibold bg-slate-100 px-2 py-0.5 rounded">Control de usuarios y permisos</span>
+</nav>
+<div class="h-4 w-px bg-slate-200"></div>
+<!-- Selector de Sede -->
+<div class="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded text-slate-700 font-label-xs text-label-xs font-medium">
+<span class="material-symbols-outlined text-red-600 text-[16px]">location_on</span>
+<span>Sede Central • Lima</span>
+<span class="material-symbols-outlined text-slate-400 text-[14px]">expand_more</span>
+</div>
+</div>
+<!-- Buscador global, notificaciones y perfil de usuario -->
+<div class="flex items-center gap-4">
+<!-- Buscador Global -->
+<div class="relative w-80">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">search</span>
+<input class="w-full bg-slate-50 border border-[#D1D5DB] rounded-lg pl-9 pr-3 py-1.5 font-body-sm text-body-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-all" placeholder="Buscar usuario, rol, DNI, correo... (Ctrl+K)" type="text"/>
+</div>
+<!-- Notificaciones -->
+<div class="relative">
+<button class="w-8 h-8 rounded-lg border border-slate-200 bg-white flex items-center justify-center text-slate-600 hover:bg-slate-50 relative transition-colors">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+<span class="absolute -top-1 -right-1 w-4 h-4 bg-primary-container text-white text-[10px] font-bold rounded-full flex items-center justify-center">3</span>
+</button>
+</div>
+<div class="h-6 w-px bg-slate-200"></div>
+<!-- Perfil Loana Avila Neyra -->
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-red-800 text-white font-bold text-[12px] flex items-center justify-center border-2 border-red-200 shadow-sm">
+            LA
+          </div>
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="font-label-md text-label-md font-semibold text-slate-900 leading-tight">Loana Avila Neyra</span>
+<span class="material-symbols-outlined text-emerald-600 text-[15px]" title="Cuenta Verificada">verified</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="font-label-xs text-label-xs text-primary-container font-semibold">Superadministración</span>
+</div>
+</div>
+<button class="ml-2 text-slate-400 hover:text-primary-container transition-colors p-1.5 rounded-lg hover:bg-slate-100" title="Cerrar sesión">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+</button>
+</div>
+</div>
+</header>
+<!-- ÁREA DE CONTENIDO PRINCIPAL CON SCROLL -->
+<main class="flex-1 overflow-y-auto px-6 py-5 custom-scrollbar space-y-5">
+<!-- 3. ENCABEZADO DE PÁGINA -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-surface-container-lowest p-5 rounded-xl border border-[#E2E4E9] shadow-[0_1px_3px_0_rgba(0,0,0,0.04)]">
+<div class="space-y-1">
+<div class="flex items-center gap-2.5">
+<span class="font-title-eyebrow text-title-eyebrow text-primary-container uppercase tracking-wider">SEGURIDAD INSTITUCIONAL Y CONTROL DE ACCESOS</span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              Directorio Activo Sincronizado
+            </span>
+</div>
+<h1 class="font-display text-display text-slate-900 tracking-tight">Usuarios y accesos</h1>
+<p class="font-body-sm text-body-sm text-slate-600 max-w-3xl">
+            Administración centralizada de cuentas de colaboradores, asignación de roles jerárquicos, control de privilegios por módulo y auditoría de sesiones activas en ERP Brusben.
+          </p>
+</div>
+<div class="flex items-center gap-2.5 shrink-0">
+<button class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white border border-[#D1D5DB] rounded-lg text-slate-700 font-label-md text-label-md hover:bg-slate-50 transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[18px] text-slate-500">download</span>
+            Exportar auditoría
+          </button>
+<button class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white border border-[#D1D5DB] rounded-lg text-slate-700 font-label-md text-label-md hover:bg-slate-50 transition-colors shadow-sm" onclick="document.getElementById('permission-modal').classList.remove('hidden')">
+<span class="material-symbols-outlined text-[18px] text-slate-500">security</span>
+            Matriz de permisos
+          </button>
+<button class="inline-flex items-center gap-1.5 px-4 py-2 bg-primary-container rounded-lg text-white font-label-md text-label-md font-medium hover:bg-red-800 transition-colors shadow-sm focus:ring-2 focus:ring-red-400">
+<span class="material-symbols-outlined text-[18px]">person_add</span>
+            + Nuevo usuario
+          </button>
+</div>
+</div>
+<!-- 4. TARJETAS DE INDICADORES KPI -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+<!-- KPI 1 -->
+<div class="bg-surface-container-lowest rounded-xl border border-[#E2E4E9] p-4 shadow-[0_1px_3px_0_rgba(0,0,0,0.04)] border-l-4 border-l-primary-container flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-body-sm text-body-sm font-medium text-slate-500">Total usuarios activos</span>
+<span class="material-symbols-outlined text-slate-400 text-[20px]">badge</span>
+</div>
+<div class="my-2 flex items-baseline gap-2">
+<span class="font-metric-val text-metric-val text-slate-900 font-bold">48</span>
+<span class="text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded text-[11px] font-semibold flex items-center">
+<span class="material-symbols-outlined text-[13px]">arrow_upward</span> +4 este mes
+            </span>
+</div>
+<span class="font-label-xs text-label-xs text-slate-500">Colaboradores con cuenta activa</span>
+</div>
+<!-- KPI 2 -->
+<div class="bg-surface-container-lowest rounded-xl border border-[#E2E4E9] p-4 shadow-[0_1px_3px_0_rgba(0,0,0,0.04)] border-l-4 border-l-purple-700 flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-body-sm text-body-sm font-medium text-slate-500">Superadministradores</span>
+<span class="px-1.5 py-0.5 bg-red-100 text-red-800 text-[10px] font-bold rounded">Alta Seguridad</span>
+</div>
+<div class="my-2 flex items-baseline gap-2">
+<span class="font-metric-val text-metric-val text-slate-900 font-bold">3</span>
+<span class="text-purple-700 text-[11px] font-medium">Control Absoluto</span>
+</div>
+<span class="font-label-xs text-label-xs text-slate-500">Acceso total y configuración de sistema</span>
+</div>
+<!-- KPI 3 -->
+<div class="bg-surface-container-lowest rounded-xl border border-[#E2E4E9] p-4 shadow-[0_1px_3px_0_rgba(0,0,0,0.04)] border-l-4 border-l-emerald-600 flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-body-sm text-body-sm font-medium text-slate-500">Personal operativo y docente</span>
+<span class="material-symbols-outlined text-slate-400 text-[20px]">groups</span>
+</div>
+<div class="my-2 flex items-baseline gap-2">
+<span class="font-metric-val text-metric-val text-slate-900 font-bold">39</span>
+<span class="text-slate-500 text-[11px] font-medium">Sedes activas</span>
+</div>
+<span class="font-label-xs text-label-xs text-slate-500">24 Docentes • 15 Administrativos y Asesores</span>
+</div>
+<!-- KPI 4 -->
+<div class="bg-surface-container-lowest rounded-xl border border-[#E2E4E9] p-4 shadow-[0_1px_3px_0_rgba(0,0,0,0.04)] border-l-4 border-l-amber-500 flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-body-sm text-body-sm font-medium text-slate-500">Cuentas bloqueadas / Inactivas</span>
+<span class="px-1.5 py-0.5 bg-amber-100 text-amber-800 text-[10px] font-bold rounded">Atención</span>
+</div>
+<div class="my-2 flex items-baseline gap-2">
+<span class="font-metric-val text-metric-val text-amber-700 font-bold">6</span>
+<span class="text-amber-700 text-[11px] font-medium">Revisión requerida</span>
+</div>
+<span class="font-label-xs text-label-xs text-slate-500">2 por intentos fallidos • 4 por baja laboral</span>
+</div>
+</div>
+<!-- Cinta de métricas y auditoría en tiempo real -->
+<div class="bg-slate-100 border border-[#E2E4E9] rounded-lg px-4 py-2 flex flex-wrap items-center justify-between text-[12px] text-slate-600 font-medium">
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-slate-500 text-[16px]">sensors</span>
+<span>Sesiones activas hoy: <strong class="text-slate-900">32</strong></span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-emerald-600 text-[16px]">verified_user</span>
+<span>Autenticación 2FA activa: <strong class="text-slate-900">87.5%</strong></span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-slate-500 text-[16px]">update</span>
+<span>Última auditoría de seguridad: <strong class="text-slate-900">Hoy 08:30 AM</strong></span>
+</div>
+</div>
+<div class="flex items-center gap-1.5 text-primary-container font-semibold">
+<span class="material-symbols-outlined text-[16px]">shield</span>
+<span>Roles configurados: 6 niveles institucionales</span>
+</div>
+</div>
+<!-- 5. FILTROS Y CONTROLES -->
+<div class="bg-surface-container-lowest rounded-xl border border-[#E2E4E9] p-4 space-y-3 shadow-[0_1px_3px_0_rgba(0,0,0,0.04)]">
+<!-- Tabs de filtrado rápido -->
+<div class="flex items-center gap-2 border-b border-slate-200 pb-2.5 overflow-x-auto text-body-sm font-label-md">
+<button class="px-3 py-1.5 bg-slate-900 text-white rounded-md text-[12px] font-semibold flex items-center gap-1.5 shrink-0">
+            Todos los usuarios <span class="bg-slate-700 text-white text-[10px] px-1.5 py-0.2 rounded-full">48</span>
+</button>
+<button class="px-3 py-1.5 text-slate-600 hover:bg-slate-100 rounded-md text-[12px] font-medium flex items-center gap-1.5 shrink-0">
+            Superadministradores <span class="bg-slate-200 text-slate-700 text-[10px] px-1.5 py-0.2 rounded-full">3</span>
+</button>
+<button class="px-3 py-1.5 text-slate-600 hover:bg-slate-100 rounded-md text-[12px] font-medium flex items-center gap-1.5 shrink-0">
+            Administrativos <span class="bg-slate-200 text-slate-700 text-[10px] px-1.5 py-0.2 rounded-full">15</span>
+</button>
+<button class="px-3 py-1.5 text-slate-600 hover:bg-slate-100 rounded-md text-[12px] font-medium flex items-center gap-1.5 shrink-0">
+            Docentes / Instructores <span class="bg-slate-200 text-slate-700 text-[10px] px-1.5 py-0.2 rounded-full">24</span>
+</button>
+<button class="px-3 py-1.5 text-slate-600 hover:bg-slate-100 rounded-md text-[12px] font-medium flex items-center gap-1.5 shrink-0">
+            Inactivos <span class="bg-red-100 text-red-700 text-[10px] px-1.5 py-0.2 rounded-full">6</span>
+</button>
+</div>
+<!-- Fila de filtros avanzados y búsqueda -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-2.5 items-center">
+<!-- Búsqueda amplia -->
+<div class="md:col-span-4 relative">
+<span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">search</span>
+<input class="w-full bg-white border border-[#D1D5DB] rounded-lg pl-8 pr-3 py-1.5 text-body-sm font-body-sm text-slate-900 focus:outline-none focus:border-primary-container text-[13px]" placeholder="Buscar por nombre, apellidos, correo institucional, DNI o cargo..." type="text"/>
+</div>
+<!-- Select Rol -->
+<div class="md:col-span-2">
+<select class="w-full bg-white border border-[#D1D5DB] rounded-lg px-2.5 py-1.5 text-body-sm font-body-sm text-slate-800 focus:outline-none focus:border-primary-container text-[13px]">
+<option>Rol: Todos los roles</option>
+<option>Superadministración</option>
+<option>Dirección General</option>
+<option>Tesorería y Finanzas</option>
+<option>Coordinación Académica</option>
+<option>Asesor CRM / Ventas</option>
+<option>Docente Instructor</option>
+</select>
+</div>
+<!-- Select Sede -->
+<div class="md:col-span-2">
+<select class="w-full bg-white border border-[#D1D5DB] rounded-lg px-2.5 py-1.5 text-body-sm font-body-sm text-slate-800 focus:outline-none focus:border-primary-container text-[13px]">
+<option>Sede: Todas las sedes</option>
+<option>Sede Central Lima</option>
+<option>Sede Cono Norte</option>
+<option>Campus Virtual</option>
+</select>
+</div>
+<!-- Select Estado -->
+<div class="md:col-span-2">
+<select class="w-full bg-white border border-[#D1D5DB] rounded-lg px-2.5 py-1.5 text-body-sm font-body-sm text-slate-800 focus:outline-none focus:border-primary-container text-[13px]">
+<option>Estado: Todos</option>
+<option>Activo</option>
+<option>En línea</option>
+<option>Bloqueado / Inactivo</option>
+</select>
+</div>
+<!-- Acciones de Filtro -->
+<div class="md:col-span-2 flex items-center justify-end gap-2">
+<button class="p-1.5 border border-[#D1D5DB] rounded-lg text-slate-600 hover:bg-slate-50 transition-colors" title="Refrescar lista">
+<span class="material-symbols-outlined text-[18px]">refresh</span>
+</button>
+<button class="flex items-center gap-1 px-2.5 py-1.5 border border-[#D1D5DB] rounded-lg text-slate-700 hover:bg-slate-50 text-[12px] font-medium transition-colors">
+<span class="material-symbols-outlined text-[16px] text-slate-500">tune</span>
+              Filtros
+            </button>
+</div>
+</div>
+</div>
+<!-- 6. TABLA DENSA DE USUARIOS INSTITUCIONALES -->
+<div class="bg-surface-container-lowest rounded-xl border border-[#E2E4E9] overflow-hidden shadow-[0_1px_3px_0_rgba(0,0,0,0.04)]">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<!-- Header Tabla -->
+<thead>
+<tr class="bg-slate-50 border-b border-[#E2E4E9] text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+<th class="w-10 px-3 py-3 text-center">
+<input class="rounded border-slate-300 text-primary-container focus:ring-primary-container" type="checkbox"/>
+</th>
+<th class="px-3 py-3">USUARIO / DNI</th>
+<th class="px-3 py-3">ROL Y PRIVILEGIOS</th>
+<th class="px-3 py-3">SEDE Y ÁREA</th>
+<th class="px-3 py-3">ÚLTIMO ACCESO Y DISPOSITIVO</th>
+<th class="px-3 py-3">SEGURIDAD 2FA</th>
+<th class="px-3 py-3">ESTADO</th>
+<th class="px-3 py-3 text-right">ACCIONES</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-200 text-body-sm font-body-sm text-slate-700">
+<!-- Fila 1: Loana Avila Neyra (SUPERADMIN) -->
+<tr class="hover:bg-slate-50/80 transition-colors group">
+<td class="px-3 py-2.5 text-center">
+<input class="rounded border-slate-300 text-primary-container focus:ring-primary-container" type="checkbox"/>
+</td>
+<td class="px-3 py-2.5">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-full bg-red-800 text-white font-bold text-[12px] flex items-center justify-center shrink-0 border border-red-300">
+                      LA
+                    </div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="font-label-md text-label-md font-semibold text-slate-900">Loana Avila Neyra</span>
+<span class="w-2 h-2 rounded-full bg-emerald-500" title="Sesión activa ahora"></span>
+</div>
+<div class="flex items-center gap-2 text-[11px] text-slate-500 font-medium">
+<span>DNI: 47891234</span>
+<span>•</span>
+<span class="text-slate-600">l.avila@brusben.edu.pe</span>
+</div>
+</div>
+</div>
+</td>
+<td class="px-3 py-2.5">
+<div class="flex flex-col gap-1">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-red-100 text-primary-container text-[11px] font-bold border border-red-200 w-fit">
+<span class="material-symbols-outlined text-[13px]">shield</span>
+                      SUPERADMINISTRACIÓN
+                    </span>
+<span class="text-[10px] text-slate-400 font-medium">Acceso Global Irrestricto</span>
+</div>
+</td>
+<td class="px-3 py-2.5">
+<div class="text-[12px] font-medium text-slate-800">Sede Central Lima</div>
+<div class="text-[11px] text-slate-500">Superadministración TI</div>
+</td>
+<td class="px-3 py-2.5">
+<div class="text-[12px] font-medium text-emerald-700 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">desktop_windows</span>
+                    En línea (Activo ahora)
+                  </div>
+<div class="text-[10px] text-slate-400">Chrome Windows 11 • 190.238.45.12</div>
+</td>
+<td class="px-3 py-2.5">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-semibold">
+<span class="material-symbols-outlined text-[12px]">check_circle</span>
+                    2FA Activo
+                  </span>
+</td>
+<td class="px-3 py-2.5">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-semibold">
+                    Activo
+                  </span>
+</td>
+<td class="px-3 py-2.5 text-right whitespace-nowrap">
+<div class="flex items-center justify-end gap-1 text-slate-500">
+<button class="p-1.5 rounded hover:bg-slate-200 hover:text-slate-900 transition-colors" onclick="document.getElementById('permission-modal').classList.remove('hidden')" title="Editar privilegios">
+<span class="material-symbols-outlined text-[18px]">key</span>
+</button>
+<button class="p-1.5 rounded hover:bg-slate-200 hover:text-slate-900 transition-colors" title="Logs de actividad">
+<span class="material-symbols-outlined text-[18px]">history</span>
+</button>
+<button class="p-1.5 rounded hover:bg-slate-200 hover:text-slate-900 transition-colors" title="Más opciones">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Fila 2: Carlos Benites Rivas (DIRECCIÓN GENERAL) -->
+<tr class="hover:bg-slate-50/80 transition-colors group">
+<td class="px-3 py-2.5 text-center">
+<input class="rounded border-slate-300 text-primary-container focus:ring-primary-container" type="checkbox"/>
+</td>
+<td class="px-3 py-2.5">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-full bg-blue-900 text-white font-bold text-[12px] flex items-center justify-center shrink-0 border border-blue-200">
+                      CB
+                    </div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="font-label-md text-label-md font-semibold text-slate-900">Carlos Benites Rivas</span>
+</div>
+<div class="flex items-center gap-2 text-[11px] text-slate-500 font-medium">
+<span>DNI: 10893412</span>
+<span>•</span>
+<span class="text-slate-600">c.benites@brusben.edu.pe</span>
+</div>
+</div>
+</div>
+</td>
+<td class="px-3 py-2.5">
+<div class="flex flex-col gap-1">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-800 text-[11px] font-bold border border-blue-200 w-fit">
+<span class="material-symbols-outlined text-[13px]">corporate_fare</span>
+                      DIRECCIÓN GENERAL
+                    </span>
+<span class="text-[10px] text-slate-400 font-medium">Gestión Ejecutiva y Reportes</span>
+</div>
+</td>
+<td class="px-3 py-2.5">
+<div class="text-[12px] font-medium text-slate-800">Sede Central Lima</div>
+<div class="text-[11px] text-slate-500">Dirección Institucional</div>
+</td>
+<td class="px-3 py-2.5">
+<div class="text-[12px] text-slate-700">Hoy 08:45 AM</div>
+<div class="text-[10px] text-slate-400">Edge MacOS • 190.238.10.88</div>
+</td>
+<td class="px-3 py-2.5">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-semibold">
+<span class="material-symbols-outlined text-[12px]">check_circle</span>
+                    2FA Activo
+                  </span>
+</td>
+<td class="px-3 py-2.5">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-semibold">
+                    Activo
+                  </span>
+</td>
+<td class="px-3 py-2.5 text-right whitespace-nowrap">
+<div class="flex items-center justify-end gap-1 text-slate-500">
+<button class="p-1.5 rounded hover:bg-slate-200 hover:text-slate-900 transition-colors" onclick="document.getElementById('permission-modal').classList.remove('hidden')">
+<span class="material-symbols-outlined text-[18px]">key</span>
+</button>
+<button class="p-1.5 rounded hover:bg-slate-200 hover:text-slate-900 transition-colors">
+<span class="material-symbols-outlined text-[18px]">history</span>
+</button>
+<button class="p-1.5 rounded hover:bg-slate-200 hover:text-slate-900 transition-colors">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Fila 3: Ana María Torres (ASESOR CRM) -->
+<tr class="hover:bg-slate-50/80 transition-colors group">
+<td class="px-3 py-2.5 text-center">
+<input class="rounded border-slate-300 text-primary-container focus:ring-primary-container" type="checkbox"/>
+</td>
+<td class="px-3 py-2.5">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-full bg-amber-600 text-white font-bold text-[12px] flex items-center justify-center shrink-0 border border-amber-200">
+                      AT
+                    </div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="font-label-md text-label-md font-semibold text-slate-900">Ana María Torres</span>
+</div>
+<div class="flex items-center gap-2 text-[11px] text-slate-500 font-medium">
+<span>DNI: 71829304</span>
+<span>•</span>
+<span class="text-slate-600">a.torres@brusben.edu.pe</span>
+</div>
+</div>
+</div>
+</td>
+<td class="px-3 py-2.5">
+<div class="flex flex-col gap-1">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 text-[11px] font-bold border border-amber-200 w-fit">
+<span class="material-symbols-outlined text-[13px]">support_agent</span>
+                      ASESOR COMERCIAL SENIOR
+                    </span>
+<span class="text-[10px] text-slate-400 font-medium">CRM, Leads y Matrículas</span>
+</div>
+</td>
+<td class="px-3 py-2.5">
+<div class="text-[12px] font-medium text-slate-800">Sede Cono Norte</div>
+<div class="text-[11px] text-slate-500">CRM &amp; Admisiones</div>
+</td>
+<td class="px-3 py-2.5">
+<div class="text-[12px] text-slate-700">Hace 12 min</div>
+<div class="text-[10px] text-slate-400">Chrome Windows • 190.238.22.41</div>
+</td>
+<td class="px-3 py-2.5">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-semibold">
+<span class="material-symbols-outlined text-[12px]">check_circle</span>
+                    2FA Activo
+                  </span>
+</td>
+<td class="px-3 py-2.5">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-semibold">
+                    Activo
+                  </span>
+</td>
+<td class="px-3 py-2.5 text-right whitespace-nowrap">
+<div class="flex items-center justify-end gap-1 text-slate-500">
+<button class="p-1.5 rounded hover:bg-slate-200 hover:text-slate-900 transition-colors" onclick="document.getElementById('permission-modal').classList.remove('hidden')">
+<span class="material-symbols-outlined text-[18px]">key</span>
+</button>
+<button class="p-1.5 rounded hover:bg-slate-200 hover:text-slate-900 transition-colors">
+<span class="material-symbols-outlined text-[18px]">history</span>
+</button>
+<button class="p-1.5 rounded hover:bg-slate-200 hover:text-slate-900 transition-colors">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Fila 4: Roberto Sánchez Valle (TESORERÍA) -->
+<tr class="hover:bg-slate-50/80 transition-colors group">
+<td class="px-3 py-2.5 text-center">
+<input class="rounded border-slate-300 text-primary-container focus:ring-primary-container" type="checkbox"/>
+</td>
+<td class="px-3 py-2.5">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-full bg-emerald-800 text-white font-bold text-[12px] flex items-center justify-center shrink-0 border border-emerald-200">
+                      RS
+                    </div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="font-label-md text-label-md font-semibold text-slate-900">Roberto Sánchez Valle</span>
+</div>
+<div class="flex items-center gap-2 text-[11px] text-slate-500 font-medium">
+<span>DNI: 42398120</span>
+<span>•</span>
+<span class="text-slate-600">r.sanchez@brusben.edu.pe</span>
+</div>
+</div>
+</div>
+</td>
+<td class="px-3 py-2.5">
+<div class="flex flex-col gap-1">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-[11px] font-bold border border-emerald-200 w-fit">
+<span class="material-symbols-outlined text-[13px]">payments</span>
+                      TESORERÍA Y CAJA
+                    </span>
+<span class="text-[10px] text-slate-400 font-medium">Caja, Pagos y Facturación</span>
+</div>
+</td>
+<td class="px-3 py-2.5">
+<div class="text-[12px] font-medium text-slate-800">Sede Central Lima</div>
+<div class="text-[11px] text-slate-500">Matrículas y Cobranzas</div>
+</td>
+<td class="px-3 py-2.5">
+<div class="text-[12px] text-slate-700">Hoy 08:00 AM</div>
+<div class="text-[10px] text-slate-400">Chrome Windows • 190.238.12.19</div>
+</td>
+<td class="px-3 py-2.5">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-semibold">
+<span class="material-symbols-outlined text-[12px]">check_circle</span>
+                    2FA Activo
+                  </span>
+</td>
+<td class="px-3 py-2.5">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-semibold">
+                    Activo
+                  </span>
+</td>
+<td class="px-3 py-2.5 text-right whitespace-nowrap">
+<div class="flex items-center justify-end gap-1 text-slate-500">
+<button class="p-1.5 rounded hover:bg-slate-200 hover:text-slate-900 transition-colors" onclick="document.getElementById('permission-modal').classList.remove('hidden')">
+<span class="material-symbols-outlined text-[18px]">key</span>
+</button>
+<button class="p-1.5 rounded hover:bg-slate-200 hover:text-slate-900 transition-colors">
+<span class="material-symbols-outlined text-[18px]">history</span>
+</button>
+<button class="p-1.5 rounded hover:bg-slate-200 hover:text-slate-900 transition-colors">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Fila 5: Patricia Morales Quispe (COORDINACIÓN ACADÉMICA) -->
+<tr class="hover:bg-slate-50/80 transition-colors group">
+<td class="px-3 py-2.5 text-center">
+<input class="rounded border-slate-300 text-primary-container focus:ring-primary-container" type="checkbox"/>
+</td>
+<td class="px-3 py-2.5">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-full bg-cyan-800 text-white font-bold text-[12px] flex items-center justify-center shrink-0 border border-cyan-200">
+                      PM
+                    </div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="font-label-md text-label-md font-semibold text-slate-900">Patricia Morales Quispe</span>
+</div>
+<div class="flex items-center gap-2 text-[11px] text-slate-500 font-medium">
+<span>DNI: 45912389</span>
+<span>•</span>
+<span class="text-slate-600">p.morales@brusben.edu.pe</span>
+</div>
+</div>
+</div>
+</td>
+<td class="px-3 py-2.5">
+<div class="flex flex-col gap-1">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-cyan-50 text-cyan-800 text-[11px] font-bold border border-cyan-200 w-fit">
+<span class="material-symbols-outlined text-[13px]">hub</span>
+                      COORDINACIÓN ACADÉMICA
+                    </span>
+<span class="text-[10px] text-slate-400 font-medium">Planes de Estudio y Docentes</span>
+</div>
+</td>
+<td class="px-3 py-2.5">
+<div class="text-[12px] font-medium text-slate-800">Campus Virtual</div>
+<div class="text-[11px] text-slate-500">Oferta Académica</div>
+</td>
+<td class="px-3 py-2.5">
+<div class="text-[12px] text-slate-700">Ayer 17:10 PM</div>
+<div class="text-[10px] text-slate-400">Firefox Ubuntu • 190.238.99.14</div>
+</td>
+<td class="px-3 py-2.5">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-semibold">
+<span class="material-symbols-outlined text-[12px]">check_circle</span>
+                    2FA Activo
+                  </span>
+</td>
+<td class="px-3 py-2.5">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-semibold">
+                    Activo
+                  </span>
+</td>
+<td class="px-3 py-2.5 text-right whitespace-nowrap">
+<div class="flex items-center justify-end gap-1 text-slate-500">
+<button class="p-1.5 rounded hover:bg-slate-200 hover:text-slate-900 transition-colors" onclick="document.getElementById('permission-modal').classList.remove('hidden')">
+<span class="material-symbols-outlined text-[18px]">key</span>
+</button>
+<button class="p-1.5 rounded hover:bg-slate-200 hover:text-slate-900 transition-colors">
+<span class="material-symbols-outlined text-[18px]">history</span>
+</button>
+<button class="p-1.5 rounded hover:bg-slate-200 hover:text-slate-900 transition-colors">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Fila 6: Ing. Walter Benites (DOCENTE TITULAR) -->
+<tr class="hover:bg-slate-50/80 transition-colors group">
+<td class="px-3 py-2.5 text-center">
+<input class="rounded border-slate-300 text-primary-container focus:ring-primary-container" type="checkbox"/>
+</td>
+<td class="px-3 py-2.5">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-full bg-teal-800 text-white font-bold text-[12px] flex items-center justify-center shrink-0 border border-teal-200">
+                      WB
+                    </div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="font-label-md text-label-md font-semibold text-slate-900">Ing. Walter Benites</span>
+</div>
+<div class="flex items-center gap-2 text-[11px] text-slate-500 font-medium">
+<span>DNI: 09482145</span>
+<span>•</span>
+<span class="text-slate-600">w.benites@brusben.edu.pe</span>
+</div>
+</div>
+</div>
+</td>
+<td class="px-3 py-2.5">
+<div class="flex flex-col gap-1">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-teal-50 text-teal-800 text-[11px] font-bold border border-teal-200 w-fit">
+<span class="material-symbols-outlined text-[13px]">school</span>
+                      DOCENTE TITULAR
+                    </span>
+<span class="text-[10px] text-slate-400 font-medium">Asistencia y Calificaciones</span>
+</div>
+</td>
+<td class="px-3 py-2.5">
+<div class="text-[12px] font-medium text-slate-800">Sede Central Lima</div>
+<div class="text-[11px] text-slate-500">Soldadura y Metalmecánica</div>
+</td>
+<td class="px-3 py-2.5">
+<div class="text-[12px] text-slate-700">Ayer 18:20 PM</div>
+<div class="text-[10px] text-slate-400">Mobile Android • 190.238.65.70</div>
+</td>
+<td class="px-3 py-2.5">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[11px] font-semibold">
+<span class="material-symbols-outlined text-[12px]">pending</span>
+                    2FA Pendiente
+                  </span>
+</td>
+<td class="px-3 py-2.5">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-semibold">
+                    Activo
+                  </span>
+</td>
+<td class="px-3 py-2.5 text-right whitespace-nowrap">
+<div class="flex items-center justify-end gap-1 text-slate-500">
+<button class="p-1.5 rounded hover:bg-slate-200 hover:text-slate-900 transition-colors" onclick="document.getElementById('permission-modal').classList.remove('hidden')">
+<span class="material-symbols-outlined text-[18px]">key</span>
+</button>
+<button class="p-1.5 rounded hover:bg-slate-200 hover:text-slate-900 transition-colors">
+<span class="material-symbols-outlined text-[18px]">history</span>
+</button>
+<button class="p-1.5 rounded hover:bg-slate-200 hover:text-slate-900 transition-colors">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Fila 7: Fernando Castillo Vega (BLOQUEADO / INACTIVO) -->
+<tr class="bg-red-50/40 hover:bg-red-50/70 transition-colors group">
+<td class="px-3 py-2.5 text-center">
+<input class="rounded border-slate-300 text-primary-container focus:ring-primary-container" type="checkbox"/>
+</td>
+<td class="px-3 py-2.5">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-full bg-slate-500 text-white font-bold text-[12px] flex items-center justify-center shrink-0 border border-slate-300">
+                      FC
+                    </div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="font-label-md text-label-md font-semibold text-slate-800 line-through">Fernando Castillo Vega</span>
+<span class="material-symbols-outlined text-red-600 text-[16px]" title="Acceso Bloqueado">lock</span>
+</div>
+<div class="flex items-center gap-2 text-[11px] text-slate-500 font-medium">
+<span>DNI: 70192834</span>
+<span>•</span>
+<span class="text-slate-500">f.castillo@brusben.edu.pe</span>
+</div>
+</div>
+</div>
+</td>
+<td class="px-3 py-2.5">
+<div class="flex flex-col gap-1">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 text-[11px] font-bold border border-slate-300 w-fit">
+<span class="material-symbols-outlined text-[13px]">person_off</span>
+                      DOCENTE INSTRUCTOR
+                    </span>
+<span class="text-[10px] text-red-600 font-semibold">Bloqueado por 5 intentos fallidos</span>
+</div>
+</td>
+<td class="px-3 py-2.5">
+<div class="text-[12px] font-medium text-slate-700">Sede Cono Norte</div>
+<div class="text-[11px] text-slate-500">Maquinaria Pesada</div>
+</td>
+<td class="px-3 py-2.5">
+<div class="text-[12px] text-red-600 font-medium">14/09/2026 22:15 PM</div>
+<div class="text-[10px] text-slate-400">Intento Fallido • IP: 200.48.112.5</div>
+</td>
+<td class="px-3 py-2.5">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-300 text-[11px] font-semibold">
+<span class="material-symbols-outlined text-[12px]">lock_reset</span>
+                    Suspendido
+                  </span>
+</td>
+<td class="px-3 py-2.5">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-red-100 text-red-800 text-[11px] font-semibold">
+                    Inactivo
+                  </span>
+</td>
+<td class="px-3 py-2.5 text-right whitespace-nowrap">
+<div class="flex items-center justify-end gap-1 text-slate-500">
+<button class="p-1.5 rounded hover:bg-emerald-100 hover:text-emerald-700 transition-colors" title="Desbloquear usuario">
+<span class="material-symbols-outlined text-[18px]">lock_open</span>
+</button>
+<button class="p-1.5 rounded hover:bg-slate-200 hover:text-slate-900 transition-colors">
+<span class="material-symbols-outlined text-[18px]">history</span>
+</button>
+<button class="p-1.5 rounded hover:bg-slate-200 hover:text-slate-900 transition-colors">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Paginación de Tabla -->
+<div class="px-4 py-3 bg-white border-t border-[#E2E4E9] flex flex-col sm:flex-row items-center justify-between gap-3 text-body-sm text-slate-600 font-label-md">
+<div class="text-[13px]">
+            Mostrando <span class="font-semibold text-slate-900">7</span> de <span class="font-semibold text-slate-900">48</span> colaboradores registrados
+          </div>
+<div class="flex items-center gap-1 text-[13px]">
+<button class="px-2.5 py-1 rounded border border-[#D1D5DB] text-slate-500 hover:bg-slate-50 disabled:opacity-40" disabled="">
+<span class="material-symbols-outlined text-[16px]">chevron_left</span>
+</button>
+<button class="px-3 py-1 rounded bg-primary-container text-white font-semibold">1</button>
+<button class="px-3 py-1 rounded border border-[#D1D5DB] text-slate-700 hover:bg-slate-50">2</button>
+<button class="px-3 py-1 rounded border border-[#D1D5DB] text-slate-700 hover:bg-slate-50">3</button>
+<span class="px-1 text-slate-400">...</span>
+<button class="px-3 py-1 rounded border border-[#D1D5DB] text-slate-700 hover:bg-slate-50">7</button>
+<button class="px-2.5 py-1 rounded border border-[#D1D5DB] text-slate-700 hover:bg-slate-50">
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- 7. MODAL DE GESTIÓN DE ROLES Y MATRIZ DE PERMISOS -->
+<div class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4" id="permission-modal">
+<div class="bg-surface-container-lowest rounded-xl border border-[#E2E4E9] shadow-2xl max-w-4xl w-full max-h-[921px] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+<!-- Modal Header -->
+<div class="px-6 py-4 border-b border-[#E2E4E9] flex items-center justify-between bg-slate-50">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-red-100 border border-red-200 text-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[24px]">security</span>
+</div>
+<div>
+<h2 class="font-headline-md text-headline-md text-slate-900 font-bold">Asignación de Rol y Niveles de Privilegio</h2>
+<p class="font-body-sm text-body-sm text-slate-500">Configuración de acceso granular para Loana Avila Neyra (DNI: 47891234)</p>
+</div>
+</div>
+<button class="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-200 transition-colors" onclick="document.getElementById('permission-modal').classList.add('hidden')">
+<span class="material-symbols-outlined text-[22px]">close</span>
+</button>
+</div>
+<!-- Modal Body (Scrollable) -->
+<div class="p-6 overflow-y-auto space-y-5 custom-scrollbar">
+<!-- ADVERTENCIA DE SEGURIDAD PARA SUPERADMIN -->
+<div class="bg-red-50 border-l-4 border-primary-container p-4 rounded-r-lg flex items-start gap-3">
+<span class="material-symbols-outlined text-primary-container text-[24px] shrink-0 mt-0.5">warning</span>
+<div class="space-y-1">
+<h4 class="font-headline-sm text-headline-sm text-primary-container font-bold text-[14px]">Nivel Crítico: Privilegios de Superadministrador</h4>
+<p class="font-body-sm text-body-sm text-red-900 text-[13px]">
+              El rol <span class="font-bold">SUPERADMINISTRACIÓN</span> otorga acceso irrestricto directo a la base de datos de Google Apps Script, eliminación de registros de auditoría, gestión financiera de cobranzas y alteración de credenciales maestras. Debe asignarse únicamente bajo aprobación expresa de Gerencia General.
+            </p>
+</div>
+</div>
+<!-- SELECCIÓN DE NIVEL DE ROL -->
+<div class="space-y-2">
+<label class="font-label-md text-label-md font-semibold text-slate-800">Seleccionar Rol Institucional Jerárquico</label>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+<!-- Superadmin card -->
+<label class="relative flex flex-col p-3.5 border-2 border-primary-container bg-red-50/30 rounded-xl cursor-pointer">
+<input checked="" class="absolute top-3.5 right-3.5 text-primary-container focus:ring-primary-container" name="role_select" type="radio"/>
+<div class="flex items-center gap-2 mb-1">
+<span class="material-symbols-outlined text-primary-container text-[20px]">shield</span>
+<span class="font-label-md text-label-md font-bold text-slate-900">Superadministración</span>
+</div>
+<span class="text-[11px] text-slate-600 leading-tight">Control maestro, parámetros globales y scripts de integración.</span>
+</label>
+<!-- Dirección card -->
+<label class="relative flex flex-col p-3.5 border border-[#D1D5DB] bg-white rounded-xl hover:border-slate-400 cursor-pointer">
+<input class="absolute top-3.5 right-3.5 text-primary-container focus:ring-primary-container" name="role_select" type="radio"/>
+<div class="flex items-center gap-2 mb-1">
+<span class="material-symbols-outlined text-blue-700 text-[20px]">corporate_fare</span>
+<span class="font-label-md text-label-md font-bold text-slate-900">Dirección General</span>
+</div>
+<span class="text-[11px] text-slate-600 leading-tight">Supervisión total de KPIs, reportería ejecutiva y aprobaciones.</span>
+</label>
+<!-- Docente / Staff card -->
+<label class="relative flex flex-col p-3.5 border border-[#D1D5DB] bg-white rounded-xl hover:border-slate-400 cursor-pointer">
+<input class="absolute top-3.5 right-3.5 text-primary-container focus:ring-primary-container" name="role_select" type="radio"/>
+<div class="flex items-center gap-2 mb-1">
+<span class="material-symbols-outlined text-teal-700 text-[20px]">school</span>
+<span class="font-label-md text-label-md font-bold text-slate-900">Docente / Coordinador</span>
+</div>
+<span class="text-[11px] text-slate-600 leading-tight">Registro de asistencia, notas y planes académicos asignados.</span>
+</label>
+</div>
+</div>
+<!-- MATRIZ DE PERMISOS GRANULARES -->
+<div class="space-y-2">
+<div class="flex items-center justify-between">
+<label class="font-label-md text-label-md font-semibold text-slate-800">Matriz de Permisos por Módulo de Negocio</label>
+<span class="text-[11px] text-slate-500">Configurado para: <strong>Perfil Superadmin</strong></span>
+</div>
+<div class="border border-[#E2E4E9] rounded-lg overflow-hidden">
+<table class="w-full text-left text-[12px]">
+<thead class="bg-slate-100 text-slate-700 font-bold border-b border-[#E2E4E9]">
+<tr>
+<th class="py-2.5 px-3">MÓDULO ERP</th>
+<th class="py-2.5 px-3 text-center">VER (LECTURA)</th>
+<th class="py-2.5 px-3 text-center">CREAR</th>
+<th class="py-2.5 px-3 text-center">EDITAR</th>
+<th class="py-2.5 px-3 text-center">ELIMINAR / ANULAR</th>
+<th class="py-2.5 px-3 text-center">EXPORTAR</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-200">
+<tr class="bg-white">
+<td class="py-2.5 px-3 font-semibold text-slate-900 flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-slate-500">contact_mail</span>
+                    CRM Comercial
+                  </td>
+<td class="text-center py-2.5"><input checked="" class="rounded border-slate-300 text-primary-container focus:ring-primary-container" type="checkbox"/></td>
+<td class="text-center py-2.5"><input checked="" class="rounded border-slate-300 text-primary-container focus:ring-primary-container" type="checkbox"/></td>
+<td class="text-center py-2.5"><input checked="" class="rounded border-slate-300 text-primary-container focus:ring-primary-container" type="checkbox"/></td>
+<td class="text-center py-2.5"><input checked="" class="rounded border-slate-300 text-primary-container focus:ring-primary-container" type="checkbox"/></td>
+<td class="text-center py-2.5"><input checked="" class="rounded border-slate-300 text-primary-container focus:ring-primary-container" type="checkbox"/></td>
+</tr>
+<tr class="bg-slate-50/50">
+<td class="py-2.5 px-3 font-semibold text-slate-900 flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-slate-500">group</span>
+                    Personas y estudiantes
+                  </td>
+<td class="text-center py-2.5"><input checked="" class="rounded border-slate-300 text-primary-container focus:ring-primary-container" type="checkbox"/></td>
+<td class="text-center py-2.5"><input checked="" class="rounded border-slate-300 text-primary-container focus:ring-primary-container" type="checkbox"/></td>
+<td class="text-center py-2.5"><input checked="" class="rounded border-slate-300 text-primary-container focus:ring-primary-container" type="checkbox"/></td>
+<td class="text-center py-2.5"><input checked="" class="rounded border-slate-300 text-primary-container focus:ring-primary-container" type="checkbox"/></td>
+<td class="text-center py-2.5"><input checked="" class="rounded border-slate-300 text-primary-container focus:ring-primary-container" type="checkbox"/></td>
+</tr>
+<tr class="bg-white">
+<td class="py-2.5 px-3 font-semibold text-slate-900 flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-slate-500">menu_book</span>
+                    Oferta académica
+                  </td>
+<td class="text-center py-2.5"><input checked="" class="rounded border-slate-300 text-primary-container focus:ring-primary-container" type="checkbox"/></td>
+<td class="text-center py-2.5"><input checked="" class="rounded border-slate-300 text-primary-container focus:ring-primary-container" type="checkbox"/></td>
+<td class="text-center py-2.5"><input checked="" class="rounded border-slate-300 text-primary-container focus:ring-primary-container" type="checkbox"/></td>
+<td class="text-center py-2.5"><input checked="" class="rounded border-slate-300 text-primary-container focus:ring-primary-container" type="checkbox"/></td>
+<td class="text-center py-2.5"><input checked="" class="rounded border-slate-300 text-primary-container focus:ring-primary-container" type="checkbox"/></td>
+</tr>
+<tr class="bg-slate-50/50">
+<td class="py-2.5 px-3 font-semibold text-slate-900 flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-slate-500">payments</span>
+                    Matrículas y Pagos (Caja)
+                  </td>
+<td class="text-center py-2.5"><input checked="" class="rounded border-slate-300 text-primary-container focus:ring-primary-container" type="checkbox"/></td>
+<td class="text-center py-2.5"><input checked="" class="rounded border-slate-300 text-primary-container focus:ring-primary-container" type="checkbox"/></td>
+<td class="text-center py-2.5"><input checked="" class="rounded border-slate-300 text-primary-container focus:ring-primary-container" type="checkbox"/></td>
+<td class="text-center py-2.5"><input checked="" class="rounded border-slate-300 text-primary-container focus:ring-primary-container" type="checkbox"/></td>
+<td class="text-center py-2.5"><input checked="" class="rounded border-slate-300 text-primary-container focus:ring-primary-container" type="checkbox"/></td>
+</tr>
+<tr class="bg-red-50/30">
+<td class="py-2.5 px-3 font-semibold text-primary-container flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-primary-container">admin_panel_settings</span>
+                    Usuarios y accesos
+                  </td>
+<td class="text-center py-2.5"><input checked="" class="rounded border-slate-300 text-primary-container focus:ring-primary-container" type="checkbox"/></td>
+<td class="text-center py-2.5"><input checked="" class="rounded border-slate-300 text-primary-container focus:ring-primary-container" type="checkbox"/></td>
+<td class="text-center py-2.5"><input checked="" class="rounded border-slate-300 text-primary-container focus:ring-primary-container" type="checkbox"/></td>
+<td class="text-center py-2.5"><input checked="" class="rounded border-slate-300 text-primary-container focus:ring-primary-container" type="checkbox"/></td>
+<td class="text-center py-2.5"><input checked="" class="rounded border-slate-300 text-primary-container focus:ring-primary-container" type="checkbox"/></td>
+</tr>
+<tr class="bg-white">
+<td class="py-2.5 px-3 font-semibold text-slate-900 flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-slate-500">receipt_long</span>
+                    Auditoría y Logs del Sistema
+                  </td>
+<td class="text-center py-2.5"><input checked="" class="rounded border-slate-300 text-primary-container focus:ring-primary-container" type="checkbox"/></td>
+<td class="text-center py-2.5"><input checked="" class="rounded border-slate-300 text-primary-container focus:ring-primary-container" type="checkbox"/></td>
+<td class="text-center py-2.5"><input checked="" class="rounded border-slate-300 text-primary-container focus:ring-primary-container" type="checkbox"/></td>
+<td class="text-center py-2.5"><input checked="" class="rounded border-slate-300 text-primary-container focus:ring-primary-container" type="checkbox"/></td>
+<td class="text-center py-2.5"><input checked="" class="rounded border-slate-300 text-primary-container focus:ring-primary-container" type="checkbox"/></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Modal Footer -->
+<div class="px-6 py-4 bg-slate-50 border-t border-[#E2E4E9] flex items-center justify-between">
+<div class="flex items-center gap-2 text-[12px] text-slate-500">
+<span class="material-symbols-outlined text-[16px] text-amber-600">info</span>
+          Los cambios se registrarán inmediatamente en el log de auditoría.
+        </div>
+<div class="flex items-center gap-3">
+<button class="px-4 py-2 bg-white border border-[#D1D5DB] rounded-lg text-slate-700 font-label-md text-label-md hover:bg-slate-100 transition-colors" onclick="document.getElementById('permission-modal').classList.add('hidden')">
+            Cancelar
+          </button>
+<button class="px-5 py-2 bg-primary-container rounded-lg text-white font-label-md text-label-md font-semibold hover:bg-red-800 transition-colors shadow-sm" onclick="document.getElementById('permission-modal').classList.add('hidden')">
+            Guardar privilegios
+          </button>
+</div>
+</div>
+</div>
+</div>
+</body></html>

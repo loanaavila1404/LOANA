@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-slate-100" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ERP Brusben - Panel de Gestión</title>
+<!-- Tailwind CSS v3 with Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#fef2f2',
+              100: '#fee2e2',
+              500: '#ef4444',
+              600: '#dc2626',
+              700: '#c4121a', /* Institucional Brusben */
+              800: '#a80f16',
+              900: '#7f1d1d',
+            },
+            sidebar: '#181A1F',
+            canvas: '#F5F6F8',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<style data-purpose="base-typography">
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+  </style>
+<style data-purpose="custom-scrollbars">
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="h-full flex overflow-hidden text-slate-800 bg-canvas">
+<!-- BEGIN: Sidebar -->
+<aside class="w-64 bg-sidebar text-slate-300 flex flex-col flex-shrink-0 z-30 select-none transition-all duration-200" data-purpose="sidebar-navigation">
+<!-- Brand & Logo Container -->
+<div class="h-16 px-4 bg-black/25 flex items-center justify-between border-b border-white/5">
+<div class="flex items-center space-x-3 overflow-hidden">
+<!-- Logo Icon: Cap & Shield Symbol -->
+<div class="h-9 w-9 rounded-lg bg-brand-700 flex items-center justify-center flex-shrink-0 text-white shadow-sm ring-1 ring-white/10">
+<svg class="w-5 h-5 fill-current" viewbox="0 0 24 24">
+<path d="M12 3L1 9L12 15L21 10.09V17H23V9M5 13.18V17.18L12 21L19 17.18V13.18L12 17L5 13.18Z"></path>
+</svg>
+</div>
+<div class="flex flex-col leading-tight min-w-0">
+<span class="font-bold tracking-wider text-white text-sm truncate uppercase">BRUSBEN <span class="text-xs font-normal text-slate-400">E.I.R.L.</span></span>
+<span class="text-[9px] text-slate-400 font-medium tracking-tight truncate uppercase">Capacitarse es superarse</span>
+</div>
+</div>
+<!-- Collapse Trigger Button -->
+<button class="p-1 rounded text-slate-400 hover:text-white hover:bg-white/10 focus:outline-none transition-colors" title="Colapsar panel lateral" type="button">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M15 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</div>
+<!-- Navigation Items List -->
+<nav class="flex-1 px-2.5 py-4 space-y-1 overflow-y-auto text-xs font-medium">
+<!-- Item: Inicio (Active) -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-md bg-brand-700 text-white shadow-sm font-semibold group transition-colors" href="#">
+<svg class="w-4 h-4 flex-shrink-0 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="truncate">Inicio</span>
+</a>
+<!-- Item: CRM Comercial -->
+<a class="flex items-center justify-between px-3 py-2.5 rounded-md text-slate-300 hover:bg-white/5 hover:text-white group transition-colors" href="#">
+<div class="flex items-center gap-3 truncate">
+<svg class="w-4 h-4 text-slate-400 group-hover:text-slate-200 flex-shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="truncate">CRM Comercial</span>
+</div>
+<span class="text-[10px] font-semibold bg-brand-700/80 text-white px-1.5 py-0.5 rounded-full">12</span>
+</a>
+<!-- Item: Personas y estudiantes -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-md text-slate-300 hover:bg-white/5 hover:text-white group transition-colors" href="#">
+<svg class="w-4 h-4 text-slate-400 group-hover:text-slate-200 flex-shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="truncate">Personas y estudiantes</span>
+</a>
+<!-- Item: Oferta académica -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-md text-slate-300 hover:bg-white/5 hover:text-white group transition-colors" href="#">
+<svg class="w-4 h-4 text-slate-400 group-hover:text-slate-200 flex-shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="truncate">Oferta académica</span>
+</a>
+<!-- Item: Matrículas -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-md text-slate-300 hover:bg-white/5 hover:text-white group transition-colors" href="#">
+<svg class="w-4 h-4 text-slate-400 group-hover:text-slate-200 flex-shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="truncate">Matrículas</span>
+</a>
+<!-- Item: Usuarios y accesos -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-md text-slate-300 hover:bg-white/5 hover:text-white group transition-colors" href="#">
+<svg class="w-4 h-4 text-slate-400 group-hover:text-slate-200 flex-shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="truncate">Usuarios y accesos</span>
+</a>
+<!-- Item: Auditoría -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-md text-slate-300 hover:bg-white/5 hover:text-white group transition-colors" href="#">
+<svg class="w-4 h-4 text-slate-400 group-hover:text-slate-200 flex-shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="truncate">Auditoría</span>
+</a>
+<!-- Item: Mi perfil -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-md text-slate-300 hover:bg-white/5 hover:text-white group transition-colors" href="#">
+<svg class="w-4 h-4 text-slate-400 group-hover:text-slate-200 flex-shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="truncate">Mi perfil</span>
+</a>
+</nav>
+<!-- Sidebar Footer: System Status -->
+<div class="p-3 border-t border-white/5 bg-black/20 text-xs">
+<div class="flex items-center justify-between">
+<span class="text-slate-400 font-medium text-[11px]">ERP Brusben v2.4.0</span>
+<span class="flex items-center text-[10px] text-emerald-400 gap-1.5 font-medium">
+<span class="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          Operativo
+        </span>
+</div>
+</div>
+</aside>
+<!-- END: Sidebar -->
+<!-- Main Viewport Area -->
+<div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+<!-- BEGIN: TopBar Header -->
+<header class="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between flex-shrink-0 z-20" data-purpose="primary-header">
+<!-- Breadcrumb & Search Context -->
+<div class="flex items-center space-x-6 flex-1 max-w-2xl">
+<nav class="flex items-center space-x-2 text-xs text-slate-500 font-medium">
+<span class="text-slate-400">ERP Brusben</span>
+<span class="text-slate-300">/</span>
+<span class="text-slate-400">Inicio</span>
+<span class="text-slate-300">/</span>
+<span class="text-slate-900 font-semibold">Panel de gestión</span>
+</nav>
+<!-- Global Search Bar -->
+<div class="relative w-full max-w-xs hidden md:block">
+<span class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-400">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</span>
+<input class="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-md focus:bg-white focus:border-brand-700 focus:ring-1 focus:ring-brand-700 placeholder-slate-400 text-slate-700 transition" placeholder="Buscar estudiantes, DNI, programas... (Ctrl+K)" type="text"/>
+</div>
+</div>
+<!-- Right Header Actions & User Profile -->
+<div class="flex items-center space-x-4">
+<!-- Campus/Sede Indicator -->
+<div class="hidden xl:flex items-center gap-1.5 text-xs font-medium text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200/80">
+<svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Sede Central · Lima</span>
+</div>
+<!-- Notifications Indicator -->
+<button class="p-1.5 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-md relative transition-colors" title="Notificaciones" type="button">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-brand-600 rounded-full ring-2 ring-white"></span>
+</button>
+<div class="h-6 w-px bg-slate-200"></div>
+<!-- User Information Profile -->
+<div class="flex items-center space-x-3" data-purpose="user-profile-header">
+<div class="text-right leading-tight hidden sm:block">
+<div class="text-xs font-semibold text-slate-800">Loana Avila Neyra</div>
+<div class="text-[10px] font-medium text-brand-700 flex items-center justify-end gap-1">
+<span>Superadministración</span>
+<svg class="w-3 h-3 text-emerald-600 inline" fill="currentColor" viewbox="0 0 20 20">
+<path clip-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" fill-rule="evenodd"></path>
+</svg>
+</div>
+</div>
+<!-- Avatar User Badge -->
+<div class="h-9 w-9 rounded-full bg-slate-200 ring-2 ring-slate-100 flex items-center justify-center font-bold text-slate-600 text-xs shadow-inner">
+            LA
+          </div>
+<!-- Sign Out Action -->
+<button class="p-1.5 text-slate-400 hover:text-brand-700 hover:bg-rose-50 rounded-md transition-colors" title="Cerrar sesión" type="button">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</div>
+</div>
+</header>
+<!-- END: TopBar Header -->
+<!-- BEGIN: Main Dashboard Viewport -->
+<main class="flex-1 overflow-y-auto px-6 py-6 space-y-6" data-purpose="dashboard-content">
+<!-- Section Header & Quick Primary Actions -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<div>
+<div class="text-[11px] font-bold uppercase tracking-wider text-brand-700">
+            Resumen Institucional
+          </div>
+<h1 class="text-2xl font-bold text-slate-900 tracking-tight">Panel principal</h1>
+<p class="text-xs text-slate-500 mt-0.5">Hola, <span class="font-medium text-slate-700">Loana Avila Neyra</span>. Este es el estado actual operativo del ERP Brusben.</p>
+</div>
+<div class="flex items-center gap-2.5">
+<!-- Secondary Action: Export -->
+<button class="inline-flex items-center px-3.5 py-2 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 hover:border-slate-400 shadow-sm transition" type="button">
+<svg class="w-3.5 h-3.5 mr-1.5 text-slate-500" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+            Exportar datos
+          </button>
+<!-- Primary Action: Nuevo Estudiante -->
+<button class="inline-flex items-center px-4 py-2 text-xs font-semibold text-white bg-brand-700 hover:bg-brand-800 rounded-lg shadow-sm hover:shadow transition focus:ring-2 focus:ring-offset-2 focus:ring-brand-700" type="button">
+<svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+            Nuevo estudiante
+          </button>
+</div>
+</div>
+<!-- BEGIN: Primary KPI Metric Cards (Matching Original Structure) -->
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" data-purpose="kpi-metrics-grid">
+<!-- KPI 1: Estudiantes Registrados -->
+<article class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 relative overflow-hidden flex flex-col justify-between hover:border-slate-300 transition">
+<div class="absolute left-0 top-0 bottom-0 w-1.5 bg-brand-700"></div>
+<div>
+<div class="flex items-center justify-between">
+<span class="text-xs font-medium text-slate-500">Estudiantes registrados</span>
+<span class="p-1.5 rounded-md bg-slate-50 text-slate-400 border border-slate-100">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</span>
+</div>
+<div class="mt-2 flex items-baseline gap-2">
+<span class="text-3xl font-bold text-slate-900 tracking-tight">1,248</span>
+<span class="text-[11px] font-medium text-emerald-600 flex items-center">
+                ↑ +12.4%
+              </span>
+</div>
+</div>
+<div class="mt-3 text-[11px] text-slate-400">Total acumulado en la plataforma</div>
+</article>
+<!-- KPI 2: Estudiantes Activos -->
+<article class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 relative overflow-hidden flex flex-col justify-between hover:border-slate-300 transition">
+<div class="absolute left-0 top-0 bottom-0 w-1.5 bg-brand-700"></div>
+<div>
+<div class="flex items-center justify-between">
+<span class="text-xs font-medium text-slate-500">Estudiantes activos</span>
+<span class="p-1.5 rounded-md bg-emerald-50 text-emerald-600 border border-emerald-100">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</span>
+</div>
+<div class="mt-2 flex items-baseline gap-2">
+<span class="text-3xl font-bold text-slate-900 tracking-tight">892</span>
+<span class="text-[11px] font-medium text-emerald-600">71.4% del padrón</span>
+</div>
+</div>
+<div class="mt-3 text-[11px] text-slate-400">Con matrícula vigente en ciclo 2026-I</div>
+</article>
+<!-- KPI 3: Estudiantes Inactivos -->
+<article class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 relative overflow-hidden flex flex-col justify-between hover:border-slate-300 transition">
+<div class="absolute left-0 top-0 bottom-0 w-1.5 bg-brand-700"></div>
+<div>
+<div class="flex items-center justify-between">
+<span class="text-xs font-medium text-slate-500">Estudiantes inactivos</span>
+<span class="p-1.5 rounded-md bg-amber-50 text-amber-600 border border-amber-100">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</span>
+</div>
+<div class="mt-2 flex items-baseline gap-2">
+<span class="text-3xl font-bold text-slate-900 tracking-tight">356</span>
+<span class="text-[11px] font-medium text-slate-500">28.6%</span>
+</div>
+</div>
+<div class="mt-3 text-[11px] text-slate-400">Egresados o en reserva de matrícula</div>
+</article>
+<!-- KPI 4: Programas Registrados -->
+<article class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 relative overflow-hidden flex flex-col justify-between hover:border-slate-300 transition">
+<div class="absolute left-0 top-0 bottom-0 w-1.5 bg-brand-700"></div>
+<div>
+<div class="flex items-center justify-between">
+<span class="text-xs font-medium text-slate-500">Programas registrados</span>
+<span class="p-1.5 rounded-md bg-blue-50 text-blue-600 border border-blue-100">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</span>
+</div>
+<div class="mt-2 flex items-baseline gap-2">
+<span class="text-3xl font-bold text-slate-900 tracking-tight">18</span>
+<span class="text-[11px] font-medium text-slate-600">Activos en sede</span>
+</div>
+</div>
+<div class="mt-3 text-[11px] text-slate-400">14 Carreras Técnicas · 4 Certificaciones</div>
+</article>
+</section>
+<!-- END: Primary KPI Metric Cards -->
+<!-- Operational Mini Strip Metrics -->
+<section class="bg-white border border-slate-200 rounded-lg px-4 py-2.5 shadow-sm grid grid-cols-2 md:grid-cols-4 gap-4 text-xs divide-y md:divide-y-0 md:divide-x divide-slate-100" data-purpose="secondary-strip-metrics">
+<div class="flex items-center justify-between md:pr-4 pt-1 md:pt-0">
+<span class="text-slate-500">Matrículas del mes:</span>
+<span class="font-bold text-slate-800">142</span>
+</div>
+<div class="flex items-center justify-between md:px-4 pt-1 md:pt-0">
+<span class="text-slate-500">Prospectos nuevos:</span>
+<span class="font-bold text-brand-700">64 leads</span>
+</div>
+<div class="flex items-center justify-between md:px-4 pt-1 md:pt-0">
+<span class="text-slate-500">Cobranza del día:</span>
+<span class="font-bold text-emerald-700">S/ 18,450.00</span>
+</div>
+<div class="flex items-center justify-between md:pl-4 pt-1 md:pt-0">
+<span class="text-slate-500">Cuotas por vencer:</span>
+<span class="font-semibold text-amber-700">28 pendientes</span>
+</div>
+</section>
+<!-- BEGIN: Content Grid (Registros Recientes + Módulos Institucionales) -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+<!-- LEFT COLUMN: Registros Recientes Table (8 of 12 Cols) -->
+<div class="lg:col-span-8 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+<!-- Card Header with Filters -->
+<div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+<div>
+<div class="flex items-center gap-2">
+<h2 class="text-base font-bold text-slate-900">Registros recientes</h2>
+<span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-medium">Últimos incorporados</span>
+</div>
+<p class="text-xs text-slate-500 mt-0.5">Estudiantes recién cargados al sistema escolar.</p>
+</div>
+<a class="text-xs font-semibold text-brand-700 hover:text-brand-800 inline-flex items-center gap-1 transition" href="#">
+<span>Ver todos (1,248)</span>
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</a>
+</div>
+<!-- Quick Filter Tabs -->
+<div class="px-5 py-2.5 bg-slate-50/70 border-b border-slate-100 flex items-center gap-2 overflow-x-auto text-xs">
+<button class="px-2.5 py-1 font-medium bg-white text-brand-700 border border-slate-200 rounded shadow-xs">Todos (5)</button>
+<button class="px-2.5 py-1 font-medium text-slate-600 hover:text-slate-900 rounded hover:bg-white/80">Matriculados</button>
+<button class="px-2.5 py-1 font-medium text-slate-600 hover:text-slate-900 rounded hover:bg-white/80">En proceso</button>
+<button class="px-2.5 py-1 font-medium text-slate-600 hover:text-slate-900 rounded hover:bg-white/80">Pendientes de pago</button>
+</div>
+<!-- Enterprise High Density Data Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left text-xs">
+<thead class="bg-slate-50 text-slate-600 uppercase font-semibold text-[10px] tracking-wider border-b border-slate-200/80">
+<tr>
+<th class="py-3 px-4" scope="col">Estudiante / Identificación</th>
+<th class="py-3 px-3" scope="col">Código Matrícula</th>
+<th class="py-3 px-3" scope="col">Programa Académico</th>
+<th class="py-3 px-3" scope="col">Fecha y Hora</th>
+<th class="py-3 px-3" scope="col">Estado</th>
+<th class="py-3 px-4 text-right" scope="col">Acción</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 text-slate-700">
+<!-- Row 1 -->
+<tr class="hover:bg-slate-50/80 transition-colors">
+<td class="py-3 px-4">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-slate-600 text-[11px]">
+                        CM
+                      </div>
+<div>
+<div class="font-semibold text-slate-900">Carlos Mendoza Ruiz</div>
+<div class="text-[10px] text-slate-400">DNI: 72849102 · Cel: 984 123 456</div>
+</div>
+</div>
+</td>
+<td class="py-3 px-3 font-mono text-[11px] text-slate-500">EST-2026-0841</td>
+<td class="py-3 px-3 font-medium text-slate-800">Soldadura Estructural y TIG</td>
+<td class="py-3 px-3 text-slate-500 whitespace-nowrap">Hoy, 09:15 AM</td>
+<td class="py-3 px-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      Matriculado
+                    </span>
+</td>
+<td class="py-3 px-4 text-right">
+<button class="text-slate-400 hover:text-brand-700 p-1 rounded" title="Ver detalle">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-slate-50/80 transition-colors">
+<td class="py-3 px-4">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center font-bold text-blue-700 text-[11px]">
+                        YP
+                      </div>
+<div>
+<div class="font-semibold text-slate-900">Yuliana Paredes Quispe</div>
+<div class="text-[10px] text-slate-400">DNI: 48190321 · Cel: 912 345 876</div>
+</div>
+</div>
+</td>
+<td class="py-3 px-3 font-mono text-[11px] text-slate-500">EST-2026-0840</td>
+<td class="py-3 px-3 font-medium text-slate-800">Seguridad Industrial y Minera (SOMA)</td>
+<td class="py-3 px-3 text-slate-500 whitespace-nowrap">Hoy, 08:42 AM</td>
+<td class="py-3 px-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                      Validando pago
+                    </span>
+</td>
+<td class="py-3 px-4 text-right">
+<button class="text-slate-400 hover:text-brand-700 p-1 rounded" title="Ver detalle">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-slate-50/80 transition-colors">
+<td class="py-3 px-4">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-full bg-rose-50 border border-rose-200 flex items-center justify-center font-bold text-brand-700 text-[11px]">
+                        JA
+                      </div>
+<div>
+<div class="font-semibold text-slate-900">Jorge Alanya Cárdenas</div>
+<div class="text-[10px] text-slate-400">DNI: 70912445 · Cel: 978 991 223</div>
+</div>
+</div>
+</td>
+<td class="py-3 px-3 font-mono text-[11px] text-slate-500">EST-2026-0839</td>
+<td class="py-3 px-3 font-medium text-slate-800">Operador de Maquinaria Pesada</td>
+<td class="py-3 px-3 text-slate-500 whitespace-nowrap">Ayer, 17:30 PM</td>
+<td class="py-3 px-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      Matriculado
+                    </span>
+</td>
+<td class="py-3 px-4 text-right">
+<button class="text-slate-400 hover:text-brand-700 p-1 rounded" title="Ver detalle">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-slate-50/80 transition-colors">
+<td class="py-3 px-4">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-slate-600 text-[11px]">
+                        MV
+                      </div>
+<div>
+<div class="font-semibold text-slate-900">María Vargas Huamán</div>
+<div class="text-[10px] text-slate-400">DNI: 75128490 · Cel: 945 112 334</div>
+</div>
+</div>
+</td>
+<td class="py-3 px-3 font-mono text-[11px] text-slate-500">EST-2026-0838</td>
+<td class="py-3 px-3 font-medium text-slate-800">Electricidad y Tableros Industriales</td>
+<td class="py-3 px-3 text-slate-500 whitespace-nowrap">Ayer, 16:15 PM</td>
+<td class="py-3 px-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                      Docs pendientes
+                    </span>
+</td>
+<td class="py-3 px-4 text-right">
+<button class="text-slate-400 hover:text-brand-700 p-1 rounded" title="Ver detalle">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Subtle Empty State Preview (Preserved from Screenshot capability) -->
+<div class="p-3 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+<span>Mostrando 4 de 1,248 estudiantes</span>
+<span class="text-slate-400">Sincronizado con Base de Datos Brusben</span>
+</div>
+</div>
+<!-- RIGHT COLUMN: Módulos Institucionales & Direct Actions (4 of 12 Cols) -->
+<div class="lg:col-span-4 space-y-6">
+<!-- Módulos Institucionales Widget -->
+<div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5" data-purpose="institutional-modules">
+<div class="border-b border-slate-100 pb-3 mb-4">
+<h2 class="text-base font-bold text-slate-900">Módulos institucionales</h2>
+<p class="text-xs text-slate-500">Accesos según tus permisos de rol.</p>
+</div>
+<!-- List of Operational Modules (Faithful to Screenshot) -->
+<div class="space-y-3">
+<!-- Module 1: CRM Comercial -->
+<a class="block p-3.5 rounded-lg border border-slate-200 hover:border-brand-700/50 hover:bg-slate-50/80 transition group" href="#">
+<div class="flex items-start justify-between">
+<div class="flex items-center space-x-3">
+<div class="p-2 rounded bg-red-50 text-brand-700 group-hover:bg-brand-700 group-hover:text-white transition">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<div>
+<h3 class="text-xs font-bold text-slate-900 group-hover:text-brand-700 transition">CRM Comercial</h3>
+<p class="text-[11px] text-slate-500 leading-tight mt-0.5">Prospectos, embudo, seguimientos y conversión</p>
+</div>
+</div>
+<svg class="w-4 h-4 text-slate-400 group-hover:text-brand-700 group-hover:translate-x-0.5 transition" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+</a>
+<!-- Module 2: Oferta Académica -->
+<a class="block p-3.5 rounded-lg border border-slate-200 hover:border-brand-700/50 hover:bg-slate-50/80 transition group" href="#">
+<div class="flex items-start justify-between">
+<div class="flex items-center space-x-3">
+<div class="p-2 rounded bg-slate-100 text-slate-700 group-hover:bg-slate-800 group-hover:text-white transition">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<div>
+<h3 class="text-xs font-bold text-slate-900 group-hover:text-brand-700 transition">Oferta académica</h3>
+<p class="text-[11px] text-slate-500 leading-tight mt-0.5">Programas, planes, periodos y ediciones</p>
+</div>
+</div>
+<svg class="w-4 h-4 text-slate-400 group-hover:text-brand-700 group-hover:translate-x-0.5 transition" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+</a>
+<!-- Module 3: Matrículas -->
+<a class="block p-3.5 rounded-lg border border-slate-200 hover:border-brand-700/50 hover:bg-slate-50/80 transition group" href="#">
+<div class="flex items-start justify-between">
+<div class="flex items-center space-x-3">
+<div class="p-2 rounded bg-slate-100 text-slate-700 group-hover:bg-slate-800 group-hover:text-white transition">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<div>
+<h3 class="text-xs font-bold text-slate-900 group-hover:text-brand-700 transition">Matrículas &amp; Pagos</h3>
+<p class="text-[11px] text-slate-500 leading-tight mt-0.5">Contratos, cuotas y emisión de boletas</p>
+</div>
+</div>
+<svg class="w-4 h-4 text-slate-400 group-hover:text-brand-700 group-hover:translate-x-0.5 transition" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+</a>
+<!-- Module 4: Personas y Estudiantes -->
+<a class="block p-3.5 rounded-lg border border-slate-200 hover:border-brand-700/50 hover:bg-slate-50/80 transition group" href="#">
+<div class="flex items-start justify-between">
+<div class="flex items-center space-x-3">
+<div class="p-2 rounded bg-slate-100 text-slate-700 group-hover:bg-slate-800 group-hover:text-white transition">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<div>
+<h3 class="text-xs font-bold text-slate-900 group-hover:text-brand-700 transition">Personas y estudiantes</h3>
+<p class="text-[11px] text-slate-500 leading-tight mt-0.5">Expedientes académicos y asistencias</p>
+</div>
+</div>
+<svg class="w-4 h-4 text-slate-400 group-hover:text-brand-700 group-hover:translate-x-0.5 transition" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+</a>
+</div>
+</div>
+<!-- Pending Tasks / System Alerts Box -->
+<div class="bg-amber-50/70 border border-amber-200/80 rounded-xl p-4">
+<div class="flex items-start space-x-3">
+<svg class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<div>
+<h4 class="text-xs font-bold text-amber-900">Validación de certificados pendientes</h4>
+<p class="text-[11px] text-amber-800 mt-1 leading-relaxed">
+                  Hay 9 expedientes técnicos del programa Soldadura TIG pendientes de firma de Superadministración.
+                </p>
+<a class="inline-block mt-2 text-[11px] font-semibold text-brand-700 hover:underline" href="#">
+                  Revisar lista de pendientes →
+                </a>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- END: Content Grid -->
+</main>
+<!-- END: Main Dashboard Viewport -->
+</div>
+<script data-purpose="keyboard-shortcuts">
+    // Simple ergonomic search shortcut listener (Ctrl/Cmd + K)
+    document.addEventListener('keydown', function(event) {
+      if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
+        event.preventDefault();
+        const searchInput = document.querySelector('input[type="text"]');
+        if (searchInput) {
+          searchInput.focus();
+        }
+      }
+    });
+  </script>
+</body></html>

@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-background" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ERP Brusben - Mi perfil (Superadministración)</title>
+<!-- Fonts & Material Symbols -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS v3 -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-error-container": "#93000a",
+            "inverse-primary": "#ffb4ab",
+            "primary": "#9a000d",
+            "surface-container": "#edeef0",
+            "on-secondary-fixed": "#1a1c21",
+            "inverse-surface": "#2e3132",
+            "tertiary-container": "#0c57df",
+            "on-tertiary-fixed-variant": "#003ea8",
+            "on-primary": "#ffffff",
+            "background": "#f8f9fb",
+            "tertiary-fixed": "#dbe1ff",
+            "primary-fixed-dim": "#ffb4ab",
+            "on-primary-fixed": "#410002",
+            "primary-container": "#c4121a",
+            "error": "#ba1a1a",
+            "surface-container-low": "#f3f4f6",
+            "surface-container-highest": "#e1e2e4",
+            "on-surface-variant": "#5c403c",
+            "on-surface": "#191c1e",
+            "on-error": "#ffffff",
+            "on-primary-container": "#ffd5d0",
+            "inverse-on-surface": "#f0f1f3",
+            "outline": "#916f6b",
+            "on-secondary-fixed-variant": "#45474c",
+            "tertiary": "#0041b0",
+            "primary-fixed": "#ffdad6",
+            "surface-dim": "#d9dadc",
+            "surface-tint": "#be0a17",
+            "secondary-fixed-dim": "#c6c6cd",
+            "surface-bright": "#f8f9fb",
+            "on-tertiary-fixed": "#00174b",
+            "on-primary-fixed-variant": "#93000c",
+            "secondary-container": "#dfdfe6",
+            "on-tertiary-container": "#d6ddff",
+            "surface-container-lowest": "#ffffff",
+            "surface-container-high": "#e7e8ea",
+            "surface-variant": "#e1e2e4",
+            "on-secondary": "#ffffff",
+            "secondary-fixed": "#e2e2e9",
+            "tertiary-fixed-dim": "#b4c5ff",
+            "on-tertiary": "#ffffff",
+            "on-secondary-container": "#616268",
+            "surface": "#f8f9fb",
+            "secondary": "#5d5e64",
+            "error-container": "#ffdad6",
+            "outline-variant": "#e6bdb8",
+            "on-background": "#191c1e"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-lg": "1rem",
+            "space-md": "0.75rem",
+            "gutter-dense": "0.75rem",
+            "space-xl": "1.5rem",
+            "gutter": "1rem",
+            "margin": "1.5rem",
+            "space-xs": "0.25rem",
+            "space-sm": "0.5rem"
+          },
+          "fontFamily": {
+            "headline-lg": ["Inter"],
+            "label-xs": ["Inter"],
+            "label-sm": ["Inter"],
+            "body-lg": ["Inter"],
+            "headline-md": ["Inter"],
+            "title-eyebrow": ["Inter"],
+            "metric-val": ["Inter"],
+            "headline-sm": ["Inter"],
+            "display": ["Inter"],
+            "body-sm": ["Inter"],
+            "label-md": ["Inter"],
+            "body-md": ["Inter"]
+          },
+          "fontSize": {
+            "headline-lg": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+            "label-xs": ["11px", { "lineHeight": "14px", "fontWeight": "600" }],
+            "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+            "body-lg": ["15px", { "lineHeight": "22px", "fontWeight": "400" }],
+            "headline-md": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "title-eyebrow": ["11px", { "lineHeight": "14px", "letterSpacing": "0.08em", "fontWeight": "700" }],
+            "metric-val": ["28px", { "lineHeight": "32px", "letterSpacing": "-0.03em", "fontWeight": "700" }],
+            "headline-sm": ["16px", { "lineHeight": "22px", "fontWeight": "600" }],
+            "display": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+            "label-md": ["13px", { "lineHeight": "16px", "fontWeight": "500" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 18px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #D1D5DB;
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #9CA3AF;
+    }
+  </style>
+</head>
+<body class="h-full text-on-surface bg-background flex overflow-hidden font-body-md text-body-md antialiased selection:bg-primary-container selection:text-white">
+<!-- ==================== SIDEBAR LATERAL (260px) ==================== -->
+<aside class="w-[260px] flex-shrink-0 bg-[#181A1F] text-[#9CA3AF] flex flex-col z-30 select-none border-r border-[#22252B]">
+<!-- Header Sidebar con Logotipo Institucional Brusben -->
+<div class="h-16 px-3.5 flex items-center border-b border-[#22252B] bg-[#141519]">
+<div class="w-full bg-white rounded-lg p-1.5 flex items-center justify-center shadow-sm">
+<img alt="Logotipo Institucional Brusben E.I.R.L. - Capacitarse es superarse" class="max-h-9 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCNKv0LCJUN4lof6R3n8LQ62eqzYUP4_9WZG5Z-HeZaZev2m1df13n4NdURw7HvxfFlZVNs96n5lhYS18xEpsEBqtwefD2HpuGAgZB4xTRwr2TOFvheQnZsxqXoW3XeUF97VBxNj0fH2nTj5ysjB15T3xMbe1gpdiPE1my8mBhr3yhOGT5evwrXhMNjDp7Rh-BNg7aS6KMVSLuC2V0VltsBe0DMXSA8ccBBxww5PENlohOEJ2rR0wmqU10xakfgVLzTG0hcRsP7ZiU"/>
+</div>
+</div>
+<!-- Navegación Primaria -->
+<div class="flex-1 overflow-y-auto custom-scrollbar px-3 py-4 space-y-1">
+<div class="px-2 pb-1.5 text-[10px] uppercase tracking-wider font-semibold text-[#6B7280]">Gestión Principal</div>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-[#9CA3AF] hover:text-[#E5E7EB] hover:bg-[#22252B] transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[19px]">dashboard</span>
+<span>Inicio</span>
+</a>
+<a class="flex items-center justify-between px-3 py-2 rounded-lg text-[#9CA3AF] hover:text-[#E5E7EB] hover:bg-[#22252B] transition-colors font-label-md text-label-md" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[19px]">query_stats</span>
+<span>CRM Comercial</span>
+</div>
+<span class="bg-[#C4121A] text-white text-[11px] font-bold px-1.5 py-0.5 rounded-full">12</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-[#9CA3AF] hover:text-[#E5E7EB] hover:bg-[#22252B] transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[19px]">groups</span>
+<span>Personas y estudiantes</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-[#9CA3AF] hover:text-[#E5E7EB] hover:bg-[#22252B] transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[19px]">school</span>
+<span>Oferta académica</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-[#9CA3AF] hover:text-[#E5E7EB] hover:bg-[#22252B] transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[19px]">assignment_turned_in</span>
+<span>Matrículas</span>
+</a>
+<div class="pt-3 px-2 pb-1.5 text-[10px] uppercase tracking-wider font-semibold text-[#6B7280]">Seguridad &amp; Sistema</div>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-[#9CA3AF] hover:text-[#E5E7EB] hover:bg-[#22252B] transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[19px]">admin_panel_settings</span>
+<span>Usuarios y accesos</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-[#9CA3AF] hover:text-[#E5E7EB] hover:bg-[#22252B] transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[19px]">policy</span>
+<span>Auditoría</span>
+</a>
+<!-- Ítem ACTIVO: Mi perfil -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-[#C4121A] text-white shadow-sm font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[19px]" style="font-variation-settings: 'FILL' 1;">account_circle</span>
+<span class="font-medium tracking-wide">Mi perfil</span>
+<span class="ml-auto w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+</a>
+</div>
+<!-- Pie del Sidebar con Estado Institucional -->
+<div class="p-3 border-t border-[#22252B] bg-[#141519] text-xs">
+<div class="flex items-center justify-between mb-1.5">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-emerald-500/20"></span>
+<span class="text-[#E5E7EB] font-medium text-[11px]">Sistema Operativo</span>
+</div>
+<span class="text-[#9CA3AF] font-mono text-[10px]">v2.4.0</span>
+</div>
+<p class="text-[11px] text-[#6B7280] truncate">Centro de Capacitaciones Brusben</p>
+</div>
+</aside>
+<!-- ==================== CONTENEDOR PRINCIPAL ==================== -->
+<div class="flex-1 flex flex-col h-full overflow-hidden bg-background">
+<!-- TopAppBar Header Institucional -->
+<header class="h-16 bg-surface-container-lowest border-b border-[#E2E4E9] px-6 flex items-center justify-between flex-shrink-0 z-20">
+<!-- Breadcrumb y Selector de Sede -->
+<div class="flex items-center gap-4">
+<nav class="flex items-center space-x-1.5 text-body-sm font-body-sm text-[#6B7280]">
+<span class="hover:text-on-surface cursor-pointer">ERP Brusben</span>
+<span class="text-[#9CA3AF]">/</span>
+<span class="hover:text-on-surface cursor-pointer">Configuración</span>
+<span class="text-[#9CA3AF]">/</span>
+<span class="text-on-surface font-semibold">Mi perfil</span>
+</nav>
+<div class="h-4 w-[1px] bg-[#E2E4E9]"></div>
+<div class="flex items-center gap-1.5 px-2.5 py-1 bg-surface-container-low rounded-md border border-[#E2E4E9] text-body-sm">
+<span class="material-symbols-outlined text-[16px] text-primary">domain</span>
+<span class="text-[12px] font-medium text-on-surface">Sede Central • Lima</span>
+<span class="material-symbols-outlined text-[14px] text-[#6B7280]">arrow_drop_down</span>
+</div>
+</div>
+<!-- Buscador Global, Alertas y Perfil de Usuario -->
+<div class="flex items-center gap-3">
+<!-- Búsqueda rápida con Ctrl+K -->
+<div class="relative w-64">
+<span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-[17px] text-[#9CA3AF]">search</span>
+<input class="w-full h-9 pl-9 pr-14 text-body-sm rounded-lg border border-[#D1D5DB] bg-surface-container-lowest placeholder-[#9CA3AF] focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-all" placeholder="Buscar alumnos, folios o sedes..." type="text"/>
+<div class="absolute right-2 top-1/2 -translate-y-1/2 bg-surface-container-low px-1.5 py-0.5 rounded border border-[#E2E4E9] text-[10px] font-mono text-[#6B7280]">
+            Ctrl K
+          </div>
+</div>
+<!-- Notificaciones -->
+<button class="relative w-9 h-9 flex items-center justify-center rounded-lg border border-[#E2E4E9] hover:bg-surface-container-low text-[#6B7280] transition-colors" title="Notificaciones del sistema">
+<span class="material-symbols-outlined text-[19px]">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary ring-2 ring-white"></span>
+</button>
+<div class="h-5 w-[1px] bg-[#E2E4E9]"></div>
+<!-- User Badge & Sesión -->
+<div class="flex items-center gap-3 pl-1">
+<div class="relative">
+<div class="w-9 h-9 rounded-full bg-[#181A1F] text-white flex items-center justify-center font-bold text-xs ring-2 ring-[#E2E4E9]">
+              LA
+            </div>
+<span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white"></span>
+</div>
+<div class="hidden xl:flex flex-col text-left">
+<div class="flex items-center gap-1">
+<span class="text-body-sm font-semibold text-on-surface leading-tight">Loana Avila Neyra</span>
+<span class="material-symbols-outlined text-[14px] text-tertiary-container" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+<span class="text-[11px] text-[#6B7280] font-medium leading-tight">Superadministración</span>
+</div>
+<!-- Cerrar sesión -->
+<button class="w-8 h-8 rounded-lg flex items-center justify-center text-[#6B7280] hover:text-error hover:bg-error-container/20 transition-colors ml-1" title="Cerrar sesión segura">
+<span class="material-symbols-outlined text-[18px]">logout</span>
+</button>
+</div>
+</div>
+</header>
+<!-- ==================== WORKSPACE / MAIN CANVAS ==================== -->
+<main class="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
+<!-- ENCABEZADO DE PÁGINA -->
+<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-2 border-b border-[#E2E4E9]">
+<div>
+<span class="font-title-eyebrow text-title-eyebrow text-primary tracking-wider uppercase flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+            CONFIGURACIÓN DE CUENTA Y ACCESO
+          </span>
+<h1 class="font-headline-lg text-headline-lg text-on-surface mt-0.5">Mi perfil</h1>
+<p class="font-body-sm text-body-sm text-[#6B7280] mt-1 max-w-3xl">
+            Gestiona tu información personal, consulta tus privilegios de superadministrador y revisa el registro forense de tus sesiones activas en ERP Brusben.
+          </p>
+</div>
+<!-- Acciones Principales -->
+<div class="flex items-center gap-2.5 self-start md:self-auto flex-shrink-0">
+<button class="inline-flex items-center gap-2 px-3.5 py-2 text-label-md font-label-md rounded-lg border border-[#D1D5DB] bg-white text-on-surface hover:bg-surface-container-low transition-colors shadow-sm" type="button">
+<span class="material-symbols-outlined text-[17px] text-[#6B7280]">file_download</span>
+<span>Descargar registro de actividad</span>
+</button>
+<button class="inline-flex items-center gap-2 px-4 py-2 text-label-md font-label-md rounded-lg bg-primary-container text-white hover:bg-[#9F0E15] active:bg-[#7E0B11] focus:ring-2 focus:ring-offset-1 focus:ring-primary-container transition-all shadow-sm" type="button">
+<span class="material-symbols-outlined text-[18px]">save</span>
+<span>Guardar cambios</span>
+</button>
+</div>
+</div>
+<!-- 1. TARJETA HERO / CABECERA DE PERFIL -->
+<section class="bg-surface-container-lowest rounded-xl border border-[#E2E4E9] p-6 shadow-sm relative overflow-hidden">
+<!-- Acento de borde izquierdo institucional -->
+<div class="absolute left-0 top-0 bottom-0 w-1.5 bg-primary-container"></div>
+<div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 pl-2">
+<div class="flex items-start sm:items-center gap-5">
+<!-- Avatar estilo Google con foto y badge de estado -->
+<div class="relative flex-shrink-0">
+<div class="w-20 h-20 rounded-2xl bg-gradient-to-tr from-[#181A1F] to-[#2E3132] text-white flex items-center justify-center font-bold text-2xl shadow-md border-2 border-white ring-1 ring-[#E2E4E9]">
+                LA
+              </div>
+<span class="absolute -bottom-1 -right-1 px-1.5 py-0.5 bg-emerald-500 text-white rounded-md text-[10px] font-bold ring-2 ring-white flex items-center gap-1 shadow-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
+                ONLINE
+              </span>
+</div>
+<!-- Datos principales de la persona -->
+<div class="space-y-1.5">
+<div class="flex flex-wrap items-center gap-2.5">
+<h2 class="font-headline-md text-headline-md text-on-surface">Loana Avila Neyra</h2>
+<!-- Badge de Superadmin institucional -->
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-label-xs font-label-xs bg-[#FEF2F2] text-[#991B1B] border border-[#FECACA]">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">security</span>
+                  SUPERADMIN
+                </span>
+<!-- Badge Google Workspace -->
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-[#ECFDF5] text-[#065F46] border border-[#A7F3D0]">
+<span class="material-symbols-outlined text-[13px] text-emerald-600">sync</span>
+                  Google Workspace Sincronizado
+                </span>
+</div>
+<div class="flex flex-wrap items-center gap-y-1 gap-x-4 text-body-sm text-[#4B5563]">
+<div class="flex items-center gap-1 text-on-surface font-medium">
+<span class="material-symbols-outlined text-[16px] text-[#6B7280]">badge</span>
+<span>DNI 47891234</span>
+</div>
+<span class="text-[#D1D5DB]">•</span>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-[#6B7280]">work</span>
+<span>Directora de Tecnología y Operaciones Académicas</span>
+</div>
+<span class="text-[#D1D5DB]">•</span>
+<div class="flex items-center gap-1 text-[#6B7280]">
+<span class="material-symbols-outlined text-[16px]">mail</span>
+<span class="font-mono text-[12px] text-on-surface font-semibold">l.avila@brusben.edu.pe</span>
+</div>
+</div>
+<!-- Micro etiquetas institucionales adicionales -->
+<div class="flex flex-wrap items-center gap-3 pt-1 text-[12px] text-[#6B7280]">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px] text-primary-container">location_on</span>
+                  Sede Central • Lima (Av. Los Héroes 452, San Juan de Miraflores)
+                </span>
+<span class="text-[#D1D5DB]">•</span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px] text-[#6B7280]">history_edu</span>
+                  Antigüedad: Desde Febrero 2021 (5 años de servicio)
+                </span>
+</div>
+</div>
+</div>
+<!-- Estado de la cuenta y sello de seguridad -->
+<div class="lg:text-right flex flex-row lg:flex-col items-center lg:items-end justify-between w-full lg:w-auto pt-3 lg:pt-0 border-t lg:border-t-0 border-[#E2E4E9]">
+<div class="flex items-center gap-1.5 text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<span class="font-label-sm text-label-sm font-semibold">Cuenta Activa e Irrestricta</span>
+</div>
+<span class="text-[11px] text-[#6B7280] mt-1.5">ID Institucional: BRU-ADM-004</span>
+</div>
+</div>
+</section>
+<!-- CUADRÍCULA DE TRABAJO EN 2 COLUMNAS (ASIMÉTRICA) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+<!-- COLUMNA IZQUIERDA: FORMULARIO Y PRIVILEGIOS (7 Cols) -->
+<div class="lg:col-span-7 space-y-6">
+<!-- 2. FORMULARIO COMPACTO DE INFORMACIÓN PERSONAL Y CONTACTO -->
+<section class="bg-surface-container-lowest rounded-xl border border-[#E2E4E9] shadow-sm overflow-hidden">
+<div class="px-5 py-4 border-b border-[#E2E4E9] flex items-center justify-between bg-surface-container-low/40">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-container text-[20px]">person_outline</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Datos Personales y Contacto Institucional</h3>
+</div>
+<span class="text-[11px] text-[#6B7280] font-medium bg-white px-2 py-0.5 rounded border border-[#E2E4E9]">Formulario Oficial</span>
+</div>
+<form class="p-5 space-y-4" onsubmit="event.preventDefault();">
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<!-- Nombres -->
+<div>
+<label class="block text-label-sm font-label-sm text-on-surface mb-1">
+                    Nombres completos <span class="text-error">*</span>
+</label>
+<input class="w-full h-9 px-3 text-body-sm rounded-lg border border-[#D1D5DB] bg-white text-on-surface focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-all" type="text" value="Loana Elizabeth"/>
+</div>
+<!-- Apellidos -->
+<div>
+<label class="block text-label-sm font-label-sm text-on-surface mb-1">
+                    Apellidos completos <span class="text-error">*</span>
+</label>
+<input class="w-full h-9 px-3 text-body-sm rounded-lg border border-[#D1D5DB] bg-white text-on-surface focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-all" type="text" value="Avila Neyra"/>
+</div>
+<!-- DNI (Solo lectura con candado) -->
+<div>
+<label class="block text-label-sm font-label-sm text-[#4B5563] mb-1 flex items-center justify-between">
+<span>Documento de Identidad (DNI)</span>
+<span class="text-[10px] text-[#9CA3AF] flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[12px]">lock</span> Verificado RENIEC
+                    </span>
+</label>
+<div class="relative">
+<input class="w-full h-9 pl-3 pr-8 text-body-sm rounded-lg border border-[#E2E4E9] bg-surface-container-low text-[#4B5563] font-mono cursor-not-allowed select-all" readonly="" type="text" value="47891234"/>
+<span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-[15px] text-[#9CA3AF]">lock</span>
+</div>
+</div>
+<!-- Correo Institucional (Solo lectura Google) -->
+<div>
+<label class="block text-label-sm font-label-sm text-[#4B5563] mb-1 flex items-center justify-between">
+<span>Correo Institucional</span>
+<span class="text-[10px] text-[#9CA3AF] flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[12px]">link</span> SSO Brusben
+                    </span>
+</label>
+<div class="relative">
+<input class="w-full h-9 pl-3 pr-8 text-body-sm rounded-lg border border-[#E2E4E9] bg-surface-container-low text-[#4B5563] font-mono cursor-not-allowed select-all" readonly="" type="email" value="l.avila@brusben.edu.pe"/>
+<span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-[15px] text-emerald-600" title="Cuenta administrada institucionalmente">verified</span>
+</div>
+</div>
+<!-- Correo Secundario / Recuperación -->
+<div>
+<label class="block text-label-sm font-label-sm text-on-surface mb-1">
+                    Correo secundario / recuperación
+                  </label>
+<input class="w-full h-9 px-3 text-body-sm rounded-lg border border-[#D1D5DB] bg-white text-on-surface focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-all" type="email" value="loana.avila.personal@gmail.com"/>
+</div>
+<!-- Teléfono Celular / WhatsApp -->
+<div>
+<label class="block text-label-sm font-label-sm text-on-surface mb-1">
+                    Teléfono celular / WhatsApp operativo
+                  </label>
+<div class="relative">
+<input class="w-full h-9 pl-8 pr-3 text-body-sm rounded-lg border border-[#D1D5DB] bg-white text-on-surface focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-all font-mono" type="tel" value="+51 984 123 456"/>
+<span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-[16px] text-[#6B7280]">call</span>
+</div>
+</div>
+<!-- Cargo Institucional -->
+<div>
+<label class="block text-label-sm font-label-sm text-on-surface mb-1">
+                    Cargo institucional
+                  </label>
+<input class="w-full h-9 px-3 text-body-sm rounded-lg border border-[#D1D5DB] bg-white text-on-surface focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-all" type="text" value="Directora de Operaciones &amp; TI"/>
+</div>
+<!-- Sede de Trabajo Principal -->
+<div>
+<label class="block text-label-sm font-label-sm text-on-surface mb-1">
+                    Sede de trabajo principal
+                  </label>
+<select class="w-full h-9 px-3 text-body-sm rounded-lg border border-[#D1D5DB] bg-white text-on-surface focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-all">
+<option selected="">Sede Central - Lima</option>
+<option>Sede Norte - Los Olivos</option>
+<option>Sede Arequipa</option>
+<option>Sede Trujillo</option>
+</select>
+</div>
+<!-- Anexo Telefónico Interno (Ocupa 2 cols o 1 col) -->
+<div class="sm:col-span-2">
+<div class="w-full sm:w-1/2 pr-0 sm:pr-2">
+<label class="block text-label-sm font-label-sm text-on-surface mb-1">
+                      Anexo telefónico interno
+                    </label>
+<input class="w-full h-9 px-3 text-body-sm rounded-lg border border-[#D1D5DB] bg-white text-on-surface focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-all" type="text" value="Anexo 102"/>
+</div>
+</div>
+</div>
+<!-- Nota al pie del formulario -->
+<div class="mt-4 pt-3 border-t border-[#E2E4E9] flex items-center gap-2 text-xs text-[#6B7280]">
+<span class="material-symbols-outlined text-[16px] text-tertiary">info</span>
+<span>Los cambios en datos de contacto se reflejan inmediatamente en las notificaciones del sistema y el directorio institucional.</span>
+</div>
+</form>
+</section>
+<!-- 4. TARJETA DE PRIVILEGIOS Y ROLES (SUPERADMIN) -->
+<section class="bg-surface-container-lowest rounded-xl border border-[#E2E4E9] p-5 shadow-sm space-y-4">
+<div class="flex items-center justify-between pb-3 border-b border-[#E2E4E9]">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-container text-[20px]">shield_person</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Privilegios y Roles en Plataforma</h3>
+</div>
+<span class="px-2.5 py-0.5 rounded text-[11px] font-bold bg-[#FEF2F2] text-primary border border-primary/20">
+                Nivel de seguridad 0 (Máximo acceso institucional)
+              </span>
+</div>
+<p class="text-body-sm text-[#4B5563]">
+              Como Superadministradora, posees soberanía total sobre los módulos operativos, financieros, y configuraciones troncales de ERP Brusben.
+            </p>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+<div class="p-3 rounded-lg border border-[#E2E4E9] bg-surface-container-low/50 flex items-start gap-3">
+<span class="material-symbols-outlined text-[18px] text-emerald-600 mt-0.5">check_circle</span>
+<div>
+<div class="font-label-sm text-label-sm font-semibold text-on-surface">Control Operativo Integral</div>
+<div class="text-[12px] text-[#6B7280] mt-0.5">CRM Comercial, Oferta Académica, Matrículas, Cobranzas y Alumnos.</div>
+</div>
+</div>
+<div class="p-3 rounded-lg border border-[#E2E4E9] bg-surface-container-low/50 flex items-start gap-3">
+<span class="material-symbols-outlined text-[18px] text-emerald-600 mt-0.5">check_circle</span>
+<div>
+<div class="font-label-sm text-label-sm font-semibold text-on-surface">Auditoría y Trazabilidad Forense</div>
+<div class="text-[12px] text-[#6B7280] mt-0.5">Acceso irrestricto a bitácoras de eventos, logs de modificación y reversiones.</div>
+</div>
+</div>
+<div class="p-3 rounded-lg border border-[#E2E4E9] bg-surface-container-low/50 flex items-start gap-3">
+<span class="material-symbols-outlined text-[18px] text-emerald-600 mt-0.5">check_circle</span>
+<div>
+<div class="font-label-sm text-label-sm font-semibold text-on-surface">Gestión de Usuarios y Accesos</div>
+<div class="text-[12px] text-[#6B7280] mt-0.5">Creación, asignación de permisos, suspensión preventiva y reseteo de roles.</div>
+</div>
+</div>
+<div class="p-3 rounded-lg border border-[#E2E4E9] bg-surface-container-low/50 flex items-start gap-3">
+<span class="material-symbols-outlined text-[18px] text-emerald-600 mt-0.5">check_circle</span>
+<div>
+<div class="font-label-sm text-label-sm font-semibold text-on-surface">Exportación Masiva y Backups</div>
+<div class="text-[12px] text-[#6B7280] mt-0.5">Descarga de reportes contables, bases estudiantiles y copias de seguridad.</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- COLUMNA DERECHA: AUTENTICACIÓN GOOGLE, SESIONES Y PREFERENCIAS (5 Cols) -->
+<div class="lg:col-span-5 space-y-6">
+<!-- 3. GESTIÓN DE AUTENTICACIÓN GOOGLE WORKSPACE (SIN CAMBIO DE CONTRASEÑA) -->
+<section class="bg-surface-container-lowest rounded-xl border border-[#E2E4E9] p-5 shadow-sm space-y-3.5 relative overflow-hidden">
+<div class="flex items-center justify-between pb-3 border-b border-[#E2E4E9]">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary-container text-[20px]">passkey</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Autenticación &amp; Seguridad</h3>
+</div>
+<span class="px-2 py-0.5 text-[10px] font-bold bg-[#EBF3FE] text-tertiary border border-tertiary/20 rounded">
+                SSO Google
+              </span>
+</div>
+<div class="p-3.5 rounded-lg bg-surface-container-low border border-[#E2E4E9] space-y-2">
+<div class="flex items-start gap-3">
+<div class="w-8 h-8 rounded-lg bg-white border border-[#E2E4E9] flex items-center justify-center flex-shrink-0 text-on-surface font-bold text-xs shadow-xs">
+                  G
+                </div>
+<div>
+<div class="text-label-md font-label-md font-semibold text-on-surface">Google Workspace Single Sign-On</div>
+<p class="text-[12px] text-[#4B5563] mt-0.5 leading-relaxed">
+                    Tu cuenta está vinculada a Google Workspace Single Sign-On (SSO). La contraseña y las políticas de acceso de dos factores (2FA) son administradas directamente desde la consola institucional de Google.
+                  </p>
+</div>
+</div>
+</div>
+<!-- Badge verde 2FA Requerido -->
+<div class="flex items-center justify-between p-3 rounded-lg bg-emerald-50 border border-emerald-200">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-emerald-700 text-[20px]">phonelink_lock</span>
+<div>
+<div class="text-label-sm font-label-sm font-bold text-emerald-900">Autenticación 2FA Activa</div>
+<div class="text-[11px] text-emerald-700">Validada vía Google Authenticator / Llave de Seguridad</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-emerald-600 text-[18px]">verified</span>
+</div>
+<div class="text-[11px] text-[#6B7280] italic flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px]">lock</span>
+              Para actualizar tus credenciales primarias, contacta al administrador de dominio en TI Brusben.
+            </div>
+</section>
+<!-- 5. ÚLTIMA SESIÓN Y REGISTRO FORENSE DE DISPOSITIVOS -->
+<section class="bg-surface-container-lowest rounded-xl border border-[#E2E4E9] p-5 shadow-sm space-y-4">
+<div class="flex items-center justify-between pb-3 border-b border-[#E2E4E9]">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-container text-[20px]">devices</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Sesiones y Dispositivos</h3>
+</div>
+<span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" title="Sesión activa"></span>
+</div>
+<!-- Indicador destacado de Última Sesión -->
+<div class="p-3.5 rounded-lg border-l-4 border-l-emerald-500 bg-surface-container-low border border-[#E2E4E9] space-y-1.5">
+<div class="flex items-center justify-between">
+<span class="text-[11px] font-bold uppercase tracking-wider text-emerald-800">Sesión Actual en Este Equipo</span>
+<span class="px-2 py-0.2 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">Activa ahora</span>
+</div>
+<div class="text-label-md font-label-md font-bold text-on-surface">
+                Hoy, 17 Sep 2026 - 08:30 AM
+              </div>
+<div class="grid grid-cols-1 gap-1 text-[12px] text-[#4B5563]">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[15px] text-[#6B7280]">language</span>
+<span>IP: <strong class="font-mono text-on-surface">190.238.45.12</strong> (Red Institucional Sede Central)</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[15px] text-[#6B7280]">computer</span>
+<span>Google Chrome 128 en Windows 11 Pro</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[15px] text-[#6B7280]">pin_drop</span>
+<span>Ubicación aproximada: Lima, Perú</span>
+</div>
+</div>
+</div>
+<!-- Tabla compacta con las últimas 3 sesiones -->
+<div class="space-y-2">
+<div class="text-label-xs font-label-xs uppercase tracking-wider text-[#6B7280]">Historial reciente de conexiones</div>
+<div class="rounded-lg border border-[#E2E4E9] divide-y divide-[#E2E4E9] overflow-hidden text-[12px]">
+<!-- Sesión 1 (Activa) -->
+<div class="p-2.5 bg-white flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[17px] text-emerald-600">desktop_windows</span>
+<div>
+<div class="font-semibold text-on-surface">Chrome 128 (Windows 11)</div>
+<div class="text-[#6B7280] font-mono text-[11px]">190.238.45.12 • Sede Central</div>
+</div>
+</div>
+<span class="text-emerald-700 font-semibold text-[11px]">Activa actualmente</span>
+</div>
+<!-- Sesión 2 (Finalizada) -->
+<div class="p-2.5 bg-surface-container-low/40 flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[17px] text-[#6B7280]">smartphone</span>
+<div>
+<div class="font-medium text-on-surface">Safari Mobile (iOS 19)</div>
+<div class="text-[#6B7280] font-mono text-[11px]">181.65.12.88 • 16 Sep 2026, 18:42</div>
+</div>
+</div>
+<span class="text-[#6B7280] text-[11px]">Sesión finalizada</span>
+</div>
+<!-- Sesión 3 (Finalizada) -->
+<div class="p-2.5 bg-surface-container-low/40 flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[17px] text-[#6B7280]">desktop_windows</span>
+<div>
+<div class="font-medium text-on-surface">Chrome 128 (Windows 11)</div>
+<div class="text-[#6B7280] font-mono text-[11px]">190.238.45.12 • 16 Sep 2026, 08:15</div>
+</div>
+</div>
+<span class="text-[#6B7280] text-[11px]">Sesión finalizada</span>
+</div>
+</div>
+</div>
+<!-- Botón de acción: Cerrar las demás sesiones -->
+<button class="w-full py-2 px-3 rounded-lg border border-[#FECACA] bg-[#FEF2F2] text-[#DC2626] hover:bg-[#DC2626] hover:text-white transition-colors text-label-md font-label-md flex items-center justify-center gap-2" type="button">
+<span class="material-symbols-outlined text-[17px]">no_accounts</span>
+<span>Cerrar las demás sesiones activas</span>
+</button>
+</section>
+<!-- 6. PREFERENCIAS DE INTERFAZ DEL SISTEMA -->
+<section class="bg-surface-container-lowest rounded-xl border border-[#E2E4E9] p-5 shadow-sm space-y-4">
+<div class="flex items-center justify-between pb-3 border-b border-[#E2E4E9]">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[#6B7280] text-[20px]">tune</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Preferencias de Interfaz</h3>
+</div>
+<span class="text-[11px] text-[#6B7280]">Configuración local</span>
+</div>
+<div class="space-y-3">
+<!-- Switch 1: Notificaciones por correo -->
+<div class="flex items-center justify-between">
+<div>
+<div class="text-label-sm font-label-sm font-semibold text-on-surface">Notificaciones por correo</div>
+<div class="text-[11px] text-[#6B7280]">Resumen diario de trámites y solicitudes</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary-container"></div>
+</label>
+</div>
+<!-- Switch 2: Alertas de cobros y pagos -->
+<div class="flex items-center justify-between pt-2 border-t border-[#E2E4E9]">
+<div>
+<div class="text-label-sm font-label-sm font-semibold text-on-surface">Alertas de cobros y pagos pendientes</div>
+<div class="text-[11px] text-[#6B7280]">Avisos prioritarios de cierres contables</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary-container"></div>
+</label>
+</div>
+<!-- Switch 3: Intentos de acceso fallidos -->
+<div class="flex items-center justify-between pt-2 border-t border-[#E2E4E9]">
+<div>
+<div class="text-label-sm font-label-sm font-semibold text-on-surface">Alertas de intentos de acceso fallidos</div>
+<div class="text-[11px] text-[#6B7280]">Notificación inmediata ante anomalías de IP</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary-container"></div>
+</label>
+</div>
+<!-- Densidad de Tablas -->
+<div class="pt-2 border-t border-[#E2E4E9]">
+<label class="block text-label-sm font-label-sm font-semibold text-on-surface mb-1.5">
+                  Densidad de visualización de tablas
+                </label>
+<div class="grid grid-cols-2 gap-2">
+<button class="py-1.5 px-3 rounded-lg border border-primary-container bg-primary-container/10 text-primary-container text-xs font-semibold flex items-center justify-center gap-1.5" type="button">
+<span class="material-symbols-outlined text-[16px]">density_small</span>
+                    Compacta (40px)
+                  </button>
+<button class="py-1.5 px-3 rounded-lg border border-[#D1D5DB] bg-white text-[#4B5563] text-xs font-medium hover:bg-surface-container-low transition-colors flex items-center justify-center gap-1.5" type="button">
+<span class="material-symbols-outlined text-[16px]">density_medium</span>
+                    Estándar (48px)
+                  </button>
+</div>
+</div>
+</div>
+</section>
+</div>
+</div>
+<!-- FOOTER INSTITUCIONAL DISCRETO -->
+<footer class="pt-4 pb-2 border-t border-[#E2E4E9] flex flex-col sm:flex-row items-center justify-between text-[11px] text-[#6B7280] gap-2">
+<div>
+          Centro de Capacitaciones Brusben E.I.R.L. • Sistema ERP de Gestión Académica &amp; Administrativa
+        </div>
+<div class="flex items-center gap-3">
+<span>Servidores Lima-DC01</span>
+<span>•</span>
+<span>Seguridad SSL 256-bit</span>
+<span>•</span>
+<span class="text-on-surface font-semibold">Soporte TI: soporte@brusben.edu.pe</span>
+</div>
+</footer>
+</main>
+</div>
+</body></html>

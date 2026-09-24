@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-surface" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Acceso Denegado (403 Forbidden) - ERP Brusben E.I.R.L.</title>
+<!-- Inter Google Font -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS v3 with Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-bright": "#f8f9fb",
+            "secondary-fixed": "#e2e2e9",
+            "error": "#ba1a1a",
+            "background": "#f8f9fb",
+            "tertiary-fixed": "#dbe1ff",
+            "surface-tint": "#be0a17",
+            "surface-container-lowest": "#ffffff",
+            "tertiary-container": "#0c57df",
+            "surface": "#f8f9fb",
+            "on-tertiary-fixed": "#00174b",
+            "secondary-container": "#dfdfe6",
+            "on-secondary-container": "#616268",
+            "on-primary-fixed": "#410002",
+            "surface-variant": "#e1e2e4",
+            "on-secondary-fixed-variant": "#45474c",
+            "on-primary-fixed-variant": "#93000c",
+            "surface-container-highest": "#e1e2e4",
+            "on-tertiary-container": "#d6ddff",
+            "on-error": "#ffffff",
+            "surface-container-high": "#e7e8ea",
+            "secondary-fixed-dim": "#c6c6cd",
+            "on-surface-variant": "#5c403c",
+            "outline-variant": "#e6bdb8",
+            "on-surface": "#191c1e",
+            "on-tertiary": "#ffffff",
+            "outline": "#916f6b",
+            "primary-fixed-dim": "#ffb4ab",
+            "primary-fixed": "#ffdad6",
+            "inverse-primary": "#ffb4ab",
+            "on-secondary-fixed": "#1a1c21",
+            "primary": "#9a000d",
+            "on-primary": "#ffffff",
+            "on-background": "#191c1e",
+            "surface-container-low": "#f3f4f6",
+            "on-error-container": "#93000a",
+            "inverse-on-surface": "#f0f1f3",
+            "surface-container": "#edeef0",
+            "tertiary-fixed-dim": "#b4c5ff",
+            "secondary": "#5d5e64",
+            "inverse-surface": "#2e3132",
+            "tertiary": "#0041b0",
+            "on-secondary": "#ffffff",
+            "on-tertiary-fixed-variant": "#003ea8",
+            "error-container": "#ffdad6",
+            "surface-dim": "#d9dadc",
+            "primary-container": "#c4121a",
+            "on-primary-container": "#ffd5d0"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-xl": "1.5rem",
+            "space-xs": "0.25rem",
+            "space-sm": "0.5rem",
+            "space-md": "0.75rem",
+            "margin": "1.5rem",
+            "gutter-dense": "0.75rem",
+            "space-lg": "1rem",
+            "gutter": "1rem"
+          },
+          "fontFamily": {
+            "label-md": ["Inter"],
+            "body-md": ["Inter"],
+            "body-sm": ["Inter"],
+            "headline-sm": ["Inter"],
+            "body-lg": ["Inter"],
+            "label-xs": ["Inter"],
+            "display": ["Inter"],
+            "metric-val": ["Inter"],
+            "label-sm": ["Inter"],
+            "title-eyebrow": ["Inter"],
+            "headline-lg": ["Inter"],
+            "headline-md": ["Inter"]
+          },
+          "fontSize": {
+            "label-md": ["13px", { "lineHeight": "16px", "fontWeight": "500" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+            "headline-sm": ["16px", { "lineHeight": "22px", "fontWeight": "600" }],
+            "body-lg": ["15px", { "lineHeight": "22px", "fontWeight": "400" }],
+            "label-xs": ["11px", { "lineHeight": "14px", "fontWeight": "600" }],
+            "display": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "metric-val": ["28px", { "lineHeight": "32px", "letterSpacing": "-0.03em", "fontWeight": "700" }],
+            "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+            "title-eyebrow": ["11px", { "lineHeight": "14px", "letterSpacing": "0.08em", "fontWeight": "700" }],
+            "headline-lg": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+            "headline-md": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 5px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #181A1F;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #2D3139;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="h-full font-body-md text-on-surface bg-surface flex overflow-hidden antialiased select-none">
+<!-- ======================================================== -->
+<!-- 1. PERSISTENT INSTITUTIONAL SIDEBAR (Dark: #181A1F)      -->
+<!-- ======================================================== -->
+<aside class="w-[260px] flex-shrink-0 bg-[#181A1F] text-slate-300 flex flex-col justify-between z-30 select-none border-r border-[#22252B]">
+<!-- Top Brand & Header Section -->
+<div class="flex flex-col">
+<!-- White Institutional Brand Card (Brusben E.I.R.L.) -->
+<div class="p-3 bg-[#181A1F]">
+<div class="bg-surface-container-lowest rounded-lg p-2.5 flex items-center justify-between border border-slate-200/80 shadow-sm">
+<div class="flex items-center space-x-2.5">
+<!-- Institutional Emblem -->
+<div class="w-9 h-9 rounded bg-[#FFF5F5] border border-[#FECACA] flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[#C4121A] text-xl" style="font-variation-settings: 'FILL' 1;">school</span>
+</div>
+<!-- Identity Typography -->
+<div class="flex flex-col leading-none">
+<div class="flex items-center gap-1">
+<span class="text-[13px] font-extrabold tracking-tight text-[#C4121A]">BRUSBEN</span>
+<span class="text-[9px] font-bold text-slate-600 bg-slate-100 px-1 py-0.5 rounded">E.I.R.L.</span>
+</div>
+<span class="text-[8px] font-bold tracking-wider text-slate-500 uppercase mt-1">Capacitarse es superarse</span>
+</div>
+</div>
+<button class="text-slate-400 hover:text-slate-700 p-1 rounded hover:bg-slate-100 transition-colors" title="Colapsar panel lateral" type="button">
+<span class="material-symbols-outlined text-base">chevron_left</span>
+</button>
+</div>
+</div>
+<!-- Navigation Tree Items -->
+<nav class="px-2.5 py-1 space-y-1 overflow-y-auto max-h-[calc(100vh-175px)] custom-scroll">
+<!-- Inicio -->
+<a class="flex items-center px-3 py-2 text-slate-400 hover:text-white hover:bg-[#22252B] rounded-lg transition-colors group" href="#">
+<span class="material-symbols-outlined text-[19px] mr-3 text-slate-400 group-hover:text-white">home</span>
+<span class="font-label-md text-label-md">Inicio</span>
+</a>
+<!-- CRM Comercial -->
+<a class="flex items-center justify-between px-3 py-2 text-slate-400 hover:text-white hover:bg-[#22252B] rounded-lg transition-colors group" href="#">
+<div class="flex items-center">
+<span class="material-symbols-outlined text-[19px] mr-3 text-slate-400 group-hover:text-white">monitoring</span>
+<span class="font-label-md text-label-md">CRM Comercial</span>
+</div>
+<span class="px-1.5 py-0.5 text-[10px] font-bold bg-[#C4121A]/20 text-[#FF858B] border border-[#C4121A]/40 rounded-full leading-none">12</span>
+</a>
+<!-- Personas y estudiantes -->
+<a class="flex items-center px-3 py-2 text-slate-400 hover:text-white hover:bg-[#22252B] rounded-lg transition-colors group" href="#">
+<span class="material-symbols-outlined text-[19px] mr-3 text-slate-400 group-hover:text-white">group</span>
+<span class="font-label-md text-label-md">Personas y estudiantes</span>
+</a>
+<!-- Oferta académica -->
+<a class="flex items-center px-3 py-2 text-slate-400 hover:text-white hover:bg-[#22252B] rounded-lg transition-colors group" href="#">
+<span class="material-symbols-outlined text-[19px] mr-3 text-slate-400 group-hover:text-white">menu_book</span>
+<span class="font-label-md text-label-md">Oferta académica</span>
+</a>
+<!-- Matrículas y pagos -->
+<a class="flex items-center px-3 py-2 text-slate-400 hover:text-white hover:bg-[#22252B] rounded-lg transition-colors group" href="#">
+<span class="material-symbols-outlined text-[19px] mr-3 text-slate-400 group-hover:text-white">credit_card</span>
+<span class="font-label-md text-label-md">Matrículas y pagos</span>
+</a>
+<!-- Reportes -->
+<a class="flex items-center px-3 py-2 text-slate-400 hover:text-white hover:bg-[#22252B] rounded-lg transition-colors group" href="#">
+<span class="material-symbols-outlined text-[19px] mr-3 text-slate-400 group-hover:text-white">bar_chart</span>
+<span class="font-label-md text-label-md">Reportes</span>
+</a>
+<!-- Usuarios y accesos -->
+<a class="flex items-center px-3 py-2 text-slate-400 hover:text-white hover:bg-[#22252B] rounded-lg transition-colors group" href="#">
+<span class="material-symbols-outlined text-[19px] mr-3 text-slate-400 group-hover:text-white">manage_accounts</span>
+<span class="font-label-md text-label-md">Usuarios y accesos</span>
+</a>
+<!-- Divider with label -->
+<div class="pt-2 pb-1 px-3">
+<p class="font-label-xs text-[10px] uppercase font-bold text-slate-500 tracking-wider">Módulos Críticos</p>
+</div>
+<!-- Auditoría (Active Attempt / Lock Indicator) -->
+<div class="relative">
+<div class="flex items-center justify-between px-3 py-2 text-white bg-[#C4121A] rounded-lg shadow-sm border border-[#E52E38]/30 font-medium">
+<div class="flex items-center">
+<span class="material-symbols-outlined text-[19px] mr-3 text-white">verified_user</span>
+<span class="font-label-md text-label-md">Auditoría</span>
+</div>
+<!-- Candado bloqueado explícito -->
+<span class="material-symbols-outlined text-[16px] text-white/90" title="Acceso restringido">lock</span>
+</div>
+</div>
+<!-- Mi perfil -->
+<a class="flex items-center px-3 py-2 text-slate-400 hover:text-white hover:bg-[#22252B] rounded-lg transition-colors group" href="#">
+<span class="material-symbols-outlined text-[19px] mr-3 text-slate-400 group-hover:text-white">badge</span>
+<span class="font-label-md text-label-md">Mi perfil</span>
+</a>
+</nav>
+</div>
+<!-- Sidebar Footer -->
+<div class="p-3 border-t border-[#22252B] bg-[#14161A]">
+<div class="flex items-center justify-between mb-1.5">
+<div class="flex items-center space-x-1.5">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+<span class="text-[11px] font-medium text-slate-300">Sistema en línea • Operativo</span>
+</div>
+<span class="font-label-xs text-[10px] text-slate-500">RBAC Activo</span>
+</div>
+<div class="flex items-center justify-between text-[11px] text-slate-500">
+<span>ERP Brusben E.I.R.L.</span>
+<span class="font-mono text-[10px] text-slate-400 font-semibold">v3.4.1-rc</span>
+</div>
+</div>
+</aside>
+<!-- ======================================================== -->
+<!-- 2. MAIN DESKTOP CANVAS WORKSPACE                         -->
+<!-- ======================================================== -->
+<div class="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-[#F5F6F8]">
+<!-- Topbar Institucional -->
+<header class="h-16 flex-shrink-0 bg-surface-container-lowest border-b border-[#E2E4E9] px-6 flex items-center justify-between z-20 shadow-[0_1px_3px_0_rgba(0,0,0,0.02)]">
+<!-- Left: Breadcrumbs -->
+<div class="flex items-center space-x-2 text-body-sm font-body-sm">
+<span class="text-secondary font-medium hover:text-on-surface cursor-pointer">ERP Brusben</span>
+<span class="material-symbols-outlined text-sm text-secondary-container">chevron_right</span>
+<span class="text-secondary font-medium">Seguridad y Control de Accesos</span>
+<span class="material-symbols-outlined text-sm text-secondary-container">chevron_right</span>
+<span class="text-primary-container font-semibold flex items-center gap-1 bg-[#FEF2F2] px-2 py-0.5 rounded border border-[#FECACA]">
+<span class="material-symbols-outlined text-[14px]">gpp_maybe</span>
+          Acceso Denegado (403 Forbidden)
+        </span>
+</div>
+<!-- Center & Right Utility Cluster -->
+<div class="flex items-center space-x-3.5">
+<!-- Campus Selector Badge -->
+<div class="hidden xl:flex items-center space-x-1.5 px-2.5 py-1 rounded-md bg-surface-container-low border border-[#E2E4E9] text-[12px] text-secondary">
+<span class="material-symbols-outlined text-[15px] text-primary-container">location_on</span>
+<span class="font-medium text-on-surface">Sede Central · Tumbes</span>
+</div>
+<!-- Global Search Bar (Dimmed / Contextually passive) -->
+<div class="relative w-64 hidden lg:block">
+<div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-[17px] text-secondary">search</span>
+</div>
+<input class="w-full h-8 pl-8 pr-12 text-[12px] bg-surface-container-low border border-[#D1D5DB] rounded-md text-secondary placeholder-secondary/60 cursor-not-allowed select-none" disabled="" placeholder="Búsqueda global..." type="text"/>
+<div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
+<kbd class="px-1.5 py-0.5 text-[10px] bg-white border border-[#D1D5DB] text-secondary rounded shadow-2xs font-mono">Ctrl+K</kbd>
+</div>
+</div>
+<!-- Notifications Bell -->
+<button class="relative p-1.5 text-secondary hover:text-on-surface rounded-md hover:bg-surface-container-low transition-colors" title="Notificaciones institucionales" type="button">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+<span class="absolute top-1 right-1 w-2 h-2 bg-primary-container rounded-full ring-2 ring-white"></span>
+</button>
+<div class="h-6 w-px bg-[#E2E4E9]"></div>
+<!-- User Identity Module -->
+<div class="flex items-center space-x-3">
+<div class="flex flex-col text-right leading-tight">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Loana Avila Neyra</span>
+<span class="text-[11px] text-[#C4121A] font-medium flex items-center justify-end gap-1">
+<span class="material-symbols-outlined text-[12px]">lock_person</span>
+              Asesor Comercial (Restringido)
+            </span>
+</div>
+<!-- Avatar Frame -->
+<div class="w-9 h-9 rounded-full ring-2 ring-[#C4121A]/20 bg-[#C4121A] text-white flex items-center justify-center font-bold text-xs shadow-inner">
+            LA
+          </div>
+<!-- Sign out CTA -->
+<button class="p-1.5 text-secondary hover:text-primary-container rounded-md hover:bg-[#FEF2F2] transition-colors" title="Cerrar sesión segura" type="button">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Subheader Notice Bar (Institutional Security Policy) -->
+<div class="bg-[#FEF2F2] border-b border-[#FECACA] px-6 py-2 flex items-center justify-between text-[12px] text-[#991B1B]">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-base text-[#C4121A]">shield</span>
+<span class="font-bold tracking-wide uppercase font-label-xs text-[11px]">POLÍTICA DE SEGURIDAD INSTITUCIONAL Y CONTROL DE ACCESO (RBAC) - NIVEL CRÍTICO 403</span>
+</div>
+<div class="flex items-center space-x-4 text-[11px] text-[#7F1D1D]">
+<span>Sesión validada: <strong class="font-mono">BRS-90214-SEC</strong></span>
+<span>•</span>
+<span>Terminal: <strong class="font-mono">SED-TMB-04</strong></span>
+</div>
+</div>
+<!-- Main Canvas Viewport (Scrollable Workspace) -->
+<main class="flex-1 overflow-y-auto p-6 flex flex-col items-center justify-center">
+<!-- Primary 403 Security Feedback Card -->
+<div class="w-full max-w-4xl bg-surface-container-lowest rounded-xl border border-[#E2E4E9] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.06)] overflow-hidden">
+<!-- Top Institutional Brand Bar Accent -->
+<div class="h-1.5 w-full bg-gradient-to-r from-[#C4121A] via-[#9A000D] to-[#5D5E64]"></div>
+<div class="p-8 sm:p-10">
+<!-- Central Diagnostic Header Section -->
+<div class="text-center max-w-2xl mx-auto flex flex-col items-center">
+<!-- Red Ringed Security Icon -->
+<div class="relative mb-4">
+<div class="w-16 h-16 rounded-full bg-[#FEF2F2] border-2 border-[#FECACA] flex items-center justify-center shadow-inner">
+<span class="material-symbols-outlined text-[#C4121A] text-3xl" style="font-variation-settings: 'FILL' 1;">gpp_bad</span>
+</div>
+<div class="absolute -bottom-1 -right-1 bg-[#181A1F] text-white p-1 rounded-full border-2 border-white shadow">
+<span class="material-symbols-outlined text-sm leading-none block">lock</span>
+</div>
+</div>
+<!-- Error Code Pill Tag -->
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FEF2F2] border border-[#FCA5A5] text-[#991B1B] text-label-xs font-title-eyebrow tracking-wider mb-2">
+<span class="w-1.5 h-1.5 rounded-full bg-[#C4121A]"></span>
+              CÓDIGO DE ERROR: 403 FORBIDDEN - PERMISOS_INSUFICIENTES
+            </div>
+<!-- Main Status Title -->
+<h1 class="font-headline-lg text-headline-lg text-on-surface mb-2 font-bold tracking-tight">
+              Acceso Denegado — Permisos Insuficientes
+            </h1>
+<!-- Explanatory Context Copy -->
+<p class="font-body-md text-body-md text-secondary leading-relaxed mb-6">
+              No dispones de los privilegios requeridos en tu rol institucional para acceder a este módulo u operar sobre este recurso. Si requieres acceso para tus labores operativas, solicita la elevación de permisos a Superadministración o Dirección General del <strong class="text-on-surface font-medium">Centro de Capacitaciones Brusben E.I.R.L.</strong>
+</p>
+</div>
+<!-- Structured Technical Forensic Matrix (Security Token Box) -->
+<div class="bg-surface-container-low rounded-lg border border-[#E2E4E9] p-5 mb-8">
+<div class="flex items-center justify-between pb-3 mb-3 border-b border-[#E2E4E9]">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-secondary text-base">terminal</span>
+<span class="font-label-xs text-label-xs text-on-surface uppercase tracking-wider font-bold">Descriptor Técnico de Seguridad Institucional</span>
+</div>
+<span class="text-[11px] font-mono text-secondary bg-white px-2 py-0.5 rounded border border-[#E2E4E9]">AUTH_STATE: UNAUTHORIZED_PRIVILEGE</span>
+</div>
+<!-- Grid of 5 Forensic Data Points -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-y-3.5 gap-x-6 text-[13px]">
+<!-- Point 1 -->
+<div class="flex flex-col">
+<span class="text-[11px] font-medium text-secondary uppercase font-label-xs">Módulo Solicitado</span>
+<span class="font-semibold text-on-surface flex items-center gap-1.5 mt-0.5">
+<span class="material-symbols-outlined text-[15px] text-[#C4121A]">folder_special</span>
+                  Auditoría del Sistema / Matriz Forense Transaccional
+                </span>
+</div>
+<!-- Point 2 -->
+<div class="flex flex-col">
+<span class="text-[11px] font-medium text-secondary uppercase font-label-xs">Privilegio Faltante</span>
+<span class="font-mono font-medium text-[#991B1B] bg-[#FEE2E2] px-2 py-0.5 rounded border border-[#FECACA] w-fit text-[12px] mt-0.5">
+                  audit.forensic.read_all / sys.security.override
+                </span>
+</div>
+<!-- Point 3 -->
+<div class="flex flex-col">
+<span class="text-[11px] font-medium text-secondary uppercase font-label-xs">Rol Actual Detectado</span>
+<span class="font-medium text-on-surface mt-0.5 flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                  Asesor Comercial Sede Tumbes (Nivel 2)
+                </span>
+</div>
+<!-- Point 4 -->
+<div class="flex flex-col">
+<span class="text-[11px] font-medium text-secondary uppercase font-label-xs">Dirección IP / Terminal</span>
+<span class="font-mono text-secondary mt-0.5 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">router</span>
+                  190.238.45.12 (Red Institucional Sede Central · Tumbes)
+                </span>
+</div>
+<!-- Point 5 (Full Span) -->
+<div class="md:col-span-2 pt-2 border-t border-dashed border-[#E2E4E9] flex flex-wrap items-center justify-between text-[11px] text-secondary">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-emerald-600">verified</span>
+                  Protocolo y Firma: <strong class="font-mono text-on-surface">TLS 1.3 / BrusbenAuth v2.4 / Token SHA-256 verificado</strong>
+</span>
+<span class="font-mono text-[10px] text-secondary">TIMESTAMP: 2026-09-17T09:31:02-05:00</span>
+</div>
+</div>
+</div>
+<!-- Enterprise Call-to-Action Buttons -->
+<div class="flex flex-col sm:flex-row items-center justify-center gap-3 mb-6">
+<!-- Primary Action: Volver al Inicio -->
+<a class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-primary-container text-white font-label-md text-label-md rounded-lg shadow-sm hover:bg-[#9F0E15] focus:outline-none focus:ring-2 focus:ring-[#E52E38] focus:ring-offset-2 transition-colors" href="#">
+<span class="material-symbols-outlined text-base">arrow_back</span>
+              Volver al Inicio
+            </a>
+<!-- Secondary Action: Solicitar Elevación -->
+<button class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-surface-container-lowest border border-[#D1D5DB] text-on-surface font-label-md text-label-md rounded-lg shadow-2xs hover:bg-[#F9FAFB] hover:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary transition-colors" type="button">
+<span class="material-symbols-outlined text-base text-[#C4121A]">key</span>
+              Solicitar elevación de permisos
+            </button>
+<!-- Tertiary Action: Soporte TI -->
+<button class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-secondary hover:text-on-surface font-label-md text-label-md rounded-lg hover:bg-surface-container-low transition-colors" type="button">
+<span class="material-symbols-outlined text-base">support_agent</span>
+              Contactar a Soporte TI Brusben
+            </button>
+</div>
+<!-- Footer Policy & Disclaimer Inside Card -->
+<div class="border-t border-[#E2E4E9] pt-4 text-center">
+<p class="font-body-sm text-body-sm text-secondary">
+              ¿Consideras que esto es un error de configuración de tu cuenta o perfil?
+              <a class="text-[#C4121A] font-medium hover:underline inline-flex items-center gap-0.5 ml-1" href="#">
+                Consultar matriz de roles y políticas de seguridad institucional
+                <span class="material-symbols-outlined text-[13px]">open_in_new</span>
+</a>
+</p>
+</div>
+</div>
+<!-- Technical Trace ID strip -->
+<div class="bg-surface-container-high px-6 py-2.5 flex flex-wrap items-center justify-between text-[11px] text-secondary border-t border-[#E2E4E9]">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-[14px]">lock_clock</span>
+<span>Intento de acceso registrado en el diario de eventos auditables</span>
+</div>
+<span class="font-mono text-secondary">TRACE_ID: 88cf-9a02-4f11-b847-acceso-denegado</span>
+</div>
+</div>
+<!-- Quick Institutional Assistance Bar Underneath -->
+<div class="mt-6 flex items-center space-x-6 text-[12px] text-secondary">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px] text-secondary">phone_in_talk</span>
+          Central Telefónica TI: Anexo 104 / 108
+        </span>
+<span>•</span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px] text-secondary">mail</span>
+          seguridad.sistemas@brusben.edu.pe
+        </span>
+<span>•</span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px] text-secondary">help</span>
+          Mesa de Ayuda Virtual Brusben
+        </span>
+</div>
+</main>
+</div>
+</body></html>

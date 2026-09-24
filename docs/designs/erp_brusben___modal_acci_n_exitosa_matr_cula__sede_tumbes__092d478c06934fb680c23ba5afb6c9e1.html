@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-background" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ERP Brusben - Acción Exitosa (Modal)</title>
+<!-- Inter Font Family -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Google Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Verbatim Tailwind Configuration -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-primary-container": "#ffd5d0",
+            "surface-container-lowest": "#ffffff",
+            "background": "#f8f9fb",
+            "on-primary-fixed-variant": "#93000c",
+            "tertiary-fixed": "#dbe1ff",
+            "inverse-surface": "#2e3132",
+            "primary-container": "#c4121a",
+            "surface": "#f8f9fb",
+            "secondary": "#5d5e64",
+            "on-surface": "#191c1e",
+            "primary": "#9a000d",
+            "outline-variant": "#e6bdb8",
+            "on-error-container": "#93000a",
+            "on-error": "#ffffff",
+            "inverse-on-surface": "#f0f1f3",
+            "error": "#ba1a1a",
+            "surface-container": "#edeef0",
+            "on-secondary-container": "#616268",
+            "on-tertiary-fixed-variant": "#003ea8",
+            "tertiary-container": "#0c57df",
+            "surface-bright": "#f8f9fb",
+            "primary-fixed": "#ffdad6",
+            "on-primary": "#ffffff",
+            "error-container": "#ffdad6",
+            "surface-dim": "#d9dadc",
+            "surface-container-highest": "#e1e2e4",
+            "on-tertiary-fixed": "#00174b",
+            "tertiary-fixed-dim": "#b4c5ff",
+            "on-secondary-fixed": "#1a1c21",
+            "surface-variant": "#e1e2e4",
+            "on-background": "#191c1e",
+            "on-secondary-fixed-variant": "#45474c",
+            "primary-fixed-dim": "#ffb4ab",
+            "secondary-container": "#dfdfe6",
+            "on-primary-fixed": "#410002",
+            "inverse-primary": "#ffb4ab",
+            "secondary-fixed": "#e2e2e9",
+            "tertiary": "#0041b0",
+            "on-tertiary-container": "#d6ddff",
+            "surface-container-high": "#e7e8ea",
+            "on-surface-variant": "#5c403c",
+            "secondary-fixed-dim": "#c6c6cd",
+            "on-secondary": "#ffffff",
+            "surface-container-low": "#f3f4f6",
+            "on-tertiary": "#ffffff",
+            "outline": "#916f6b",
+            "surface-tint": "#be0a17"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-xs": "0.25rem",
+            "space-lg": "1rem",
+            "gutter-dense": "0.75rem",
+            "space-sm": "0.5rem",
+            "space-md": "0.75rem",
+            "space-xl": "1.5rem",
+            "margin": "1.5rem",
+            "gutter": "1rem"
+          },
+          "fontFamily": {
+            "label-md": ["Inter"],
+            "metric-val": ["Inter"],
+            "label-xs": ["Inter"],
+            "body-lg": ["Inter"],
+            "title-eyebrow": ["Inter"],
+            "body-md": ["Inter"],
+            "headline-md": ["Inter"],
+            "headline-lg": ["Inter"],
+            "headline-sm": ["Inter"],
+            "display": ["Inter"],
+            "label-sm": ["Inter"],
+            "body-sm": ["Inter"]
+          },
+          "fontSize": {
+            "label-md": ["13px", { "lineHeight": "16px", "fontWeight": "500" }],
+            "metric-val": ["28px", { "lineHeight": "32px", "letterSpacing": "-0.03em", "fontWeight": "700" }],
+            "label-xs": ["11px", { "lineHeight": "14px", "fontWeight": "600" }],
+            "body-lg": ["15px", { "lineHeight": "22px", "fontWeight": "400" }],
+            "title-eyebrow": ["11px", { "lineHeight": "14px", "letterSpacing": "0.08em", "fontWeight": "700" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "headline-md": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "headline-lg": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+            "headline-sm": ["16px", { "lineHeight": "22px", "fontWeight": "600" }],
+            "display": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+            "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .hairline-b {
+      border-bottom: 1px solid #E2E4E9;
+    }
+    .hairline-r {
+      border-right: 1px solid #E2E4E9;
+    }
+    .hairline-box {
+      border: 1px solid #E2E4E9;
+    }
+    /* Institutional pulse animation for modal verification */
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.08); opacity: 0.2; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+    .pulse-ring-effect {
+      animation: pulse-ring 3s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="h-full w-full overflow-hidden text-on-surface bg-background flex">
+<!-- ========================================================= -->
+<!-- 1. PERSISTENT INSTITUTIONAL SIDEBAR (#181A1F)              -->
+<!-- ========================================================= -->
+<aside class="w-[260px] shrink-0 h-full flex flex-col justify-between hairline-r" style="background-color: #181A1F;">
+<!-- Sidebar Header & Logo -->
+<div>
+<div class="h-16 px-space-lg flex items-center border-b border-[#2B2F38]">
+<div class="w-full bg-surface-container-lowest rounded-lg px-3 py-1.5 flex items-center gap-2 shadow-sm border border-[#303642]">
+<div class="w-7 h-7 rounded bg-primary-container flex items-center justify-center text-on-primary font-bold text-xs tracking-tight">
+            B
+          </div>
+<div class="flex flex-col leading-tight overflow-hidden">
+<span class="font-headline-sm text-label-xs text-[#111827] font-bold tracking-tight truncate">BRUSBEN E.I.R.L.</span>
+<span class="font-title-eyebrow text-[9px] text-[#6B7280] uppercase tracking-wider truncate">Capacitarse es superarse</span>
+</div>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="p-3 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded text-[#9CA3AF] hover:text-[#E5E7EB] hover:bg-[#22252B] transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[18px]">space_dashboard</span>
+<span>Inicio</span>
+</a>
+<a class="flex items-center justify-between px-3 py-2 rounded text-[#9CA3AF] hover:text-[#E5E7EB] hover:bg-[#22252B] transition-colors font-label-md text-label-md" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[18px]">contact_phone</span>
+<span>CRM Comercial</span>
+</div>
+<span class="bg-[#2B2F38] text-[#E5E7EB] font-label-xs text-[10px] px-1.5 py-0.5 rounded-full font-semibold">12</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded text-[#9CA3AF] hover:text-[#E5E7EB] hover:bg-[#22252B] transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[18px]">group</span>
+<span>Personas y estudiantes</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded text-[#9CA3AF] hover:text-[#E5E7EB] hover:bg-[#22252B] transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[18px]">school</span>
+<span>Oferta académica</span>
+</a>
+<!-- Active Item: Matrículas y pagos -->
+<a class="flex items-center gap-3 px-3 py-2 rounded bg-primary-container text-on-primary font-medium font-label-md text-label-md shadow-sm" href="#">
+<span class="material-symbols-outlined text-[18px]">receipt_long</span>
+<span class="font-semibold">Matrículas y pagos</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded text-[#9CA3AF] hover:text-[#E5E7EB] hover:bg-[#22252B] transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[18px]">bar_chart</span>
+<span>Reportes</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded text-[#9CA3AF] hover:text-[#E5E7EB] hover:bg-[#22252B] transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[18px]">admin_panel_settings</span>
+<span>Usuarios y accesos</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded text-[#9CA3AF] hover:text-[#E5E7EB] hover:bg-[#22252B] transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+<span>Auditoría</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded text-[#9CA3AF] hover:text-[#E5E7EB] hover:bg-[#22252B] transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[18px]">account_circle</span>
+<span>Mi perfil</span>
+</a>
+</nav>
+</div>
+<!-- Sidebar Footer -->
+<div class="p-3 border-t border-[#2B2F38]">
+<div class="px-3 py-2 bg-[#1F2229] rounded border border-[#2F343F] flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+</span>
+<span class="text-[11px] font-label-xs text-[#D1D5DB]">Sistema en línea</span>
+</div>
+<span class="text-[10px] text-[#9CA3AF] font-mono">v3.4.2</span>
+</div>
+<div class="mt-2 text-center text-[10px] text-[#6B7280]">
+        ERP Brusben Industrial Core
+      </div>
+</div>
+</aside>
+<!-- ========================================================= -->
+<!-- 2. MAIN WORKSPACE (BACKGROUND CANVAS UNDER MODAL)         -->
+<!-- ========================================================= -->
+<div class="flex-1 flex flex-col h-full overflow-hidden relative">
+<!-- Topbar Institucional -->
+<header class="h-16 bg-surface-container-lowest hairline-b px-space-xl flex items-center justify-between shrink-0">
+<!-- Breadcrumbs & Campus -->
+<div class="flex items-center gap-3">
+<nav class="flex items-center gap-1 text-label-sm font-label-sm text-secondary">
+<span>ERP Brusben</span>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+<span>Matrículas y pagos</span>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+<span class="text-on-surface font-semibold">Proceso Concluido (Transacción Exitosa)</span>
+</nav>
+<div class="h-4 w-px bg-[#E2E4E9] mx-1"></div>
+<!-- Sede Badge Selector -->
+<div class="flex items-center gap-1.5 px-2.5 py-1 bg-surface-container-low hairline-box rounded-full text-label-xs font-label-xs text-on-surface">
+<span class="material-symbols-outlined text-[14px] text-primary-container">location_on</span>
+<span class="font-semibold">Sede Central · Tumbes</span>
+<span class="material-symbols-outlined text-[14px] text-secondary">arrow_drop_down</span>
+</div>
+</div>
+<!-- Controls & User -->
+<div class="flex items-center gap-3">
+<!-- Quick Search -->
+<div class="relative w-64">
+<span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-secondary text-[16px]">search</span>
+<input class="w-full pl-8 pr-12 py-1.5 bg-surface-container-low hairline-box rounded text-label-sm font-label-sm text-on-surface placeholder:text-secondary focus:outline-none" placeholder="Búsqueda rápida..." readonly="" type="text"/>
+<kbd class="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-mono bg-surface-container-lowest hairline-box px-1 rounded text-secondary">Ctrl+K</kbd>
+</div>
+<!-- Notifications -->
+<button class="w-8 h-8 rounded hairline-box flex items-center justify-center text-secondary relative hover:bg-surface-container-low">
+<span class="material-symbols-outlined text-[18px]">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary-container"></span>
+</button>
+<div class="h-6 w-px bg-[#E2E4E9]"></div>
+<!-- User Profile Card -->
+<div class="flex items-center gap-2.5 pl-1">
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-bold text-xs">
+            LA
+          </div>
+<div class="flex flex-col text-left">
+<span class="font-label-sm text-label-sm font-semibold text-on-surface leading-tight">Loana Avila Neyra</span>
+<span class="font-label-xs text-[11px] text-secondary leading-tight">Superadministración</span>
+</div>
+<button class="ml-1 text-secondary hover:text-on-surface">
+<span class="material-symbols-outlined text-[18px]">logout</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Background Content Canvas (Simulated ERP Table State, dimmed by overlay) -->
+<main class="flex-1 p-space-xl overflow-y-auto bg-background select-none filter blur-[2px] opacity-40">
+<!-- Metric Cards Row -->
+<div class="grid grid-cols-4 gap-gutter mb-space-xl">
+<div class="bg-surface-container-lowest p-space-lg rounded hairline-box border-l-4 border-l-primary-container shadow-sm">
+<div class="font-body-sm text-label-xs text-secondary uppercase font-semibold">Total Matrículas Octubre</div>
+<div class="font-metric-val text-metric-val text-on-surface mt-1">1,248</div>
+<div class="font-label-xs text-[11px] text-emerald-700 font-semibold mt-1">↑ +8.4% vs mes anterior</div>
+</div>
+<div class="bg-surface-container-lowest p-space-lg rounded hairline-box border-l-4 border-l-primary-container shadow-sm">
+<div class="font-body-sm text-label-xs text-secondary uppercase font-semibold">Recaudación Validada</div>
+<div class="font-metric-val text-metric-val text-on-surface mt-1">S/ 474,240</div>
+<div class="font-label-xs text-[11px] text-emerald-700 font-semibold mt-1">Tesorera Tumbes OK</div>
+</div>
+<div class="bg-surface-container-lowest p-space-lg rounded hairline-box border-l-4 border-l-[#5d5e64] shadow-sm">
+<div class="font-body-sm text-label-xs text-secondary uppercase font-semibold">Pagos por Regularizar</div>
+<div class="font-metric-val text-metric-val text-on-surface mt-1">19</div>
+<div class="font-label-xs text-[11px] text-amber-700 font-semibold mt-1">Requiere conciliar voucher</div>
+</div>
+<div class="bg-surface-container-lowest p-space-lg rounded hairline-box border-l-4 border-l-primary-container shadow-sm">
+<div class="font-body-sm text-label-xs text-secondary uppercase font-semibold">Expedientes Emitidos</div>
+<div class="font-metric-val text-metric-val text-on-surface mt-1">1,229</div>
+<div class="font-label-xs text-[11px] text-secondary font-semibold mt-1">Sincronizado con MINEDU</div>
+</div>
+</div>
+<!-- Main Data Table Container -->
+<div class="bg-surface-container-lowest rounded-lg hairline-box shadow-sm">
+<div class="p-space-lg hairline-b flex items-center justify-between">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Padrón Institucional de Matrículas</h2>
+<p class="font-body-sm text-body-sm text-secondary">Registro oficial y kardex financiero académico de la Sede Central · Tumbes</p>
+</div>
+<div class="flex gap-2">
+<button class="px-3 py-1.5 hairline-box rounded text-label-md font-label-md bg-surface-container-lowest text-on-surface">Exportar XLS</button>
+<button class="px-3 py-1.5 bg-primary-container rounded text-label-md font-label-md text-on-primary">+ Nueva Matrícula</button>
+</div>
+</div>
+<table class="w-full text-left font-body-sm text-body-sm">
+<thead class="bg-[#F9FAFB] text-[11px] font-title-eyebrow uppercase text-secondary hairline-b">
+<tr>
+<th class="py-2.5 px-4">Folio ID</th>
+<th class="py-2.5 px-4">Estudiante / DNI</th>
+<th class="py-2.5 px-4">Programa Académico</th>
+<th class="py-2.5 px-4">Abono Inicial</th>
+<th class="py-2.5 px-4">Medio / Operación</th>
+<th class="py-2.5 px-4">Estado</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[#E2E4E9]">
+<tr>
+<td class="py-3 px-4 font-mono font-semibold text-primary-container">MAT-2026-0841</td>
+<td class="py-3 px-4 font-semibold">Carlos Mendoza Ruiz <span class="block text-[11px] text-secondary font-normal">72849102</span></td>
+<td class="py-3 px-4">Soldadura Estructural y TIG Avanzada</td>
+<td class="py-3 px-4 font-semibold">S/ 380.00</td>
+<td class="py-3 px-4 text-[12px]">Transferencia BCP #04829104</td>
+<td class="py-3 px-4"><span class="px-2 py-0.5 rounded-full text-[11px] bg-emerald-50 text-emerald-700 font-semibold">Convalidado</span></td>
+</tr>
+<tr>
+<td class="py-3 px-4 font-mono font-semibold text-primary-container">MAT-2026-0840</td>
+<td class="py-3 px-4 font-semibold">Lucía Ramos Espinoza <span class="block text-[11px] text-secondary font-normal">48192039</span></td>
+<td class="py-3 px-4">Seguridad Industrial y Minera</td>
+<td class="py-3 px-4 font-semibold">S/ 450.00</td>
+<td class="py-3 px-4 text-[12px]">Tarjeta Débito Visa #8841</td>
+<td class="py-3 px-4"><span class="px-2 py-0.5 rounded-full text-[11px] bg-emerald-50 text-emerald-700 font-semibold">Convalidado</span></td>
+</tr>
+<tr>
+<td class="py-3 px-4 font-mono font-semibold text-primary-container">MAT-2026-0839</td>
+<td class="py-3 px-4 font-semibold">Javier Torres Garrido <span class="block text-[11px] text-secondary font-normal">71203941</span></td>
+<td class="py-3 px-4">Operación de Maquinaria Pesada</td>
+<td class="py-3 px-4 font-semibold">S/ 600.00</td>
+<td class="py-3 px-4 text-[12px]">Depósito Efectivo Ventanilla</td>
+<td class="py-3 px-4"><span class="px-2 py-0.5 rounded-full text-[11px] bg-amber-50 text-amber-700 font-semibold">En Verificación</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+</main>
+<!-- ========================================================= -->
+<!-- 3. OVERLAY & INSTITUTIONAL SUCCESS MODAL                  -->
+<!-- ========================================================= -->
+<div class="absolute inset-0 z-50 flex items-center justify-center p-4 bg-[#111827]/55 backdrop-blur-[3px] animate-fade-in">
+<!-- Central Modal Container: 660px width for authoritative density -->
+<div class="w-full max-w-[660px] bg-surface-container-lowest rounded-xl shadow-2xl hairline-box overflow-hidden flex flex-col transform transition-all">
+<!-- Modal Top Institutional Ribbon & Close -->
+<div class="px-6 pt-5 pb-3 flex items-center justify-between bg-surface-bright hairline-b">
+<div class="flex items-center gap-2">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-emerald-50 border border-emerald-200 text-emerald-800 font-label-xs text-[11px] font-semibold tracking-wide">
+<span class="material-symbols-outlined text-[14px] text-emerald-600">verified</span>
+<span>Transacción Validada • ID TRN: TRN-2026-99402 • Folio: MAT-2026-0841</span>
+</div>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#181A1F] text-[#FFFFFF] text-[10px] font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+              Sincronizado
+            </span>
+</div>
+<!-- Close Button -->
+<button class="w-8 h-8 rounded-lg flex items-center justify-center text-secondary hover:bg-surface-container-high hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<!-- Modal Body Content -->
+<div class="px-7 py-6 overflow-y-auto max-h-[839px]">
+<!-- Visual Check & Institutional Headline -->
+<div class="text-center flex flex-col items-center">
+<div class="relative flex items-center justify-center mb-3">
+<div class="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center relative z-10 shadow-sm border border-emerald-300">
+<span class="material-symbols-outlined text-emerald-700 text-[36px] font-bold">check_circle</span>
+</div>
+<div class="absolute inset-0 w-16 h-16 rounded-full bg-emerald-200/60 pulse-ring-effect z-0"></div>
+<!-- Mini Institutional 'B' seal on the badge -->
+<div class="absolute -bottom-1 -right-1 z-20 w-6 h-6 rounded-full bg-primary-container text-on-primary flex items-center justify-center text-[10px] font-bold border-2 border-white shadow-xs">
+                B
+              </div>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface font-bold">
+              ¡Registro de Matrícula Exitoso!
+            </h1>
+<p class="font-body-md text-body-sm text-secondary mt-1.5 max-w-[530px] leading-relaxed">
+              La matrícula ha sido procesada correctamente en la <strong class="text-on-surface font-semibold">Sede Tumbes</strong>, el abono inicial fue convalidado en tesorería y el expediente del estudiante ha sido generado en la base institucional.
+            </p>
+</div>
+<!-- Summary Card (Neutral Grey #f8f9fb with crisp hairline borders) -->
+<div class="mt-5 rounded-lg hairline-box bg-[#F8F9FB] p-4 text-left">
+<!-- Folio Primary Strip -->
+<div class="flex items-center justify-between pb-3 hairline-b">
+<div class="flex items-center gap-2">
+<span class="font-label-xs text-secondary uppercase font-semibold text-[11px]">Folio de Matrícula:</span>
+<span class="font-mono text-headline-sm text-primary-container font-bold">MAT-2026-0841</span>
+<button class="text-secondary hover:text-on-surface p-1 rounded hover:bg-surface-container-high transition-colors" title="Copiar Folio">
+<span class="material-symbols-outlined text-[15px]">content_copy</span>
+</button>
+</div>
+<span class="px-2.5 py-0.5 rounded bg-emerald-100/70 border border-emerald-300 text-emerald-900 font-label-xs text-[11px] font-semibold">
+                Padrón Oficial y Expediente Activo
+              </span>
+</div>
+<!-- Structured Detail Grid -->
+<div class="grid grid-cols-2 gap-x-6 gap-y-3 pt-3.5 text-body-sm">
+<!-- Estudiante -->
+<div>
+<span class="block font-title-eyebrow text-[10px] uppercase text-secondary">Estudiante Titular</span>
+<div class="font-semibold text-on-surface text-[14px] mt-0.5 flex items-center gap-1.5">
+<span>Carlos Mendoza Ruiz</span>
+<span class="font-mono text-secondary text-[12px] font-normal bg-surface-container-high px-1.5 py-0.2 rounded">DNI 72849102</span>
+</div>
+</div>
+<!-- Monto Convalidado -->
+<div>
+<span class="block font-title-eyebrow text-[10px] uppercase text-secondary">Monto Convalidado en Tesorería</span>
+<div class="font-bold text-on-surface text-[15px] mt-0.5 text-emerald-800 flex items-center gap-1">
+<span>S/ 380.00</span>
+<span class="text-[11px] text-secondary font-normal font-sans">(Abono Inicial / Cuota 1 regularizada)</span>
+</div>
+</div>
+<!-- Medio de pago -->
+<div>
+<span class="block font-title-eyebrow text-[10px] uppercase text-secondary">Medio de Pago Validado</span>
+<div class="text-[13px] font-medium text-on-surface mt-0.5 flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-secondary">account_balance</span>
+<span>Transferencia BCP - Operación N° 04829104</span>
+</div>
+</div>
+<!-- Programa Técnico -->
+<div>
+<span class="block font-title-eyebrow text-[10px] uppercase text-secondary">Programa Técnico y Sede</span>
+<div class="text-[13px] font-medium text-on-surface mt-0.5 truncate" title="Soldadura Estructural y TIG Avanzada • Turno Noche">
+                  Soldadura Estructural y TIG Avanzada
+                  <span class="block text-[11px] text-secondary">Turno Noche • Sede Central Tumbes (Aula/Taller T-12)</span>
+</div>
+</div>
+<!-- Fecha y Operador -->
+<div class="col-span-2 pt-2 border-t border-[#E2E4E9]/80 flex items-center justify-between text-[11px] text-secondary">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">event_available</span>
+<span>Registro: <strong>24 Octubre 2026, 10:45 AM</strong></span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">badge</span>
+<span>Operador de Ventanilla: <strong>Loana Avila Neyra</strong></span>
+</div>
+</div>
+</div>
+</div>
+<!-- Notification & Card Badges -->
+<div class="mt-3.5 space-y-2">
+<div class="flex items-center gap-2 p-2.5 rounded bg-[#F0FDF4] border border-emerald-200/80 text-emerald-900 text-[12px]">
+<span class="material-symbols-outlined text-emerald-600 text-[18px]">send</span>
+<span class="font-medium">Notificación automática enviada por WhatsApp y correo electrónico al estudiante.</span>
+</div>
+<div class="flex items-center justify-between px-3 py-2 rounded bg-surface-container-low hairline-box text-[12px] text-secondary">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-tertiary">id_card</span>
+<span class="font-medium text-on-surface">Carnet provisorio digital habilitado</span>
+<span class="text-[11px] text-secondary">(Código QR temporal disponible en app Brusben Alumno)</span>
+</div>
+<span class="text-[11px] font-semibold text-emerald-700">Listo para descarga</span>
+</div>
+</div>
+<!-- Audit Log Mini Alert -->
+<div class="mt-3.5 flex items-center gap-2 px-3 py-1.5 rounded bg-surface-container-high text-secondary text-[11px] border border-surface-container-highest">
+<span class="material-symbols-outlined text-[15px] text-secondary">shield</span>
+<span class="font-mono">Auditoría Registrada: Transacción #LOG-88493 registrada en auditoría forense inmutable</span>
+</div>
+</div>
+<!-- Modal Footer Actions (Standardized right-aligned institutional layout) -->
+<div class="px-6 py-4 bg-surface-bright hairline-b hairline-box border-b-0 flex items-center justify-between">
+<button class="px-4 py-2 bg-surface-container-lowest hairline-box rounded-lg text-on-surface hover:bg-surface-container-low font-label-md text-label-md font-medium transition-colors">
+            Volver a Matrículas y pagos
+          </button>
+<div class="flex items-center gap-2.5">
+<button class="px-4 py-2 bg-surface-container-lowest hairline-box rounded-lg text-on-surface hover:bg-surface-container-low font-label-md text-label-md font-medium transition-colors flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-secondary">folder_shared</span>
+<span>Ver Expediente del Alumno</span>
+</button>
+<!-- Primary Red Action Button -->
+<button class="px-5 py-2 bg-primary-container text-on-primary rounded-lg font-label-md text-label-md font-semibold hover:bg-[#9F0E15] shadow-sm flex items-center gap-2 transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-primary-container">
+<span class="material-symbols-outlined text-[18px]">print</span>
+<span>Imprimir Comprobante Oficial (PDF)</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Oferta Académica - ERP Brusben</title>
+<!-- Font Awesome Icons -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS v3 -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brusben: {
+              red: '#C4121A',
+              dark: '#181A1F',
+              bg: '#F5F6F8',
+              surface: '#FFFFFF',
+              border: '#E5E7EB',
+              muted: '#6B7280'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          boxShadow: {
+            'subtle': '0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03)',
+            'nav': '0 -2px 10px rgba(0, 0, 0, 0.04)',
+          }
+        }
+      }
+    }
+  </script>
+<!-- Custom Styles for Mobile Experience -->
+<style data-purpose="mobile-layout">
+    body {
+      background-color: #F5F6F8;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    /* Safe padding for iOS home indicator */
+    .pb-safe {
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 76px);
+    }
+  </style>
+</head>
+<body class="font-sans text-slate-800 antialiased min-h-screen flex justify-center bg-gray-100">
+<!-- Mobile Viewport Container (390px simulated container, responsive up to 430px) -->
+<div class="w-full max-w-[430px] min-h-screen bg-[#F5F6F8] flex flex-col relative shadow-2xl pb-safe">
+<!-- BEGIN: TopHeader -->
+<header class="sticky top-0 z-40 bg-white border-b border-gray-200 px-4 py-2.5 flex items-center justify-between shadow-sm">
+<!-- Menu Button -->
+<button aria-label="Abrir menú" class="w-10 h-10 flex items-center justify-center text-gray-700 hover:bg-gray-100 rounded-lg active:scale-95 transition-transform" type="button">
+<i class="fa-solid fa-bars text-lg"></i>
+</button>
+<!-- Institutional Logo -->
+<div class="bg-white px-2.5 py-1 rounded border border-gray-200 flex items-center justify-center shadow-xs">
+<div class="flex items-center gap-1.5">
+<span class="bg-[#C4121A] text-white font-black text-xs px-1.5 py-0.5 rounded tracking-tighter">B</span>
+<div class="leading-tight">
+<div class="font-extrabold text-[#181A1F] text-[11px] tracking-tight">
+              BRUSBEN <span class="text-[8px] font-normal text-gray-500">E.I.R.L.</span>
+</div>
+<div class="text-[6.5px] font-semibold tracking-wider text-[#C4121A] uppercase">
+              Capacitarse es superarse
+            </div>
+</div>
+</div>
+</div>
+<!-- User & Notifications Cluster -->
+<div class="flex items-center gap-2">
+<!-- Notification Button -->
+<button aria-label="Notificaciones" class="relative w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-full active:scale-95 transition-all" type="button">
+<i class="fa-regular fa-bell text-base"></i>
+<span class="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-[#C4121A] border-2 border-white rounded-full"></span>
+</button>
+<!-- User Avatar -->
+<div class="relative flex items-center" data-purpose="user-avatar-badge">
+<div class="w-8 h-8 rounded-full bg-[#181A1F] text-white text-xs font-bold flex items-center justify-center ring-2 ring-white shadow-xs">
+            LA
+          </div>
+<!-- Online status dot -->
+<span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full"></span>
+</div>
+</div>
+</header>
+<!-- END: TopHeader -->
+<!-- Main Scrollable Content -->
+<main class="flex-1 px-4 pt-3.5 space-y-4">
+<!-- BEGIN: SectionHeader -->
+<section class="space-y-3" data-purpose="page-title-and-actions">
+<!-- Badge Tags -->
+<div class="flex items-center justify-between gap-2 flex-wrap">
+<span class="text-[10px] font-extrabold text-[#C4121A] tracking-wider uppercase bg-red-50 border border-red-100 px-2 py-0.5 rounded-md">
+            CATÁLOGO CURRICULAR E INSTITUCIONAL
+          </span>
+<span class="text-[11px] font-medium text-gray-600 bg-white border border-gray-200 px-2 py-0.5 rounded-full flex items-center gap-1.5 shadow-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            Sede Central • Lima
+          </span>
+</div>
+<!-- Title and Subtitle -->
+<div>
+<h1 class="text-xl font-black text-[#181A1F] tracking-tight">Oferta académica</h1>
+<p class="text-xs text-gray-500 mt-0.5 leading-relaxed">
+            Gestión de programas técnicos, planes de estudio, cursos modulares y vacantes activas.
+          </p>
+</div>
+<!-- Main Action Button -->
+<button class="w-full bg-[#C4121A] hover:bg-[#a50e15] text-white font-semibold text-sm py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-sm active:scale-[0.99] transition-all min-h-[44px]" type="button">
+<i class="fa-solid fa-plus text-xs"></i>
+<span>Nuevo programa</span>
+</button>
+<!-- Secondary Action Buttons -->
+<div class="grid grid-cols-2 gap-2">
+<button class="bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 text-xs font-semibold py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 shadow-xs min-h-[40px] active:bg-gray-100 transition-colors" type="button">
+<i class="fa-solid fa-cloud-arrow-down text-gray-500 text-xs"></i>
+<span>Exportar catálogo</span>
+</button>
+<button class="bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 text-xs font-semibold py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 shadow-xs min-h-[40px] active:bg-gray-100 transition-colors" type="button">
+<i class="fa-regular fa-calendar-days text-gray-500 text-xs"></i>
+<span>Gestionar periodos</span>
+</button>
+</div>
+</section>
+<!-- END: SectionHeader -->
+<!-- BEGIN: MetricsKpis -->
+<section class="grid grid-cols-2 gap-2.5" data-purpose="metrics-kpis-grid">
+<!-- KPI 1: Total Programas -->
+<div class="bg-white p-3 rounded-xl border border-gray-200 shadow-xs flex flex-col justify-between">
+<div class="flex items-center justify-between mb-1.5">
+<span class="w-7 h-7 rounded-lg bg-red-50 text-[#C4121A] flex items-center justify-center text-xs">
+<i class="fa-solid fa-graduation-cap"></i>
+</span>
+<span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-1.5 py-0.5 rounded">
+              Vigentes
+            </span>
+</div>
+<div>
+<div class="text-[11px] font-medium text-gray-500">Total Programas</div>
+<div class="text-2xl font-black text-[#181A1F] tracking-tight">18</div>
+</div>
+<div class="text-[10px] text-gray-500 font-medium border-t border-gray-100 pt-1.5 mt-1.5">
+            14 Carreras • 4 Certif.
+          </div>
+</div>
+<!-- KPI 2: Cursos y Módulos -->
+<div class="bg-white p-3 rounded-xl border border-gray-200 shadow-xs flex flex-col justify-between">
+<div class="flex items-center justify-between mb-1.5">
+<span class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-xs">
+<i class="fa-solid fa-book-open"></i>
+</span>
+<span class="text-[10px] font-bold text-blue-700 bg-blue-50 border border-blue-100 px-1.5 py-0.5 rounded">
+              +6 vs 2025-II
+            </span>
+</div>
+<div>
+<div class="text-[11px] font-medium text-gray-500">Cursos / Módulos</div>
+<div class="text-2xl font-black text-[#181A1F] tracking-tight">124</div>
+</div>
+<div class="text-[10px] text-gray-500 font-medium border-t border-gray-100 pt-1.5 mt-1.5">
+            Malla curricular
+          </div>
+</div>
+<!-- KPI 3: Grupos / Secciones -->
+<div class="bg-white p-3 rounded-xl border border-gray-200 shadow-xs flex flex-col justify-between">
+<div class="flex items-center justify-between mb-1.5">
+<span class="w-7 h-7 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center text-xs">
+<i class="fa-solid fa-chalkboard-user"></i>
+</span>
+<span class="text-[10px] font-semibold text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded">
+              Ciclo 2026-I
+            </span>
+</div>
+<div>
+<div class="text-[11px] font-medium text-gray-500">Grupos / Secciones</div>
+<div class="text-2xl font-black text-[#181A1F] tracking-tight">46</div>
+</div>
+<div class="text-[10px] text-gray-500 font-medium border-t border-gray-100 pt-1.5 mt-1.5">
+            9 Sedes y Aulas
+          </div>
+</div>
+<!-- KPI 4: Ocupación Vacantes -->
+<div class="bg-white p-3 rounded-xl border border-gray-200 shadow-xs flex flex-col justify-between">
+<div class="flex items-center justify-between mb-1.5">
+<span class="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-xs">
+<i class="fa-solid fa-chart-pie"></i>
+</span>
+<span class="text-[10px] font-bold text-gray-700">780 / 922</span>
+</div>
+<div>
+<div class="text-[11px] font-medium text-gray-500">Ocupación Vacantes</div>
+<div class="text-2xl font-black text-[#181A1F] tracking-tight">84.6%</div>
+</div>
+<!-- Mini Progress Bar -->
+<div class="w-full bg-gray-100 rounded-full h-1.5 mt-1.5 overflow-hidden">
+<div class="bg-[#C4121A] h-1.5 rounded-full" style="width: 84.6%"></div>
+</div>
+</div>
+</section>
+<!-- END: MetricsKpis -->
+<!-- BEGIN: RibbonMetrics -->
+<section class="bg-white border border-gray-200 rounded-xl p-3 shadow-xs space-y-2" data-purpose="operational-metrics-strip">
+<div class="flex items-center gap-2 overflow-x-auto no-scrollbar text-[11px] text-gray-600 font-medium py-0.5">
+<span class="inline-flex items-center gap-1 shrink-0">
+<span class="w-2 h-2 rounded-full bg-blue-500"></span> Presenciales: <strong class="text-gray-900">10</strong>
+</span>
+<span class="text-gray-300">•</span>
+<span class="inline-flex items-center gap-1 shrink-0">
+<span class="w-2 h-2 rounded-full bg-amber-500"></span> Semipresenciales: <strong class="text-gray-900">5</strong>
+</span>
+<span class="text-gray-300">•</span>
+<span class="inline-flex items-center gap-1 shrink-0">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span> Virtuales: <strong class="text-gray-900">3</strong>
+</span>
+<span class="text-gray-300">•</span>
+<span class="shrink-0 text-gray-500 font-normal">
+            Horas: <strong class="text-gray-900 font-semibold">4,800 hrs</strong>
+</span>
+</div>
+<div class="border-t border-gray-100 pt-2 flex items-center justify-between">
+<span class="text-[10px] text-gray-500 font-medium flex items-center gap-1">
+<i class="fa-solid fa-certificate text-[#C4121A] text-[9px]"></i>
+            Certificaciones con aval institucional
+          </span>
+<span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">
+            100% reguladas
+          </span>
+</div>
+</section>
+<!-- END: RibbonMetrics -->
+<!-- BEGIN: NavigationTabs -->
+<section data-purpose="horizontal-tabs-navigation">
+<div class="flex gap-2 overflow-x-auto no-scrollbar pb-1 text-xs font-semibold">
+<!-- Active Tab -->
+<button class="shrink-0 bg-[#181A1F] text-white px-3 py-2 rounded-lg flex items-center gap-1.5 shadow-xs">
+<span>Programas y Carreras</span>
+<span class="bg-white/20 text-white text-[10px] px-1.5 py-0.2 rounded-full font-bold">18</span>
+</button>
+<!-- Inactive Tab 2 -->
+<button class="shrink-0 bg-white hover:bg-gray-50 border border-gray-200 text-gray-600 px-3 py-2 rounded-lg flex items-center gap-1.5 shadow-xs">
+<span>Cursos independientes</span>
+<span class="bg-gray-100 text-gray-600 text-[10px] px-1.5 py-0.2 rounded-full">124</span>
+</button>
+<!-- Inactive Tab 3 -->
+<button class="shrink-0 bg-white hover:bg-gray-50 border border-gray-200 text-gray-600 px-3 py-2 rounded-lg flex items-center gap-1.5 shadow-xs">
+<span>Mallas curriculares</span>
+</button>
+<!-- Inactive Tab 4 -->
+<button class="shrink-0 bg-white hover:bg-gray-50 border border-gray-200 text-gray-600 px-3 py-2 rounded-lg flex items-center gap-1.5 shadow-xs">
+<span>Ediciones y Grupos</span>
+<span class="bg-gray-100 text-gray-600 text-[10px] px-1.5 py-0.2 rounded-full">46</span>
+</button>
+</div>
+</section>
+<!-- END: NavigationTabs -->
+<!-- BEGIN: SearchAndFilters -->
+<section class="space-y-2.5" data-purpose="search-and-filters">
+<!-- Search Bar -->
+<div class="relative">
+<span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
+<i class="fa-solid fa-magnifying-glass text-xs"></i>
+</span>
+<input class="w-full pl-9 pr-4 py-2.5 text-xs bg-white border border-gray-200 rounded-xl placeholder-gray-400 text-gray-800 focus:ring-2 focus:ring-[#C4121A] focus:border-[#C4121A] shadow-xs outline-none" placeholder="Buscar programa, código o área..." type="search"/>
+</div>
+<!-- Filter Selects Bar -->
+<div class="grid grid-cols-12 gap-1.5">
+<!-- Ciclo -->
+<div class="col-span-3">
+<select class="w-full text-[11px] font-medium bg-white border border-gray-200 rounded-lg py-2 px-2 text-gray-700 focus:ring-1 focus:ring-[#C4121A] outline-none">
+<option selected="">2026-I</option>
+<option>2025-II</option>
+<option>2025-I</option>
+</select>
+</div>
+<!-- Área -->
+<div class="col-span-4">
+<select class="w-full text-[11px] font-medium bg-white border border-gray-200 rounded-lg py-2 px-2 text-gray-700 focus:ring-1 focus:ring-[#C4121A] outline-none">
+<option selected="">Área: Todas</option>
+<option>Metalmecánica</option>
+<option>Minería &amp; SSO</option>
+<option>Maquinaria</option>
+<option>Electrotecnia</option>
+</select>
+</div>
+<!-- Modalidad -->
+<div class="col-span-4">
+<select class="w-full text-[11px] font-medium bg-white border border-gray-200 rounded-lg py-2 px-2 text-gray-700 focus:ring-1 focus:ring-[#C4121A] outline-none">
+<option selected="">Modalidad: Todas</option>
+<option>Presencial</option>
+<option>Semipresencial</option>
+<option>Virtual</option>
+</select>
+</div>
+<!-- Clear/Reset Filters -->
+<div class="col-span-1">
+<button aria-label="Limpiar filtros" class="w-full h-full min-h-[34px] flex items-center justify-center bg-white border border-gray-200 rounded-lg text-gray-500 hover:text-gray-800 hover:bg-gray-50 active:scale-95 transition-all" type="button">
+<i class="fa-solid fa-rotate text-xs"></i>
+</button>
+</div>
+</div>
+<!-- Filter Meta & Count -->
+<div class="flex items-center justify-between text-[11px] text-gray-500 px-0.5">
+<span>Mostrando <strong>4</strong> de 18 programas técnicos</span>
+<span class="flex items-center gap-1 font-medium text-gray-600">
+<i class="fa-solid fa-arrow-down-short-wide text-[10px]"></i>
+            Orden: Más recientes
+          </span>
+</div>
+</section>
+<!-- END: SearchAndFilters -->
+<!-- BEGIN: ProgramList -->
+<section class="space-y-3" data-purpose="academic-programs-cards-list">
+<!-- CARD 1: Soldadura Estructural -->
+<article class="bg-white rounded-xl border border-gray-200 shadow-subtle p-3.5 space-y-3 hover:border-gray-300 transition-colors">
+<!-- Card Header -->
+<div class="flex items-start justify-between gap-2">
+<div class="flex items-center flex-wrap gap-1.5">
+<span class="text-[10px] font-mono font-bold bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded border border-gray-200">
+                PROG-SOL-01
+              </span>
+<span class="text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100 px-1.5 py-0.5 rounded">
+                Carrera Técnica
+              </span>
+<span class="text-[10px] font-semibold bg-red-50 text-[#C4121A] border border-red-100 px-1.5 py-0.5 rounded">
+                Alta Demanda
+              </span>
+</div>
+<!-- More menu -->
+<button aria-label="Opciones" class="text-gray-400 hover:text-gray-700 p-1 -mr-1" type="button">
+<i class="fa-solid fa-ellipsis-vertical text-xs"></i>
+</button>
+</div>
+<!-- Card Title & Subtitle -->
+<div>
+<h2 class="text-sm font-bold text-[#181A1F] leading-tight">
+              Soldadura Estructural y TIG Avanzada
+            </h2>
+<p class="text-[11px] text-gray-500 mt-1 flex items-center gap-1.5 flex-wrap">
+<span class="font-medium text-gray-700">Metalmecánica</span>
+<span class="text-gray-300">•</span>
+<span>Plan 2026-I (Rev. 3)</span>
+<span class="text-gray-300">•</span>
+<span>8 módulos (720 hrs)</span>
+</p>
+</div>
+<!-- Card Details Grid (2 Columns) -->
+<div class="grid grid-cols-2 gap-2 bg-[#F9FAFB] p-2.5 rounded-lg border border-gray-100 text-[11px]">
+<!-- Modalidad -->
+<div class="space-y-0.5">
+<span class="text-[10px] text-gray-400 uppercase font-semibold flex items-center gap-1">
+<i class="fa-solid fa-location-dot text-[9px] text-[#C4121A]"></i> Modalidad &amp; Turno
+              </span>
+<div class="font-semibold text-gray-800 leading-tight">Presencial</div>
+<div class="text-[10px] text-gray-500">Sede Central • Noche y Sáb.</div>
+</div>
+<!-- Duración -->
+<div class="space-y-0.5">
+<span class="text-[10px] text-gray-400 uppercase font-semibold flex items-center gap-1">
+<i class="fa-regular fa-clock text-[9px] text-blue-500"></i> Duración &amp; Créditos
+              </span>
+<div class="font-semibold text-gray-800 leading-tight">8 Meses (3 Ciclos)</div>
+<div class="text-[10px] text-gray-500">42 Créditos académicos</div>
+</div>
+<!-- Vacantes & Progress Bar -->
+<div class="space-y-1 col-span-2 pt-1 border-t border-gray-200/60">
+<div class="flex justify-between items-center text-[10px]">
+<span class="text-gray-500 font-medium">Ocupación de vacantes:</span>
+<span class="font-bold text-[#181A1F]">76 / 80 vacantes <strong class="text-emerald-600 font-bold">(95%)</strong></span>
+</div>
+<div class="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+<div class="bg-[#C4121A] h-1.5 rounded-full" style="width: 95%"></div>
+</div>
+</div>
+<!-- Aranceles -->
+<div class="col-span-2 flex items-center justify-between text-[11px] pt-1 border-t border-gray-200/60">
+<span class="text-gray-500">Inversión mensual: <strong class="text-[#181A1F] font-bold">S/ 380.00</strong></span>
+<span class="text-gray-400">|</span>
+<span class="text-gray-500">Matrícula: <strong class="text-[#181A1F] font-bold">S/ 150.00</strong></span>
+</div>
+</div>
+<!-- Card Footer & Action Buttons -->
+<div class="flex items-center justify-between pt-1 gap-2">
+<span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              En matrícula
+            </span>
+<div class="flex items-center gap-1.5">
+<button class="text-xs text-gray-600 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 border border-gray-200 px-2.5 py-1.5 rounded-lg flex items-center gap-1 font-medium transition-colors" type="button">
+<i class="fa-regular fa-eye text-[11px]"></i>
+<span>Ver plan</span>
+</button>
+<button class="text-xs text-gray-600 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 border border-gray-200 px-2.5 py-1.5 rounded-lg flex items-center gap-1 font-medium transition-colors" type="button">
+<i class="fa-regular fa-pen-to-square text-[11px]"></i>
+<span>Editar</span>
+</button>
+<button class="text-xs text-[#C4121A] bg-red-50 hover:bg-red-100 border border-red-100 px-2.5 py-1.5 rounded-lg flex items-center gap-1 font-semibold transition-colors" type="button">
+<i class="fa-regular fa-calendar text-[11px]"></i>
+<span>Grupos (4)</span>
+</button>
+</div>
+</div>
+</article>
+<!-- CARD 2: Seguridad Industrial y Minera (SOMA) -->
+<article class="bg-white rounded-xl border border-gray-200 shadow-subtle p-3.5 space-y-3 hover:border-gray-300 transition-colors">
+<!-- Card Header -->
+<div class="flex items-start justify-between gap-2">
+<div class="flex items-center flex-wrap gap-1.5">
+<span class="text-[10px] font-mono font-bold bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded border border-gray-200">
+                PROG-SOM-02
+              </span>
+<span class="text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-100 px-1.5 py-0.5 rounded">
+                Certificación Pro
+              </span>
+<span class="text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-100 px-1.5 py-0.5 rounded">
+                Seguridad &amp; Minería
+              </span>
+</div>
+<button aria-label="Opciones" class="text-gray-400 hover:text-gray-700 p-1 -mr-1" type="button">
+<i class="fa-solid fa-ellipsis-vertical text-xs"></i>
+</button>
+</div>
+<!-- Card Title & Subtitle -->
+<div>
+<h2 class="text-sm font-bold text-[#181A1F] leading-tight">
+              Seguridad Industrial y Minera (SOMA)
+            </h2>
+<p class="text-[11px] text-gray-500 mt-1 flex items-center gap-1.5 flex-wrap">
+<span class="font-medium text-gray-700">Minería &amp; SSO</span>
+<span class="text-gray-300">•</span>
+<span>Plan 2025-II</span>
+<span class="text-gray-300">•</span>
+<span>6 módulos (480 hrs)</span>
+</p>
+</div>
+<!-- Card Details Grid -->
+<div class="grid grid-cols-2 gap-2 bg-[#F9FAFB] p-2.5 rounded-lg border border-gray-100 text-[11px]">
+<div class="space-y-0.5">
+<span class="text-[10px] text-gray-400 uppercase font-semibold flex items-center gap-1">
+<i class="fa-solid fa-location-dot text-[9px] text-[#C4121A]"></i> Modalidad &amp; Turno
+              </span>
+<div class="font-semibold text-gray-800 leading-tight">Semipresencial</div>
+<div class="text-[10px] text-gray-500">Sede Central • Sabatino</div>
+</div>
+<div class="space-y-0.5">
+<span class="text-[10px] text-gray-400 uppercase font-semibold flex items-center gap-1">
+<i class="fa-regular fa-clock text-[9px] text-blue-500"></i> Duración &amp; Créditos
+              </span>
+<div class="font-semibold text-gray-800 leading-tight">6 Meses (2 Ciclos)</div>
+<div class="text-[10px] text-gray-500">36 Créditos académicos</div>
+</div>
+<div class="space-y-1 col-span-2 pt-1 border-t border-gray-200/60">
+<div class="flex justify-between items-center text-[10px]">
+<span class="text-gray-500 font-medium">Ocupación de vacantes:</span>
+<span class="font-bold text-[#181A1F]">52 / 60 vacantes <strong class="text-emerald-600 font-bold">(86.7%)</strong></span>
+</div>
+<div class="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+<div class="bg-[#C4121A] h-1.5 rounded-full" style="width: 86.7%"></div>
+</div>
+</div>
+<div class="col-span-2 flex items-center justify-between text-[11px] pt-1 border-t border-gray-200/60">
+<span class="text-gray-500">Inversión mensual: <strong class="text-[#181A1F] font-bold">S/ 350.00</strong></span>
+<span class="text-gray-400">|</span>
+<span class="text-gray-500">Matrícula: <strong class="text-[#181A1F] font-bold">S/ 130.00</strong></span>
+</div>
+</div>
+<!-- Card Footer -->
+<div class="flex items-center justify-between pt-1 gap-2">
+<span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              En matrícula
+            </span>
+<div class="flex items-center gap-1.5">
+<button class="text-xs text-gray-600 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 border border-gray-200 px-2.5 py-1.5 rounded-lg flex items-center gap-1 font-medium transition-colors" type="button">
+<i class="fa-regular fa-eye text-[11px]"></i>
+<span>Ver plan</span>
+</button>
+<button class="text-xs text-gray-600 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 border border-gray-200 px-2.5 py-1.5 rounded-lg flex items-center gap-1 font-medium transition-colors" type="button">
+<i class="fa-regular fa-pen-to-square text-[11px]"></i>
+<span>Editar</span>
+</button>
+<button class="text-xs text-[#C4121A] bg-red-50 hover:bg-red-100 border border-red-100 px-2.5 py-1.5 rounded-lg flex items-center gap-1 font-semibold transition-colors" type="button">
+<i class="fa-regular fa-calendar text-[11px]"></i>
+<span>Grupos (3)</span>
+</button>
+</div>
+</div>
+</article>
+<!-- CARD 3: Operador de Maquinaria Pesada -->
+<article class="bg-white rounded-xl border border-gray-200 shadow-subtle p-3.5 space-y-3 hover:border-gray-300 transition-colors">
+<!-- Card Header -->
+<div class="flex items-start justify-between gap-2">
+<div class="flex items-center flex-wrap gap-1.5">
+<span class="text-[10px] font-mono font-bold bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded border border-gray-200">
+                PROG-MAQ-03
+              </span>
+<span class="text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100 px-1.5 py-0.5 rounded">
+                Carrera Técnica
+              </span>
+<span class="text-[10px] font-semibold bg-orange-50 text-orange-700 border border-orange-100 px-1.5 py-0.5 rounded">
+                Maquinaria Pesada
+              </span>
+</div>
+<button aria-label="Opciones" class="text-gray-400 hover:text-gray-700 p-1 -mr-1" type="button">
+<i class="fa-solid fa-ellipsis-vertical text-xs"></i>
+</button>
+</div>
+<!-- Card Title & Subtitle -->
+<div>
+<h2 class="text-sm font-bold text-[#181A1F] leading-tight">
+              Operador de Maquinaria Pesada
+            </h2>
+<p class="text-[11px] text-gray-500 mt-1 flex items-center gap-1.5 flex-wrap">
+<span class="font-medium text-gray-700">Línea Amarilla</span>
+<span class="text-gray-300">•</span>
+<span>Plan 2026-I</span>
+<span class="text-gray-300">•</span>
+<span>12 módulos (960 hrs)</span>
+</p>
+</div>
+<!-- Card Details Grid -->
+<div class="grid grid-cols-2 gap-2 bg-[#F9FAFB] p-2.5 rounded-lg border border-gray-100 text-[11px]">
+<div class="space-y-0.5">
+<span class="text-[10px] text-gray-400 uppercase font-semibold flex items-center gap-1">
+<i class="fa-solid fa-location-dot text-[9px] text-[#C4121A]"></i> Modalidad &amp; Turno
+              </span>
+<div class="font-semibold text-gray-800 leading-tight">Full Práctica</div>
+<div class="text-[10px] text-gray-500">Cantera Lurín • Dom. Intensivo</div>
+</div>
+<div class="space-y-0.5">
+<span class="text-[10px] text-gray-400 uppercase font-semibold flex items-center gap-1">
+<i class="fa-regular fa-clock text-[9px] text-blue-500"></i> Duración &amp; Créditos
+              </span>
+<div class="font-semibold text-gray-800 leading-tight">12 Meses (4 Ciclos)</div>
+<div class="text-[10px] text-gray-500">60 Créditos académicos</div>
+</div>
+<div class="space-y-1 col-span-2 pt-1 border-t border-gray-200/60">
+<div class="flex justify-between items-center text-[10px]">
+<span class="text-gray-500 font-medium">Ocupación de vacantes:</span>
+<span class="font-bold text-[#181A1F]">38 / 40 vacantes <strong class="text-amber-600 font-bold">(95.0%)</strong></span>
+</div>
+<div class="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+<div class="bg-amber-500 h-1.5 rounded-full" style="width: 95%"></div>
+</div>
+</div>
+<div class="col-span-2 flex items-center justify-between text-[11px] pt-1 border-t border-gray-200/60">
+<span class="text-gray-500">Inversión mensual: <strong class="text-[#181A1F] font-bold">S/ 450.00</strong></span>
+<span class="text-gray-400">|</span>
+<span class="text-gray-500">Matrícula: <strong class="text-[#181A1F] font-bold">S/ 180.00</strong></span>
+</div>
+</div>
+<!-- Card Footer -->
+<div class="flex items-center justify-between pt-1 gap-2">
+<span class="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+              Cupos limitados
+            </span>
+<div class="flex items-center gap-1.5">
+<button class="text-xs text-gray-600 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 border border-gray-200 px-2.5 py-1.5 rounded-lg flex items-center gap-1 font-medium transition-colors" type="button">
+<i class="fa-regular fa-eye text-[11px]"></i>
+<span>Ver plan</span>
+</button>
+<button class="text-xs text-gray-600 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 border border-gray-200 px-2.5 py-1.5 rounded-lg flex items-center gap-1 font-medium transition-colors" type="button">
+<i class="fa-regular fa-pen-to-square text-[11px]"></i>
+<span>Editar</span>
+</button>
+<button class="text-xs text-[#C4121A] bg-red-50 hover:bg-red-100 border border-red-100 px-2.5 py-1.5 rounded-lg flex items-center gap-1 font-semibold transition-colors" type="button">
+<i class="fa-regular fa-calendar text-[11px]"></i>
+<span>Grupos (2)</span>
+</button>
+</div>
+</div>
+</article>
+<!-- CARD 4: Electricidad y Tableros Industriales -->
+<article class="bg-white rounded-xl border border-gray-200 shadow-subtle p-3.5 space-y-3 hover:border-gray-300 transition-colors">
+<!-- Card Header -->
+<div class="flex items-start justify-between gap-2">
+<div class="flex items-center flex-wrap gap-1.5">
+<span class="text-[10px] font-mono font-bold bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded border border-gray-200">
+                PROG-ELE-04
+              </span>
+<span class="text-[10px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100 px-1.5 py-0.5 rounded">
+                Especialización Técnica
+              </span>
+</div>
+<button aria-label="Opciones" class="text-gray-400 hover:text-gray-700 p-1 -mr-1" type="button">
+<i class="fa-solid fa-ellipsis-vertical text-xs"></i>
+</button>
+</div>
+<!-- Card Title & Subtitle -->
+<div>
+<h2 class="text-sm font-bold text-[#181A1F] leading-tight">
+              Electricidad y Tableros Industriales
+            </h2>
+<p class="text-[11px] text-gray-500 mt-1 flex items-center gap-1.5 flex-wrap">
+<span class="font-medium text-gray-700">Electrotecnia Industrial</span>
+<span class="text-gray-300">•</span>
+<span>Plan 2026-I</span>
+<span class="text-gray-300">•</span>
+<span>6 módulos</span>
+</p>
+</div>
+<!-- Card Details Grid -->
+<div class="grid grid-cols-2 gap-2 bg-[#F9FAFB] p-2.5 rounded-lg border border-gray-100 text-[11px]">
+<div class="space-y-0.5">
+<span class="text-[10px] text-gray-400 uppercase font-semibold flex items-center gap-1">
+<i class="fa-solid fa-location-dot text-[9px] text-[#C4121A]"></i> Modalidad &amp; Turno
+              </span>
+<div class="font-semibold text-gray-800 leading-tight">Virtual sincrónico</div>
+<div class="text-[10px] text-gray-500">Lab presencial • Noche</div>
+</div>
+<div class="space-y-0.5">
+<span class="text-[10px] text-gray-400 uppercase font-semibold flex items-center gap-1">
+<i class="fa-regular fa-clock text-[9px] text-blue-500"></i> Duración &amp; Créditos
+              </span>
+<div class="font-semibold text-gray-800 leading-tight">6 Meses (2 Ciclos)</div>
+<div class="text-[10px] text-gray-500">32 Créditos académicos</div>
+</div>
+<div class="space-y-1 col-span-2 pt-1 border-t border-gray-200/60">
+<div class="flex justify-between items-center text-[10px]">
+<span class="text-gray-500 font-medium">Ocupación de vacantes:</span>
+<span class="font-bold text-[#181A1F]">44 / 50 vacantes <strong class="text-emerald-600 font-bold">(88.0%)</strong></span>
+</div>
+<div class="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+<div class="bg-[#C4121A] h-1.5 rounded-full" style="width: 88%"></div>
+</div>
+</div>
+<div class="col-span-2 flex items-center justify-between text-[11px] pt-1 border-t border-gray-200/60">
+<span class="text-gray-500">Inversión mensual: <strong class="text-[#181A1F] font-bold">S/ 320.00</strong></span>
+<span class="text-gray-400">|</span>
+<span class="text-gray-500">Matrícula: <strong class="text-[#181A1F] font-bold">S/ 120.00</strong></span>
+</div>
+</div>
+<!-- Card Footer -->
+<div class="flex items-center justify-between pt-1 gap-2">
+<span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              En matrícula
+            </span>
+<div class="flex items-center gap-1.5">
+<button class="text-xs text-gray-600 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 border border-gray-200 px-2.5 py-1.5 rounded-lg flex items-center gap-1 font-medium transition-colors" type="button">
+<i class="fa-regular fa-eye text-[11px]"></i>
+<span>Ver plan</span>
+</button>
+<button class="text-xs text-gray-600 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 border border-gray-200 px-2.5 py-1.5 rounded-lg flex items-center gap-1 font-medium transition-colors" type="button">
+<i class="fa-regular fa-pen-to-square text-[11px]"></i>
+<span>Editar</span>
+</button>
+<button class="text-xs text-[#C4121A] bg-red-50 hover:bg-red-100 border border-red-100 px-2.5 py-1.5 rounded-lg flex items-center gap-1 font-semibold transition-colors" type="button">
+<i class="fa-regular fa-calendar text-[11px]"></i>
+<span>Grupos (2)</span>
+</button>
+</div>
+</div>
+</article>
+</section>
+<!-- END: ProgramList -->
+<!-- BEGIN: Pagination -->
+<section class="py-2 flex items-center justify-between" data-purpose="table-pagination">
+<span class="text-xs text-gray-500 font-medium">Página 1 de 5</span>
+<div class="flex items-center gap-1">
+<button class="w-8 h-8 flex items-center justify-center text-xs font-semibold rounded-lg border border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed" disabled="" type="button">
+<i class="fa-solid fa-chevron-left text-[10px]"></i>
+</button>
+<button class="w-8 h-8 flex items-center justify-center text-xs font-bold rounded-lg bg-[#C4121A] text-white shadow-xs" type="button">
+            1
+          </button>
+<button class="w-8 h-8 flex items-center justify-center text-xs font-semibold rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-50" type="button">
+            2
+          </button>
+<button class="w-8 h-8 flex items-center justify-center text-xs font-semibold rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-50" type="button">
+            3
+          </button>
+<button class="w-8 h-8 flex items-center justify-center text-xs font-semibold rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-50" type="button">
+<i class="fa-solid fa-chevron-right text-[10px]"></i>
+</button>
+</div>
+</section>
+<!-- END: Pagination -->
+</main>
+<!-- BEGIN: BottomNavigationBar -->
+<nav aria-label="Navegación principal inferior" class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] bg-white border-t border-gray-200 z-50 px-2 py-1.5 shadow-nav flex items-center justify-around">
+<!-- 1. Inicio -->
+<a class="flex flex-col items-center justify-center text-gray-500 hover:text-gray-900 py-1 px-2.5 rounded-lg active:scale-95 transition-all" href="#">
+<i class="fa-solid fa-house text-base"></i>
+<span class="text-[10px] font-medium mt-1">Inicio</span>
+</a>
+<!-- 2. CRM -->
+<a class="relative flex flex-col items-center justify-center text-gray-500 hover:text-gray-900 py-1 px-2.5 rounded-lg active:scale-95 transition-all" href="#">
+<div class="relative">
+<i class="fa-solid fa-filter text-base"></i>
+<span class="absolute -top-1.5 -right-2.5 bg-[#C4121A] text-white text-[9px] font-extrabold px-1 py-0.2 rounded-full leading-none">
+            12
+          </span>
+</div>
+<span class="text-[10px] font-medium mt-1">CRM</span>
+</a>
+<!-- 3. Matrículas -->
+<a class="flex flex-col items-center justify-center text-gray-500 hover:text-gray-900 py-1 px-2.5 rounded-lg active:scale-95 transition-all" href="#">
+<i class="fa-solid fa-file-signature text-base"></i>
+<span class="text-[10px] font-medium mt-1">Matrículas</span>
+</a>
+<!-- 4. Oferta Académica (Activo) -->
+<a aria-current="page" class="flex flex-col items-center justify-center text-[#C4121A] py-1 px-2.5 rounded-lg active:scale-95 transition-all" href="#">
+<div class="relative">
+<i class="fa-solid fa-graduation-cap text-lg"></i>
+<span class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-[#C4121A] rounded-full"></span>
+</div>
+<span class="text-[10px] font-bold mt-1">Oferta</span>
+</a>
+<!-- 5. Menú -->
+<a class="flex flex-col items-center justify-center text-gray-500 hover:text-gray-900 py-1 px-2.5 rounded-lg active:scale-95 transition-all" href="#">
+<i class="fa-solid fa-bars-staggered text-base"></i>
+<span class="text-[10px] font-medium mt-1">Menú</span>
+</a>
+</nav>
+<!-- END: BottomNavigationBar -->
+</div>
+</body></html>
