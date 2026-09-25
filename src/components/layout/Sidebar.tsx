@@ -3,10 +3,12 @@
 import React from 'react'
 
 export function Sidebar({ appVersion = '1.0.0', user }: { appVersion?: string, user?: any }) {
-  const role = user?.role?.toUpperCase() || '';
-  const canViewReportes = ['SUPERADMIN', 'DIRECCION', 'ADMINISTRACION', 'COORDINACION_ACADEMICA'].includes(role);
-  const canViewAuditoria = ['SUPERADMIN'].includes(role);
-  const canViewUsuarios = ['SUPERADMIN', 'DIRECCION'].includes(role);
+  const roleCode = user?.roleCode?.toUpperCase() || '';
+  const perms = user?.permissions || [];
+  
+  const canViewReportes = perms.includes('REPORTES.VER') || ['SUPERADMIN', 'DIRECCION', 'ADMINISTRACION', 'COORDINACION_ACADEMICA'].includes(roleCode);
+  const canViewAuditoria = perms.includes('AUDITORIA.VER') || ['SUPERADMIN'].includes(roleCode);
+  const canViewUsuarios = perms.includes('USUARIOS.VER') || ['SUPERADMIN', 'DIRECCION'].includes(roleCode);
 
   return (
     <aside className="w-64 h-full bg-[#181A1F] text-slate-300 flex flex-col flex-shrink-0 z-30 select-none transition-all duration-200">

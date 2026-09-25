@@ -27,7 +27,7 @@ export function EmptyState({ title, description, actionText, onAction, icon }: {
       <h3 className="text-sm font-semibold text-slate-800 mb-1">{title}</h3>
       <p className="text-xs text-slate-500 max-w-sm mb-5 leading-relaxed">{description}</p>
       {actionText && onAction && (
-        <Button onClick={onAction} variant="primary" size="sm">
+        <Button onClick={onAction} variant="primary">
           {actionText}
         </Button>
       )}
@@ -46,7 +46,7 @@ export function ErrorState({ title = "Ha ocurrido un error", description, onRetr
       <h3 className="text-sm font-semibold text-slate-800 mb-1">{title}</h3>
       <p className="text-xs text-slate-500 max-w-sm mb-5 leading-relaxed">{description}</p>
       {onRetry && (
-        <Button onClick={onRetry} variant="outline" size="sm">
+        <Button onClick={onRetry} variant="outline">
           Intentar nuevamente
         </Button>
       )}
@@ -75,7 +75,7 @@ export function ForbiddenState({ onGoBack }: { onGoBack?: () => void }) {
       <h3 className="text-sm font-semibold text-slate-800 mb-1">Acceso Denegado</h3>
       <p className="text-xs text-slate-500 max-w-sm mb-5 leading-relaxed">No tienes los permisos necesarios para visualizar esta información o realizar esta acción. Contacta al administrador si crees que esto es un error.</p>
       {onGoBack && (
-        <Button onClick={onGoBack} variant="outline" size="sm">
+        <Button onClick={onGoBack} variant="outline">
           Volver atrás
         </Button>
       )}

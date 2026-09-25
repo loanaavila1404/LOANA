@@ -3,10 +3,12 @@
 import React, { useEffect } from 'react'
 
 export function MobileDrawer({ isOpen, onClose, user, appVersion = '1.0.0' }: { isOpen: boolean; onClose: () => void; user: any; appVersion?: string }) {
-  const role = user?.role?.toUpperCase() || '';
-  const canViewReportes = ['SUPERADMIN', 'DIRECCION', 'ADMINISTRACION', 'COORDINACION_ACADEMICA'].includes(role);
-  const canViewAuditoria = ['SUPERADMIN'].includes(role);
-  const canViewUsuarios = ['SUPERADMIN', 'DIRECCION'].includes(role);
+  const roleCode = user?.roleCode?.toUpperCase() || '';
+  const perms = user?.permissions || [];
+  
+  const canViewReportes = perms.includes('REPORTES.VER') || ['SUPERADMIN', 'DIRECCION', 'ADMINISTRACION', 'COORDINACION_ACADEMICA'].includes(roleCode);
+  const canViewAuditoria = perms.includes('AUDITORIA.VER') || ['SUPERADMIN'].includes(roleCode);
+  const canViewUsuarios = perms.includes('USUARIOS.VER') || ['SUPERADMIN', 'DIRECCION'].includes(roleCode);
   // Prevent scrolling on body when drawer is open
   useEffect(() => {
     if (isOpen) {

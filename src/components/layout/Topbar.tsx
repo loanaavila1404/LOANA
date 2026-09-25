@@ -43,9 +43,16 @@ export function Topbar({ user, onOpenSidebar }: { user: any; onOpenSidebar: () =
             <svg className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
             </svg>
-            <select className="bg-transparent border-none outline-none appearance-none pr-4 cursor-pointer text-slate-600 font-medium z-10 w-auto">
+            <select 
+              className="bg-transparent border-none outline-none appearance-none pr-4 cursor-pointer text-slate-600 font-medium z-10 w-auto"
+              value={user?.selectedSede || 'tumbes'}
+              onChange={(e) => {
+                document.cookie = `erp_sede=${e.target.value}; path=/; max-age=31536000`;
+                window.location.reload();
+              }}
+            >
               <option value="tumbes">Sede Central · Tumbes</option>
-              {['SUPERADMIN', 'DIRECCION'].includes(user.role?.toUpperCase() || '') && (
+              {['SUPERADMIN', 'DIRECCION'].includes(user.roleCode?.toUpperCase() || '') && (
                 <option value="todas">Todas las sedes</option>
               )}
             </select>
