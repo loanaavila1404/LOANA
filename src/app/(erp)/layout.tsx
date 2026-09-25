@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { AppLayout } from '@/components/layout/AppLayout'
-
+import packageJson from '../../../package.json'
 export default async function ErpLayout({
   children,
 }: {
@@ -22,7 +22,7 @@ export default async function ErpLayout({
   }
 
   return (
-    <AppLayout user={user}>
+    <AppLayout user={user} appVersion={packageJson.version}>
       {children}
     </AppLayout>
   )

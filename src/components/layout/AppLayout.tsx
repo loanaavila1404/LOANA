@@ -6,21 +6,21 @@ import { Topbar } from './Topbar'
 import { MobileNav } from './MobileNav'
 import { MobileDrawer } from './MobileDrawer'
 
-export function AppLayout({ children, user }: { children: React.ReactNode; user: any }) {
+export function AppLayout({ children, user, appVersion = '1.0.0' }: { children: React.ReactNode; user: any; appVersion?: string }) {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
 
   return (
     <div className="flex h-screen overflow-hidden bg-canvas">
       {/* Desktop Sidebar */}
       <div className="hidden md:flex md:w-64 md:flex-col md:flex-shrink-0 z-30">
-        <Sidebar />
+        <Sidebar appVersion={appVersion} user={user} />
       </div>
 
-      {/* Mobile Drawer */}
       <MobileDrawer 
         isOpen={isMobileSidebarOpen} 
         onClose={() => setIsMobileSidebarOpen(false)} 
         user={user}
+        appVersion={appVersion}
       />
 
       {/* Main Viewport Area */}

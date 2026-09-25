@@ -2,7 +2,11 @@
 
 import React, { useEffect } from 'react'
 
-export function MobileDrawer({ isOpen, onClose, user }: { isOpen: boolean; onClose: () => void; user: any }) {
+export function MobileDrawer({ isOpen, onClose, user, appVersion = '1.0.0' }: { isOpen: boolean; onClose: () => void; user: any; appVersion?: string }) {
+  const role = user?.role?.toUpperCase() || '';
+  const canViewReportes = ['SUPERADMIN', 'DIRECCION', 'ADMINISTRACION', 'COORDINACION_ACADEMICA'].includes(role);
+  const canViewAuditoria = ['SUPERADMIN'].includes(role);
+  const canViewUsuarios = ['SUPERADMIN', 'DIRECCION'].includes(role);
   // Prevent scrolling on body when drawer is open
   useEffect(() => {
     if (isOpen) {
@@ -44,8 +48,12 @@ export function MobileDrawer({ isOpen, onClose, user }: { isOpen: boolean; onClo
 
         {/* Drawer User info snippet */}
         <div className="px-4 py-3 bg-[#111215]/60 border-b border-slate-800 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold text-white shrink-0">
-            {getInitials(user.name)}
+          <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold text-white shrink-0 overflow-hidden">
+            {user.photoUrl ? (
+              <img src={user.photoUrl} alt={user.name} className="w-full h-full object-cover" />
+            ) : (
+              getInitials(user.name)
+            )}
           </div>
           <div className="overflow-hidden">
             <p className="text-xs font-semibold text-white truncate">{user.name}</p>
@@ -95,19 +103,33 @@ export function MobileDrawer({ isOpen, onClose, user }: { isOpen: boolean; onClo
             <span>Matrículas</span>
           </a>
           
-          <a className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800/80 hover:text-white transition-colors" href="/usuarios">
-            <svg className="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
-            </svg>
-            <span>Usuarios y accesos</span>
-          </a>
+          {/* Item: Reportes */}
+          {canViewReportes && (
+            <a className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800/80 hover:text-white transition-colors" href="/reportes">
+              <svg className="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
+              </svg>
+              <span>Reportes</span>
+            </a>
+          )}
           
-          <a className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800/80 hover:text-white transition-colors" href="/auditoria">
-            <svg className="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
-            </svg>
-            <span>Auditoría</span>
-          </a>
+          {canViewUsuarios && (
+            <a className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800/80 hover:text-white transition-colors" href="/usuarios">
+              <svg className="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
+              </svg>
+              <span>Usuarios y accesos</span>
+            </a>
+          )}
+          
+          {canViewAuditoria && (
+            <a className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800/80 hover:text-white transition-colors" href="/auditoria">
+              <svg className="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
+              </svg>
+              <span>Auditoría</span>
+            </a>
+          )}
           
           <a className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800/80 hover:text-white transition-colors" href="/perfil">
             <svg className="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -118,11 +140,8 @@ export function MobileDrawer({ isOpen, onClose, user }: { isOpen: boolean; onClo
         </nav>
         
         {/* Drawer Footer */}
-        <div className="p-3 bg-[#111215] text-[11px] border-t border-slate-800 flex items-center justify-between text-slate-400 mt-auto">
-          <span>ERP Brusben v2.4.0</span>
-          <span className="flex items-center gap-1.5 text-emerald-400 font-medium">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Operativo
-          </span>
+        <div className="p-3 bg-[#111215] text-[11px] border-t border-slate-800 flex items-center justify-center text-slate-500 mt-auto">
+          <span>ERP Brusben v{appVersion}</span>
         </div>
       </div>
       

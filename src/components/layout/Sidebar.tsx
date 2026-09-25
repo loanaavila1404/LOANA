@@ -2,7 +2,12 @@
 
 import React from 'react'
 
-export function Sidebar() {
+export function Sidebar({ appVersion = '1.0.0', user }: { appVersion?: string, user?: any }) {
+  const role = user?.role?.toUpperCase() || '';
+  const canViewReportes = ['SUPERADMIN', 'DIRECCION', 'ADMINISTRACION', 'COORDINACION_ACADEMICA'].includes(role);
+  const canViewAuditoria = ['SUPERADMIN'].includes(role);
+  const canViewUsuarios = ['SUPERADMIN', 'DIRECCION'].includes(role);
+
   return (
     <aside className="w-64 h-full bg-[#181A1F] text-slate-300 flex flex-col flex-shrink-0 z-30 select-none transition-all duration-200">
       {/* Brand & Logo Container */}
@@ -56,22 +61,36 @@ export function Sidebar() {
           </svg>
           <span className="truncate">Matrículas</span>
         </a>
+
+        {/* Item: Reportes */}
+        {canViewReportes && (
+          <a className="flex items-center gap-3 px-3 py-2.5 rounded-md text-slate-300 hover:bg-white/5 hover:text-white group transition-colors" href="/reportes">
+            <svg className="w-4 h-4 text-slate-400 group-hover:text-slate-200 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
+            </svg>
+            <span className="truncate">Reportes</span>
+          </a>
+        )}
         
         {/* Item: Usuarios y accesos */}
-        <a className="flex items-center gap-3 px-3 py-2.5 rounded-md text-slate-300 hover:bg-white/5 hover:text-white group transition-colors" href="/usuarios">
-          <svg className="w-4 h-4 text-slate-400 group-hover:text-slate-200 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
-          </svg>
-          <span className="truncate">Usuarios y accesos</span>
-        </a>
+        {canViewUsuarios && (
+          <a className="flex items-center gap-3 px-3 py-2.5 rounded-md text-slate-300 hover:bg-white/5 hover:text-white group transition-colors" href="/usuarios">
+            <svg className="w-4 h-4 text-slate-400 group-hover:text-slate-200 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
+            </svg>
+            <span className="truncate">Usuarios y accesos</span>
+          </a>
+        )}
         
         {/* Item: Auditoría */}
-        <a className="flex items-center gap-3 px-3 py-2.5 rounded-md text-slate-300 hover:bg-white/5 hover:text-white group transition-colors" href="/auditoria">
-          <svg className="w-4 h-4 text-slate-400 group-hover:text-slate-200 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
-          </svg>
-          <span className="truncate">Auditoría</span>
-        </a>
+        {canViewAuditoria && (
+          <a className="flex items-center gap-3 px-3 py-2.5 rounded-md text-slate-300 hover:bg-white/5 hover:text-white group transition-colors" href="/auditoria">
+            <svg className="w-4 h-4 text-slate-400 group-hover:text-slate-200 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
+            </svg>
+            <span className="truncate">Auditoría</span>
+          </a>
+        )}
         
         {/* Item: Mi perfil */}
         <a className="flex items-center gap-3 px-3 py-2.5 rounded-md text-slate-300 hover:bg-white/5 hover:text-white group transition-colors" href="/perfil">
@@ -84,12 +103,8 @@ export function Sidebar() {
       
       {/* Sidebar Footer: System Status */}
       <div className="p-3 border-t border-white/5 bg-black/20 text-xs mt-auto">
-        <div className="flex items-center justify-between">
-          <span className="text-slate-400 font-medium text-[11px]">ERP Brusben v2.4.0</span>
-          <span className="flex items-center text-[10px] text-emerald-400 gap-1.5 font-medium">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            Operativo
-          </span>
+        <div className="flex items-center justify-center">
+          <span className="text-slate-500 font-medium text-[11px]">ERP Brusben v{appVersion}</span>
         </div>
       </div>
       

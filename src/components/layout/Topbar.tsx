@@ -1,10 +1,20 @@
 'use client'
 
-import React from 'react'
+import { usePathname } from 'next/navigation'
 
 export function Topbar({ user, onOpenSidebar }: { user: any; onOpenSidebar: () => void }) {
+  const pathname = usePathname()
+  
   const getInitials = (name: string) => {
     return name?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'U'
+  }
+
+  const getBreadcrumbs = () => {
+    const paths = pathname.split('/').filter(p => p)
+    if (paths.length === 0 || (paths.length === 1 && paths[0] === 'dashboard')) return 'Panel de gestión'
+    
+    // Capitalize first letter and format
+    return paths.map(p => p.charAt(0).toUpperCase() + p.slice(1).replace(/-/g, ' ')).join(' / ')
   }
 
   return (
@@ -15,9 +25,7 @@ export function Topbar({ user, onOpenSidebar }: { user: any; onOpenSidebar: () =
           <nav className="flex items-center space-x-2 text-xs text-slate-500 font-medium">
             <span className="text-slate-400">ERP Brusben</span>
             <span className="text-slate-300">/</span>
-            <span className="text-slate-400">Inicio</span>
-            <span className="text-slate-300">/</span>
-            <span className="text-slate-900 font-semibold">Panel de gestión</span>
+            <span className="text-slate-900 font-semibold truncate max-w-[200px]">{getBreadcrumbs()}</span>
           </nav>
           
           <div className="relative w-full max-w-xs">
@@ -31,11 +39,19 @@ export function Topbar({ user, onOpenSidebar }: { user: any; onOpenSidebar: () =
         </div>
         
         <div className="flex items-center space-x-4">
-          <div className="hidden xl:flex items-center gap-1.5 text-xs font-medium text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200/80">
-            <svg className="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="hidden xl:flex items-center gap-1.5 text-xs font-medium text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200/80 relative">
+            <svg className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
             </svg>
-            <span>Sede Central · Lima</span>
+            <select className="bg-transparent border-none outline-none appearance-none pr-4 cursor-pointer text-slate-600 font-medium z-10 w-auto">
+              <option value="tumbes">Sede Central · Tumbes</option>
+              {['SUPERADMIN', 'DIRECCION'].includes(user.role?.toUpperCase() || '') && (
+                <option value="todas">Todas las sedes</option>
+              )}
+            </select>
+            <svg className="w-3 h-3 text-slate-400 absolute right-2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+            </svg>
           </div>
           
           <button className="p-1.5 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-md relative transition-colors" title="Notificaciones" type="button">
@@ -57,8 +73,12 @@ export function Topbar({ user, onOpenSidebar }: { user: any; onOpenSidebar: () =
                 </svg>
               </div>
             </div>
-            <div className="h-9 w-9 rounded-full bg-slate-200 ring-2 ring-slate-100 flex items-center justify-center font-bold text-slate-600 text-xs shadow-inner">
-              {getInitials(user.name)}
+            <div className="h-9 w-9 rounded-full bg-slate-200 ring-2 ring-slate-100 flex items-center justify-center font-bold text-slate-600 text-xs shadow-inner overflow-hidden">
+              {user.photoUrl ? (
+                <img src={user.photoUrl} alt={user.name} className="w-full h-full object-cover" />
+              ) : (
+                getInitials(user.name)
+              )}
             </div>
             
             <form action="/auth/signout" method="post">
@@ -103,8 +123,12 @@ export function Topbar({ user, onOpenSidebar }: { user: any; onOpenSidebar: () =
             </button>
             <div className="flex items-center pl-1 border-l border-slate-200">
               <div className="relative">
-                <div className="w-8 h-8 rounded-full bg-slate-200 border border-slate-300 flex items-center justify-center font-bold text-slate-700 text-xs shadow-xs">
-                  {getInitials(user.name)}
+                <div className="w-8 h-8 rounded-full bg-slate-200 border border-slate-300 flex items-center justify-center font-bold text-slate-700 text-xs shadow-xs overflow-hidden">
+                  {user.photoUrl ? (
+                    <img src={user.photoUrl} alt={user.name} className="w-full h-full object-cover" />
+                  ) : (
+                    getInitials(user.name)
+                  )}
                 </div>
                 <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full"></span>
               </div>
