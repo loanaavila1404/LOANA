@@ -123,8 +123,8 @@ export async function savePersona(data: PersonaFormData): Promise<ActionState> {
 
     revalidatePath("/personas");
     return success(payload.id ? "Persona actualizada exitosamente" : "Persona creada exitosamente");
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("savePersona error:", err);
-    return error(err.message || "Ocurrió un error al guardar la persona");
+    return error(((err as Error).message) || "Ocurrió un error al guardar la persona");
   }
 }

@@ -1,14 +1,15 @@
 'use client'
+import { SessionUser } from '@/lib/types'
 
 import React, { useEffect } from 'react'
 
-export function MobileDrawer({ isOpen, onClose, user, appVersion = '1.0.0' }: { isOpen: boolean; onClose: () => void; user: any; appVersion?: string }) {
-  const roleCode = user?.roleCode?.toUpperCase() || '';
+export function MobileDrawer({ isOpen, onClose, user, appVersion = '1.0.0' }: { isOpen: boolean; onClose: () => void; user: SessionUser; appVersion?: string }) {
+  
   const perms = user?.permissions || [];
   
-  const canViewReportes = perms.includes('REPORTES.VER') || ['SUPERADMIN', 'DIRECCION', 'ADMINISTRACION', 'COORDINACION_ACADEMICA'].includes(roleCode);
-  const canViewAuditoria = perms.includes('AUDITORIA.VER') || ['SUPERADMIN'].includes(roleCode);
-  const canViewUsuarios = perms.includes('USUARIOS.VER') || ['SUPERADMIN', 'DIRECCION'].includes(roleCode);
+  const canViewReportes = perms.includes('SISTEMA.ADMINISTRAR');
+  const canViewAuditoria = perms.includes('AUDITORIA.VER');
+  const canViewUsuarios = perms.includes('USUARIOS.VER');
   // Prevent scrolling on body when drawer is open
   useEffect(() => {
     if (isOpen) {
@@ -39,7 +40,7 @@ export function MobileDrawer({ isOpen, onClose, user, appVersion = '1.0.0' }: { 
         {/* Drawer Header with Institutional Brand Container */}
         <div className="p-4 border-b border-slate-800/80 flex items-center justify-between">
           <div className="bg-white rounded-md px-2.5 py-1 flex items-center h-10 shadow-sm">
-            <img src="/logo.jpg" alt="Logo Brusben" className="h-full w-auto object-contain" />
+            <>{/* eslint-disable-next-line @next/next/no-img-element */} <img src="/logo.jpg" alt="Logo Brusben" className="h-full w-auto object-contain" /></>
           </div>
           <button onClick={onClose} className="p-1.5 text-slate-400 hover:text-white rounded-lg active:bg-slate-800">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -52,7 +53,7 @@ export function MobileDrawer({ isOpen, onClose, user, appVersion = '1.0.0' }: { 
         <div className="px-4 py-3 bg-[#111215]/60 border-b border-slate-800 flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold text-white shrink-0 overflow-hidden">
             {user.photoUrl ? (
-              <img src={user.photoUrl} alt={user.name} className="w-full h-full object-cover" />
+              <>{/* eslint-disable-next-line @next/next/no-img-element */} <img src={user.photoUrl} alt={user.name} className="w-full h-full object-cover" /></>
             ) : (
               getInitials(user.name)
             )}

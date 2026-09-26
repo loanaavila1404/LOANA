@@ -1,4 +1,5 @@
 'use client'
+import { SessionUser } from '@/lib/types'
 
 import React, { useState } from 'react'
 import { Sidebar } from './Sidebar'
@@ -6,7 +7,7 @@ import { Topbar } from './Topbar'
 import { MobileNav } from './MobileNav'
 import { MobileDrawer } from './MobileDrawer'
 
-export function AppLayout({ children, user, appVersion = '1.0.0' }: { children: React.ReactNode; user: any; appVersion?: string }) {
+export function AppLayout({ children, user, appVersion = '1.0.0' }: { children: React.ReactNode; user: SessionUser; appVersion?: string }) {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
 
   return (

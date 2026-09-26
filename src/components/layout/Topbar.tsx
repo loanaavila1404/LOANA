@@ -1,8 +1,9 @@
 'use client'
+import { SessionUser } from '@/lib/types'
 
 import { usePathname } from 'next/navigation'
 
-export function Topbar({ user, onOpenSidebar }: { user: any; onOpenSidebar: () => void }) {
+export function Topbar({ user, onOpenSidebar }: { user: SessionUser; onOpenSidebar: () => void }) {
   const pathname = usePathname()
   
   const getInitials = (name: string) => {
@@ -47,12 +48,13 @@ export function Topbar({ user, onOpenSidebar }: { user: any; onOpenSidebar: () =
               className="bg-transparent border-none outline-none appearance-none pr-4 cursor-pointer text-slate-600 font-medium z-10 w-auto"
               value={user?.selectedSede || 'tumbes'}
               onChange={(e) => {
-                document.cookie = `erp_sede=${e.target.value}; path=/; max-age=31536000`;
+                const isSecure = window.location.protocol === 'https:' ? 'Secure;' : '';
+                document.cookie = `erp_sede=${e.target.value}; path=/; max-age=31536000; SameSite=Lax; ${isSecure}`;
                 window.location.reload();
               }}
             >
               <option value="tumbes">Sede Central · Tumbes</option>
-              {['SUPERADMIN', 'DIRECCION'].includes(user.roleCode?.toUpperCase() || '') && (
+              {user.permissions.includes('SISTEMA.ADMINISTRAR') && (
                 <option value="todas">Todas las sedes</option>
               )}
             </select>
@@ -82,7 +84,7 @@ export function Topbar({ user, onOpenSidebar }: { user: any; onOpenSidebar: () =
             </div>
             <div className="h-9 w-9 rounded-full bg-slate-200 ring-2 ring-slate-100 flex items-center justify-center font-bold text-slate-600 text-xs shadow-inner overflow-hidden">
               {user.photoUrl ? (
-                <img src={user.photoUrl} alt={user.name} className="w-full h-full object-cover" />
+                <>{/* eslint-disable-next-line @next/next/no-img-element */} <img src={user.photoUrl} alt={user.name} className="w-full h-full object-cover" /></>
               ) : (
                 getInitials(user.name)
               )}
@@ -114,7 +116,7 @@ export function Topbar({ user, onOpenSidebar }: { user: any; onOpenSidebar: () =
               </svg>
             </button>
             <div className="bg-white border border-slate-200 rounded-md px-2 py-1 flex items-center justify-center h-8 shadow-2xs">
-              <img src="/logo.jpg" alt="Logo Brusben" className="h-full w-auto object-contain" />
+              <>{/* eslint-disable-next-line @next/next/no-img-element */} <img src="/logo.jpg" alt="Logo Brusben" className="h-full w-auto object-contain" /></>
             </div>
           </div>
           
@@ -132,7 +134,7 @@ export function Topbar({ user, onOpenSidebar }: { user: any; onOpenSidebar: () =
               <div className="relative">
                 <div className="w-8 h-8 rounded-full bg-slate-200 border border-slate-300 flex items-center justify-center font-bold text-slate-700 text-xs shadow-xs overflow-hidden">
                   {user.photoUrl ? (
-                    <img src={user.photoUrl} alt={user.name} className="w-full h-full object-cover" />
+                    <>{/* eslint-disable-next-line @next/next/no-img-element */} <img src={user.photoUrl} alt={user.name} className="w-full h-full object-cover" /></>
                   ) : (
                     getInitials(user.name)
                   )}

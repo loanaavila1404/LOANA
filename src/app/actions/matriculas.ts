@@ -1,9 +1,10 @@
 'use server'
+import { ZodError } from 'zod';
 
 import { createClient } from '@/lib/supabase/server'
 import { ActionState } from '@/lib/utils/actions'
 import { createMatriculaSchema } from '@/lib/validators/matricula.schema'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath } from "next/cache"
 
 export async function createMatricula(
   prevState: ActionState | null,
@@ -62,18 +63,18 @@ export async function createMatricula(
       success: true,
       message: 'Matrícula creada exitosamente.',
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Create Matricula Error:', error)
-    if (error.name === 'ZodError') {
+    if ((error as Error).name === 'ZodError') {
       return {
         success: false,
         message: 'Por favor, revise los datos del formulario.',
-        errors: error.flatten().fieldErrors,
+        errors: (error as ZodError).flatten().fieldErrors,
       }
     }
     return {
       success: false,
-      message: error.message || 'Ocurrió un error inesperado al crear la matrícula.',
+      message: ((error as Error).message) || 'Ocurrió un error inesperado al crear la matrícula.',
     }
   }
 }

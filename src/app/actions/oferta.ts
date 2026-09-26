@@ -3,10 +3,10 @@
 import { createClient } from '@/lib/supabase/server';
 import { ActionState, success, error } from '@/lib/utils/actions';
 import { revalidatePath } from 'next/cache';
-import { programaSchema, ProgramaInput, edicionSchema, EdicionInput } from '@/lib/validators/oferta';
+import { programaSchema, edicionSchema, } from '@/lib/validators/oferta';
 import { Database } from '@/types/database.types';
 
-export async function createPrograma(prevState: ActionState<any> | null, formData: FormData): Promise<ActionState<any>> {
+export async function createPrograma(prevState: ActionState<unknown> | null, formData: FormData): Promise<ActionState<unknown>> {
   const supabase = await createClient();
   
   const rawData = Object.fromEntries(formData.entries());
@@ -29,7 +29,7 @@ export async function createPrograma(prevState: ActionState<any> | null, formDat
   return success('Programa creado exitosamente');
 }
 
-export async function createEdicion(prevState: ActionState<any> | null, formData: FormData): Promise<ActionState<any>> {
+export async function createEdicion(prevState: ActionState<unknown> | null, formData: FormData): Promise<ActionState<unknown>> {
   const supabase = await createClient();
   
   const rawData = Object.fromEntries(formData.entries());

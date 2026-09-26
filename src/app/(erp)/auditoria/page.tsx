@@ -19,7 +19,7 @@ export default async function AuditoriaPage(props: { searchParams: Promise<{ ent
     query = query.eq("action", action);
   }
 
-  const { data: logs, error } = await query;
+  const { data: logs,  } = await query;
 
   return (
     <div className="space-y-6">

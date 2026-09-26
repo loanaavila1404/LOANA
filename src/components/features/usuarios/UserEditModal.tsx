@@ -25,7 +25,7 @@ export function UserEditModal({ user }: UserEditModalProps) {
 
   const [formData, setFormData] = useState({
     id: user.id,
-    rolCodigo: user.roleName && CODIGOS_ROL.includes(user.roleName as any) ? user.roleName : "DOCENTE",
+    rolCodigo: user.roleName && CODIGOS_ROL.includes(user.roleName as never) ? user.roleName : "DOCENTE",
     status: user.status || "ACTIVO",
   });
 
@@ -42,8 +42,8 @@ export function UserEditModal({ user }: UserEditModalProps) {
     startTransition(async () => {
       const result = await updateUser({
         id: formData.id,
-        rolCodigo: formData.rolCodigo as any,
-        status: formData.status as any,
+        rolCodigo: formData.rolCodigo as never,
+        status: formData.status as never,
       });
 
       if (result.success) {

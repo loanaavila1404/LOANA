@@ -54,14 +54,14 @@ export async function updateUser(data: EditUserFormData): Promise<ActionState> {
       role_id = roleData.id;
     }
 
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
     if (role_id) updateData.role_id = role_id;
     if (payload.status) updateData.status = payload.status;
 
     if (Object.keys(updateData).length > 0) {
       const { error: updateError } = await supabase
         .from('profiles')
-        .update(updateData)
+        .update(updateData as never)
         .eq('id', payload.id);
 
       if (updateError) throw updateError;
@@ -69,8 +69,8 @@ export async function updateUser(data: EditUserFormData): Promise<ActionState> {
 
     revalidatePath("/usuarios");
     return success("Usuario actualizado exitosamente");
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("updateUser error:", err);
-    return error(err.message || "Ocurrió un error al actualizar el usuario");
+    return error(((err as Error).message) || "Ocurrió un error al actualizar el usuario");
   }
 }

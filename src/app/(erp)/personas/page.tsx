@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table";
-import { UserCheck, PlusCircle } from "lucide-react";
+import { UserCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { PersonaFormModal } from "@/components/features/personas/PersonaFormModal";
 

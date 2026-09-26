@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { PieChart, Download, Users, BookOpen, DollarSign, BarChart } from "lucide-react";
+import { Download, Users, BookOpen, DollarSign, BarChart } from "lucide-react";
 import Link from "next/link";
 
 const reports = [

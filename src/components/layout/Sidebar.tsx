@@ -1,21 +1,22 @@
 'use client'
+import { SessionUser } from '@/lib/types'
 
 import React from 'react'
 
-export function Sidebar({ appVersion = '1.0.0', user }: { appVersion?: string, user?: any }) {
-  const roleCode = user?.roleCode?.toUpperCase() || '';
+export function Sidebar({ appVersion = '1.0.0', user }: { appVersion?: string, user?: SessionUser }) {
+  
   const perms = user?.permissions || [];
   
-  const canViewReportes = perms.includes('REPORTES.VER') || ['SUPERADMIN', 'DIRECCION', 'ADMINISTRACION', 'COORDINACION_ACADEMICA'].includes(roleCode);
-  const canViewAuditoria = perms.includes('AUDITORIA.VER') || ['SUPERADMIN'].includes(roleCode);
-  const canViewUsuarios = perms.includes('USUARIOS.VER') || ['SUPERADMIN', 'DIRECCION'].includes(roleCode);
+  const canViewReportes = perms.includes('SISTEMA.ADMINISTRAR');
+  const canViewAuditoria = perms.includes('AUDITORIA.VER');
+  const canViewUsuarios = perms.includes('USUARIOS.VER');
 
   return (
     <aside className="w-64 h-full bg-[#181A1F] text-slate-300 flex flex-col flex-shrink-0 z-30 select-none transition-all duration-200">
       {/* Brand & Logo Container */}
       <div className="h-16 px-4 bg-black/25 flex items-center justify-between border-b border-white/5">
         <div className="flex items-center w-full h-full overflow-hidden justify-center py-2">
-          <img src="/logo.jpg" alt="Logo Brusben" className="h-full w-auto max-w-full object-contain" />
+          <>{/* eslint-disable-next-line @next/next/no-img-element */} <img src="/logo.jpg" alt="Logo Brusben" className="h-full w-auto max-w-full object-contain" /></>
         </div>
       </div>
       

@@ -10,9 +10,11 @@ export default async function ErpLayout({
   children: React.ReactNode
 }) {
   const supabase = await createClient()
-  const { data: { session } } = await supabase.auth.getSession()
+  
+  // Validar identidad de forma segura
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
 
-  if (!session) {
+  if (authError || !user) {
     redirect('/login')
   }
 
@@ -26,8 +28,13 @@ export default async function ErpLayout({
         name
       )
     `)
-    .eq('id', session.user.id)
+    .eq('id', user.id)
     .single()
+
+  // Denegar acceso si no hay perfil o no est activo
+  if (!profile || profile.status !== 'ACTIVO') {
+    redirect('/login?error=inactive')
+  }
 
   let permissions: string[] = []
   if (profile?.role_id) {
@@ -41,29 +48,31 @@ export default async function ErpLayout({
       .eq('role_id', profile.role_id)
     
     if (rolePerms) {
-      permissions = rolePerms.map((rp: any) => rp.permissions?.code).filter(Boolean)
+      permissions = rolePerms.map((rp: { permissions: { code: string } | null }) => rp.permissions?.code).filter(Boolean) as string[]
     }
   }
 
-  // Get selected Sede from cookies
+  // Get selected Sede from cookies safely
   const cookieStore = await cookies()
-  const selectedSede = cookieStore.get('erp_sede')?.value || 'tumbes'
+  const cookieSede = cookieStore.get('erp_sede')?.value
+  // Solo permitir valores conocidos, si no "tumbes"
+  const selectedSede = cookieSede === 'todas' && permissions.includes('SISTEMA.ADMINISTRAR') ? 'todas' : 'tumbes'
 
-  const userRoleCode = profile?.roles?.code || session.user.user_metadata?.role || 'INVITADO'
+  const userRoleCode = profile?.roles?.code || 'INVITADO'
   const userRoleName = profile?.roles?.name || userRoleCode
 
-  const user = {
-    name: profile?.display_name || session.user.user_metadata?.full_name || session.user.email || 'Usuario',
-    email: profile?.email || session.user.email || '',
+  const sessionUser = {
+    name: profile?.display_name || user.user_metadata?.full_name || user.email || 'Usuario',
+    email: profile?.email || user.email || '',
     roleCode: userRoleCode,
     role: userRoleName,
-    photoUrl: profile?.photo_url || session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || '',
+    photoUrl: profile?.photo_url || user.user_metadata?.avatar_url || user.user_metadata?.picture || '',
     permissions: permissions,
     selectedSede: selectedSede
   }
 
   return (
-    <AppLayout user={user} appVersion={packageJson.version}>
+    <AppLayout user={sessionUser} appVersion={packageJson.version}>
       {children}
     </AppLayout>
   )
