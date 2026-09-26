@@ -14,7 +14,7 @@ export const personaSchema = z.object({
   departamento: z.string().optional(),
   provincia: z.string().optional(),
   distrito: z.string().optional(),
-  status: z.enum(["activo", "inactivo"]).default("activo"),
+  status: z.enum(["ACTIVO", "INACTIVO"]).default("ACTIVO"),
   es_estudiante: z.boolean().default(false),
   // Estudiante specific
   codigo_estudiante: z.string().optional(),

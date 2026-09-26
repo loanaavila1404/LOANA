@@ -7,25 +7,35 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { savePersona } from "@/app/actions/personas";
 import { PersonaFormData } from "@/lib/validators/personas";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Edit } from "lucide-react";
 
-export function PersonaFormModal() {
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function PersonaFormModal({ initialData }: { initialData?: any }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   
+  const isEditing = !!initialData;
+  
   const [formData, setFormData] = useState<PersonaFormData>({
-    nombres: "",
-    apellido_paterno: "",
-    apellido_materno: "",
-    tipo_documento: "DNI",
-    numero_documento: "",
-    email: "",
-    telefono: "",
-    status: "activo",
-    es_estudiante: true, // Default to true since button says "Nuevo Estudiante"
-    codigo_estudiante: "",
-    observaciones: ""
+    id: initialData?.id || undefined,
+    nombres: initialData?.nombres || "",
+    apellido_paterno: initialData?.apellido_paterno || "",
+    apellido_materno: initialData?.apellido_materno || "",
+    tipo_documento: initialData?.tipo_documento || "DNI",
+    numero_documento: initialData?.numero_documento || "",
+    email: initialData?.email || "",
+    telefono: initialData?.telefono || "",
+    fecha_nacimiento: initialData?.fecha_nacimiento || "",
+    direccion: initialData?.direccion || "",
+    departamento: initialData?.departamento || "",
+    provincia: initialData?.provincia || "",
+    distrito: initialData?.distrito || "",
+    status: initialData?.status || "ACTIVO",
+    es_estudiante: initialData?.es_estudiante || false,
+    codigo_estudiante: initialData?.codigo_estudiante || "",
+    observaciones: initialData?.observaciones || ""
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -47,20 +57,27 @@ export function PersonaFormModal() {
       const result = await savePersona(formData);
       if (result.success) {
         setIsOpen(false);
-        // Reset form
-        setFormData({
-          nombres: "",
-          apellido_paterno: "",
-          apellido_materno: "",
-          tipo_documento: "DNI",
-          numero_documento: "",
-          email: "",
-          telefono: "",
-          status: "activo",
-          es_estudiante: true,
-          codigo_estudiante: "",
-          observaciones: ""
-        });
+        if (!isEditing) {
+          // Reset form only if creating
+          setFormData({
+            nombres: "",
+            apellido_paterno: "",
+            apellido_materno: "",
+            tipo_documento: "DNI",
+            numero_documento: "",
+            email: "",
+            telefono: "",
+            fecha_nacimiento: "",
+            direccion: "",
+            departamento: "",
+            provincia: "",
+            distrito: "",
+            status: "ACTIVO",
+            es_estudiante: false,
+            codigo_estudiante: "",
+            observaciones: ""
+          });
+        }
       } else {
         setErrorMsg(result.message || "Ocurrió un error.");
       }
@@ -69,145 +86,130 @@ export function PersonaFormModal() {
 
   return (
     <>
-      <Button onClick={() => setIsOpen(true)}>
-        <PlusCircle className="mr-2 h-4 w-4" />
-        Nuevo Estudiante / Persona
+      <Button 
+        onClick={() => setIsOpen(true)}
+        variant={isEditing ? "outline" : "primary"}
+        className={isEditing ? "bg-slate-900 border-slate-700 text-white w-full md:w-auto" : "bg-emerald-600 hover:bg-emerald-500 text-white w-full md:w-auto"}
+      >
+        {isEditing ? (
+          <>
+            <Edit className="mr-2 h-4 w-4" />
+            Editar Información
+          </>
+        ) : (
+          <>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Nuevo Registro
+          </>
+        )}
       </Button>
 
       <Modal
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
-        title="Registrar Estudiante / Persona"
+        title={isEditing ? "Editar Persona" : "Registrar Persona"}
+        
       >
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {errorMsg && (
-            <div className="p-3 bg-red-100 text-red-700 rounded text-sm">
-              {errorMsg}
-            </div>
-          )}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {errorMsg && <div className="p-3 bg-red-100 text-red-700 rounded text-sm">{errorMsg}</div>}
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Nombres *</label>
-              <Input
-                name="nombres"
-                value={formData.nombres}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Apellido Paterno *</label>
-              <Input
-                name="apellido_paterno"
-                value={formData.apellido_paterno}
-                onChange={handleChange}
-                required
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Apellido Materno</label>
-              <Input
-                name="apellido_materno"
-                value={formData.apellido_materno}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Tipo Doc *</label>
-              <Select
-                name="tipo_documento"
-                value={formData.tipo_documento}
-                onChange={handleChange}
-              >
-                <option value="DNI">DNI</option>
-                <option value="CE">CE</option>
-                <option value="Pasaporte">Pasaporte</option>
-              </Select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">N° Documento *</label>
-              <Input
-                name="numero_documento"
-                value={formData.numero_documento}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Email</label>
-              <Input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Teléfono</label>
-              <Input
-                name="telefono"
-                value={formData.telefono}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="flex items-center space-x-2 pt-8">
-              <input
-                type="checkbox"
-                id="es_estudiante"
-                name="es_estudiante"
-                checked={formData.es_estudiante}
-                onChange={handleChange}
-                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-              />
-              <label htmlFor="es_estudiante" className="text-sm font-medium">
-                ¿Es Estudiante?
-              </label>
-            </div>
-          </div>
-
-          {formData.es_estudiante && (
-            <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-md">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Código de Estudiante</label>
-                <Input
-                  name="codigo_estudiante"
-                  value={formData.codigo_estudiante}
-                  onChange={handleChange}
-                  placeholder="Generado auto si está vacío"
-                />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+            {/* Left Column - Personal Info */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-semibold text-emerald-400 uppercase tracking-wider border-b border-slate-800 pb-2">
+                Datos Personales
+              </h3>
+              
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-slate-300">Nombres *</label>
+                <Input name="nombres" value={formData.nombres} onChange={handleChange} required className="bg-slate-900 border-slate-700" />
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Observaciones</label>
-                <Input
-                  name="observaciones"
-                  value={formData.observaciones}
-                  onChange={handleChange}
-                />
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-slate-300">Ap. Paterno *</label>
+                  <Input name="apellido_paterno" value={formData.apellido_paterno} onChange={handleChange} required className="bg-slate-900 border-slate-700" />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-slate-300">Ap. Materno</label>
+                  <Input name="apellido_materno" value={formData.apellido_materno} onChange={handleChange} className="bg-slate-900 border-slate-700" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-slate-300">Tipo Doc. *</label>
+                  <Select name="tipo_documento" value={formData.tipo_documento} onChange={handleChange} className="bg-slate-900 border-slate-700">
+                    <option value="DNI">DNI</option>
+                    <option value="CE">CE</option>
+                    <option value="PASAPORTE">Pasaporte</option>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-slate-300">Núm. Documento *</label>
+                  <Input name="numero_documento" value={formData.numero_documento} onChange={handleChange} required className="bg-slate-900 border-slate-700" />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-slate-300">Fecha de Nacimiento</label>
+                <Input type="date" name="fecha_nacimiento" value={formData.fecha_nacimiento} onChange={handleChange} className="bg-slate-900 border-slate-700 [color-scheme:dark]" />
               </div>
             </div>
-          )}
 
-          <div className="flex justify-end space-x-2 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsOpen(false)}
-              disabled={isPending}
-            >
+            {/* Right Column - Contact & Location */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-semibold text-emerald-400 uppercase tracking-wider border-b border-slate-800 pb-2">
+                Contacto y Ubicación
+              </h3>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-slate-300">Teléfono</label>
+                  <Input name="telefono" value={formData.telefono} onChange={handleChange} className="bg-slate-900 border-slate-700" />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-slate-300">Correo Electrónico</label>
+                  <Input type="email" name="email" value={formData.email} onChange={handleChange} className="bg-slate-900 border-slate-700" />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-slate-300">Dirección</label>
+                <Input name="direccion" value={formData.direccion} onChange={handleChange} className="bg-slate-900 border-slate-700" />
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-slate-300">Departamento</label>
+                  <Input name="departamento" value={formData.departamento} onChange={handleChange} className="bg-slate-900 border-slate-700 text-sm" />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-slate-300">Provincia</label>
+                  <Input name="provincia" value={formData.provincia} onChange={handleChange} className="bg-slate-900 border-slate-700 text-sm" />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-slate-300">Distrito</label>
+                  <Input name="distrito" value={formData.distrito} onChange={handleChange} className="bg-slate-900 border-slate-700 text-sm" />
+                </div>
+              </div>
+              
+              <div className="space-y-1.5 mt-4">
+                <label className="text-sm font-medium text-slate-300">Estado del Registro</label>
+                <Select name="status" value={formData.status} onChange={handleChange} className="bg-slate-900 border-slate-700">
+                  <option value="ACTIVO">Activo</option>
+                  <option value="INACTIVO">Inactivo</option>
+                </Select>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-6 border-t border-slate-800">
+            <Button type="button" variant="ghost" onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-white">
               Cancelar
             </Button>
-            <Button type="submit" disabled={isPending}>
-              {isPending ? "Guardando..." : "Guardar"}
+            <Button type="submit" disabled={isPending} className="bg-emerald-600 hover:bg-emerald-500 text-white">
+              {isPending ? "Guardando..." : (isEditing ? "Guardar Cambios" : "Registrar Persona")}
             </Button>
           </div>
         </form>
