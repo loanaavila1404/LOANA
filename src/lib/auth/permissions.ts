@@ -60,8 +60,8 @@ export async function getUserPermissions(): Promise<PermissionCode[]> {
 
   if (!rolePerms) return [];
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return rolePerms.map((rp: any) => rp.permissions?.code as string as PermissionCode).filter((code): code is PermissionCode => Boolean(code));
+  
+  return rolePerms.map((rp: { permissions: { code: string | null } | null }) => rp.permissions?.code as string as PermissionCode).filter((code): code is PermissionCode => Boolean(code));
 }
 
 export async function hasPermission(code: PermissionCode | PermissionCode[]): Promise<boolean> {
