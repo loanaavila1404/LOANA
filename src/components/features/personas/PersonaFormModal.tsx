@@ -10,8 +10,16 @@ import { PersonaFormData } from "@/lib/validators/personas";
 import { PlusCircle, Edit } from "lucide-react";
 
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function PersonaFormModal({ initialData }: { initialData?: any }) {
+
+import { Database } from '@/types/database.types';
+
+type InitialData = Partial<Database['public']['Tables']['personas']['Row']> & {
+  es_estudiante?: boolean | null;
+  codigo_estudiante?: string | null;
+  observaciones?: string | null;
+};
+
+export function PersonaFormModal({ initialData }: { initialData?: InitialData }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -32,7 +40,7 @@ export function PersonaFormModal({ initialData }: { initialData?: any }) {
     departamento: initialData?.departamento || "",
     provincia: initialData?.provincia || "",
     distrito: initialData?.distrito || "",
-    status: initialData?.status || "ACTIVO",
+    status: (initialData?.status === "ACTIVO" || initialData?.status === "INACTIVO") ? initialData.status : "ACTIVO",
     es_estudiante: initialData?.es_estudiante || false,
     codigo_estudiante: initialData?.codigo_estudiante || "",
     observaciones: initialData?.observaciones || ""
@@ -217,3 +225,4 @@ export function PersonaFormModal({ initialData }: { initialData?: any }) {
     </>
   );
 }
+

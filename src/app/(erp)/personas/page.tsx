@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Search, ChevronLeft, ChevronRight, FileText } from "lucide-react";
 import { getPersonas, PersonaSearchParams } from "@/app/actions/personas";
+import { hasPermission } from "@/lib/auth/permissions";
 import { PersonaFormModal } from "@/components/features/personas/PersonaFormModal";
 import Link from "next/link";
 import { getInitials } from "@/lib/utils";
@@ -16,6 +17,8 @@ export default async function PersonasPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const resolvedParams = await searchParams;
+  
+  const canEdit = await hasPermission(["ESTUDIANTES.EDITAR", "SISTEMA.ADMINISTRAR"]);
   
   const q = typeof resolvedParams.q === "string" ? resolvedParams.q : undefined;
   const status = typeof resolvedParams.status === "string" ? resolvedParams.status : "TODOS";
@@ -58,7 +61,7 @@ export default async function PersonasPage({
             Exportar
           </Button>
           <div className="flex-1 sm:flex-none">
-            <PersonaFormModal />
+            {canEdit && <PersonaFormModal />}
           </div>
         </div>
       </div>
@@ -187,7 +190,7 @@ export default async function PersonasPage({
                       </TableCell>
                       <TableCell className="text-right">
                         <Link href={`/personas/${persona.id}`}>
-                          <Button variant="ghost" className="text-[#c4121a] hover:text-emerald-300 hover:bg-emerald-400/10 h-8">
+                          <Button variant="ghost" className="text-[#c4121a] hover:text-[#a00e15] hover:bg-[#c4121a]/10 h-8">
                             Ver Perfil
                           </Button>
                         </Link>

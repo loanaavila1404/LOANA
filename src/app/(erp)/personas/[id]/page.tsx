@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { getPersonaById } from "@/app/actions/personas";
+import { hasPermission } from "@/lib/auth/permissions";
 import Link from "next/link";
 import { ChevronLeft, ShieldAlert, History, MapPin, Mail, Phone, Calendar } from "lucide-react";
 import { getInitials } from "@/lib/utils";
@@ -16,6 +17,8 @@ export default async function PersonaDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  
+  const canEdit = await hasPermission(["ESTUDIANTES.EDITAR", "SISTEMA.ADMINISTRAR"]);
   
   let persona;
   try {
@@ -77,17 +80,17 @@ export default async function PersonaDetailPage({
             <p className="text-slate-400 flex items-center gap-2">
               <span className="text-slate-300 font-medium">{persona.tipo_documento}:</span> {persona.numero_documento}
               <span className="text-slate-700">|</span>
-              <span className="text-sm">Registrado: {new Date(persona.created_at || new Date()).toLocaleDateString()}</span>
+              <span className="text-sm">Registrado: {persona.created_at ? new Date(persona.created_at).toLocaleDateString() : "No registrado"}</span>
             </p>
           </div>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto relative z-10">
-          {!isEstudiante && (
+          {!isEstudiante && canEdit && (
             <ConvertirEstudianteForm personaId={persona.id} />
           )}
-          <PersonaFormModal initialData={{...persona, es_estudiante: isEstudiante, codigo_estudiante: estudiante?.codigo_estudiante || ""}} />
-          <TogglePersonaStatusButton personaId={persona.id} currentStatus={persona.status || "ACTIVO"} />
+          {canEdit && <PersonaFormModal initialData={{...persona, es_estudiante: isEstudiante, codigo_estudiante: estudiante?.codigo_estudiante || ""}} />}
+          {canEdit && <TogglePersonaStatusButton personaId={persona.id} currentStatus={persona.status || "ACTIVO"} />}
         </div>
       </div>
 
@@ -149,7 +152,7 @@ export default async function PersonaDetailPage({
                 <Calendar className="w-4 h-4 text-slate-500 mt-0.5" />
                 <div>
                   <p className="text-xs text-slate-500">Fecha de Nacimiento</p>
-                  <p className="text-sm text-slate-300">{persona.fecha_nacimiento ? new Date(persona.fecha_nacimiento || new Date()).toLocaleDateString() : "No registrada"}</p>
+                  <p className="text-sm text-slate-300">{persona.fecha_nacimiento ? new Date(persona.fecha_nacimiento).toLocaleDateString() : "No registrado"}</p>
                 </div>
               </div>
             </CardContent>
@@ -170,7 +173,7 @@ export default async function PersonaDetailPage({
                 </div>
                 <div>
                   <p className="text-xs text-slate-500">Fecha de Ingreso</p>
-                  <p className="text-sm text-slate-300">{estudiante?.fecha_ingreso ? new Date(estudiante?.fecha_ingreso || new Date()).toLocaleDateString() : new Date(estudiante?.created_at || new Date()).toLocaleDateString()}</p>
+                  <p className="text-sm text-slate-300">{estudiante?.fecha_ingreso ? new Date(estudiante.fecha_ingreso).toLocaleDateString() : (estudiante?.created_at ? new Date(estudiante.created_at).toLocaleDateString() : "No registrado")}</p>
                 </div>
                 {estudiante?.observaciones && (
                   <div>
