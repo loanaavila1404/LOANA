@@ -48,14 +48,14 @@ export default async function PersonaDetailPage({
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-10">
       <Link href="/personas">
-        <Button variant="ghost" className="text-slate-400 hover:text-white -ml-2 mb-2">
+        <Button variant="ghost" className="text-slate-600 hover:text-slate-900 -ml-2 mb-2">
           <ChevronLeft className="w-4 h-4 mr-1" />
           Volver al directorio
         </Button>
       </Link>
       
       {/* Header Profile */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 bg-canvas border border-slate-800 rounded-xl p-6 relative overflow-hidden">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 bg-canvas border border-slate-200 rounded-xl p-6 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-[#c4121a]/5 rounded-full blur-3xl pointer-events-none"></div>
         
         <div className="flex items-center gap-5 relative z-10">
@@ -64,7 +64,7 @@ export default async function PersonaDetailPage({
           </div>
           <div>
             <div className="flex items-center gap-3 mb-1">
-              <h1 className="text-2xl font-bold text-white font-heading">
+              <h1 className="text-2xl font-bold text-slate-900 font-heading">
                 {persona.nombres} {persona.apellido_paterno} {persona.apellido_materno || ""}
               </h1>
               <Badge variant={persona.status === 'ACTIVO' ? 'default' : 'danger'} 
@@ -77,8 +77,8 @@ export default async function PersonaDetailPage({
                 </Badge>
               )}
             </div>
-            <p className="text-slate-400 flex items-center gap-2">
-              <span className="text-slate-300 font-medium">{persona.tipo_documento}:</span> {persona.numero_documento}
+            <p className="text-slate-600 flex items-center gap-2">
+              <span className="text-slate-500 font-medium">{persona.tipo_documento}:</span> {persona.numero_documento}
               <span className="text-slate-700">|</span>
               <span className="text-sm">Registrado: {persona.created_at ? new Date(persona.created_at).toLocaleDateString() : "No registrado"}</span>
             </p>
@@ -99,25 +99,25 @@ export default async function PersonaDetailPage({
         <div className="md:col-span-1 space-y-6">
           
           {/* Semáforo Documental */}
-          <Card className="bg-canvas border-slate-800">
+          <Card className="bg-white border-slate-200">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+              <CardTitle className="text-sm font-semibold text-slate-600 uppercase tracking-wider flex items-center gap-2">
                 <ShieldAlert className="w-4 h-4 text-slate-500" />
                 Semáforo Documental
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-3">
-                <div className={`w-3 h-3 rounded-full ${semaphoreColor} shadow-[0_0_10px_rgba(0,0,0,0.5)] shadow-${semaphoreColor}`}></div>
-                <span className="text-white font-medium text-sm">{semaphoreText}</span>
+                <div className={`w-3 h-3 rounded-full ${semaphoreColor} shadow-[0_0_10px_rgba(0,0,0,0.1)] shadow-${semaphoreColor}`}></div>
+                <span className="text-slate-900 font-medium text-sm">{semaphoreText}</span>
               </div>
             </CardContent>
           </Card>
 
           {/* Contacto y Ubicación */}
-          <Card className="bg-canvas border-slate-800">
-            <CardHeader className="pb-3 border-b border-slate-800/50 mb-3">
-              <CardTitle className="text-sm font-semibold text-slate-400 uppercase tracking-wider">
+          <Card className="bg-white border-slate-200">
+            <CardHeader className="pb-3 border-b border-slate-100 mb-3">
+              <CardTitle className="text-sm font-semibold text-slate-600 uppercase tracking-wider">
                 Contacto y Ubicación
               </CardTitle>
             </CardHeader>
@@ -126,23 +126,23 @@ export default async function PersonaDetailPage({
                 <Mail className="w-4 h-4 text-slate-500 mt-0.5" />
                 <div>
                   <p className="text-xs text-slate-500">Correo Electrónico</p>
-                  <p className="text-sm text-slate-300 break-all">{persona.email || "No registrado"}</p>
+                  <p className="text-sm text-slate-500 break-all">{persona.email || "No registrado"}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <Phone className="w-4 h-4 text-slate-500 mt-0.5" />
                 <div>
                   <p className="text-xs text-slate-500">Teléfono</p>
-                  <p className="text-sm text-slate-300">{persona.telefono || "No registrado"}</p>
+                  <p className="text-sm text-slate-500">{persona.telefono || "No registrado"}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <MapPin className="w-4 h-4 text-slate-500 mt-0.5" />
                 <div>
                   <p className="text-xs text-slate-500">Dirección</p>
-                  <p className="text-sm text-slate-300">{persona.direccion || "No registrada"}</p>
+                  <p className="text-sm text-slate-500">{persona.direccion || "No registrada"}</p>
                   {(persona.distrito || persona.provincia || persona.departamento) && (
-                    <p className="text-xs text-slate-400 mt-0.5">
+                    <p className="text-xs text-slate-600 mt-0.5">
                       {[persona.distrito, persona.provincia, persona.departamento].filter(Boolean).join(", ")}
                     </p>
                   )}
@@ -152,7 +152,7 @@ export default async function PersonaDetailPage({
                 <Calendar className="w-4 h-4 text-slate-500 mt-0.5" />
                 <div>
                   <p className="text-xs text-slate-500">Fecha de Nacimiento</p>
-                  <p className="text-sm text-slate-300">{persona.fecha_nacimiento ? new Date(persona.fecha_nacimiento).toLocaleDateString() : "No registrado"}</p>
+                  <p className="text-sm text-slate-500">{persona.fecha_nacimiento ? new Date(persona.fecha_nacimiento).toLocaleDateString() : "No registrado"}</p>
                 </div>
               </div>
             </CardContent>
@@ -160,9 +160,9 @@ export default async function PersonaDetailPage({
 
           {/* Información Institucional */}
           {isEstudiante && (
-            <Card className="bg-canvas border-slate-800 bg-gradient-to-br from-slate-900 to-slate-800/50">
-              <CardHeader className="pb-3 border-b border-slate-800/50 mb-3">
-                <CardTitle className="text-sm font-semibold text-slate-400 uppercase tracking-wider">
+            <Card className="bg-white border-slate-200 bg-gradient-to-br from-slate-50 to-white">
+              <CardHeader className="pb-3 border-b border-slate-100 mb-3">
+                <CardTitle className="text-sm font-semibold text-slate-600 uppercase tracking-wider">
                   Información Institucional
                 </CardTitle>
               </CardHeader>
@@ -173,12 +173,12 @@ export default async function PersonaDetailPage({
                 </div>
                 <div>
                   <p className="text-xs text-slate-500">Fecha de Ingreso</p>
-                  <p className="text-sm text-slate-300">{estudiante?.fecha_ingreso ? new Date(estudiante.fecha_ingreso).toLocaleDateString() : (estudiante?.created_at ? new Date(estudiante.created_at).toLocaleDateString() : "No registrado")}</p>
+                  <p className="text-sm text-slate-500">{estudiante?.fecha_ingreso ? new Date(estudiante.fecha_ingreso).toLocaleDateString() : (estudiante?.created_at ? new Date(estudiante.created_at).toLocaleDateString() : "No registrado")}</p>
                 </div>
                 {estudiante?.observaciones && (
                   <div>
                     <p className="text-xs text-slate-500">Observaciones</p>
-                    <p className="text-sm text-slate-300 whitespace-pre-wrap">{estudiante?.observaciones}</p>
+                    <p className="text-sm text-slate-500 whitespace-pre-wrap">{estudiante?.observaciones}</p>
                   </div>
                 )}
               </CardContent>
@@ -188,19 +188,19 @@ export default async function PersonaDetailPage({
 
         {/* Right Column - Historial y Actividad */}
         <div className="md:col-span-2 space-y-6">
-          <Card className="bg-canvas border-slate-800">
-            <CardHeader className="border-b border-slate-800">
+          <Card className="bg-white border-slate-200">
+            <CardHeader className="border-b border-slate-200">
               <CardTitle className="flex items-center gap-2">
                 <History className="w-5 h-5 text-[#c4121a]" />
                 Matrículas y Pagos (Fase Posterior)
               </CardTitle>
             </CardHeader>
             <CardContent className="p-10 text-center flex flex-col items-center justify-center">
-              <div className="w-16 h-16 rounded-full bg-slate-800/50 flex items-center justify-center mb-4">
+              <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4">
                 <History className="w-8 h-8 text-slate-600" />
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Historial en desarrollo</h3>
-              <p className="text-slate-400 text-sm max-w-sm">
+              <h3 className="text-lg font-semibold text-slate-900 mb-2">Historial en desarrollo</h3>
+              <p className="text-slate-600 text-sm max-w-sm">
                 Las vinculaciones con matrículas y pagos se activarán una vez que el módulo respectivo (Fase 4 y 5) esté implementado.
               </p>
             </CardContent>
@@ -210,3 +210,5 @@ export default async function PersonaDetailPage({
     </div>
   );
 }
+
+

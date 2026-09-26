@@ -107,7 +107,7 @@ export function PersonaFormModal({ initialData }: { initialData?: InitialData })
         ) : (
           <>
             <PlusCircle className="mr-2 h-4 w-4" />
-            Nuevo Registro
+            Nueva persona
           </>
         )}
       </Button>
