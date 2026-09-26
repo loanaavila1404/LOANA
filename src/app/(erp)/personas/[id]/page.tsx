@@ -53,10 +53,10 @@ export default async function PersonaDetailPage({
       
       {/* Header Profile */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 bg-canvas border border-slate-800 rounded-xl p-6 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute top-0 right-0 w-64 h-64 bg-[#c4121a]/5 rounded-full blur-3xl pointer-events-none"></div>
         
         <div className="flex items-center gap-5 relative z-10">
-          <div className="w-20 h-20 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center text-3xl font-bold text-emerald-400">
+          <div className="w-20 h-20 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center text-3xl font-bold text-[#c4121a]">
             {getInitials(persona.nombres || "", persona.apellido_paterno || "")}
           </div>
           <div>
@@ -166,7 +166,7 @@ export default async function PersonaDetailPage({
               <CardContent className="space-y-4">
                 <div>
                   <p className="text-xs text-slate-500">Código de Estudiante</p>
-                  <p className="text-lg font-bold text-emerald-400">{estudiante?.codigo_estudiante || "Generación Pendiente"}</p>
+                  <p className="text-lg font-bold text-[#c4121a]">{estudiante?.codigo_estudiante || "Generación Pendiente"}</p>
                 </div>
                 <div>
                   <p className="text-xs text-slate-500">Fecha de Ingreso</p>
@@ -188,7 +188,7 @@ export default async function PersonaDetailPage({
           <Card className="bg-canvas border-slate-800">
             <CardHeader className="border-b border-slate-800">
               <CardTitle className="flex items-center gap-2">
-                <History className="w-5 h-5 text-emerald-500" />
+                <History className="w-5 h-5 text-[#c4121a]" />
                 Matrículas y Pagos (Fase Posterior)
               </CardTitle>
             </CardHeader>

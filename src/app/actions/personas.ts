@@ -20,7 +20,7 @@ export type PersonaSearchParams = {
 };
 
 export async function getPersonas(params: PersonaSearchParams) {
-  await requirePermission("SISTEMA.ADMINISTRAR"); // As a fallback until specific permissions exist
+  await requirePermission(["ESTUDIANTES.VER", "ESTUDIANTES.EDITAR", "SISTEMA.ADMINISTRAR"]);
 
   const supabase = await createClient();
   const page = params.page || 1;
@@ -86,7 +86,7 @@ export async function getPersonas(params: PersonaSearchParams) {
 }
 
 export async function getPersonaById(id: string) {
-  await requirePermission("SISTEMA.ADMINISTRAR");
+  await requirePermission(["ESTUDIANTES.VER", "ESTUDIANTES.EDITAR", "SISTEMA.ADMINISTRAR"]);
 
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -106,7 +106,7 @@ export async function getPersonaById(id: string) {
 }
 
 export async function savePersona(data: PersonaFormData): Promise<ActionState> {
-  await requirePermission("SISTEMA.ADMINISTRAR");
+  await requirePermission(["ESTUDIANTES.EDITAR", "SISTEMA.ADMINISTRAR"]);
 
   try {
     const validated = personaSchema.safeParse(data);
@@ -203,7 +203,7 @@ export async function savePersona(data: PersonaFormData): Promise<ActionState> {
 }
 
 export async function convertirAEstudiante(personaId: string, payload: { codigo_estudiante?: string, observaciones?: string }): Promise<ActionState> {
-  await requirePermission("SISTEMA.ADMINISTRAR");
+  await requirePermission(["ESTUDIANTES.EDITAR", "SISTEMA.ADMINISTRAR"]);
 
   try {
     const supabase = await createClient();
@@ -238,7 +238,7 @@ export async function convertirAEstudiante(personaId: string, payload: { codigo_
 }
 
 export async function togglePersonaStatus(personaId: string, currentStatus: string): Promise<ActionState> {
-  await requirePermission("SISTEMA.ADMINISTRAR");
+  await requirePermission(["ESTUDIANTES.EDITAR", "SISTEMA.ADMINISTRAR"]);
   
   try {
     const supabase = await createClient();

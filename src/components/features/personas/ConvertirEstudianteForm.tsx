@@ -35,7 +35,7 @@ export function ConvertirEstudianteForm({ personaId }: { personaId: string }) {
     <>
       <Button 
         variant="primary" 
-        className="w-full md:w-auto bg-emerald-600 hover:bg-emerald-500 text-white" 
+        className="w-full md:w-auto bg-[#c4121a] hover:bg-[#a00e15] text-white" 
         onClick={() => setIsOpen(true)}
       >
         <UserCheck className="w-4 h-4 mr-2" />
@@ -58,7 +58,7 @@ export function ConvertirEstudianteForm({ personaId }: { personaId: string }) {
           
           <div className="flex justify-end gap-3 mt-6">
             <Button type="button" variant="ghost" onClick={() => setIsOpen(false)}>Cancelar</Button>
-            <Button type="submit" disabled={isLoading} className="bg-emerald-600 hover:bg-emerald-500 text-white">
+            <Button type="submit" disabled={isLoading} className="bg-[#c4121a] hover:bg-[#a00e15] text-white">
               {isLoading ? "Convirtiendo..." : "Confirmar Conversi&oacute;n"}
             </Button>
           </div>

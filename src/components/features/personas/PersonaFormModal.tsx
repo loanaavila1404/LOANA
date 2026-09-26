@@ -89,7 +89,7 @@ export function PersonaFormModal({ initialData }: { initialData?: any }) {
       <Button 
         onClick={() => setIsOpen(true)}
         variant={isEditing ? "outline" : "primary"}
-        className={isEditing ? "bg-slate-900 border-slate-700 text-white w-full md:w-auto" : "bg-emerald-600 hover:bg-emerald-500 text-white w-full md:w-auto"}
+        className={isEditing ? "bg-slate-900 border-slate-700 text-white w-full md:w-auto" : "bg-[#c4121a] hover:bg-[#a00e15] text-white w-full md:w-auto"}
       >
         {isEditing ? (
           <>
@@ -116,7 +116,7 @@ export function PersonaFormModal({ initialData }: { initialData?: any }) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
             {/* Left Column - Personal Info */}
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-emerald-400 uppercase tracking-wider border-b border-slate-800 pb-2">
+              <h3 className="text-sm font-semibold text-[#c4121a] uppercase tracking-wider border-b border-slate-800 pb-2">
                 Datos Personales
               </h3>
               
@@ -159,7 +159,7 @@ export function PersonaFormModal({ initialData }: { initialData?: any }) {
 
             {/* Right Column - Contact & Location */}
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-emerald-400 uppercase tracking-wider border-b border-slate-800 pb-2">
+              <h3 className="text-sm font-semibold text-[#c4121a] uppercase tracking-wider border-b border-slate-800 pb-2">
                 Contacto y Ubicación
               </h3>
               
@@ -208,7 +208,7 @@ export function PersonaFormModal({ initialData }: { initialData?: any }) {
             <Button type="button" variant="ghost" onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-white">
               Cancelar
             </Button>
-            <Button type="submit" disabled={isPending} className="bg-emerald-600 hover:bg-emerald-500 text-white">
+            <Button type="submit" disabled={isPending} className="bg-[#c4121a] hover:bg-[#a00e15] text-white">
               {isPending ? "Guardando..." : (isEditing ? "Guardar Cambios" : "Registrar Persona")}
             </Button>
           </div>

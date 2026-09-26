@@ -146,7 +146,7 @@ export default async function PersonasPage({
                     <TableRow key={persona.id} className="hover:bg-slate-800/50 transition-colors">
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center text-emerald-400 font-bold text-xs shrink-0 border border-slate-700">
+                          <div className="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center text-[#c4121a] font-bold text-xs shrink-0 border border-slate-700">
                             {getInitials(persona.nombres || "", persona.apellido_paterno || "")}
                           </div>
                           <div className="min-w-0">
@@ -187,7 +187,7 @@ export default async function PersonasPage({
                       </TableCell>
                       <TableCell className="text-right">
                         <Link href={`/personas/${persona.id}`}>
-                          <Button variant="ghost" className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-400/10 h-8">
+                          <Button variant="ghost" className="text-[#c4121a] hover:text-emerald-300 hover:bg-emerald-400/10 h-8">
                             Ver Perfil
                           </Button>
                         </Link>
