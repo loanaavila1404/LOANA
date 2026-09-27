@@ -260,18 +260,19 @@ export async function getPersonasMetrics() {
   await requirePermission(["ESTUDIANTES.VER", "ESTUDIANTES.EDITAR", "SISTEMA.ADMINISTRAR"]);
   const supabase = await createClient();
 
-  const [{ count: totalPersonas }, { count: estudiantesActivos }, { count: estudiantesNuevos }, { count: expedientesIncompletos }] = await Promise.all([
+  const [{ count: totalPersonas }, { count: estudiantesActivos }, { count: estudiantesNuevos }, { count: personasInactivas }] = await Promise.all([
     supabase.from("personas").select("*", { count: "exact", head: true }),
     supabase.from("estudiantes").select("*", { count: "exact", head: true }).eq("status", "ACTIVO"),
     supabase.from("estudiantes").select("*", { count: "exact", head: true }).gte("created_at", new Date(new Date().setDate(new Date().getDate() - 30)).toISOString()),
-    supabase.from("personas").select("*, estudiantes!inner(*)", { count: "exact", head: true }).is("tipo_documento", null) // Just an example of incomplete
+    supabase.from("personas").select("*", { count: "exact", head: true }).eq("status", "INACTIVO")
   ]);
 
   return {
     totalPersonas: totalPersonas || 0,
     estudiantesActivos: estudiantesActivos || 0,
     estudiantesNuevos: estudiantesNuevos || 0,
-    expedientesIncompletos: expedientesIncompletos || 0,
+    personasInactivas: personasInactivas || 0,
   };
 }
+
 

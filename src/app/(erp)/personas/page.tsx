@@ -88,8 +88,7 @@ export default async function PersonasPage({
         </Card>
         <Card className="bg-white border-slate-200">
           <CardContent className="p-5 flex flex-col justify-center">
-            <p className="text-sm font-medium text-slate-500">Expedientes incompletos</p>
-            <p className="text-3xl font-bold text-slate-900 mt-2">{metrics.expedientesIncompletos}</p>
+            <p className="text-sm font-medium text-slate-500">Personas inactivas</p>`n            <p className="text-3xl font-bold text-slate-900 mt-2">{metrics.personasInactivas}</p>
           </CardContent>
         </Card>
       </div>
@@ -161,7 +160,8 @@ export default async function PersonasPage({
                 </TableRow>
               ) : (
                 personas?.map((persona) => {
-                  const estudiante = persona.estudiantes; // Because it's an array for one-to-many joined from supabase standard
+                  const estudianteArray = Array.isArray(persona.estudiantes) ? persona.estudiantes : (persona.estudiantes ? [persona.estudiantes] : []);
+                  const estudiante = estudianteArray[0];
                   const isEstudiante = !!estudiante;
                   
                   return (
@@ -193,7 +193,7 @@ export default async function PersonasPage({
                             <Badge variant="default" className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                               Estudiante
                             </Badge>
-                            <p className="text-xs text-slate-600 mt-1">{estudiante.codigo_estudiante || 'Sin cdigo'}</p>
+                            <p className="text-xs text-slate-600 mt-1">{estudiante.codigo_estudiante || "Datos de estudiante incompletos"}</p>
                           </div>
                         ) : (
                           <Badge variant="default" className="bg-slate-800 text-slate-500">
@@ -202,10 +202,7 @@ export default async function PersonasPage({
                         )}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={persona.status === 'ACTIVO' ? 'default' : 'danger'} 
-                          className={persona.status === 'ACTIVO' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : ''}>
-                          {persona.status}
-                        </Badge>
+                        <Badge variant={(isEstudiante ? estudiante.status : persona.status)?.toUpperCase() === "ACTIVO" ? "default" : "danger"} className={(isEstudiante ? estudiante.status : persona.status)?.toUpperCase() === "ACTIVO" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : ""}>{isEstudiante ? estudiante.status : persona.status}</Badge>
                       </TableCell>
                       <TableCell className="text-right">
                         <Link href={`/personas/${persona.id}`}>
@@ -244,4 +241,9 @@ export default async function PersonasPage({
     </div>
   );
 }
+
+
+
+
+
 

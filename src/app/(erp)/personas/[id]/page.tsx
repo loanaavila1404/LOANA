@@ -26,24 +26,14 @@ export default async function PersonaDetailPage({
   } catch { 
     notFound();
   }
-
-  const estudiante = persona.estudiantes; // One-to-many relationship mapping from DB (though conceptually 1-1)
+  const estudianteArray = Array.isArray(persona.estudiantes) ? persona.estudiantes : (persona.estudiantes ? [persona.estudiantes] : []);
+  const estudiante = estudianteArray[0];
   const isEstudiante = !!estudiante;
 
-  // Semáforo Documental basico
-  const requiredFields = [persona.nombres, persona.apellido_paterno, persona.tipo_documento, persona.numero_documento];
-  const missingCritical = requiredFields.some(f => !f);
-  
-  let semaphoreColor = "bg-emerald-500";
-  let semaphoreText = "Documentación Completa";
-  
-  if (missingCritical) {
-    semaphoreColor = "bg-red-500";
-    semaphoreText = "Documentación Incompleta";
-  } else if (!persona.email || !persona.telefono || !persona.direccion) {
-    semaphoreColor = "bg-amber-500";
-    semaphoreText = "Faltan datos de contacto";
-  }
+  // Integridad de Datos (Basado en campos esenciales)
+  const isDataComplete = !!(persona.nombres && persona.apellido_paterno && persona.tipo_documento && persona.numero_documento && persona.email && persona.telefono);
+  const semaphoreColor = isDataComplete ? "bg-emerald-500" : "bg-amber-500";
+  const semaphoreText = isDataComplete ? "Datos completos" : "Datos incompletos";
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-10">
@@ -98,12 +88,12 @@ export default async function PersonaDetailPage({
         {/* Left Column - Info */}
         <div className="md:col-span-1 space-y-6">
           
-          {/* Semáforo Documental */}
+          {/* Integridad de Datos */}
           <Card className="bg-white border-slate-200">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-semibold text-slate-600 uppercase tracking-wider flex items-center gap-2">
                 <ShieldAlert className="w-4 h-4 text-slate-500" />
-                Semáforo Documental
+                Integridad de Datos
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -210,5 +200,7 @@ export default async function PersonaDetailPage({
     </div>
   );
 }
+
+
 
 

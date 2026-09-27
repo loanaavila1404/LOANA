@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useTransition } from "react";
 import { Modal } from "@/components/ui/Modal";
@@ -87,7 +87,7 @@ export function PersonaFormModal({ initialData }: { initialData?: InitialData })
           });
         }
       } else {
-        setErrorMsg(result.message || "Ocurrió un error.");
+        setErrorMsg(result.message || "OcurriÃ³ un error.");
       }
     });
   };
@@ -97,7 +97,7 @@ export function PersonaFormModal({ initialData }: { initialData?: InitialData })
       <Button 
         onClick={() => setIsOpen(true)}
         variant={isEditing ? "outline" : "primary"}
-        className={isEditing ? "bg-slate-900 border-slate-700 text-white w-full md:w-auto" : "bg-[#c4121a] hover:bg-[#a00e15] text-white w-full md:w-auto"}
+                className={isEditing ? "bg-white border border-slate-300 text-slate-700 w-full md:w-auto" : "bg-[#c4121a] hover:bg-[#a00e15] text-white w-full md:w-auto"}
       >
         {isEditing ? (
           <>
@@ -116,113 +116,117 @@ export function PersonaFormModal({ initialData }: { initialData?: InitialData })
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         title={isEditing ? "Editar Persona" : "Registrar Persona"}
-        
+        className="max-w-3xl w-[800px]"
+        footer={
+          <div className="flex justify-end gap-3 w-full">
+            <Button type="button" variant="ghost" onClick={() => setIsOpen(false)} className="text-slate-600 hover:text-slate-900 hover:bg-slate-200">
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={isPending} onClick={handleSubmit} className="bg-[#c4121a] hover:bg-[#a00e15] text-white">
+              {isPending ? "Guardando..." : (isEditing ? "Guardar Cambios" : "Registrar Persona")}
+            </Button>
+          </div>
+        }
       >
         <form onSubmit={handleSubmit} className="space-y-6">
           {errorMsg && <div className="p-3 bg-red-100 text-red-700 rounded text-sm">{errorMsg}</div>}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-            {/* Left Column - Personal Info */}
+
+                    <div className="grid grid-cols-1 gap-x-6 gap-y-4">
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-[#c4121a] uppercase tracking-wider border-b border-slate-800 pb-2">
+              <h3 className="text-sm font-semibold text-[#c4121a] uppercase tracking-wider border-b border-slate-200 pb-2">
                 Datos Personales
               </h3>
               
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-slate-300">Nombres *</label>
-                <Input name="nombres" value={formData.nombres} onChange={handleChange} required className="bg-slate-900 border-slate-700" />
+                <label className="text-sm font-medium text-slate-700">Nombres *</label>
+                <Input name="nombres" value={formData.nombres} onChange={handleChange} required className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400" />
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-300">Ap. Paterno *</label>
-                  <Input name="apellido_paterno" value={formData.apellido_paterno} onChange={handleChange} required className="bg-slate-900 border-slate-700" />
+                  <label className="text-sm font-medium text-slate-700">Ap. Paterno *</label>
+                  <Input name="apellido_paterno" value={formData.apellido_paterno} onChange={handleChange} required className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400" />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-300">Ap. Materno</label>
-                  <Input name="apellido_materno" value={formData.apellido_materno} onChange={handleChange} className="bg-slate-900 border-slate-700" />
+                  <label className="text-sm font-medium text-slate-700">Ap. Materno</label>
+                  <Input name="apellido_materno" value={formData.apellido_materno} onChange={handleChange} className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400" />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-300">Tipo Doc. *</label>
-                  <Select name="tipo_documento" value={formData.tipo_documento} onChange={handleChange} className="bg-slate-900 border-slate-700">
+                  <label className="text-sm font-medium text-slate-700">Tipo Doc. *</label>
+                  <Select name="tipo_documento" value={formData.tipo_documento} onChange={handleChange} className="bg-white border-slate-300 text-slate-900">
                     <option value="DNI">DNI</option>
                     <option value="CE">CE</option>
                     <option value="PASAPORTE">Pasaporte</option>
                   </Select>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-300">Núm. Documento *</label>
-                  <Input name="numero_documento" value={formData.numero_documento} onChange={handleChange} required className="bg-slate-900 border-slate-700" />
+                  <label className="text-sm font-medium text-slate-700">Núm. Documento *</label>
+                  <Input name="numero_documento" value={formData.numero_documento} onChange={handleChange} required className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400" />
                 </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium text-slate-300">Fecha de Nacimiento</label>
-                <Input type="date" name="fecha_nacimiento" value={formData.fecha_nacimiento} onChange={handleChange} className="bg-slate-900 border-slate-700 [color-scheme:dark]" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-slate-700">Fecha de Nacimiento</label>
+                  <Input type="date" name="fecha_nacimiento" value={formData.fecha_nacimiento} onChange={handleChange} className="bg-white border-slate-300 text-slate-900" />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-slate-700">Estado del Registro</label>
+                  <Select name="status" value={formData.status} onChange={handleChange} className="bg-white border-slate-300 text-slate-900">
+                    <option value="ACTIVO">Activo</option>
+                    <option value="INACTIVO">Inactivo</option>
+                  </Select>
+                </div>
               </div>
             </div>
 
-            {/* Right Column - Contact & Location */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-[#c4121a] uppercase tracking-wider border-b border-slate-800 pb-2">
+            <div className="space-y-4 mt-2">
+              <h3 className="text-sm font-semibold text-[#c4121a] uppercase tracking-wider border-b border-slate-200 pb-2">
                 Contacto y Ubicación
               </h3>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-300">Teléfono</label>
-                  <Input name="telefono" value={formData.telefono} onChange={handleChange} className="bg-slate-900 border-slate-700" />
+                  <label className="text-sm font-medium text-slate-700">Teléfono</label>
+                  <Input name="telefono" value={formData.telefono} onChange={handleChange} className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400" />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-300">Correo Electrónico</label>
-                  <Input type="email" name="email" value={formData.email} onChange={handleChange} className="bg-slate-900 border-slate-700" />
+                  <label className="text-sm font-medium text-slate-700">Correo Electrónico</label>
+                  <Input type="email" name="email" value={formData.email} onChange={handleChange} className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400" />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-slate-300">Dirección</label>
-                <Input name="direccion" value={formData.direccion} onChange={handleChange} className="bg-slate-900 border-slate-700" />
+                <label className="text-sm font-medium text-slate-700">Dirección</label>
+                <Input name="direccion" value={formData.direccion} onChange={handleChange} className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400" />
               </div>
 
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-slate-300">Departamento</label>
-                  <Input name="departamento" value={formData.departamento} onChange={handleChange} className="bg-slate-900 border-slate-700 text-sm" />
+                  <label className="text-xs font-medium text-slate-700">Departamento</label>
+                  <Input name="departamento" value={formData.departamento} onChange={handleChange} className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 text-sm" />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-slate-300">Provincia</label>
-                  <Input name="provincia" value={formData.provincia} onChange={handleChange} className="bg-slate-900 border-slate-700 text-sm" />
+                  <label className="text-xs font-medium text-slate-700">Provincia</label>
+                  <Input name="provincia" value={formData.provincia} onChange={handleChange} className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 text-sm" />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-slate-300">Distrito</label>
-                  <Input name="distrito" value={formData.distrito} onChange={handleChange} className="bg-slate-900 border-slate-700 text-sm" />
+                  <label className="text-xs font-medium text-slate-700">Distrito</label>
+                  <Input name="distrito" value={formData.distrito} onChange={handleChange} className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 text-sm" />
                 </div>
-              </div>
-              
-              <div className="space-y-1.5 mt-4">
-                <label className="text-sm font-medium text-slate-300">Estado del Registro</label>
-                <Select name="status" value={formData.status} onChange={handleChange} className="bg-slate-900 border-slate-700">
-                  <option value="ACTIVO">Activo</option>
-                  <option value="INACTIVO">Inactivo</option>
-                </Select>
               </div>
             </div>
           </div>
-
-          <div className="flex justify-end gap-3 pt-6 border-t border-slate-800">
-            <Button type="button" variant="ghost" onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-white">
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={isPending} className="bg-[#c4121a] hover:bg-[#a00e15] text-white">
-              {isPending ? "Guardando..." : (isEditing ? "Guardar Cambios" : "Registrar Persona")}
-            </Button>
-          </div>
         </form>
       </Modal>
+
     </>
   );
 }
+
+
 
