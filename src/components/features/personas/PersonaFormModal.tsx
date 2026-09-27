@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useTransition } from "react";
 import { Modal } from "@/components/ui/Modal";
@@ -117,6 +117,7 @@ export function PersonaFormModal({ initialData }: { initialData?: InitialData })
         onClose={() => setIsOpen(false)}
         title={isEditing ? "Editar Persona" : "Registrar Persona"}
         className="max-w-3xl w-[800px]"
+        variant="light"
         footer={
           <div className="flex justify-end gap-3 w-full">
             <Button type="button" variant="ghost" onClick={() => setIsOpen(false)} className="text-slate-600 hover:text-slate-900 hover:bg-slate-200">

@@ -2,13 +2,21 @@
 import { SessionUser } from '@/lib/types'
 
 import React, { useEffect } from 'react'
-import Link from 'next/link';
+import Link from 'next/link'
+import { usePathname } from 'next/navigation';
 
 export function MobileDrawer({ isOpen, onClose, user, appVersion = '1.0.0' }: { isOpen: boolean; onClose: () => void; user: SessionUser; appVersion?: string }) {
   
   const perms = user?.permissions || [];
   
-  const canViewReportes = perms.includes('SISTEMA.ADMINISTRAR');
+  const canViewReportes = perms.includes('SISTEMA.ADMINISTRAR')
+  const pathname = usePathname();
+
+  const isActive = (path: string) => {
+    if (path === '/dashboard' && pathname === '/dashboard') return true;
+    if (path !== '/dashboard' && pathname.startsWith(path)) return true;
+    return false;
+  };;
   const canViewAuditoria = perms.includes('AUDITORIA.VER');
   const canViewUsuarios = perms.includes('USUARIOS.VER');
   // Prevent scrolling on body when drawer is open
@@ -69,14 +77,14 @@ export function MobileDrawer({ isOpen, onClose, user, appVersion = '1.0.0' }: { 
 
         {/* Drawer Navigation List */}
         <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-1 text-sm font-medium no-scrollbar">
-          <Link className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-[#c4121a] text-white shadow-sm font-semibold" href="/dashboard">
+          <Link className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-semibold ${isActive("/dashboard") ? "bg-[#c4121a] text-white shadow-sm" : "text-slate-300 hover:bg-slate-800/80 hover:text-white transition-colors"}`} href="/dashboard">
             <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
             </svg>
             <span>Inicio</span>
           </Link>
           
-          <Link className="flex items-center justify-between px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800/80 hover:text-white transition-colors" href="/crm">
+          <Link className={`flex items-center justify-between px-3 py-2.5 rounded-lg transition-colors ${isActive("/crm") ? "bg-[#c4121a] text-white shadow-sm font-semibold" : "text-slate-300 hover:bg-slate-800/80 hover:text-white"}`} href="/crm">
             <div className="flex items-center gap-3">
               <svg className="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
@@ -86,21 +94,21 @@ export function MobileDrawer({ isOpen, onClose, user, appVersion = '1.0.0' }: { 
             <span className="bg-[#c4121a] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">0</span>
           </Link>
           
-          <Link className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800/80 hover:text-white transition-colors" href="/personas">
+          <Link className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${isActive("/personas") ? "bg-[#c4121a] text-white shadow-sm font-semibold" : "text-slate-300 hover:bg-slate-800/80 hover:text-white"}`} href="/personas">
             <svg className="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
             </svg>
             <span>Personas y estudiantes</span>
           </Link>
           
-          <Link className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800/80 hover:text-white transition-colors" href="/oferta">
+          <Link className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${isActive("/oferta") ? "bg-[#c4121a] text-white shadow-sm font-semibold" : "text-slate-300 hover:bg-slate-800/80 hover:text-white"}`} href="/oferta">
             <svg className="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
             </svg>
             <span>Oferta académica</span>
           </Link>
           
-          <Link className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800/80 hover:text-white transition-colors" href="/matriculas">
+          <Link className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${isActive("/matriculas") ? "bg-[#c4121a] text-white shadow-sm font-semibold" : "text-slate-300 hover:bg-slate-800/80 hover:text-white"}`} href="/matriculas">
             <svg className="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
             </svg>
@@ -109,7 +117,7 @@ export function MobileDrawer({ isOpen, onClose, user, appVersion = '1.0.0' }: { 
           
           {/* Item: Reportes */}
           {canViewReportes && (
-            <Link className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800/80 hover:text-white transition-colors" href="/reportes">
+            <Link className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${isActive("/reportes") ? "bg-[#c4121a] text-white shadow-sm font-semibold" : "text-slate-300 hover:bg-slate-800/80 hover:text-white"}`} href="/reportes">
               <svg className="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
               </svg>
@@ -118,7 +126,7 @@ export function MobileDrawer({ isOpen, onClose, user, appVersion = '1.0.0' }: { 
           )}
           
           {canViewUsuarios && (
-            <Link className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800/80 hover:text-white transition-colors" href="/usuarios">
+            <Link className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${isActive("/usuarios") ? "bg-[#c4121a] text-white shadow-sm font-semibold" : "text-slate-300 hover:bg-slate-800/80 hover:text-white"}`} href="/usuarios">
               <svg className="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
               </svg>
@@ -127,7 +135,7 @@ export function MobileDrawer({ isOpen, onClose, user, appVersion = '1.0.0' }: { 
           )}
           
           {canViewAuditoria && (
-            <Link className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800/80 hover:text-white transition-colors" href="/auditoria">
+            <Link className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${isActive("/auditoria") ? "bg-[#c4121a] text-white shadow-sm font-semibold" : "text-slate-300 hover:bg-slate-800/80 hover:text-white"}`} href="/auditoria">
               <svg className="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
               </svg>
@@ -135,7 +143,7 @@ export function MobileDrawer({ isOpen, onClose, user, appVersion = '1.0.0' }: { 
             </Link>
           )}
           
-          <Link className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800/80 hover:text-white transition-colors" href="/perfil">
+          <Link className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${isActive("/perfil") ? "bg-[#c4121a] text-white shadow-sm font-semibold" : "text-slate-300 hover:bg-slate-800/80 hover:text-white"}`} href="/perfil">
             <svg className="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
             </svg>
@@ -161,3 +169,4 @@ export function MobileDrawer({ isOpen, onClose, user, appVersion = '1.0.0' }: { 
     </div>
   )
 }
+
