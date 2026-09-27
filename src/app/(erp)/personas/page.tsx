@@ -1,4 +1,4 @@
-import { Card, CardContent } from "@/components/ui/Card";
+﻿import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table";
@@ -82,13 +82,14 @@ export default async function PersonasPage({
         </Card>
         <Card className="bg-white border-slate-200">
           <CardContent className="p-5 flex flex-col justify-center">
-            <p className="text-sm font-medium text-slate-500">Nuevos (30 días)</p>
+            <p className="text-sm font-medium text-slate-500">Nuevos (30 dÃ­as)</p>
             <p className="text-3xl font-bold text-slate-900 mt-2">{metrics.estudiantesNuevos}</p>
           </CardContent>
         </Card>
         <Card className="bg-white border-slate-200">
           <CardContent className="p-5 flex flex-col justify-center">
-            <p className="text-sm font-medium text-slate-500">Personas inactivas</p>`n            <p className="text-3xl font-bold text-slate-900 mt-2">{metrics.personasInactivas}</p>
+            <p className="text-sm font-medium text-slate-500">Personas inactivas</p>
+            <p className="text-3xl font-bold text-slate-900 mt-2">{metrics.personasInactivas}</p>
           </CardContent>
         </Card>
       </div>
@@ -241,6 +242,8 @@ export default async function PersonasPage({
     </div>
   );
 }
+
+
 
 
 

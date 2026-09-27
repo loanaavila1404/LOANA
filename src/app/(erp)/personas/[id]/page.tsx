@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+﻿import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { getPersonaById } from "@/app/actions/personas";
@@ -80,7 +80,7 @@ export default async function PersonaDetailPage({
             <ConvertirEstudianteForm personaId={persona.id} />
           )}
           {canEdit && <PersonaFormModal initialData={{...persona, es_estudiante: isEstudiante, codigo_estudiante: estudiante?.codigo_estudiante || ""}} />}
-          {canEdit && <TogglePersonaStatusButton personaId={persona.id} currentStatus={persona.status || "ACTIVO"} />}
+          {canEdit && <TogglePersonaStatusButton personaId={persona.id} currentStatus={isEstudiante ? (estudiante.status || "ACTIVO") : (persona.status || "ACTIVO")} isEstudiante={isEstudiante} />}
         </div>
       </div>
 
@@ -104,32 +104,32 @@ export default async function PersonaDetailPage({
             </CardContent>
           </Card>
 
-          {/* Contacto y Ubicación */}
+          {/* Contacto y UbicaciÃ³n */}
           <Card className="bg-white border-slate-200">
             <CardHeader className="pb-3 border-b border-slate-100 mb-3">
               <CardTitle className="text-sm font-semibold text-slate-600 uppercase tracking-wider">
-                Contacto y Ubicación
+                Contacto y UbicaciÃ³n
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-start gap-3">
                 <Mail className="w-4 h-4 text-slate-500 mt-0.5" />
                 <div>
-                  <p className="text-xs text-slate-500">Correo Electrónico</p>
+                  <p className="text-xs text-slate-500">Correo ElectrÃ³nico</p>
                   <p className="text-sm text-slate-500 break-all">{persona.email || "No registrado"}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <Phone className="w-4 h-4 text-slate-500 mt-0.5" />
                 <div>
-                  <p className="text-xs text-slate-500">Teléfono</p>
+                  <p className="text-xs text-slate-500">TelÃ©fono</p>
                   <p className="text-sm text-slate-500">{persona.telefono || "No registrado"}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <MapPin className="w-4 h-4 text-slate-500 mt-0.5" />
                 <div>
-                  <p className="text-xs text-slate-500">Dirección</p>
+                  <p className="text-xs text-slate-500">DirecciÃ³n</p>
                   <p className="text-sm text-slate-500">{persona.direccion || "No registrada"}</p>
                   {(persona.distrito || persona.provincia || persona.departamento) && (
                     <p className="text-xs text-slate-600 mt-0.5">
@@ -148,18 +148,18 @@ export default async function PersonaDetailPage({
             </CardContent>
           </Card>
 
-          {/* Información Institucional */}
+          {/* InformaciÃ³n Institucional */}
           {isEstudiante && (
             <Card className="bg-white border-slate-200 bg-gradient-to-br from-slate-50 to-white">
               <CardHeader className="pb-3 border-b border-slate-100 mb-3">
                 <CardTitle className="text-sm font-semibold text-slate-600 uppercase tracking-wider">
-                  Información Institucional
+                  InformaciÃ³n Institucional
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <p className="text-xs text-slate-500">Código de Estudiante</p>
-                  <p className="text-lg font-bold text-[#c4121a]">{estudiante?.codigo_estudiante || "Generación Pendiente"}</p>
+                  <p className="text-xs text-slate-500">CÃ³digo de Estudiante</p>
+                  <p className="text-lg font-bold text-[#c4121a]">{estudiante?.codigo_estudiante || "GeneraciÃ³n Pendiente"}</p>
                 </div>
                 <div>
                   <p className="text-xs text-slate-500">Fecha de Ingreso</p>
@@ -182,7 +182,7 @@ export default async function PersonaDetailPage({
             <CardHeader className="border-b border-slate-200">
               <CardTitle className="flex items-center gap-2">
                 <History className="w-5 h-5 text-[#c4121a]" />
-                Matrículas y Pagos (Fase Posterior)
+                MatrÃ­culas y Pagos (Fase Posterior)
               </CardTitle>
             </CardHeader>
             <CardContent className="p-10 text-center flex flex-col items-center justify-center">
@@ -191,7 +191,7 @@ export default async function PersonaDetailPage({
               </div>
               <h3 className="text-lg font-semibold text-slate-900 mb-2">Historial en desarrollo</h3>
               <p className="text-slate-600 text-sm max-w-sm">
-                Las vinculaciones con matrículas y pagos se activarán una vez que el módulo respectivo (Fase 4 y 5) esté implementado.
+                Las vinculaciones con matrÃ­culas y pagos se activarÃ¡n una vez que el mÃ³dulo respectivo (Fase 4 y 5) estÃ© implementado.
               </p>
             </CardContent>
           </Card>
@@ -200,6 +200,7 @@ export default async function PersonaDetailPage({
     </div>
   );
 }
+
 
 
 

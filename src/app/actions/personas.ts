@@ -39,7 +39,7 @@ export async function getPersonas(params: PersonaSearchParams) {
   }
   
   if (params.status && params.status !== "TODOS") {
-    query = query.eq("status", params.status);
+    query = query.ilike("status", params.status);
   }
 
   if (params.tipo_documento && params.tipo_documento !== "TODOS") {
@@ -59,7 +59,7 @@ export async function getPersonas(params: PersonaSearchParams) {
       `, { count: "exact" });
       
     if (params.q) query = query.or(`nombres.ilike.%${params.q}%,apellido_paterno.ilike.%${params.q}%,apellido_materno.ilike.%${params.q}%,numero_documento.ilike.%${params.q}%`);
-    if (params.status && params.status !== "TODOS") query = query.eq("status", params.status);
+    if (params.status && params.status !== "TODOS") query = query.ilike("status", params.status);
     if (params.tipo_documento && params.tipo_documento !== "TODOS") query = query.eq("tipo_documento", params.tipo_documento);
   } else if (params.es_estudiante === "false") {
     // Filter where estudiantes is null - Supabase doesn't easily support this out of the box in PostgREST without advanced syntax
@@ -111,7 +111,7 @@ export async function savePersona(data: PersonaFormData): Promise<ActionState> {
   try {
     const validated = personaSchema.safeParse(data);
     if (!validated.success) {
-      return error("Error de validación", validated.error.flatten().fieldErrors);
+      return error("Error de validaciÃ³n", validated.error.flatten().fieldErrors);
     }
 
     const supabase = await createClient();
@@ -131,7 +131,7 @@ export async function savePersona(data: PersonaFormData): Promise<ActionState> {
       
       const { data: existingDoc } = await query.limit(1).maybeSingle();
       if (existingDoc) {
-        return error("El número de documento ya está registrado para ese tipo de documento.");
+        return error("El nÃºmero de documento ya estÃ¡ registrado para ese tipo de documento.");
       }
     }
 
@@ -148,7 +148,7 @@ export async function savePersona(data: PersonaFormData): Promise<ActionState> {
 
       const { data: existingEmail } = await query.limit(1).maybeSingle();
       if (existingEmail) {
-        return error("El correo electrónico ya está registrado en otra persona.");
+        return error("El correo electrÃ³nico ya estÃ¡ registrado en otra persona.");
       }
     }
 
@@ -198,7 +198,7 @@ export async function savePersona(data: PersonaFormData): Promise<ActionState> {
     return success(payload.id ? "Persona actualizada exitosamente" : "Persona creada exitosamente");
   } catch (err: unknown) {
     console.error("savePersona error:", err);
-    return error(((err as Error).message) || "Ocurrió un error al guardar la persona");
+    return error(((err as Error).message) || "OcurriÃ³ un error al guardar la persona");
   }
 }
 
@@ -220,7 +220,7 @@ export async function convertirAEstudiante(personaId: string, payload: { codigo_
 
     const { error: insertError } = await supabase.from("estudiantes").insert({
       persona_id: personaId,
-      codigo_estudiante: payload.codigo_estudiante || null,
+      codigo_estudiante: payload.codigo_estudiante || `EST-${Date.now().toString(36).toUpperCase()}-${Math.floor(Math.random()*1000).toString().padStart(3, '0')}`,
       observaciones: payload.observaciones || null,
       status: "ACTIVO"
     });
@@ -233,11 +233,11 @@ export async function convertirAEstudiante(personaId: string, payload: { codigo_
     return success("Convertido a estudiante exitosamente.");
   } catch (err: unknown) {
     console.error("convertirAEstudiante error:", err);
-    return error(((err as Error).message) || "Ocurrió un error al convertir a estudiante.");
+    return error(((err as Error).message) || "OcurriÃ³ un error al convertir a estudiante.");
   }
 }
 
-export async function togglePersonaStatus(personaId: string, currentStatus: string): Promise<ActionState> {
+export async function togglePersonaStatus(personaId: string, currentStatus: string, isEstudiante?: boolean): Promise<ActionState> {
   await requirePermission(["ESTUDIANTES.EDITAR", "SISTEMA.ADMINISTRAR"]);
   
   try {
@@ -253,7 +253,7 @@ export async function togglePersonaStatus(personaId: string, currentStatus: stri
     return success(`Persona ${newStatus === 'ACTIVO' ? 'activada' : 'inactivada'} exitosamente.`);
   } catch (err: unknown) {
     console.error("togglePersonaStatus error:", err);
-    return error(((err as Error).message) || "Ocurrió un error al cambiar el estado.");
+    return error(((err as Error).message) || "OcurriÃ³ un error al cambiar el estado.");
   }
 }
 export async function getPersonasMetrics() {
@@ -262,9 +262,9 @@ export async function getPersonasMetrics() {
 
   const [{ count: totalPersonas }, { count: estudiantesActivos }, { count: estudiantesNuevos }, { count: personasInactivas }] = await Promise.all([
     supabase.from("personas").select("*", { count: "exact", head: true }),
-    supabase.from("estudiantes").select("*", { count: "exact", head: true }).eq("status", "ACTIVO"),
+    supabase.from("estudiantes").select("*", { count: "exact", head: true }).ilike("status", "ACTIVO"),
     supabase.from("estudiantes").select("*", { count: "exact", head: true }).gte("created_at", new Date(new Date().setDate(new Date().getDate() - 30)).toISOString()),
-    supabase.from("personas").select("*", { count: "exact", head: true }).eq("status", "INACTIVO")
+    supabase.from("personas").select("*", { count: "exact", head: true }).ilike("status", "INACTIVO")
   ]);
 
   return {
@@ -274,5 +274,7 @@ export async function getPersonasMetrics() {
     personasInactivas: personasInactivas || 0,
   };
 }
+
+
 
 
