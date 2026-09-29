@@ -17,7 +17,6 @@ export const personaSchema = z.object({
   status: z.enum(["ACTIVO", "INACTIVO"]).default("ACTIVO"),
   es_estudiante: z.boolean().default(false),
   // Estudiante specific
-  codigo_estudiante: z.string().optional(),
   observaciones: z.string().optional(),
 });
 

@@ -18,10 +18,8 @@ export function ConvertirEstudianteForm({ personaId }: { personaId: string }) {
     setIsLoading(true);
     setError(null);
     const formData = new FormData(e.currentTarget);
-    const codigo_estudiante = formData.get("codigo_estudiante") as string;
     const observaciones = formData.get("observaciones") as string;
-
-    const res = await convertirAEstudiante(personaId, { codigo_estudiante, observaciones });
+    const res = await convertirAEstudiante(personaId, { observaciones });
     setIsLoading(false);
     
     if (res.success) {
@@ -47,19 +45,14 @@ export function ConvertirEstudianteForm({ personaId }: { personaId: string }) {
           {error && <div className="p-3 bg-red-100 text-red-700 rounded text-sm">{error}</div>}
           
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-slate-300">C&oacute;digo de Estudiante (Opcional)</label>
-            <Input name="codigo_estudiante" placeholder="Si se deja en blanco se generar&aacute; autom&aacute;ticamente" className="bg-slate-900 border-slate-700" />
-          </div>
-          
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium text-slate-300">Observaciones iniciales (Opcional)</label>
-            <Input name="observaciones" placeholder="Ej. Ingreso por traslado" className="bg-slate-900 border-slate-700" />
+            <label className="text-sm font-medium text-slate-700">Observaciones iniciales (opcional)</label>
+            <Input name="observaciones" placeholder="Ej. Ingreso por traslado" className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 focus:ring-[#c4121a] focus:border-[#c4121a]" />
           </div>
           
           <div className="flex justify-end gap-3 mt-6">
             <Button type="button" variant="ghost" onClick={() => setIsOpen(false)}>Cancelar</Button>
             <Button type="submit" disabled={isLoading} className="bg-[#c4121a] hover:bg-[#a00e15] text-white">
-              {isLoading ? "Convirtiendo..." : "Confirmar Conversi&oacute;n"}
+              {isLoading ? "Convirtiendo..." : "Confirmar conversión"}
             </Button>
           </div>
         </form>

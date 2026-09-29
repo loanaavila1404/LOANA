@@ -6,15 +6,15 @@ import { Power, PowerOff } from "lucide-react";
 import { togglePersonaStatus } from "@/app/actions/personas";
 import { useRouter } from "next/navigation";
 
-export function TogglePersonaStatusButton({ personaId, currentStatus, isEstudiante }: { personaId: string, currentStatus: string, isEstudiante?: boolean }) {
+export function TogglePersonaStatusButton({ personaId, currentStatus }: { personaId: string, currentStatus: string }) {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   
-  const isActive = (currentStatus || '').toUpperCase() === "ACTIVO";
+  const isActive = (currentStatus || '').trim().toUpperCase() === "ACTIVO";
 
   const handleToggle = async () => {
     setIsLoading(true);
-    const res = await togglePersonaStatus(personaId, currentStatus, isEstudiante);
+    const res = await togglePersonaStatus(personaId);
     setIsLoading(false);
     
     if (res.success) {

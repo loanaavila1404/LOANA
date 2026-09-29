@@ -1,13 +1,14 @@
-﻿import { Card, CardContent } from "@/components/ui/Card";
+import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
-import { Search, ChevronLeft, ChevronRight, FileText } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { getPersonas, getPersonasMetrics, PersonaSearchParams } from "@/app/actions/personas";
 import { hasPermission } from "@/lib/auth/permissions";
 import { PersonaFormModal } from "@/components/features/personas/PersonaFormModal";
+import { checkPersonaIntegrity } from "@/lib/utils/personaUtils";
 import Link from "next/link";
 import { getInitials } from "@/lib/utils";
 
@@ -33,7 +34,7 @@ export default async function PersonasPage({
     limit: 10,
   };
 
-  const { data: personas, count, totalPages } = await getPersonas(params);
+  const { data: personas, totalPages } = await getPersonas(params);
   const metrics = await getPersonasMetrics();
 
   // Generate pagination links
@@ -82,7 +83,7 @@ export default async function PersonasPage({
         </Card>
         <Card className="bg-white border-slate-200">
           <CardContent className="p-5 flex flex-col justify-center">
-            <p className="text-sm font-medium text-slate-500">Nuevos (30 dÃ­as)</p>
+            <p className="text-sm font-medium text-slate-500">Nuevos (30 días)</p>
             <p className="text-3xl font-bold text-slate-900 mt-2">{metrics.estudiantesNuevos}</p>
           </CardContent>
         </Card>
@@ -164,6 +165,7 @@ export default async function PersonasPage({
                   const estudianteArray = Array.isArray(persona.estudiantes) ? persona.estudiantes : (persona.estudiantes ? [persona.estudiantes] : []);
                   const estudiante = estudianteArray[0];
                   const isEstudiante = !!estudiante;
+                  const integridad = checkPersonaIntegrity(persona, estudiante);
                   
                   return (
                     <TableRow key={persona.id} className="hover:bg-slate-800/50 transition-colors">
@@ -194,7 +196,7 @@ export default async function PersonasPage({
                             <Badge variant="default" className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                               Estudiante
                             </Badge>
-                            <p className="text-xs text-slate-600 mt-1">{estudiante.codigo_estudiante || "Datos de estudiante incompletos"}</p>
+                            <p className="text-xs text-slate-600 mt-1">{integridad.completo ? "Datos completos" : integridad.mensaje}</p>
                           </div>
                         ) : (
                           <Badge variant="default" className="bg-slate-800 text-slate-500">
@@ -203,7 +205,7 @@ export default async function PersonasPage({
                         )}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={(isEstudiante ? estudiante.status : persona.status)?.toUpperCase() === "ACTIVO" ? "default" : "danger"} className={(isEstudiante ? estudiante.status : persona.status)?.toUpperCase() === "ACTIVO" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : ""}>{isEstudiante ? estudiante.status : persona.status}</Badge>
+                        <Badge variant={(persona.status || "").trim().toUpperCase() === "ACTIVO" ? "default" : "danger"} className={(persona.status || "").trim().toUpperCase() === "ACTIVO" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : ""}>{persona.status}</Badge>
                       </TableCell>
                       <TableCell className="text-right">
                         <Link href={`/personas/${persona.id}`}>

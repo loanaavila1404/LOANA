@@ -1,4 +1,4 @@
-﻿import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { getPersonaById } from "@/app/actions/personas";
@@ -10,6 +10,7 @@ import { notFound } from "next/navigation";
 import { ConvertirEstudianteForm } from "@/components/features/personas/ConvertirEstudianteForm";
 import { PersonaFormModal } from "@/components/features/personas/PersonaFormModal";
 import { TogglePersonaStatusButton } from "@/components/features/personas/TogglePersonaStatusButton";
+import { checkPersonaIntegrity } from "@/lib/utils/personaUtils";
 
 export default async function PersonaDetailPage({
   params,
@@ -30,10 +31,10 @@ export default async function PersonaDetailPage({
   const estudiante = estudianteArray[0];
   const isEstudiante = !!estudiante;
 
-  // Integridad de Datos (Basado en campos esenciales)
-  const isDataComplete = !!(persona.nombres && persona.apellido_paterno && persona.tipo_documento && persona.numero_documento && persona.email && persona.telefono);
-  const semaphoreColor = isDataComplete ? "bg-emerald-500" : "bg-amber-500";
-  const semaphoreText = isDataComplete ? "Datos completos" : "Datos incompletos";
+  // Integridad de Datos (Basado en campos esenciales y rol)
+  const integridad = checkPersonaIntegrity(persona, estudiante);
+  const semaphoreColor = integridad.completo ? "bg-emerald-500" : "bg-amber-500";
+  const semaphoreText = integridad.completo ? "Datos completos" : "Datos incompletos";
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-10">
@@ -79,8 +80,8 @@ export default async function PersonaDetailPage({
           {!isEstudiante && canEdit && (
             <ConvertirEstudianteForm personaId={persona.id} />
           )}
-          {canEdit && <PersonaFormModal initialData={{...persona, es_estudiante: isEstudiante, codigo_estudiante: estudiante?.codigo_estudiante || ""}} />}
-          {canEdit && <TogglePersonaStatusButton personaId={persona.id} currentStatus={isEstudiante ? (estudiante.status || "ACTIVO") : (persona.status || "ACTIVO")} isEstudiante={isEstudiante} />}
+          {canEdit && <PersonaFormModal initialData={{...persona, es_estudiante: isEstudiante}} />}
+          {canEdit && <TogglePersonaStatusButton personaId={persona.id} currentStatus={persona.status || "ACTIVO"} />}
         </div>
       </div>
 
@@ -97,39 +98,44 @@ export default async function PersonaDetailPage({
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center gap-3">
-                <div className={`w-3 h-3 rounded-full ${semaphoreColor} shadow-[0_0_10px_rgba(0,0,0,0.1)] shadow-${semaphoreColor}`}></div>
-                <span className="text-slate-900 font-medium text-sm">{semaphoreText}</span>
+              <div className="flex items-start gap-3">
+                <div className={`w-3 h-3 rounded-full mt-1.5 ${semaphoreColor} shadow-[0_0_10px_rgba(0,0,0,0.1)] shadow-${semaphoreColor}`}></div>
+                <div>
+                  <p className="text-slate-900 font-medium text-sm">{semaphoreText}</p>
+                  {!integridad.completo && (
+                    <p className="text-xs text-slate-500 mt-0.5">{integridad.mensaje}</p>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Contacto y UbicaciÃ³n */}
+          {/* Contacto y Ubicación */}
           <Card className="bg-white border-slate-200">
             <CardHeader className="pb-3 border-b border-slate-100 mb-3">
               <CardTitle className="text-sm font-semibold text-slate-600 uppercase tracking-wider">
-                Contacto y UbicaciÃ³n
+                Contacto y Ubicación
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-start gap-3">
                 <Mail className="w-4 h-4 text-slate-500 mt-0.5" />
                 <div>
-                  <p className="text-xs text-slate-500">Correo ElectrÃ³nico</p>
+                  <p className="text-xs text-slate-500">Correo Electrónico</p>
                   <p className="text-sm text-slate-500 break-all">{persona.email || "No registrado"}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <Phone className="w-4 h-4 text-slate-500 mt-0.5" />
                 <div>
-                  <p className="text-xs text-slate-500">TelÃ©fono</p>
+                  <p className="text-xs text-slate-500">Teléfono</p>
                   <p className="text-sm text-slate-500">{persona.telefono || "No registrado"}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <MapPin className="w-4 h-4 text-slate-500 mt-0.5" />
                 <div>
-                  <p className="text-xs text-slate-500">DirecciÃ³n</p>
+                  <p className="text-xs text-slate-500">Dirección</p>
                   <p className="text-sm text-slate-500">{persona.direccion || "No registrada"}</p>
                   {(persona.distrito || persona.provincia || persona.departamento) && (
                     <p className="text-xs text-slate-600 mt-0.5">
@@ -148,18 +154,18 @@ export default async function PersonaDetailPage({
             </CardContent>
           </Card>
 
-          {/* InformaciÃ³n Institucional */}
+          {/* Información Institucional */}
           {isEstudiante && (
             <Card className="bg-white border-slate-200 bg-gradient-to-br from-slate-50 to-white">
               <CardHeader className="pb-3 border-b border-slate-100 mb-3">
                 <CardTitle className="text-sm font-semibold text-slate-600 uppercase tracking-wider">
-                  InformaciÃ³n Institucional
+                  Información Institucional
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <p className="text-xs text-slate-500">CÃ³digo de Estudiante</p>
-                  <p className="text-lg font-bold text-[#c4121a]">{estudiante?.codigo_estudiante || "GeneraciÃ³n Pendiente"}</p>
+                  <p className="text-xs text-slate-500">Código de Estudiante</p>
+                  <p className="text-lg font-bold text-[#c4121a]">{estudiante?.codigo_estudiante || "Generación pendiente"}</p>
                 </div>
                 <div>
                   <p className="text-xs text-slate-500">Fecha de Ingreso</p>
@@ -182,16 +188,16 @@ export default async function PersonaDetailPage({
             <CardHeader className="border-b border-slate-200">
               <CardTitle className="flex items-center gap-2">
                 <History className="w-5 h-5 text-[#c4121a]" />
-                MatrÃ­culas y Pagos (Fase Posterior)
+                Matrículas y pagos
               </CardTitle>
             </CardHeader>
             <CardContent className="p-10 text-center flex flex-col items-center justify-center">
               <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4">
                 <History className="w-8 h-8 text-slate-600" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 mb-2">Historial en desarrollo</h3>
+              <h3 className="text-lg font-semibold text-slate-900 mb-2">Sin matrículas registradas</h3>
               <p className="text-slate-600 text-sm max-w-sm">
-                Las vinculaciones con matrÃ­culas y pagos se activarÃ¡n una vez que el mÃ³dulo respectivo (Fase 4 y 5) estÃ© implementado.
+                Esta persona todavía no registra matrículas.
               </p>
             </CardContent>
           </Card>
