@@ -31,7 +31,8 @@ export type PermissionCode =
   | 'NOTAS.REGISTRAR'
   | 'PERFIL_PROPIO.VER'
   | 'ACADEMICO_PROPIO.VER'
-  | 'PAGOS_PROPIOS.VER';
+  | 'PAGOS_PROPIOS.VER'
+  | 'SEDES.VER_TODAS'; // PROVISIONAL: Agregado para Checkpoint 2 (Fase 4). Requerirá que la BD lo tenga en tabla permissions tras migración 00010.
 
 export async function getUserPermissions(): Promise<PermissionCode[]> {
   const supabase = await createClient();

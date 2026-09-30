@@ -52,11 +52,13 @@ export default async function ErpLayout({
     }
   }
 
-  // Get selected Sede from cookies safely
+  // Get selected Sede from cookies safely and securely evaluate it
   const cookieStore = await cookies()
   const cookieSede = cookieStore.get('erp_sede')?.value
-  // Solo permitir valores conocidos, si no "tumbes"
-  const selectedSede = cookieSede === 'todas' && permissions.includes('SISTEMA.ADMINISTRAR') ? 'todas' : 'tumbes'
+
+  // Use the new service
+  const { getSedeContext } = await import('@/lib/services/sede-context');
+  const sedeContext = await getSedeContext(user.id, permissions, cookieSede);
 
   const userRoleCode = profile?.roles?.code || 'INVITADO'
   const userRoleName = profile?.roles?.name || userRoleCode
@@ -67,12 +69,11 @@ export default async function ErpLayout({
     roleCode: userRoleCode,
     role: userRoleName,
     photoUrl: profile?.photo_url || user.user_metadata?.avatar_url || user.user_metadata?.picture || '',
-    permissions: permissions,
-    selectedSede: selectedSede
+    permissions: permissions
   }
 
   return (
-    <AppLayout user={sessionUser} appVersion={packageJson.version}>
+    <AppLayout user={sessionUser} appVersion={packageJson.version} sedeContext={sedeContext}>
       {children}
     </AppLayout>
   )

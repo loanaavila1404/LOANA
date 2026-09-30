@@ -7,7 +7,19 @@ import { Topbar } from './Topbar'
 import { MobileNav } from './MobileNav'
 import { MobileDrawer } from './MobileDrawer'
 
-export function AppLayout({ children, user, appVersion = '1.0.0' }: { children: React.ReactNode; user: SessionUser; appVersion?: string }) {
+import { SedeContextType } from '@/lib/types'
+
+export function AppLayout({
+  children,
+  user,
+  appVersion = '1.0.0',
+  sedeContext
+}: {
+  children: React.ReactNode;
+  user: SessionUser;
+  appVersion?: string;
+  sedeContext?: SedeContextType;
+}) {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
 
   return (
@@ -29,6 +41,7 @@ export function AppLayout({ children, user, appVersion = '1.0.0' }: { children: 
         <Topbar 
           user={user} 
           onOpenSidebar={() => setIsMobileSidebarOpen(true)} 
+          sedeContext={sedeContext}
         />
         
         <main className="flex-1 overflow-y-auto px-3.5 md:px-6 py-4 md:py-6 space-y-4 md:space-y-6">
