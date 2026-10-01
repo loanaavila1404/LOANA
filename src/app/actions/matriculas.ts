@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { getUserPermissions } from '@/lib/auth/permissions';
 import { confirmarMatriculaSchema, registrarPagoSchema } from '@/lib/validators/matriculas';
+import crypto from 'crypto';
 
 export async function confirmarMatriculaAction(payload: unknown) {
   const permissions = await getUserPermissions();
@@ -15,7 +16,6 @@ export async function confirmarMatriculaAction(payload: unknown) {
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
 
   // @ts-ignore: rpc types not updated yet
   const { data, error } = await supabase.rpc('confirmar_matricula_atomica', {
@@ -23,7 +23,7 @@ export async function confirmarMatriculaAction(payload: unknown) {
     p_edicion_id: parsed.data.edicion_id,
     p_ciclo_id: parsed.data.ciclo_id || null,
     p_prospecto_id: parsed.data.prospecto_id || null,
-    p_asesor_id: parsed.data.asesor_id || user?.id,
+    p_asesor_id: parsed.data.asesor_id || null,
     p_importe_matricula: parsed.data.importe_matricula,
     p_importe_pension: parsed.data.importe_pension,
     p_numero_pensiones: parsed.data.numero_pensiones,
@@ -51,10 +51,20 @@ export async function registrarPagoAction(payload: unknown) {
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+
+  // Generar clave idempotente determinista basada en el payload
+  const hash = crypto.createHash('md5').update(JSON.stringify(parsed.data)).digest('hex');
+  const idempotencyKey = [
+    hash.substring(0, 8),
+    hash.substring(8, 12),
+    '4' + hash.substring(13, 16), // pseudo v4
+    'a' + hash.substring(17, 20),
+    hash.substring(20, 32)
+  ].join('-');
 
   // @ts-ignore: rpc types not updated yet
   const { data, error } = await supabase.rpc('registrar_pago_atomico', {
+    p_idempotency_key: idempotencyKey,
     p_estudiante_id: parsed.data.estudiante_id,
     p_importe: parsed.data.importe,
     p_medio_pago: parsed.data.medio_pago,
@@ -80,35 +90,14 @@ export async function anularPagoAction(pagoId: string, motivo: string) {
   }
 
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
 
-  const { data: aplicaciones, error: appError } = await supabase
-    .from('pago_aplicaciones')
-    .select('cuota_id, importe_aplicado')
-    .eq('pago_id', pagoId);
+  // @ts-ignore
+  const { error } = await supabase.rpc('anular_pago_atomico', {
+    p_pago_id: pagoId,
+    p_motivo: motivo
+  });
 
-  if (appError) return { error: 'Error al buscar aplicaciones del pago.' };
-
-  const { error: pagoUpdError } = await supabase.from('pagos').update({
-    status: 'ANULADO',
-    anulado_en: new Date().toISOString(),
-    anulado_por: user?.id,
-    motivo_anulacion: motivo
-  }).eq('id', pagoId);
-
-  if (pagoUpdError) return { error: 'Error al anular el pago.' };
-
-  for (const app of (aplicaciones || [])) {
-    const { data: cuota } = await supabase.from('cuotas').select('saldo, importe_neto').eq('id', app.cuota_id).single();
-    if (cuota) {
-      const currentSaldo = cuota.saldo === null ? (cuota.importe_neto || 0) : cuota.saldo;
-      const newSaldo = currentSaldo + (app.importe_aplicado || 0);
-      await supabase.from('cuotas').update({
-        saldo: newSaldo,
-        status: newSaldo >= (cuota.importe_neto || 0) ? 'PENDIENTE' : 'PARCIAL'
-      }).eq('id', app.cuota_id);
-    }
-  }
+  if (error) return { error: error.message || 'Error al anular el pago.' };
 
   revalidatePath('/matriculas');
   return { success: true };
