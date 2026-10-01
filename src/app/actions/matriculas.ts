@@ -4,7 +4,6 @@ import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { getUserPermissions } from '@/lib/auth/permissions';
 import { confirmarMatriculaSchema, registrarPagoSchema } from '@/lib/validators/matriculas';
-import crypto from 'crypto';
 
 export async function confirmarMatriculaAction(payload: unknown) {
   const permissions = await getUserPermissions();
@@ -52,19 +51,9 @@ export async function registrarPagoAction(payload: unknown) {
 
   const supabase = await createClient();
 
-  // Generar clave idempotente determinista basada en el payload
-  const hash = crypto.createHash('md5').update(JSON.stringify(parsed.data)).digest('hex');
-  const idempotencyKey = [
-    hash.substring(0, 8),
-    hash.substring(8, 12),
-    '4' + hash.substring(13, 16), // pseudo v4
-    'a' + hash.substring(17, 20),
-    hash.substring(20, 32)
-  ].join('-');
-
   // @ts-ignore: rpc types not updated yet
   const { data, error } = await supabase.rpc('registrar_pago_atomico', {
-    p_idempotency_key: idempotencyKey,
+    p_idempotency_key: parsed.data.idempotency_key,
     p_estudiante_id: parsed.data.estudiante_id,
     p_importe: parsed.data.importe,
     p_medio_pago: parsed.data.medio_pago,

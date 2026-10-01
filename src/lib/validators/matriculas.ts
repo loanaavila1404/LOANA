@@ -16,6 +16,7 @@ export const confirmarMatriculaSchema = z.object({
 });
 
 export const registrarPagoSchema = z.object({
+  idempotency_key: z.string().uuid(),
   estudiante_id: z.string().uuid(),
   importe: z.number().positive(),
   medio_pago: z.string().min(1),

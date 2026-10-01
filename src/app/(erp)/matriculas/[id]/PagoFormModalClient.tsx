@@ -20,21 +20,27 @@ export function PagoFormModalClient({
   const [importe, setImporte] = useState<number>(0);
   const [medioPago, setMedioPago] = useState('TRANSFERENCIA');
   const [numeroOperacion, setNumeroOperacion] = useState('');
-  
+  const [idempotencyKey, setIdempotencyKey] = useState<string>('');
+
+  const handleOpen = () => {
+    setIdempotencyKey(window.crypto.randomUUID());
+    setIsOpen(true);
+  };
+
   // Para simplificar, aplicaremos el pago automáticamente a la cuota más antigua
   // En un sistema real complejo, permitiríamos seleccionar a qué cuotas aplicar.
-  
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (importe <= 0) {
       setError('El importe debe ser mayor a 0');
       return;
     }
-    
+
     // Distribuir el importe entre las cuotas pendientes
     let remaining = importe;
     const aplicaciones = [];
-    
+
     for (const c of cuotasPendientes) {
       if (remaining <= 0) break;
       const saldo = c.saldo === null ? c.importe_neto : c.saldo;
@@ -45,13 +51,14 @@ export function PagoFormModalClient({
       });
       remaining -= aAplicar;
     }
-    
+
     if (remaining > 0) {
       setError('El importe es mayor al total de la deuda pendiente');
       return;
     }
 
     const payload = {
+      idempotency_key: idempotencyKey,
       estudiante_id: estudianteId,
       importe: Number(importe),
       medio_pago: medioPago,
@@ -74,7 +81,7 @@ export function PagoFormModalClient({
 
   if (!isOpen) {
     return (
-      <Button onClick={() => setIsOpen(true)} className="bg-red-600 hover:bg-red-700 text-white">
+      <Button onClick={handleOpen} className="bg-red-600 hover:bg-red-700 text-white">
         Registrar Pago
       </Button>
     );
@@ -83,7 +90,7 @@ export function PagoFormModalClient({
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md p-6 bg-white shadow-xl relative max-h-[90vh] overflow-y-auto">
-        <button 
+        <button
           onClick={() => setIsOpen(false)}
           className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
         >
@@ -99,21 +106,21 @@ export function PagoFormModalClient({
 
           <div className="space-y-1">
             <label className="text-sm font-medium text-slate-700">Importe a Pagar (S/)</label>
-            <Input 
-              type="number" 
-              step="0.01" 
-              min="0.1" 
-              required 
-              value={importe} 
-              onChange={e => setImporte(Number(e.target.value))} 
+            <Input
+              type="number"
+              step="0.01"
+              min="0.1"
+              required
+              value={importe}
+              onChange={e => setImporte(Number(e.target.value))}
             />
             <p className="text-xs text-slate-500">Se aplicará automáticamente a la(s) cuota(s) más antigua(s).</p>
           </div>
 
           <div className="space-y-1">
             <label className="text-sm font-medium text-slate-700">Medio de Pago</label>
-            <select 
-              value={medioPago} 
+            <select
+              value={medioPago}
               onChange={e => setMedioPago(e.target.value)}
               className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 bg-white"
             >
@@ -125,10 +132,10 @@ export function PagoFormModalClient({
 
           <div className="space-y-1">
             <label className="text-sm font-medium text-slate-700">Nº de Operación (Opcional)</label>
-            <Input 
-              type="text" 
-              value={numeroOperacion} 
-              onChange={e => setNumeroOperacion(e.target.value)} 
+            <Input
+              type="text"
+              value={numeroOperacion}
+              onChange={e => setNumeroOperacion(e.target.value)}
               placeholder="Ej: 123456789"
             />
           </div>

@@ -7,21 +7,41 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'pagos' AND column_name = 'idempotency_key') THEN
         ALTER TABLE pagos ADD COLUMN idempotency_key uuid;
     END IF;
+END $$;
+
+DO $$
+BEGIN
+    -- Verificar duplicados de idempotency_key
+    IF EXISTS (SELECT idempotency_key FROM pagos WHERE idempotency_key IS NOT NULL GROUP BY idempotency_key HAVING COUNT(*) > 1) THEN
+        RAISE EXCEPTION 'Existen duplicados en pagos.idempotency_key. Limpie los datos antes de aplicar la migración.';
+    END IF;
     -- Restricción UNIQUE para idempotency_key
     IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'uq_pagos_idempotency_key') THEN
         ALTER TABLE pagos ADD CONSTRAINT uq_pagos_idempotency_key UNIQUE (idempotency_key);
     END IF;
 
+    -- Verificar duplicados de codigo_estudiante
+    IF EXISTS (SELECT codigo_estudiante FROM estudiantes WHERE codigo_estudiante IS NOT NULL GROUP BY codigo_estudiante HAVING COUNT(*) > 1) THEN
+        RAISE EXCEPTION 'Existen duplicados en estudiantes.codigo_estudiante. Limpie los datos antes de aplicar la migración.';
+    END IF;
     -- Restricción UNIQUE para codigo_estudiante
     IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'uq_estudiantes_codigo') THEN
         ALTER TABLE estudiantes ADD CONSTRAINT uq_estudiantes_codigo UNIQUE (codigo_estudiante);
+    END IF;
+
+    -- Verificar duplicados de codigo_matricula
+    IF EXISTS (SELECT codigo_matricula FROM matriculas WHERE codigo_matricula IS NOT NULL GROUP BY codigo_matricula HAVING COUNT(*) > 1) THEN
+        RAISE EXCEPTION 'Existen duplicados en matriculas.codigo_matricula. Limpie los datos antes de aplicar la migración.';
+    END IF;
+    -- Restricción UNIQUE para codigo_matricula
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'uq_matriculas_codigo') THEN
+        ALTER TABLE matriculas ADD CONSTRAINT uq_matriculas_codigo UNIQUE (codigo_matricula);
     END IF;
 END $$;
 
 
 -- 2. Secuencia y RPC para Código Estudiantil (BRU-YYYY-NNNNNN)
 CREATE SEQUENCE IF NOT EXISTS seq_codigo_estudiante START 1;
--- No concedemos USAGE directo. Se accederá vía SECURITY DEFINER.
 
 CREATE OR REPLACE FUNCTION generar_codigo_estudiante()
 RETURNS text AS $$
@@ -106,6 +126,7 @@ DECLARE
     v_cuota_importe_bruto numeric;
     v_cuota_importe_neto numeric;
     v_total_cuotas int;
+    v_prospecto_actualizado int;
 BEGIN
     v_uid := auth.uid();
     IF v_uid IS NULL THEN RAISE EXCEPTION 'Usuario no autenticado'; END IF;
@@ -113,7 +134,7 @@ BEGIN
         RAISE EXCEPTION 'No tienes permiso para gestionar matrículas';
     END IF;
 
-    -- Validaciones financieras iniciales
+    -- Validaciones financieras
     IF p_importe_matricula < 0 THEN RAISE EXCEPTION 'Importe de matrícula no puede ser negativo'; END IF;
     IF p_importe_pension < 0 THEN RAISE EXCEPTION 'Importe de pensión no puede ser negativo'; END IF;
     IF p_numero_pensiones < 0 THEN RAISE EXCEPTION 'Número de pensiones no puede ser negativo'; END IF;
@@ -132,34 +153,35 @@ BEGIN
     v_total_neto := v_total_bruto - p_descuento_total;
     v_total_cuotas := p_numero_pensiones + CASE WHEN p_importe_matricula > 0 THEN 1 ELSE 0 END;
 
-    -- Bloqueo de la edición (prevención de concurrencia de vacantes)
+    -- Bloqueo de la edición
     SELECT * INTO v_edicion_record FROM ediciones WHERE id = p_edicion_id FOR UPDATE;
     IF NOT FOUND THEN RAISE EXCEPTION 'Edición no encontrada'; END IF;
     IF v_edicion_record.status <> 'ACTIVO' THEN RAISE EXCEPTION 'La edición no está activa'; END IF;
 
-    -- Verificar idempotencia DESPUÉS de bloquear la edición
-    SELECT id INTO v_matricula_id FROM matriculas 
+    -- Idempotencia segura
+    SELECT id INTO v_matricula_id FROM matriculas
     WHERE estudiante_id = p_estudiante_id AND edicion_id = p_edicion_id AND status NOT IN ('ANULADA', 'VENCIDA', 'RETIRADA');
-    
+
     IF v_matricula_id IS NOT NULL THEN
         RETURN v_matricula_id;
     END IF;
 
-    -- Validar Vacantes
-    SELECT count(*) INTO v_vacantes_ocupadas FROM matriculas 
+    -- Vacantes
+    SELECT count(*) INTO v_vacantes_ocupadas FROM matriculas
     WHERE edicion_id = p_edicion_id AND status IN ('RESERVADA', 'ACTIVA', 'FINALIZADA');
-    
+
     IF v_edicion_record.vacantes IS NOT NULL AND v_vacantes_ocupadas >= v_edicion_record.vacantes THEN
         RAISE EXCEPTION 'No hay vacantes disponibles en esta edición';
     END IF;
 
-    -- Validar Ciclo si existe
+    -- Validar Ciclo contra el esquema real (relación ciclos.plan_id = ediciones.plan_id)
     IF p_ciclo_id IS NOT NULL THEN
         SELECT * INTO v_ciclo_record FROM ciclos WHERE id = p_ciclo_id;
         IF NOT FOUND THEN RAISE EXCEPTION 'Ciclo no encontrado'; END IF;
-        IF v_ciclo_record.programa_id <> v_edicion_record.programa_id THEN
-            RAISE EXCEPTION 'El ciclo no corresponde al programa de la edición';
+        IF v_ciclo_record.plan_id <> v_edicion_record.plan_id THEN
+            RAISE EXCEPTION 'El ciclo no corresponde al plan de estudios de la edición';
         END IF;
+        IF v_ciclo_record.status <> 'ACTIVO' THEN RAISE EXCEPTION 'El ciclo no está activo'; END IF;
     END IF;
 
     -- Validar Estudiante
@@ -172,18 +194,24 @@ BEGIN
         SELECT * INTO v_prospecto_record FROM prospectos WHERE id = p_prospecto_id FOR UPDATE;
         IF NOT FOUND THEN RAISE EXCEPTION 'Prospecto no encontrado'; END IF;
         IF v_prospecto_record.status = 'PERDIDO' THEN RAISE EXCEPTION 'El prospecto está perdido'; END IF;
-        IF v_prospecto_record.matricula_id IS NOT NULL THEN 
-            RAISE EXCEPTION 'El prospecto ya tiene una matrícula vinculada'; 
+        IF v_prospecto_record.matricula_id IS NOT NULL THEN
+            RAISE EXCEPTION 'El prospecto ya tiene una matrícula vinculada';
+        END IF;
+        IF v_prospecto_record.estudiante_id IS NOT NULL AND v_prospecto_record.estudiante_id <> p_estudiante_id THEN
+            RAISE EXCEPTION 'El prospecto pertenece a otro estudiante';
+        END IF;
+        IF v_prospecto_record.persona_id IS NOT NULL AND v_prospecto_record.persona_id <> v_estudiante_record.persona_id THEN
+            RAISE EXCEPTION 'El prospecto pertenece a otra persona';
         END IF;
     END IF;
 
-    -- Asignar código de estudiante si no tiene
+    -- Código estudiante
     IF v_estudiante_record.codigo_estudiante IS NULL THEN
         v_codigo_estudiante := generar_codigo_estudiante();
         UPDATE estudiantes SET codigo_estudiante = v_codigo_estudiante, updated_by = v_uid, updated_at = now() WHERE id = p_estudiante_id;
     END IF;
 
-    -- Insertar Matrícula (Manejando posible unique_violation por concurrencia extrema)
+    -- Insertar Matrícula capturando unique_violation concurrente
     v_codigo_matricula := generar_codigo_matricula();
     BEGIN
         INSERT INTO matriculas (
@@ -200,27 +228,32 @@ BEGIN
             v_uid, v_uid
         ) RETURNING id INTO v_matricula_id;
     EXCEPTION WHEN unique_violation THEN
-        SELECT id INTO v_matricula_id FROM matriculas 
+        SELECT id INTO v_matricula_id FROM matriculas
         WHERE estudiante_id = p_estudiante_id AND edicion_id = p_edicion_id AND status NOT IN ('ANULADA', 'VENCIDA', 'RETIRADA');
         RETURN v_matricula_id;
     END;
 
-    -- Distribución de Descuento (Equitativo con ajuste en la última cuota)
+    -- Distribución proporcional del descuento
     v_descuento_restante := p_descuento_total;
-    
+
     -- Cuota de Matrícula (Si aplica)
     IF p_importe_matricula > 0 THEN
         v_cuota_importe_bruto := p_importe_matricula;
+
         IF v_total_cuotas = 1 THEN
             v_descuento_cuota := v_descuento_restante;
         ELSE
-            -- Distribuir equitativamente truncando a 2 decimales
-            v_descuento_cuota := trunc((p_descuento_total / v_total_cuotas)::numeric, 2);
-            -- Asegurar no tener cuotas negativas
-            IF v_descuento_cuota > v_cuota_importe_bruto THEN v_descuento_cuota := v_cuota_importe_bruto; END IF;
+            -- Descuento proporcional: (bruto_cuota / total_bruto) * descuento_total
+            v_descuento_cuota := trunc((v_cuota_importe_bruto / v_total_bruto) * p_descuento_total, 2);
+            v_descuento_cuota := LEAST(v_cuota_importe_bruto, v_descuento_cuota);
         END IF;
-        
+
         v_cuota_importe_neto := v_cuota_importe_bruto - v_descuento_cuota;
+
+        IF v_descuento_cuota < 0 OR v_descuento_cuota > v_cuota_importe_bruto OR v_cuota_importe_neto < 0 THEN
+            RAISE EXCEPTION 'Inconsistencia en la distribución del descuento de la matrícula';
+        END IF;
+
         v_descuento_restante := v_descuento_restante - v_descuento_cuota;
 
         INSERT INTO cuotas (
@@ -236,16 +269,21 @@ BEGIN
     v_fecha_vencimiento := p_primer_vencimiento;
     FOR i IN 1..p_numero_pensiones LOOP
         v_cuota_importe_bruto := p_importe_pension;
-        
-        -- Si es la última cuota, asignar todo el descuento restante
+
+        -- Si es la última cuota, se le asigna todo el restante exacto
         IF i = p_numero_pensiones THEN
             v_descuento_cuota := v_descuento_restante;
         ELSE
-            v_descuento_cuota := trunc((p_descuento_total / v_total_cuotas)::numeric, 2);
-            IF v_descuento_cuota > v_cuota_importe_bruto THEN v_descuento_cuota := v_cuota_importe_bruto; END IF;
+            v_descuento_cuota := trunc((v_cuota_importe_bruto / v_total_bruto) * p_descuento_total, 2);
+            v_descuento_cuota := LEAST(v_cuota_importe_bruto, v_descuento_cuota);
         END IF;
 
         v_cuota_importe_neto := v_cuota_importe_bruto - v_descuento_cuota;
+
+        IF v_descuento_cuota < 0 OR v_descuento_cuota > v_cuota_importe_bruto OR v_cuota_importe_neto < 0 THEN
+            RAISE EXCEPTION 'Inconsistencia en la distribución del descuento de la pensión %', i;
+        END IF;
+
         v_descuento_restante := v_descuento_restante - v_descuento_cuota;
 
         INSERT INTO cuotas (
@@ -258,14 +296,19 @@ BEGIN
         v_fecha_vencimiento := v_fecha_vencimiento + (p_frecuencia_meses || ' months')::interval;
     END LOOP;
 
-    -- Actualizar Prospecto si aplica
+    -- Actualizar Prospecto asegurando actualización
     IF p_prospecto_id IS NOT NULL THEN
-        UPDATE prospectos SET 
+        UPDATE prospectos SET
             matricula_id = v_matricula_id,
             status = 'MATRICULADO',
             updated_by = v_uid,
             updated_at = now()
         WHERE id = p_prospecto_id;
+
+        GET DIAGNOSTICS v_prospecto_actualizado = ROW_COUNT;
+        IF v_prospecto_actualizado = 0 THEN
+            RAISE EXCEPTION 'Error al actualizar el estado del prospecto';
+        END IF;
     END IF;
 
     RETURN v_matricula_id;
@@ -305,7 +348,18 @@ BEGIN
         RAISE EXCEPTION 'No tienes permiso para registrar pagos';
     END IF;
 
+    IF p_idempotency_key IS NULL THEN RAISE EXCEPTION 'La clave de idempotencia es obligatoria'; END IF;
     IF p_importe <= 0 THEN RAISE EXCEPTION 'El importe debe ser mayor a cero'; END IF;
+
+    -- Validar jsonb
+    IF jsonb_typeof(p_cuotas_aplicadas) <> 'array' OR jsonb_array_length(p_cuotas_aplicadas) = 0 THEN
+        RAISE EXCEPTION 'Debe proporcionar un arreglo JSON válido con al menos una cuota';
+    END IF;
+
+    -- Validar estudiante
+    IF NOT EXISTS (SELECT 1 FROM estudiantes WHERE id = p_estudiante_id) THEN
+        RAISE EXCEPTION 'Estudiante no encontrado';
+    END IF;
 
     -- Validar Idempotencia real
     SELECT id INTO v_pago_id FROM pagos WHERE idempotency_key = p_idempotency_key;
@@ -313,28 +367,26 @@ BEGIN
         RETURN v_pago_id;
     END IF;
 
-    -- Validar Array de Cuotas
-    IF jsonb_array_length(p_cuotas_aplicadas) = 0 THEN
-        RAISE EXCEPTION 'Debe proporcionar al menos una cuota';
-    END IF;
+    -- Insertar el pago capturando unique_violation concurrente
+    BEGIN
+        INSERT INTO pagos (
+            idempotency_key, estudiante_id, fecha_pago, importe, medio_pago, numero_operacion,
+            comprobante_tipo, comprobante_numero, observaciones, registrado_por
+        ) VALUES (
+            p_idempotency_key, p_estudiante_id, CURRENT_DATE, p_importe, p_medio_pago, p_numero_operacion,
+            p_comprobante_tipo, p_comprobante_numero, p_observaciones, v_uid
+        ) RETURNING id INTO v_pago_id;
+    EXCEPTION WHEN unique_violation THEN
+        SELECT id INTO v_pago_id FROM pagos WHERE idempotency_key = p_idempotency_key;
+        RETURN v_pago_id;
+    END;
 
-    -- Insertar el pago primero para referenciarlo
-    INSERT INTO pagos (
-        idempotency_key, estudiante_id, fecha_pago, importe, medio_pago, numero_operacion,
-        comprobante_tipo, comprobante_numero, observaciones, registrado_por
-    ) VALUES (
-        p_idempotency_key, p_estudiante_id, CURRENT_DATE, p_importe, p_medio_pago, p_numero_operacion,
-        p_comprobante_tipo, p_comprobante_numero, p_observaciones, v_uid
-    ) RETURNING id INTO v_pago_id;
-
-    -- Aplicar a cuotas
-    FOR v_item IN SELECT * FROM jsonb_array_elements(p_cuotas_aplicadas)
+    -- Procesar en orden de cuota_id para evitar deadlocks
+    FOR v_item IN SELECT * FROM jsonb_array_elements(p_cuotas_aplicadas) ORDER BY (value->>'cuota_id')::uuid
     LOOP
         v_importe_aplicado := (v_item->>'importe')::numeric;
-        
         IF v_importe_aplicado <= 0 THEN RAISE EXCEPTION 'El importe aplicado a la cuota debe ser mayor a cero'; END IF;
 
-        -- Evitar duplicados en el array JSON
         IF (v_item->>'cuota_id')::uuid = ANY(v_cuotas_procesadas) THEN
             RAISE EXCEPTION 'Cuota duplicada en la aplicación';
         END IF;
@@ -346,8 +398,9 @@ BEGIN
 
         -- Validar pertenencia al estudiante
         SELECT m.estudiante_id INTO v_matricula FROM matriculas m WHERE m.id = v_cuota.matricula_id;
+        IF v_matricula IS NULL THEN RAISE EXCEPTION 'Matrícula de la cuota % inválida', v_cuota.id; END IF;
         IF v_matricula.estudiante_id <> p_estudiante_id THEN
-            RAISE EXCEPTION 'La cuota no pertenece al estudiante';
+            RAISE EXCEPTION 'La cuota no pertenece al estudiante indicado';
         END IF;
 
         -- Validar estado
@@ -368,8 +421,8 @@ BEGIN
 
         -- Actualizar saldo de cuota
         v_cuota_saldo := v_cuota_saldo - v_importe_aplicado;
-        
-        UPDATE cuotas SET 
+
+        UPDATE cuotas SET
             saldo = v_cuota_saldo,
             status = CASE WHEN v_cuota_saldo <= 0 THEN 'PAGADA' ELSE 'PARCIAL' END,
             updated_at = now()
@@ -378,7 +431,7 @@ BEGIN
         v_total_aplicado := v_total_aplicado + v_importe_aplicado;
     END LOOP;
 
-    -- Exigir igualdad exacta (no hay saldo a favor en esquema actual)
+    -- Exigir igualdad exacta
     IF v_total_aplicado <> p_importe THEN
         RAISE EXCEPTION 'La suma de las aplicaciones no coincide exactamente con el importe del pago';
     END IF;
@@ -409,6 +462,10 @@ BEGIN
         RAISE EXCEPTION 'No tienes permiso para anular pagos';
     END IF;
 
+    IF p_motivo IS NULL OR length(trim(p_motivo)) = 0 THEN
+        RAISE EXCEPTION 'El motivo de anulación es obligatorio';
+    END IF;
+
     -- Bloquear Pago
     SELECT * INTO v_pago FROM pagos WHERE id = p_pago_id FOR UPDATE;
     IF NOT FOUND THEN RAISE EXCEPTION 'Pago no encontrado'; END IF;
@@ -422,10 +479,10 @@ BEGIN
     FOR v_app IN SELECT * FROM pago_aplicaciones WHERE pago_id = p_pago_id FOR UPDATE LOOP
         -- Bloquear Cuota
         SELECT * INTO v_cuota FROM cuotas WHERE id = v_app.cuota_id FOR UPDATE;
-        
+
         v_nuevo_saldo := COALESCE(v_cuota.saldo, v_cuota.importe_neto) + v_app.importe_aplicado;
-        
-        -- Si superara el neto (raro pero posible por inconsistencias previas) lo limitamos
+
+        -- Si superara el neto lo limitamos
         IF v_nuevo_saldo > v_cuota.importe_neto THEN v_nuevo_saldo := v_cuota.importe_neto; END IF;
 
         UPDATE cuotas SET
