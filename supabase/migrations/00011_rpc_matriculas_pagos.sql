@@ -2,15 +2,14 @@
 
 -- 1. Restricciones y Columnas Aditivas
 DO $$
+DECLARE
+    v_cname text;
 BEGIN
     -- Añadir idempotency_key a pagos si no existe
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'pagos' AND column_name = 'idempotency_key') THEN
         ALTER TABLE pagos ADD COLUMN idempotency_key uuid;
     END IF;
-END $$;
 
-DO $$
-BEGIN
     -- Verificar duplicados de idempotency_key
     IF EXISTS (SELECT idempotency_key FROM pagos WHERE idempotency_key IS NOT NULL GROUP BY idempotency_key HAVING COUNT(*) > 1) THEN
         RAISE EXCEPTION 'Existen duplicados en pagos.idempotency_key. Limpie los datos antes de aplicar la migración.';
@@ -37,11 +36,34 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'uq_matriculas_codigo') THEN
         ALTER TABLE matriculas ADD CONSTRAINT uq_matriculas_codigo UNIQUE (codigo_matricula);
     END IF;
+
+    -- Renombrar restricción matriculas_estudiante_id_edicion_id_key si existe para que sea manejable de forma predecible
+    SELECT conname INTO v_cname FROM pg_constraint
+    WHERE conrelid = 'matriculas'::regclass AND contype = 'u'
+    AND pg_get_constraintdef(oid) LIKE '%(estudiante_id, edicion_id)%';
+
+    IF v_cname IS NOT NULL AND v_cname <> 'uq_matriculas_estudiante_edicion' THEN
+        EXECUTE 'ALTER TABLE matriculas RENAME CONSTRAINT "' || v_cname || '" TO uq_matriculas_estudiante_edicion';
+    END IF;
 END $$;
 
 
 -- 2. Secuencia y RPC para Código Estudiantil (BRU-YYYY-NNNNNN)
 CREATE SEQUENCE IF NOT EXISTS seq_codigo_estudiante START 1;
+
+DO $$
+DECLARE
+    v_max_num int;
+    v_anio text := to_char(now(), 'YYYY');
+BEGIN
+    SELECT COALESCE(MAX(SUBSTRING(codigo_estudiante FROM 10 FOR 6)::int), 0) INTO v_max_num
+    FROM estudiantes
+    WHERE codigo_estudiante LIKE 'BRU-' || v_anio || '-%' AND codigo_estudiante ~ '^BRU-\d{4}-\d{6}$';
+
+    IF v_max_num > 0 THEN
+        PERFORM setval('seq_codigo_estudiante', v_max_num);
+    END IF;
+END $$;
 
 CREATE OR REPLACE FUNCTION generar_codigo_estudiante()
 RETURNS text AS $$
@@ -68,6 +90,20 @@ GRANT EXECUTE ON FUNCTION generar_codigo_estudiante() TO authenticated;
 
 -- 3. Secuencia y RPC para Código de Matrícula (MAT-YYYY-NNNNNN)
 CREATE SEQUENCE IF NOT EXISTS seq_codigo_matricula START 1;
+
+DO $$
+DECLARE
+    v_max_num int;
+    v_anio text := to_char(now(), 'YYYY');
+BEGIN
+    SELECT COALESCE(MAX(SUBSTRING(codigo_matricula FROM 10 FOR 6)::int), 0) INTO v_max_num
+    FROM matriculas
+    WHERE codigo_matricula LIKE 'MAT-' || v_anio || '-%' AND codigo_matricula ~ '^MAT-\d{4}-\d{6}$';
+
+    IF v_max_num > 0 THEN
+        PERFORM setval('seq_codigo_matricula', v_max_num);
+    END IF;
+END $$;
 
 CREATE OR REPLACE FUNCTION generar_codigo_matricula()
 RETURNS text AS $$
@@ -122,11 +158,12 @@ DECLARE
     v_total_bruto numeric;
     v_total_neto numeric;
     v_descuento_restante numeric;
+    v_bruto_restante numeric;
     v_descuento_cuota numeric;
     v_cuota_importe_bruto numeric;
     v_cuota_importe_neto numeric;
-    v_total_cuotas int;
     v_prospecto_actualizado int;
+    v_constraint text;
 BEGIN
     v_uid := auth.uid();
     IF v_uid IS NULL THEN RAISE EXCEPTION 'Usuario no autenticado'; END IF;
@@ -151,14 +188,13 @@ BEGIN
         RAISE EXCEPTION 'El descuento supera el total bruto';
     END IF;
     v_total_neto := v_total_bruto - p_descuento_total;
-    v_total_cuotas := p_numero_pensiones + CASE WHEN p_importe_matricula > 0 THEN 1 ELSE 0 END;
 
     -- Bloqueo de la edición
     SELECT * INTO v_edicion_record FROM ediciones WHERE id = p_edicion_id FOR UPDATE;
     IF NOT FOUND THEN RAISE EXCEPTION 'Edición no encontrada'; END IF;
     IF v_edicion_record.status <> 'ACTIVO' THEN RAISE EXCEPTION 'La edición no está activa'; END IF;
 
-    -- Idempotencia segura
+    -- Idempotencia segura inicial
     SELECT id INTO v_matricula_id FROM matriculas
     WHERE estudiante_id = p_estudiante_id AND edicion_id = p_edicion_id AND status NOT IN ('ANULADA', 'VENCIDA', 'RETIRADA');
 
@@ -228,23 +264,35 @@ BEGIN
             v_uid, v_uid
         ) RETURNING id INTO v_matricula_id;
     EXCEPTION WHEN unique_violation THEN
-        SELECT id INTO v_matricula_id FROM matriculas
-        WHERE estudiante_id = p_estudiante_id AND edicion_id = p_edicion_id AND status NOT IN ('ANULADA', 'VENCIDA', 'RETIRADA');
-        RETURN v_matricula_id;
+        GET STACKED DIAGNOSTICS v_constraint = CONSTRAINT_NAME;
+        IF v_constraint IN ('matriculas_estudiante_id_edicion_id_key', 'uq_matriculas_estudiante_edicion') THEN
+            SELECT id INTO v_matricula_id FROM matriculas
+            WHERE estudiante_id = p_estudiante_id AND edicion_id = p_edicion_id AND status NOT IN ('ANULADA', 'VENCIDA', 'RETIRADA');
+
+            IF v_matricula_id IS NULL THEN
+                -- El registro existe por la restricción UNIQUE, pero su estado está anulado/vencido/retirado.
+                -- La restricción UNIQUE impone que solo haya UNA matrícula por estudiante+edición sin importar el estado.
+                RAISE EXCEPTION 'El estudiante ya tiene una matrícula anulada, vencida o retirada en esta edición. La restricción de unicidad impide re-matricularlo en la misma edición.';
+            END IF;
+            RETURN v_matricula_id;
+        ELSE
+            RAISE;
+        END IF;
     END;
 
-    -- Distribución proporcional del descuento
+    -- Distribución proporcional del descuento con remanentes
     v_descuento_restante := p_descuento_total;
+    v_bruto_restante := v_total_bruto;
 
     -- Cuota de Matrícula (Si aplica)
     IF p_importe_matricula > 0 THEN
         v_cuota_importe_bruto := p_importe_matricula;
 
-        IF v_total_cuotas = 1 THEN
+        IF p_numero_pensiones = 0 THEN
             v_descuento_cuota := v_descuento_restante;
         ELSE
-            -- Descuento proporcional: (bruto_cuota / total_bruto) * descuento_total
-            v_descuento_cuota := trunc((v_cuota_importe_bruto / v_total_bruto) * p_descuento_total, 2);
+            -- Proporción truncada a 2 decimales
+            v_descuento_cuota := trunc((v_cuota_importe_bruto / v_bruto_restante) * v_descuento_restante, 2);
             v_descuento_cuota := LEAST(v_cuota_importe_bruto, v_descuento_cuota);
         END IF;
 
@@ -255,6 +303,7 @@ BEGIN
         END IF;
 
         v_descuento_restante := v_descuento_restante - v_descuento_cuota;
+        v_bruto_restante := v_bruto_restante - v_cuota_importe_bruto;
 
         INSERT INTO cuotas (
             matricula_id, tipo_cuota, numero_cuota, concepto,
@@ -270,11 +319,14 @@ BEGIN
     FOR i IN 1..p_numero_pensiones LOOP
         v_cuota_importe_bruto := p_importe_pension;
 
-        -- Si es la última cuota, se le asigna todo el restante exacto
+        -- Si es la última cuota general, absorbe TODO el descuento restante
         IF i = p_numero_pensiones THEN
             v_descuento_cuota := v_descuento_restante;
+            IF v_descuento_cuota > v_cuota_importe_bruto THEN
+                RAISE EXCEPTION 'El descuento para la última cuota superó el importe bruto. Revisar configuración de importes.';
+            END IF;
         ELSE
-            v_descuento_cuota := trunc((v_cuota_importe_bruto / v_total_bruto) * p_descuento_total, 2);
+            v_descuento_cuota := trunc((v_cuota_importe_bruto / v_bruto_restante) * v_descuento_restante, 2);
             v_descuento_cuota := LEAST(v_cuota_importe_bruto, v_descuento_cuota);
         END IF;
 
@@ -285,6 +337,7 @@ BEGIN
         END IF;
 
         v_descuento_restante := v_descuento_restante - v_descuento_cuota;
+        v_bruto_restante := v_bruto_restante - v_cuota_importe_bruto;
 
         INSERT INTO cuotas (
             matricula_id, tipo_cuota, numero_cuota, concepto,
@@ -295,6 +348,11 @@ BEGIN
         );
         v_fecha_vencimiento := v_fecha_vencimiento + (p_frecuencia_meses || ' months')::interval;
     END LOOP;
+
+    -- Verificación final
+    IF v_descuento_restante <> 0 THEN
+        RAISE EXCEPTION 'El descuento no pudo ser completamente asignado sin generar valores negativos';
+    END IF;
 
     -- Actualizar Prospecto asegurando actualización
     IF p_prospecto_id IS NOT NULL THEN
@@ -341,6 +399,7 @@ DECLARE
     v_uid uuid;
     v_cuotas_procesadas uuid[] := ARRAY[]::uuid[];
     v_matricula record;
+    v_constraint text;
 BEGIN
     v_uid := auth.uid();
     IF v_uid IS NULL THEN RAISE EXCEPTION 'Usuario no autenticado'; END IF;
@@ -361,7 +420,7 @@ BEGIN
         RAISE EXCEPTION 'Estudiante no encontrado';
     END IF;
 
-    -- Validar Idempotencia real
+    -- Validar Idempotencia real previa
     SELECT id INTO v_pago_id FROM pagos WHERE idempotency_key = p_idempotency_key;
     IF v_pago_id IS NOT NULL THEN
         RETURN v_pago_id;
@@ -377,8 +436,16 @@ BEGIN
             p_comprobante_tipo, p_comprobante_numero, p_observaciones, v_uid
         ) RETURNING id INTO v_pago_id;
     EXCEPTION WHEN unique_violation THEN
-        SELECT id INTO v_pago_id FROM pagos WHERE idempotency_key = p_idempotency_key;
-        RETURN v_pago_id;
+        GET STACKED DIAGNOSTICS v_constraint = CONSTRAINT_NAME;
+        IF v_constraint = 'uq_pagos_idempotency_key' THEN
+            SELECT id INTO v_pago_id FROM pagos WHERE idempotency_key = p_idempotency_key;
+            IF v_pago_id IS NULL THEN
+                RAISE EXCEPTION 'No se recuperó el pago por idempotencia tras conflicto concurrente';
+            END IF;
+            RETURN v_pago_id;
+        ELSE
+            RAISE;
+        END IF;
     END;
 
     -- Procesar en orden de cuota_id para evitar deadlocks
