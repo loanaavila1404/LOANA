@@ -30,8 +30,7 @@ export async function confirmarMatriculaAction(payload: unknown) {
     p_descuento_total: parsed.data.descuento_total,
     p_descuento_motivo: parsed.data.descuento_motivo || null,
     p_primer_vencimiento: parsed.data.primer_vencimiento,
-    p_frecuencia_meses: parsed.data.frecuencia_meses,
-    p_usuario_id: user?.id
+    p_frecuencia_meses: parsed.data.frecuencia_meses
   });
 
   if (error) {
@@ -63,8 +62,7 @@ export async function registrarPagoAction(payload: unknown) {
     p_comprobante_tipo: parsed.data.comprobante_tipo || null,
     p_comprobante_numero: parsed.data.comprobante_numero || null,
     p_observaciones: parsed.data.observaciones || null,
-    p_cuotas_aplicadas: parsed.data.cuotas_aplicadas,
-    p_usuario_id: user?.id
+    p_cuotas_aplicadas: parsed.data.cuotas_aplicadas
   });
 
   if (error) {
