@@ -44,24 +44,36 @@ export default async function CRMPage({
     supabase.from('catalogos_comerciales').select('*').eq('active', true),
   ]);
 
+  const totales = prospectos || [];
+  const nuevos = totales.filter(p => p.status === 'NUEVO').length;
+  const enSeguimiento = totales.filter(p => p.status === 'SEGUIMIENTO').length;
+  const matriculados = totales.filter(p => p.status === 'MATRICULADO').length;
+  const perdidos = totales.filter(p => p.status === 'PERDIDO').length;
+  const total = totales.length;
+  const tasaConversion = total > 0 ? Math.round((matriculados / total) * 100) + '%' : '0%';
+
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card className="p-4">
-          <p className="text-sm font-medium text-slate-500">Nuevos (Mes)</p>
-          <p className="text-2xl font-bold text-slate-900">-</p>
+          <p className="text-sm font-medium text-slate-500">Total</p>
+          <p className="text-2xl font-bold text-slate-900">{total}</p>
+        </Card>
+        <Card className="p-4">
+          <p className="text-sm font-medium text-slate-500">Nuevos</p>
+          <p className="text-2xl font-bold text-slate-900">{nuevos}</p>
         </Card>
         <Card className="p-4">
           <p className="text-sm font-medium text-slate-500">En Seguimiento</p>
-          <p className="text-2xl font-bold text-slate-900">-</p>
+          <p className="text-2xl font-bold text-slate-900">{enSeguimiento}</p>
         </Card>
         <Card className="p-4">
-          <p className="text-sm font-medium text-slate-500">Conversiones (Mes)</p>
-          <p className="text-2xl font-bold text-slate-900">-</p>
+          <p className="text-sm font-medium text-slate-500">Matriculados</p>
+          <p className="text-2xl font-bold text-slate-900">{matriculados}</p>
         </Card>
         <Card className="p-4">
-          <p className="text-sm font-medium text-slate-500">Tasa de Conversión</p>
-          <p className="text-2xl font-bold text-slate-900">-</p>
+          <p className="text-sm font-medium text-slate-500">Perdidos</p>
+          <p className="text-2xl font-bold text-slate-900">{perdidos}</p>
         </Card>
       </div>
 

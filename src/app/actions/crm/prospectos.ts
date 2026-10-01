@@ -132,7 +132,7 @@ export async function updateProspectoStatusAction(id: string, status: string, mo
 
 export async function transferProspectoAction(formData: FormData) {
   const permissions = await getUserPermissions();
-  if (!permissions.includes('CRM.ADMINISTRAR') && !permissions.includes('SISTEMA.ADMINISTRAR')) {
+  if (!permissions.includes('CRM.GESTIONAR') && !permissions.includes('SISTEMA.ADMINISTRAR')) {
     return { error: 'No tienes permiso para reasignar prospectos' };
   }
 
@@ -169,55 +169,109 @@ export async function transferProspectoAction(formData: FormData) {
   if (trError) return { error: 'Error al registrar la transferencia' };
 
   // Update prospecto
-  await supabase.from('prospectos').update({
+  const { error: updError } = await supabase.from('prospectos').update({
     asesor_id: parsed.data.asesor_nuevo_id,
     updated_by: user?.id
   }).eq('id', parsed.data.prospecto_id);
+
+  if (updError) return { error: 'Error al actualizar el asesor' };
 
   revalidatePath(`/crm/prospectos/${parsed.data.prospecto_id}`);
   revalidatePath('/crm');
   return { success: true };
 }
 
+
 export async function convertirAEstudianteAction(prospectoId: string) {
   const permissions = await getUserPermissions();
-  if (!permissions.includes('CRM.GESTIONAR') && !permissions.includes('SISTEMA.ADMINISTRAR')) return { error: 'No tienes permiso' };
-  
+  if (!permissions.includes('CRM.GESTIONAR') && !permissions.includes('SISTEMA.ADMINISTRAR')) {
+    return { error: 'No tienes permiso para realizar esta acción.' };
+  }
+
   const supabase = await createClient();
-  const user = (await supabase.auth.getUser()).data.user;
-  
-  const { data: p } = await supabase.from('prospectos').select('*').eq('id', prospectoId).single();
-  if (!p) return { error: 'Prospecto no encontrado' };
-  if (p.status === 'MATRICULADO') return { error: 'Ya fue convertido' };
-  
-  const { data: persona, error: perError } = await supabase.from('personas').insert({ 
-    tipo_documento: p.tipo_documento, 
-    numero_documento: p.numero_documento, 
-    nombres: p.nombres, 
-    apellido_paterno: p.apellidos, 
-    email: p.email, 
-    telefono: p.telefono 
-  }).select().single();
-  
-  if (perError) return { error: 'Error al crear persona' };
-  
-  const { data: estudiante, error: estError } = await supabase.from('estudiantes').insert({ 
-    persona_id: persona.id, 
-    status: 'ACTIVO', 
-    created_by: user?.id 
-  }).select().single();
-  
-  if (estError) return { error: 'Error al crear estudiante' };
-  
-  await supabase.from('prospectos').update({ 
-    status: 'MATRICULADO', 
-    persona_id: persona.id, 
-    estudiante_id: estudiante.id, 
-    fecha_conversion: new Date().toISOString(), 
+  const { data: { user } } = await supabase.auth.getUser();
+
+  const { data: p, error: pError } = await supabase.from('prospectos').select('*').eq('id', prospectoId).single();
+  if (pError || !p) return { error: 'Prospecto no encontrado.' };
+
+  // Idempotency: if already has both IDs, it is already converted
+  if (p.persona_id && p.estudiante_id) {
+    return { success: true };
+  }
+
+  // Requirement: block if no document
+  if (!p.tipo_documento || !p.numero_documento) {
+    return { error: 'El prospecto no cuenta con documento de identidad completo. Por favor, edita sus datos antes de convertirlo.' };
+  }
+
+  // 1. Check or Create Persona
+  let personaId = p.persona_id;
+  if (!personaId) {
+    const { data: existingPersona, error: exPError } = await supabase
+      .from('personas')
+      .select('id')
+      .eq('tipo_documento', p.tipo_documento)
+      .eq('numero_documento', p.numero_documento)
+      .single();
+
+    if (existingPersona) {
+      personaId = existingPersona.id;
+    } else if (exPError && exPError.code !== 'PGRST116') {
+      return { error: 'Error al buscar persona existente.' };
+    } else {
+      // Create Persona
+      const { data: newPersona, error: insPError } = await supabase.from('personas').insert({
+        tipo_documento: p.tipo_documento,
+        numero_documento: p.numero_documento,
+        nombres: p.nombres,
+        apellido_paterno: p.apellidos,
+        email: p.email,
+        telefono: p.telefono
+      }).select('id').single();
+
+      if (insPError || !newPersona) return { error: 'Error al crear el registro de persona.' };
+      personaId = newPersona.id;
+    }
+  }
+
+  // 2. Check or Create Estudiante
+  let estudianteId = p.estudiante_id;
+  if (!estudianteId) {
+    const { data: existingEstudiante, error: exEError } = await supabase
+      .from('estudiantes')
+      .select('id')
+      .eq('persona_id', personaId)
+      .single();
+
+    if (existingEstudiante) {
+      estudianteId = existingEstudiante.id;
+    } else if (exEError && exEError.code !== 'PGRST116') {
+      return { error: 'Error al buscar estudiante existente.' };
+    } else {
+      // Create Estudiante
+      const { data: newEstudiante, error: insEError } = await supabase.from('estudiantes').insert({
+        persona_id: personaId,
+        status: 'ACTIVO',
+        created_by: user?.id
+      }).select('id').single();
+
+      if (insEError || !newEstudiante) return { error: 'Error al crear el registro de estudiante.' };
+      estudianteId = newEstudiante.id;
+    }
+  }
+
+  // 3. Update Prospecto with both IDs and MATRICULADO status
+  const { error: updError } = await supabase.from('prospectos').update({
+    status: 'MATRICULADO',
+    persona_id: personaId,
+    estudiante_id: estudianteId,
+    fecha_conversion: new Date().toISOString(),
     asesor_conversion_id: p.asesor_id || user?.id,
     updated_by: user?.id
   }).eq('id', prospectoId);
-  
+
+  if (updError) return { error: 'Error al actualizar el estado del prospecto.' };
+
   revalidatePath('/crm/prospectos/' + prospectoId);
   revalidatePath('/crm');
   return { success: true };

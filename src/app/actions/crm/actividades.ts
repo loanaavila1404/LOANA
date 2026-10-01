@@ -48,7 +48,8 @@ export async function createSeguimientoAction(formData: FormData) {
   if (parsed.data.proximo_seguimiento) {
     updates.proximo_seguimiento_en = parsed.data.proximo_seguimiento;
   }
-  await supabase.from('prospectos').update(updates).eq('id', parsed.data.prospecto_id);
+  const { error: updError } = await supabase.from('prospectos').update(updates).eq('id', parsed.data.prospecto_id);
+  if (updError) return { error: 'Error al actualizar prospecto' };
 
   revalidatePath(`/crm/prospectos/${parsed.data.prospecto_id}`);
   return { success: true };
