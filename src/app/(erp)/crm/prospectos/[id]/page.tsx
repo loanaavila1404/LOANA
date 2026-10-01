@@ -7,6 +7,8 @@ import Link from 'next/link';
 import { SeguimientoFormModalClient } from './SeguimientoFormModalClient';
 import { TareaFormModalClient, CompleteTareaButtonClient } from './TareaFormModalClient';
 import { TransferenciaModalClient } from './TransferenciaModalClient';
+import { MarcarPerdidoButtonClient } from './MarcarPerdidoButtonClient';
+import { ConvertirButtonClient } from './ConvertirButtonClient';
 
 export const metadata = {
   title: 'Ficha Comercial - ERP Brusben'
@@ -78,12 +80,8 @@ export default async function ProspectoDetailPage({
         <div className="flex gap-2">
           {prospecto.status !== 'MATRICULADO' && prospecto.status !== 'PERDIDO' && (
             <>
-              <button className="bg-red-600 text-white px-3 py-1.5 rounded-md text-sm font-medium hover:bg-red-700">
-                Marcar Perdido
-              </button>
-              <button className="bg-green-600 text-white px-3 py-1.5 rounded-md text-sm font-medium hover:bg-green-700">
-                Convertir a Estudiante
-              </button>
+              <MarcarPerdidoButtonClient prospectoId={prospecto.id} />
+              <ConvertirButtonClient prospectoId={prospecto.id} />
             </>
           )}
           <TransferenciaModalClient prospectoId={prospecto.id} asesores={asesores || []} asesorActualId={prospecto.asesor_id} />
