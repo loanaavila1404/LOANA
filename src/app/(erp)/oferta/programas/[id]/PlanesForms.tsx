@@ -37,31 +37,31 @@ export function PlanFormModalClient({ programaId, plan, trigger }: { programaId:
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <label className="text-xs font-medium">Código</label>
-              <Input name="codigo" defaultValue={plan?.codigo} required className="uppercase" />
+              <Input name="codigo" defaultValue={plan?.codigo || ''} required className="uppercase" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium">Nombre</label>
-              <Input name="nombre" defaultValue={plan?.nombre} required />
+              <Input name="nombre" defaultValue={plan?.nombre || ''} required />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <label className="text-xs font-medium">Versión</label>
-              <Input name="version" defaultValue={plan?.version} />
+              <Input name="version" defaultValue={plan?.version || ''} />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium">Total Ciclos</label>
-              <Input type="number" name="total_ciclos" defaultValue={plan?.total_ciclos} min="1" />
+              <Input type="number" name="total_ciclos" defaultValue={plan?.total_ciclos || ''} min="1" />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <label className="text-xs font-medium">Vigencia Desde</label>
-              <Input type="date" name="fecha_vigencia_desde" defaultValue={plan?.fecha_vigencia_desde} />
+              <Input type="date" name="fecha_vigencia_desde" defaultValue={plan?.fecha_vigencia_desde || ''} />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium">Vigencia Hasta</label>
-              <Input type="date" name="fecha_vigencia_hasta" defaultValue={plan?.fecha_vigencia_hasta} />
+              <Input type="date" name="fecha_vigencia_hasta" defaultValue={plan?.fecha_vigencia_hasta || ''} />
             </div>
           </div>
           <div className="flex justify-end gap-2 pt-4">
@@ -103,11 +103,11 @@ export function CicloFormModalClient({ planId, ciclo, trigger }: { planId: strin
           {error && <div className="p-2 text-sm text-red-600 bg-red-50 rounded">{error}</div>}
           <div className="space-y-1">
             <label className="text-xs font-medium">Número de Orden</label>
-            <Input type="number" name="numero_orden" defaultValue={ciclo?.numero_orden} required min="1" />
+            <Input type="number" name="numero_orden" defaultValue={ciclo?.numero_orden || ''} required min="1" />
           </div>
           <div className="space-y-1">
             <label className="text-xs font-medium">Nombre (Opcional)</label>
-            <Input name="nombre" defaultValue={ciclo?.nombre} placeholder="Ej: Primer Ciclo" />
+            <Input name="nombre" defaultValue={ciclo?.nombre || ''} placeholder="Ej: Primer Ciclo" />
           </div>
           <div className="flex justify-end gap-2 pt-4">
             <Button type="button" variant="ghost" onClick={() => setIsOpen(false)} disabled={isPending}>Cancelar</Button>
@@ -149,20 +149,20 @@ export function CursoFormModalClient({ planId, cicloId, curso, trigger }: { plan
           {error && <div className="p-2 text-sm text-red-600 bg-red-50 rounded">{error}</div>}
           <div className="space-y-1">
             <label className="text-xs font-medium">Código</label>
-            <Input name="codigo" defaultValue={curso?.codigo} className="uppercase" />
+            <Input name="codigo" defaultValue={curso?.codigo || ''} className="uppercase" />
           </div>
           <div className="space-y-1">
             <label className="text-xs font-medium">Nombre</label>
-            <Input name="nombre" defaultValue={curso?.nombre} required />
+            <Input name="nombre" defaultValue={curso?.nombre || ''} required />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <label className="text-xs font-medium">Créditos</label>
-              <Input type="number" name="creditos" defaultValue={curso?.creditos} min="0" />
+              <Input type="number" name="creditos" defaultValue={curso?.creditos || ''} min="0" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium">Horas Semanales</label>
-              <Input type="number" name="horas_semanales" defaultValue={curso?.horas_semanales} min="0" />
+              <Input type="number" name="horas_semanales" defaultValue={curso?.horas_semanales || ''} min="0" />
             </div>
           </div>
           <div className="flex justify-end gap-2 pt-4">

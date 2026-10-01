@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import Link from 'next/link';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table';
+import { HorarioFormModalClient } from './HorarioFormModalClient';
 
 export const metadata = {
   title: 'Detalle de Edición - ERP Brusben'
@@ -43,6 +44,14 @@ export default async function EdicionDetailPage({
     .eq('edicion_id', edicion.id)
     .order('created_at', { ascending: false });
 
+  // Load cursos of the plan
+  const { data: cursos } = await supabase
+    .from('cursos')
+    .select('id, nombre, codigo')
+    .eq('plan_id', edicion.plan_id || '')
+    .eq('status', 'ACTIVO')
+    .order('nombre');
+
   // Render
   return (
     <div className="space-y-6">
@@ -57,7 +66,7 @@ export default async function EdicionDetailPage({
             <h1 className="text-2xl font-bold text-slate-900">{edicion.nombre || `Edición ${edicion.codigo}`}</h1>
             <Badge variant={edicion.status === 'ACTIVO' ? 'success' : 'default'}>{edicion.status}</Badge>
           </div>
-          <p className="text-sm text-slate-500">{edicion.programas?.nombre || '-'} • {edicion.periodos?.nombre || '-'}</p>
+          <p className="text-sm text-slate-500">{(edicion as unknown as { programas: { nombre: string } })?.programas?.nombre || '-'} • {(edicion as unknown as { periodos: { nombre: string } })?.periodos?.nombre || '-'}</p>
         </div>
       </div>
 
@@ -95,9 +104,7 @@ export default async function EdicionDetailPage({
         <div className="md:col-span-2 space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-slate-800">Horarios</h2>
-            <button className="bg-red-600 text-white px-3 py-1.5 rounded-md text-sm font-medium hover:bg-red-700">
-              Nuevo Horario
-            </button>
+            <HorarioFormModalClient edicionId={edicion.id} cursos={cursos || []} />
           </div>
 
           <Card className="overflow-x-auto">
@@ -124,11 +131,11 @@ export default async function EdicionDetailPage({
                     <TableRow key={h.id}>
                       <TableCell className="font-medium">{h.dia_semana}</TableCell>
                       <TableCell>{h.hora_inicio} - {h.hora_fin}</TableCell>
-                      <TableCell>{(h as unknown as { cursos: { nombre: string } }).cursos?.nombre || '-'}</TableCell>
+                      <TableCell>{(h as unknown as { cursos: { nombre: string } })?.cursos?.nombre || '-'}</TableCell>
                       <TableCell>{h.ubicacion || '-'}</TableCell>
                       <TableCell>{h.docente || '-'}</TableCell>
                       <TableCell className="text-right">
-                        <button className="text-red-600 hover:underline text-sm font-medium">Editar</button>
+                        <HorarioFormModalClient edicionId={edicion.id} horario={h} cursos={cursos || []} triggerText="Editar" variant="ghost" />
                       </TableCell>
                     </TableRow>
                   ))

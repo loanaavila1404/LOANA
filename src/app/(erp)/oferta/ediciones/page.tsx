@@ -3,6 +3,8 @@ import { requirePermission } from '@/lib/auth/permissions';
 import { Card } from '@/components/ui/Card';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table';
 import { Badge } from '@/components/ui/Badge';
+import Link from 'next/link';
+import { EdicionFormModalClient } from './EdicionFormModalClient';
 
 export const metadata = {
   title: 'Ediciones - ERP Brusben'
@@ -35,6 +37,14 @@ export default async function EdicionesPage({
 
   const { data: ediciones } = await dbQuery.order('created_at', { ascending: false });
 
+  // Load catalogs for the modal
+  const [{ data: programas }, { data: planes }, { data: periodos }, { data: ciclos }] = await Promise.all([
+    supabase.from('programas').select('id, nombre').eq('status', 'ACTIVO').order('nombre'),
+    supabase.from('planes_estudio').select('id, nombre, programa_id').eq('status', 'ACTIVO').order('nombre'),
+    supabase.from('periodos').select('id, nombre').eq('status', 'ACTIVO').order('fecha_inicio', { ascending: false }),
+    supabase.from('ciclos').select('id, nombre, plan_id, numero_orden').eq('status', 'ACTIVO').order('numero_orden'),
+  ]);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
@@ -60,9 +70,12 @@ export default async function EdicionesPage({
           </button>
         </form>
 
-        <button className="bg-red-600 text-white px-4 py-2 rounded-md font-medium text-sm hover:bg-red-700">
-          Nueva Edición
-        </button>
+        <EdicionFormModalClient 
+          programas={programas || []} 
+          planes={planes || []} 
+          periodos={periodos || []} 
+          ciclos={ciclos || []} 
+        />
       </div>
 
       <Card className="overflow-x-auto">
@@ -88,9 +101,13 @@ export default async function EdicionesPage({
             ) : (
               ediciones.map((edicion) => (
                 <TableRow key={edicion.id} className="hover:bg-slate-50">
-                  <TableCell className="font-medium text-slate-900">{edicion.codigo}</TableCell>
-                  <TableCell>{edicion.programas?.nombre || '-'}</TableCell>
-                  <TableCell>{edicion.planes_estudio?.nombre || '-'}</TableCell>
+                  <TableCell className="font-medium text-slate-900">
+                    <Link href={`/oferta/ediciones/${edicion.id}`} className="text-red-600 hover:underline">
+                      {edicion.codigo}
+                    </Link>
+                  </TableCell>
+                  <TableCell>{(edicion as unknown as { programas: { nombre: string } })?.programas?.nombre || '-'}</TableCell>
+                  <TableCell>{(edicion as unknown as { planes_estudio: { nombre: string } })?.planes_estudio?.nombre || '-'}</TableCell>
                   <TableCell>
                     <div className="flex flex-col gap-1">
                       <span className="text-sm">{edicion.modalidad || '-'}</span>
