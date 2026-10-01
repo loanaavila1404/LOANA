@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import Link from 'next/link';
+import { ConfigurarProgramaButtonClient } from './ConfigurarProgramaButtonClient';
+import { CicloFormModalClient, CursoFormModalClient } from './PlanesForms';
 
 export const metadata = {
   title: 'Detalle de Programa - ERP Brusben'
@@ -86,82 +88,91 @@ export default async function ProgramaDetailPage({
           </Card>
         </div>
 
-        {/* COLUMNA DERECHA: Planes de Estudio, Ciclos, Cursos */}
+        {/* COLUMNA DERECHA: Ciclos y Cursos */}
         <div className="md:col-span-2 space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-slate-800">Planes de Estudio</h2>
-            <button className="bg-red-600 text-white px-3 py-1.5 rounded-md text-sm font-medium hover:bg-red-700">
-              Nuevo Plan
-            </button>
+            <h2 className="text-xl font-bold text-slate-800">Ciclos y cursos</h2>
           </div>
 
-          {(!planes || planes.length === 0) ? (
-            <Card className="p-8 text-center text-slate-500">
-              No hay planes de estudio registrados para este programa.
-            </Card>
+          {(!planes || planes.length === 0 || planes.filter(p => p.status === 'ACTIVO').length === 0) ? (
+            <ConfigurarProgramaButtonClient programaId={programa.id} />
           ) : (
             <div className="space-y-4">
-              {planes.map(plan => (
-                <Card key={plan.id} className="p-0 overflow-hidden border border-slate-200">
-                  <div className="bg-slate-50 p-4 border-b border-slate-200 flex justify-between items-center">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-bold text-slate-800">{plan.nombre}</h3>
-                        <Badge variant={plan.status === 'ACTIVO' ? 'success' : 'default'}>{plan.status}</Badge>
+              {(() => {
+                const planActivo = planes.find(p => p.status === 'ACTIVO') || planes[0];
+                return (
+                  <Card className="p-0 overflow-hidden border border-slate-200">
+                    <div className="bg-slate-50 p-4 border-b border-slate-200 flex justify-between items-center">
+                      <div>
+                        <h3 className="font-bold text-slate-800">Estructura Académica</h3>
+                        <p className="text-xs text-slate-500">Plan interno: {planActivo.codigo}</p>
                       </div>
-                      <p className="text-xs text-slate-500">Código: {plan.codigo} • Versión: {plan.version || '-'} • Ciclos: {plan.total_ciclos || '-'}</p>
-                    </div>
-                    <button className="text-sm text-red-600 font-medium hover:underline">
-                      Editar Plan
-                    </button>
-                  </div>
-
-                  <div className="p-4 space-y-4">
-                    <div className="flex justify-between items-center">
-                      <h4 className="font-medium text-slate-700">Ciclos y Cursos</h4>
-                      <button className="text-xs text-slate-600 border border-slate-300 px-2 py-1 rounded hover:bg-slate-50">
-                        + Agregar Ciclo
-                      </button>
+                      <CicloFormModalClient 
+                        planId={planActivo.id} 
+                        trigger={<button className="text-sm text-red-600 font-medium hover:underline border border-red-200 px-3 py-1 rounded bg-white">+ Agregar Ciclo</button>} 
+                      />
                     </div>
 
-                    {(!plan.ciclos || plan.ciclos.length === 0) ? (
-                      <p className="text-sm text-slate-500 italic">No hay ciclos configurados.</p>
-                    ) : (
-                      <div className="space-y-3">
-                        {plan.ciclos.sort((a, b) => (a.numero_orden || 0) - (b.numero_orden || 0)).map((ciclo) => (
-                          <div key={ciclo.id} className="border border-slate-100 rounded-md p-3">
-                            <div className="flex justify-between items-center mb-2">
-                              <h5 className="font-medium text-sm text-slate-800">
-                                Ciclo {ciclo.numero_orden} {ciclo.nombre ? `- ${ciclo.nombre}` : ''}
-                              </h5>
-                              <div className="flex gap-2">
-                                <button className="text-xs text-slate-500 hover:text-slate-800">Editar</button>
-                                <button className="text-xs text-red-600 font-medium hover:underline">+ Curso</button>
+                    <div className="p-4 space-y-4">
+                      {(!planActivo.ciclos || planActivo.ciclos.length === 0) ? (
+                        <p className="text-sm text-slate-500 italic">No hay ciclos configurados.</p>
+                      ) : (
+                        <div className="space-y-3">
+                          {planActivo.ciclos.sort((a: {numero_orden: number | null}, b: {numero_orden: number | null}) => (a.numero_orden || 0) - (b.numero_orden || 0)).map((ciclo: {id: string, numero_orden: number | null, nombre: string | null, cursos: {id: string, codigo: string | null, nombre: string | null, creditos: number | null, horas_semanales: number | null, status: string | null}[]}) => (
+                            <div key={ciclo.id} className="border border-slate-200 rounded-md p-0 overflow-hidden">
+                              <div className="flex justify-between items-center bg-slate-50 px-4 py-3 border-b border-slate-100">
+                                <h5 className="font-medium text-sm text-slate-800">
+                                  Ciclo {ciclo.numero_orden} {ciclo.nombre ? `- ${ciclo.nombre}` : ''}
+                                </h5>
+                                <div className="flex gap-2">
+                                  <CicloFormModalClient 
+                                    planId={planActivo.id} 
+                                    // @ts-expect-error type mismatch with exact Row
+                                    ciclo={ciclo} 
+                                    trigger={<button className="text-xs text-slate-500 hover:text-slate-800 border px-2 py-1 rounded bg-white">Editar ciclo</button>} 
+                                  />
+                                  <CursoFormModalClient 
+                                    planId={planActivo.id} 
+                                    cicloId={ciclo.id} 
+                                    trigger={<button className="text-xs text-white bg-red-600 font-medium hover:bg-red-700 px-2 py-1 rounded">+ Agregar curso</button>} 
+                                  />
+                                </div>
                               </div>
-                            </div>
-                            
-                            {(!ciclo.cursos || ciclo.cursos.length === 0) ? (
-                              <p className="text-xs text-slate-400">Sin cursos.</p>
-                            ) : (
-                              <div className="bg-slate-50 rounded border border-slate-100 divide-y divide-slate-100">
-                                {ciclo.cursos.map((curso) => (
-                                  <div key={curso.id} className="flex justify-between items-center p-2 text-sm">
-                                    <div>
-                                      <span className="font-medium text-slate-700">{curso.codigo ? `${curso.codigo} - ` : ''}{curso.nombre}</span>
-                                      <span className="text-xs text-slate-500 ml-2">({curso.creditos || 0} cred, {curso.horas_semanales || 0} hs)</span>
+                              
+                              {(!ciclo.cursos || ciclo.cursos.length === 0) ? (
+                                <p className="text-xs text-slate-400 p-4 text-center">No hay cursos registrados en este ciclo.</p>
+                              ) : (
+                                <div className="bg-white divide-y divide-slate-100">
+                                  {ciclo.cursos.map((curso: {id: string, codigo: string | null, nombre: string | null, creditos: number | null, horas_semanales: number | null, status: string | null}) => (
+                                    <div key={curso.id} className="flex justify-between items-center p-3 text-sm hover:bg-slate-50">
+                                      <div>
+                                        <span className="font-medium text-slate-700">{curso.codigo ? `${curso.codigo} - ` : ''}{curso.nombre}</span>
+                                        <div className="text-xs text-slate-500 mt-0.5">
+                                          {curso.creditos ? `${curso.creditos} créditos` : 'Sin créditos'} • {curso.horas_semanales ? `${curso.horas_semanales} horas semanales` : 'Horas no definidas'}
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center">
+                                        <Badge variant={curso.status === 'ACTIVO' ? 'success' : 'default'} className="ml-2">{curso.status}</Badge>
+                                        <CursoFormModalClient 
+                                          planId={planActivo.id} 
+                                          cicloId={ciclo.id} 
+                                          // @ts-expect-error type mismatch with exact Row
+                                          curso={curso} 
+                                          trigger={<button className="text-xs text-slate-500 hover:text-slate-700 border px-2 py-1 rounded ml-4 bg-white">Editar</button>} 
+                                        />
+                                      </div>
                                     </div>
-                                    <button className="text-xs text-slate-400 hover:text-slate-700">Editar</button>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </Card>
-              ))}
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </Card>
+                );
+              })()}
             </div>
           )}
         </div>

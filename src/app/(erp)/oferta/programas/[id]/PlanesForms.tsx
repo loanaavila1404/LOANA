@@ -1,6 +1,5 @@
-import { Database } from '@/types/database.types';
 'use client'
-
+import { Database } from '@/types/database.types';
 import { useState, useTransition } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';

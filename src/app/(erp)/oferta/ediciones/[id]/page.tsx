@@ -44,11 +44,11 @@ export default async function EdicionDetailPage({
     .eq('edicion_id', edicion.id)
     .order('created_at', { ascending: false });
 
-  // Load cursos of the plan
+  // Load cursos of the plan and cycle
   const { data: cursos } = await supabase
     .from('cursos')
     .select('id, nombre, codigo')
-    .eq('plan_id', edicion.plan_id || '')
+    .eq('ciclo_id', edicion.ciclo_id || '')
     .eq('status', 'ACTIVO')
     .order('nombre');
 
@@ -103,7 +103,7 @@ export default async function EdicionDetailPage({
 
         <div className="md:col-span-2 space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-slate-800">Horarios</h2>
+            <h2 className="text-xl font-bold text-slate-800">Cursos y horarios</h2>
             <HorarioFormModalClient edicionId={edicion.id} cursos={cursos || []} />
           </div>
 

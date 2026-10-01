@@ -35,15 +35,20 @@ export function EdicionFormModalClient({
   const [error, setError] = useState<string | null>(null);
 
   const [selectedPrograma, setSelectedPrograma] = useState(edicion?.programa_id || '');
-  const [selectedPlan, setSelectedPlan] = useState(edicion?.plan_id || '');
 
-  const filteredPlanes = planes.filter(p => p.programa_id === selectedPrograma);
-  const filteredCiclos = ciclos.filter(c => c.plan_id === selectedPlan);
+  const planActivo = planes.find(p => p.programa_id === selectedPrograma && (p as { status?: string }).status === 'ACTIVO') || planes.find(p => p.programa_id === selectedPrograma);
+  
+  const filteredCiclos = planActivo ? ciclos.filter(c => c.plan_id === planActivo.id) : [];
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
     const formData = new FormData(e.currentTarget);
+    
+    // Inyectar plan_id oculto si tenemos un plan activo
+    if (planActivo) {
+      formData.set('plan_id', planActivo.id);
+    }
     
     startTransition(async () => {
       let result;
@@ -81,7 +86,7 @@ export function EdicionFormModalClient({
             <select 
               name="programa_id" 
               value={selectedPrograma}
-              onChange={e => { setSelectedPrograma(e.target.value); setSelectedPlan(''); }}
+              onChange={e => setSelectedPrograma(e.target.value)}
               required
               className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 bg-white"
             >
@@ -90,35 +95,38 @@ export function EdicionFormModalClient({
             </select>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-700">Plan de Estudio</label>
-              <select 
-                name="plan_id" 
-                value={selectedPlan}
-                onChange={e => setSelectedPlan(e.target.value)}
-                required
-                disabled={!selectedPrograma}
-                className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 bg-white"
-              >
-                <option value="">Seleccione...</option>
-                {filteredPlanes.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
-              </select>
+          {selectedPrograma && !planActivo && (
+            <div className="p-3 bg-amber-50 text-amber-800 rounded-md border border-amber-200 flex flex-col space-y-2">
+              <span className="text-sm">Este programa todavía no tiene ciclos y cursos configurados.</span>
+              <a href={`/oferta/programas/${selectedPrograma}`} className="text-center text-sm font-medium bg-white border border-amber-300 px-3 py-1.5 rounded text-amber-900 hover:bg-amber-100 transition-colors">
+                Configurar programa
+              </a>
             </div>
+          )}
+
+          {selectedPrograma && planActivo && filteredCiclos.length === 0 && (
+             <div className="p-3 bg-amber-50 text-amber-800 rounded-md border border-amber-200 flex flex-col space-y-2">
+              <span className="text-sm">Este programa todavía no tiene ciclos y cursos configurados.</span>
+              <a href={`/oferta/programas/${selectedPrograma}`} className="text-center text-sm font-medium bg-white border border-amber-300 px-3 py-1.5 rounded text-amber-900 hover:bg-amber-100 transition-colors">
+                Configurar programa
+              </a>
+            </div>
+          )}
+
+          {selectedPrograma && planActivo && filteredCiclos.length > 0 && (
             <div className="space-y-1">
               <label className="text-xs font-medium text-slate-700">Ciclo</label>
               <select 
                 name="ciclo_id" 
                 defaultValue={edicion?.ciclo_id || ''}
                 required
-                disabled={!selectedPlan}
                 className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 bg-white"
               >
                 <option value="">Seleccione...</option>
                 {filteredCiclos.map(c => <option key={c.id} value={c.id}>Ciclo {c.numero_orden} {c.nombre ? `(${c.nombre})` : ''}</option>)}
               </select>
             </div>
-          </div>
+          )}
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
@@ -171,7 +179,7 @@ export function EdicionFormModalClient({
 
           <div className="flex justify-end pt-4 space-x-2 border-t border-slate-100">
             <Button type="button" variant="ghost" onClick={() => setIsOpen(false)} disabled={isPending}>Cancelar</Button>
-            <Button type="submit" disabled={isPending}>Guardar</Button>
+            <Button type="submit" disabled={isPending || (!edicion && (selectedPrograma !== '' && (!planActivo || filteredCiclos.length === 0)))}>Guardar</Button>
           </div>
         </form>
       </Modal>
