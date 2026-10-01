@@ -30,7 +30,7 @@ export default async function ProspectoDetailPage({
       programas (nombre, codigo),
       planes_estudio (nombre, codigo),
       ediciones (codigo),
-      profiles!prospectos_asesor_id_fkey (id, nombre, apellido)
+      profiles!prospectos_asesor_id_fkey (id, display_name)
     `)
     .eq('id', resolvedParams.id)
     .single();
@@ -41,17 +41,17 @@ export default async function ProspectoDetailPage({
 
   const { data: seguimientos } = await supabase
     .from('seguimientos')
-    .select(`*, profiles!seguimientos_asesor_id_fkey (nombre, apellido)`)
+    .select(`*, profiles!seguimientos_asesor_id_fkey (display_name)`)
     .eq('prospecto_id', prospecto.id)
     .order('fecha_hora', { ascending: false });
 
   const { data: tareas } = await supabase
     .from('tareas_comerciales')
-    .select(`*, profiles!tareas_comerciales_asesor_id_fkey (nombre, apellido)`)
+    .select(`*, profiles!tareas_comerciales_asesor_id_fkey (display_name)`)
     .eq('prospecto_id', prospecto.id)
     .order('fecha_programada', { ascending: true });
 
-  const { data: asesores } = await supabase.from('profiles').select('id, nombre, apellido, role_id').order('nombre');
+  const { data: asesores } = await supabase.from('profiles').select('id, display_name, role_id').order('display_name');
 
   return (
     <div className="space-y-6">
@@ -69,7 +69,7 @@ export default async function ProspectoDetailPage({
               <Badge variant={
                 prospecto.status === 'NUEVO' ? 'default' : 
                 prospecto.status === 'MATRICULADO' ? 'success' : 
-                prospecto.status === 'PERDIDO' ? 'destructive' : 'outline'
+                prospecto.status === 'PERDIDO' ? 'danger' : 'default'
               }>
                 {prospecto.status}
               </Badge>
@@ -103,8 +103,8 @@ export default async function ProspectoDetailPage({
                 <div>
                   <p className="text-slate-500 font-medium">Asesor Asignado</p>
                   <p className="text-slate-800">
-                    {(prospecto as unknown as { profiles: { nombre: string, apellido: string } })?.profiles 
-                      ? `${(prospecto as unknown as { profiles: { nombre: string, apellido: string } }).profiles.nombre} ${(prospecto as unknown as { profiles: { nombre: string, apellido: string } }).profiles.apellido}`
+                    {(prospecto as unknown as { profiles: { display_name: string } })?.profiles 
+                      ? (prospecto as unknown as { profiles: { display_name: string } }).profiles.display_name
                       : 'Sin asignar'}
                   </p>
                 </div>
@@ -223,8 +223,8 @@ export default async function ProspectoDetailPage({
                           <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded">Estado → {seg.estado_nuevo}</span>
                         )}
                         <span className="text-slate-500 ml-auto">
-                          Por: {(seg as unknown as { profiles: { nombre: string, apellido: string } })?.profiles 
-                          ? `${(seg as unknown as { profiles: { nombre: string, apellido: string } }).profiles.nombre} ${(seg as unknown as { profiles: { nombre: string, apellido: string } }).profiles.apellido}`
+                          Por: {(seg as unknown as { profiles: { display_name: string } })?.profiles 
+                          ? (seg as unknown as { profiles: { display_name: string } }).profiles.display_name
                           : 'Sistema'}
                         </span>
                       </div>

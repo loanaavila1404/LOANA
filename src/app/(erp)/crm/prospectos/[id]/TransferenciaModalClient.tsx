@@ -11,7 +11,7 @@ export function TransferenciaModalClient({
   asesorActualId
 }: { 
   prospectoId: string;
-  asesores: { id: string, nombre: string, apellido: string, role_id: string }[];
+  asesores: { id: string, display_name: string | null, role_id: string | null }[];
   asesorActualId: string | null;
 }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -46,7 +46,7 @@ export function TransferenciaModalClient({
             <select name="asesor_nuevo_id" required className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 bg-white">
               <option value="">Seleccione un asesor...</option>
               {asesores.filter(a => a.id !== asesorActualId).map(a => (
-                <option key={a.id} value={a.id}>{a.nombre} {a.apellido}</option>
+                <option key={a.id} value={a.id}>{a.display_name}</option>
               ))}
             </select>
           </div>

@@ -25,7 +25,7 @@ export default async function CRMPage({
   let dbQuery = supabase.from('prospectos').select(`
     *,
     programas (nombre),
-    profiles!prospectos_asesor_id_fkey (nombre, apellido)
+    profiles!prospectos_asesor_id_fkey (display_name)
   `);
 
   if (query) {
@@ -138,15 +138,15 @@ export default async function CRMPage({
                     <div className="text-xs text-slate-500">Nivel: {p.nivel_interes || '-'}</div>
                   </TableCell>
                   <TableCell>
-                    {(p as unknown as { profiles: { nombre: string, apellido: string } })?.profiles 
-                      ? `${(p as unknown as { profiles: { nombre: string, apellido: string } }).profiles.nombre} ${(p as unknown as { profiles: { nombre: string, apellido: string } }).profiles.apellido}`
+                    {(p as unknown as { profiles: { display_name: string } })?.profiles 
+                      ? (p as unknown as { profiles: { display_name: string } }).profiles.display_name
                       : 'Sin asignar'}
                   </TableCell>
                   <TableCell>
                     <Badge variant={
                       p.status === 'NUEVO' ? 'default' : 
                       p.status === 'MATRICULADO' ? 'success' : 
-                      p.status === 'PERDIDO' ? 'destructive' : 'outline'
+                      p.status === 'PERDIDO' ? 'danger' : 'default'
                     }>
                       {p.status}
                     </Badge>

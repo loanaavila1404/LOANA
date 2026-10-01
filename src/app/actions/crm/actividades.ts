@@ -7,7 +7,7 @@ import { seguimientoSchema, tareaSchema } from '@/lib/validators/crm';
 
 export async function createSeguimientoAction(formData: FormData) {
   const permissions = await getUserPermissions();
-  if (!permissions.includes('CRM.EDITAR') && !permissions.includes('SISTEMA.ADMINISTRAR')) {
+  if (!permissions.includes('CRM.GESTIONAR') && !permissions.includes('SISTEMA.ADMINISTRAR')) {
     return { error: 'No tienes permiso' };
   }
 
@@ -56,7 +56,7 @@ export async function createSeguimientoAction(formData: FormData) {
 
 export async function createTareaAction(formData: FormData) {
   const permissions = await getUserPermissions();
-  if (!permissions.includes('CRM.EDITAR') && !permissions.includes('SISTEMA.ADMINISTRAR')) {
+  if (!permissions.includes('CRM.GESTIONAR') && !permissions.includes('SISTEMA.ADMINISTRAR')) {
     return { error: 'No tienes permiso' };
   }
 
@@ -91,7 +91,7 @@ export async function createTareaAction(formData: FormData) {
 
 export async function completeTareaAction(id: string, prospecto_id: string, resultado: string) {
   const permissions = await getUserPermissions();
-  if (!permissions.includes('CRM.EDITAR') && !permissions.includes('SISTEMA.ADMINISTRAR')) {
+  if (!permissions.includes('CRM.GESTIONAR') && !permissions.includes('SISTEMA.ADMINISTRAR')) {
     return { error: 'No tienes permiso' };
   }
 

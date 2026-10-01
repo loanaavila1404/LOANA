@@ -7,7 +7,7 @@ import { prospectoSchema, transferenciaSchema } from '@/lib/validators/crm';
 
 export async function createProspectoAction(formData: FormData) {
   const permissions = await getUserPermissions();
-  if (!permissions.includes('CRM.EDITAR') && !permissions.includes('SISTEMA.ADMINISTRAR')) {
+  if (!permissions.includes('CRM.GESTIONAR') && !permissions.includes('SISTEMA.ADMINISTRAR')) {
     return { error: 'No tienes permiso para crear prospectos' };
   }
 
@@ -61,7 +61,7 @@ export async function createProspectoAction(formData: FormData) {
 
 export async function updateProspectoAction(id: string, formData: FormData) {
   const permissions = await getUserPermissions();
-  if (!permissions.includes('CRM.EDITAR') && !permissions.includes('SISTEMA.ADMINISTRAR')) {
+  if (!permissions.includes('CRM.GESTIONAR') && !permissions.includes('SISTEMA.ADMINISTRAR')) {
     return { error: 'No tienes permiso para editar prospectos' };
   }
 
@@ -110,7 +110,7 @@ export async function updateProspectoAction(id: string, formData: FormData) {
 
 export async function updateProspectoStatusAction(id: string, status: string, motivo_perdida?: string, detalle_perdida?: string) {
   const permissions = await getUserPermissions();
-  if (!permissions.includes('CRM.EDITAR') && !permissions.includes('SISTEMA.ADMINISTRAR')) {
+  if (!permissions.includes('CRM.GESTIONAR') && !permissions.includes('SISTEMA.ADMINISTRAR')) {
     return { error: 'No tienes permiso' };
   }
 
@@ -181,7 +181,7 @@ export async function transferProspectoAction(formData: FormData) {
 
 export async function convertirAEstudianteAction(prospectoId: string) {
   const permissions = await getUserPermissions();
-  if (!permissions.includes('CRM.EDITAR') && !permissions.includes('SISTEMA.ADMINISTRAR')) return { error: 'No tienes permiso' };
+  if (!permissions.includes('CRM.GESTIONAR') && !permissions.includes('SISTEMA.ADMINISTRAR')) return { error: 'No tienes permiso' };
   
   const supabase = await createClient();
   const user = (await supabase.auth.getUser()).data.user;
@@ -194,10 +194,9 @@ export async function convertirAEstudianteAction(prospectoId: string) {
     tipo_documento: p.tipo_documento, 
     numero_documento: p.numero_documento, 
     nombres: p.nombres, 
-    apellidos: p.apellidos, 
+    apellido_paterno: p.apellidos, 
     email: p.email, 
-    telefono: p.telefono, 
-    created_by: user?.id 
+    telefono: p.telefono 
   }).select().single();
   
   if (perError) return { error: 'Error al crear persona' };
