@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { confirmarMatriculaAction } from '@/app/actions/matriculas';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export function MatriculaFormClient({
   estudiantes,

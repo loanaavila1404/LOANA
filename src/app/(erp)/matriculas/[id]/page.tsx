@@ -151,7 +151,7 @@ export default async function MatriculaDetailPage({
                   ) : cuotas.map(c => (
                     <tr key={c.id} className="hover:bg-slate-50">
                       <td className="px-3 py-2 font-medium">{c.concepto}</td>
-                      <td className="px-3 py-2">{c.fecha_vencimiento ? new Date(c.fecha_vencimiento).toLocaleDateString('es-PE') : '-'}</td>
+                      <td className="px-3 py-2">{c.fecha_vencimiento ? new Date(c.fecha_vencimiento!).toLocaleDateString('es-PE') : '-'}</td>
                       <td className="px-3 py-2">S/ {Number(c.importe_neto).toFixed(2)}</td>
                       <td className="px-3 py-2 font-bold text-red-600">S/ {Number(c.saldo === null ? c.importe_neto : c.saldo).toFixed(2)}</td>
                       <td className="px-3 py-2">
@@ -177,7 +177,7 @@ export default async function MatriculaDetailPage({
                     <div className="flex items-center gap-2 mb-1">
                       <span className="font-bold text-slate-800">S/ {Number(p.importe).toFixed(2)}</span>
                       <Badge variant={p.status === 'ANULADO' ? 'danger' : 'success'}>{p.status}</Badge>
-                      <span className="text-xs text-slate-500">{new Date(p.fecha_pago).toLocaleDateString('es-PE')}</span>
+                      <span className="text-xs text-slate-500">{new Date(p.fecha_pago!).toLocaleDateString('es-PE')}</span>
                     </div>
                     <p className="text-slate-600 text-xs">
                       {p.medio_pago} {p.numero_operacion ? `• Op: ${p.numero_operacion}` : ''} 

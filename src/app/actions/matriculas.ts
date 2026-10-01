@@ -17,6 +17,7 @@ export async function confirmarMatriculaAction(payload: unknown) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
+  // @ts-ignore: rpc types not updated yet
   const { data, error } = await supabase.rpc('confirmar_matricula_atomica', {
     p_estudiante_id: parsed.data.estudiante_id,
     p_edicion_id: parsed.data.edicion_id,
@@ -53,6 +54,7 @@ export async function registrarPagoAction(payload: unknown) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
+  // @ts-ignore: rpc types not updated yet
   const { data, error } = await supabase.rpc('registrar_pago_atomico', {
     p_estudiante_id: parsed.data.estudiante_id,
     p_importe: parsed.data.importe,
@@ -101,11 +103,11 @@ export async function anularPagoAction(pagoId: string, motivo: string) {
   for (const app of (aplicaciones || [])) {
     const { data: cuota } = await supabase.from('cuotas').select('saldo, importe_neto').eq('id', app.cuota_id).single();
     if (cuota) {
-      const currentSaldo = cuota.saldo === null ? cuota.importe_neto : cuota.saldo;
-      const newSaldo = currentSaldo + app.importe_aplicado;
+      const currentSaldo = cuota.saldo === null ? (cuota.importe_neto || 0) : cuota.saldo;
+      const newSaldo = currentSaldo + (app.importe_aplicado || 0);
       await supabase.from('cuotas').update({
         saldo: newSaldo,
-        status: newSaldo >= cuota.importe_neto ? 'PENDIENTE' : 'PARCIAL'
+        status: newSaldo >= (cuota.importe_neto || 0) ? 'PENDIENTE' : 'PARCIAL'
       }).eq('id', app.cuota_id);
     }
   }
