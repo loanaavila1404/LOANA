@@ -85,9 +85,9 @@ export default async function MatriculaDetailPage({
         </div>
         <div className="flex gap-2">
           {matricula.status === 'ACTIVA' && (
-            <button className="bg-slate-100 border border-slate-300 text-slate-700 px-3 py-1.5 rounded-md text-sm font-medium hover:bg-slate-200">
+            <Link href={`/matriculas/${matricula.id}/ficha`} className="bg-slate-100 border border-slate-300 text-slate-700 px-3 py-1.5 rounded-md text-sm font-medium hover:bg-slate-200">
               Generar Ficha PDF
-            </button>
+            </Link>
           )}
           {(matricula.status === 'ACTIVA' || matricula.status === 'FINALIZADA') && cuotasPendientes.length > 0 && (
             <PagoFormModalClient 
