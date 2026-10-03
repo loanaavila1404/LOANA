@@ -2,7 +2,7 @@ BEGIN;
 
 -- Migracion 00012 para corregir encoding en la funcion confirmar_matricula_atomica
 
-CREATE OR REPLACE FUNCTION confirmar_matricula_atomica(
+CREATE OR REPLACE FUNCTION public.confirmar_matricula_atomica(
     p_estudiante_id uuid,
     p_edicion_id uuid,
     p_ciclo_id uuid,
@@ -245,18 +245,18 @@ BEGIN
     RETURN v_matricula_id;
 END;
 $$ LANGUAGE plpgsql VOLATILE SECURITY DEFINER SET search_path = public;
-REVOKE ALL ON FUNCTION confirmar_matricula_atomica(uuid, uuid, uuid, uuid, uuid, numeric, numeric, int, numeric, text, date, int) FROM PUBLIC;
-REVOKE ALL ON FUNCTION confirmar_matricula_atomica(uuid, uuid, uuid, uuid, uuid, numeric, numeric, int, numeric, text, date, int) FROM anon;
-GRANT EXECUTE ON FUNCTION confirmar_matricula_atomica(uuid, uuid, uuid, uuid, uuid, numeric, numeric, int, numeric, text, date, int) TO authenticated;
+REVOKE ALL ON FUNCTION public.confirmar_matricula_atomica(uuid, uuid, uuid, uuid, uuid, numeric, numeric, int, numeric, text, date, int) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.confirmar_matricula_atomica(uuid, uuid, uuid, uuid, uuid, numeric, numeric, int, numeric, text, date, int) FROM anon;
+GRANT EXECUTE ON FUNCTION public.confirmar_matricula_atomica(uuid, uuid, uuid, uuid, uuid, numeric, numeric, int, numeric, text, date, int) TO authenticated;
 
 
 -- Data Correction
-UPDATE cuotas
+UPDATE public.cuotas
 SET concepto = 'Matrícula'
 WHERE concepto = 'MatrÃcula';
 
-UPDATE cuotas
-SET concepto = 'Pensión ' || SUBSTRING(concepto FROM 9)
-WHERE concepto LIKE 'PensiÃ³n %';
+UPDATE public.cuotas
+SET concepto = 'Pensión ' || substring(concepto FROM '([0-9]+)$')
+WHERE concepto ~ '^PensiÃ³n [0-9]+$';
 
 COMMIT;
