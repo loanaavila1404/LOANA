@@ -27,7 +27,8 @@ export default async function FichaMatriculaPage(props: { params: Promise<{ id: 
         codigo_estudiante,
         persona:personas(
           nombres,
-          apellidos,
+          apellido_paterno,
+          apellido_materno,
           tipo_documento,
           numero_documento,
           email,
@@ -97,6 +98,15 @@ export default async function FichaMatriculaPage(props: { params: Promise<{ id: 
     : matricula.edicion?.periodo;
 
   return (
+    <>
+      <style dangerouslySetInnerHTML={{__html: `
+        @media print {
+          .md\\:w-64, header, nav, .print\\:hidden { display: none !important; }
+          .flex.h-screen, main { height: auto !important; overflow: visible !important; display: block !important; }
+          main { padding: 0 !important; }
+          body { background: white !important; }
+        }
+      `}} />
     <div className="max-w-4xl mx-auto p-8 bg-white min-h-screen text-slate-900 print:p-0 print:max-w-none">
       
       {/* Non-printable action bar */}
@@ -136,7 +146,7 @@ export default async function FichaMatriculaPage(props: { params: Promise<{ id: 
               <tbody>
                 <tr className="border-b border-slate-100">
                   <td className="py-2 text-slate-500 w-1/3">Nombre completo</td>
-                  <td className="py-2 font-medium">{persona?.nombres} {persona?.apellidos}</td>
+                  <td className="py-2 font-medium">{persona?.nombres} {persona?.apellido_paterno} {persona?.apellido_materno}</td>
                 </tr>
                 <tr className="border-b border-slate-100">
                   <td className="py-2 text-slate-500">Documento</td>
@@ -235,7 +245,7 @@ export default async function FichaMatriculaPage(props: { params: Promise<{ id: 
         <div className="grid grid-cols-2 gap-16 mt-20 pt-10">
           <div className="text-center">
             <div className="border-t border-slate-400 pt-3">
-              <div className="font-bold">{persona?.nombres} {persona?.apellidos}</div>
+              <div className="font-bold">{persona?.nombres} {persona?.apellido_paterno} {persona?.apellido_materno}</div>
               <div className="text-sm text-slate-500">Firma del Estudiante</div>
             </div>
           </div>
@@ -253,5 +263,6 @@ export default async function FichaMatriculaPage(props: { params: Promise<{ id: 
         </div>
       </div>
     </div>
+    </>
   );
 }
