@@ -17,7 +17,18 @@ export async function createProspectoAction(formData: FormData) {
   // Generate codigo
   const count = await supabase.from('prospectos').select('id', { count: 'exact' });
   const num = (count.count || 0) + 1;
-  const codigo = `PRO-${new Date().getFullYear()}-${num.toString().padStart(5, '0')}`; // Minimal fallback, in the future this should be a DB sequence, but no RPC is available for PROSPECTOS in 00005, only for Estudiantes in Phase 6.
+  const codigo = `PRO-${new Date().getFullYear()}-${num.toString().padStart(5, '0')}`;
+
+  let asesorId = (formData.get('asesor_id') as string | null)?.trim() || user?.id || null;
+  if (!asesorId) {
+    const { data: firstAdvisor } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('status', 'ACTIVO')
+      .limit(1)
+      .maybeSingle();
+    asesorId = firstAdvisor?.id || null;
+  }
 
   const payload = {
     tipo_documento: formData.get('tipo_documento') || null,
@@ -37,9 +48,9 @@ export async function createProspectoAction(formData: FormData) {
     turno: formData.get('turno') || null,
     canal_captacion: formData.get('canal_captacion') || null,
     campana: formData.get('campana') || null,
-    asesor_id: formData.get('asesor_id') || user?.id,
+    asesor_id: asesorId,
     status: formData.get('status') || 'NUEVO',
-    nivel_interes: formData.get('nivel_interes') || null,
+    nivel_interes: formData.get('nivel_interes') || 'MEDIO',
     consentimiento_contacto: formData.get('consentimiento_contacto') === 'true',
     observaciones: formData.get('observaciones') || null,
   };
@@ -53,9 +64,10 @@ export async function createProspectoAction(formData: FormData) {
     created_by: user?.id
   }).select().single();
 
-  if (error) return { error: 'Error al crear el prospecto' };
+  if (error) return { error: 'Error al crear el prospecto: ' + error.message };
 
   revalidatePath('/crm');
+  revalidatePath('/dashboard');
   return { success: true, data };
 }
 
@@ -64,6 +76,9 @@ export async function updateProspectoAction(id: string, formData: FormData) {
   if (!permissions.includes('CRM.GESTIONAR') && !permissions.includes('SISTEMA.ADMINISTRAR')) {
     return { error: 'No tienes permiso para editar prospectos' };
   }
+
+  const supabase = await createClient();
+  const user = (await supabase.auth.getUser()).data.user;
 
   const payload = {
     tipo_documento: formData.get('tipo_documento') || null,
@@ -83,7 +98,7 @@ export async function updateProspectoAction(id: string, formData: FormData) {
     turno: formData.get('turno') || null,
     canal_captacion: formData.get('canal_captacion') || null,
     campana: formData.get('campana') || null,
-    asesor_id: formData.get('asesor_id') || null,
+    asesor_id: (formData.get('asesor_id') as string | null)?.trim() || user?.id || null,
     status: formData.get('status') || 'NUEVO',
     nivel_interes: formData.get('nivel_interes') || null,
     consentimiento_contacto: formData.get('consentimiento_contacto') === 'true',
@@ -93,10 +108,6 @@ export async function updateProspectoAction(id: string, formData: FormData) {
   const parsed = prospectoSchema.safeParse(payload);
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
-  const supabase = await createClient();
-  const user = (await supabase.auth.getUser()).data.user;
-
-  // We should not blindly update asesor_id if it's a transfer, transfer has its own action.
   const { data, error } = await supabase.from('prospectos').update({
     ...parsed.data,
     updated_by: user?.id
@@ -104,6 +115,7 @@ export async function updateProspectoAction(id: string, formData: FormData) {
 
   if (error) return { error: 'Error al actualizar el prospecto' };
 
+  revalidatePath('/crm');
   revalidatePath(`/crm/prospectos/${id}`);
   return { success: true, data };
 }
@@ -117,16 +129,35 @@ export async function updateProspectoStatusAction(id: string, status: string, mo
   const supabase = await createClient();
   const user = (await supabase.auth.getUser()).data.user;
 
-  const { data, error } = await supabase.from('prospectos').update({
+  const updateFields: {
+    status: string;
+    motivo_perdida: string | null;
+    detalle_perdida: string | null;
+    updated_by?: string | null;
+    ultimo_contacto_en?: string | null;
+  } = {
     status,
     motivo_perdida: motivo_perdida || null,
     detalle_perdida: detalle_perdida || null,
-    updated_by: user?.id
-  }).eq('id', id).select().single();
+    updated_by: user?.id,
+  };
+
+  if (status !== 'NUEVO') {
+    updateFields.ultimo_contacto_en = new Date().toISOString();
+  }
+
+  const { data, error } = await supabase
+    .from('prospectos')
+    .update(updateFields)
+    .eq('id', id)
+    .select()
+    .single();
 
   if (error) return { error: 'Error al cambiar estado' };
 
+  revalidatePath('/crm');
   revalidatePath(`/crm/prospectos/${id}`);
+  revalidatePath('/dashboard');
   return { success: true, data };
 }
 
