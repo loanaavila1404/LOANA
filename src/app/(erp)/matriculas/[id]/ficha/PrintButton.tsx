@@ -1,6 +1,23 @@
 'use client';
 
-export default function PrintButton({ label = 'Imprimir / Guardar PDF' }: { label?: string }) {
+import { useEffect } from 'react';
+
+export default function PrintButton({
+  label = 'Imprimir / Guardar PDF',
+  autoPrint = false,
+}: {
+  label?: string;
+  autoPrint?: boolean;
+}) {
+  useEffect(() => {
+    if (autoPrint) {
+      const timer = setTimeout(() => {
+        window.print();
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [autoPrint]);
+
   return (
     <button 
       type="button"
