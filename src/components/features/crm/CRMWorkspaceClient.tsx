@@ -62,7 +62,8 @@ export function CRMWorkspaceClient({
   const [canalFilter, setCanalFilter] = useState("TODOS");
   const [asesorFilter, setAsesorFilter] = useState("TODOS");
   const [dateRangeFilter, setDateRangeFilter] = useState("TODOS");
-  const [customDate, setCustomDate] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   // Sincronizar si cambian los datos del servidor
   React.useEffect(() => {
@@ -91,12 +92,35 @@ export function CRMWorkspaceClient({
     return Array.from(map.entries()).map(([codigo, nombre]) => ({ codigo, nombre }));
   }, [catalogos, prospectos]);
 
-  const filteredProspectos = useMemo(() => {
+  const handlePresetDateChange = (preset: string) => {
+    setDateRangeFilter(preset);
     const now = new Date();
     const todayStr = now.toISOString().slice(0, 10);
-    const currentMonthPrefix = now.toISOString().slice(0, 7);
-    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
+    if (preset === "TODOS") {
+      setStartDate("");
+      setEndDate("");
+    } else if (preset === "HOY") {
+      setStartDate(todayStr);
+      setEndDate(todayStr);
+    } else if (preset === "7_DIAS") {
+      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      setStartDate(sevenDaysAgo.toISOString().slice(0, 10));
+      setEndDate(todayStr);
+    } else if (preset === "ESTE_MES") {
+      const firstDayMonth = `${now.toISOString().slice(0, 7)}-01`;
+      setStartDate(firstDayMonth);
+      setEndDate(todayStr);
+    }
+  };
+
+  const clearDates = () => {
+    setDateRangeFilter("TODOS");
+    setStartDate("");
+    setEndDate("");
+  };
+
+  const filteredProspectos = useMemo(() => {
     return prospectos.filter(p => {
       // 1. Búsqueda por texto (nombre, apellidos, código, DNI, teléfono, email)
       if (searchQuery.trim()) {
@@ -140,22 +164,14 @@ export function CRMWorkspaceClient({
         }
       }
 
-      // 6. Filtro por Rango de Fechas / Fecha de Registro (created_at)
-      if (dateRangeFilter !== "TODOS") {
+      // 6. Filtro por Rango de Fechas (Desde / Hasta inclusivo sobre created_at)
+      if (startDate || endDate) {
         const createdAtStr = p.created_at || "";
         if (!createdAtStr) return false;
         const createdDatePart = createdAtStr.slice(0, 10);
 
-        if (dateRangeFilter === "HOY") {
-          if (createdDatePart !== todayStr) return false;
-        } else if (dateRangeFilter === "7_DIAS") {
-          const createdDate = new Date(createdAtStr);
-          if (createdDate < sevenDaysAgo) return false;
-        } else if (dateRangeFilter === "ESTE_MES") {
-          if (!createdAtStr.startsWith(currentMonthPrefix)) return false;
-        } else if (dateRangeFilter === "FECHA_EXACTA") {
-          if (customDate && createdDatePart !== customDate) return false;
-        }
+        if (startDate && createdDatePart < startDate) return false;
+        if (endDate && createdDatePart > endDate) return false;
       }
 
       return true;
@@ -167,8 +183,8 @@ export function CRMWorkspaceClient({
     programaFilter,
     canalFilter,
     asesorFilter,
-    dateRangeFilter,
-    customDate,
+    startDate,
+    endDate,
   ]);
 
   const handleStageUpdate = (id: string, newStage: string) => {
@@ -191,7 +207,8 @@ export function CRMWorkspaceClient({
     setCanalFilter("TODOS");
     setAsesorFilter("TODOS");
     setDateRangeFilter("TODOS");
-    setCustomDate("");
+    setStartDate("");
+    setEndDate("");
   };
 
   const hasActiveFilters =
@@ -200,6 +217,8 @@ export function CRMWorkspaceClient({
     programaFilter !== "TODOS" ||
     canalFilter !== "TODOS" ||
     asesorFilter !== "TODOS" ||
+    Boolean(startDate) ||
+    Boolean(endDate) ||
     dateRangeFilter !== "TODOS";
 
   const getInitials = (name: string | null | undefined) => {
@@ -395,37 +414,77 @@ export function CRMWorkspaceClient({
             </select>
           </div>
 
-          {/* 6. Filtro por Rango de Fechas / Fecha de Registro */}
+          {/* 6. Atajo rápido de Rango de Fechas */}
           <div className="flex items-center gap-1.5">
             <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0 hidden sm:inline" />
             <select
               value={dateRangeFilter}
-              onChange={e => setDateRangeFilter(e.target.value)}
+              onChange={e => handlePresetDateChange(e.target.value)}
               className="w-full py-1.5 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#C4121A]/20 focus:border-[#C4121A] text-slate-700 font-medium"
             >
               <option value="TODOS">Fecha: Todos los rangos</option>
               <option value="HOY">Fecha: Hoy</option>
               <option value="7_DIAS">Fecha: Últimos 7 días</option>
               <option value="ESTE_MES">Fecha: Este mes</option>
-              <option value="FECHA_EXACTA">Fecha específica...</option>
+              <option value="PERSONALIZADO">Rango personalizado (Desde / Hasta)</option>
             </select>
           </div>
         </div>
 
-        {/* Selector de fecha específica cuando se elige FECHA_EXACTA */}
-        {dateRangeFilter === "FECHA_EXACTA" && (
-          <div className="flex items-center gap-2 pt-1">
-            <label className="text-xs font-semibold text-slate-600">
-              Seleccionar fecha de registro:
+        {/* Selector de Rango de Fechas: Desde / Hasta */}
+        <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-slate-100">
+          <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600">
+            <Calendar className="w-3.5 h-3.5 text-[#C4121A]" />
+            Rango de registro:
+          </span>
+
+          <div className="flex items-center gap-1.5">
+            <label htmlFor="crm-fecha-desde" className="text-xs font-semibold text-slate-500">
+              Desde:
             </label>
             <input
+              id="crm-fecha-desde"
+              name="fecha_desde"
               type="date"
-              value={customDate}
-              onChange={e => setCustomDate(e.target.value)}
-              className="py-1 px-2.5 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C4121A]/20 focus:border-[#C4121A] text-slate-800"
+              value={startDate}
+              max={endDate || undefined}
+              onChange={e => {
+                setStartDate(e.target.value);
+                setDateRangeFilter(e.target.value || endDate ? "PERSONALIZADO" : "TODOS");
+              }}
+              className="py-1 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#C4121A]/20 focus:border-[#C4121A] text-slate-800"
             />
           </div>
-        )}
+
+          <div className="flex items-center gap-1.5">
+            <label htmlFor="crm-fecha-hasta" className="text-xs font-semibold text-slate-500">
+              Hasta:
+            </label>
+            <input
+              id="crm-fecha-hasta"
+              name="fecha_hasta"
+              type="date"
+              value={endDate}
+              min={startDate || undefined}
+              onChange={e => {
+                setEndDate(e.target.value);
+                setDateRangeFilter(startDate || e.target.value ? "PERSONALIZADO" : "TODOS");
+              }}
+              className="py-1 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#C4121A]/20 focus:border-[#C4121A] text-slate-800"
+            />
+          </div>
+
+          {(startDate || endDate || dateRangeFilter !== "TODOS") && (
+            <button
+              type="button"
+              onClick={clearDates}
+              className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-[#C4121A] hover:text-[#9e0e15] bg-red-50/70 hover:bg-red-100/80 border border-red-200 rounded-md transition"
+            >
+              <RotateCcw className="w-3 h-3" />
+              <span>Limpiar fechas</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* VISTA 1: LISTADO AVANZADO DE PROSPECTOS */}
