@@ -33,7 +33,7 @@ export default async function ProgramasPage({
     dbQuery = dbQuery.eq('status', statusFilter);
   }
 
-  const { data: programas, count } = await dbQuery.order('created_at', { ascending: false });
+  const { data: programas } = await dbQuery.order('created_at', { ascending: false });
 
   // KPIs
   const { count: countActivos } = await supabase.from('programas').select('*', { count: 'exact', head: true }).eq('status', 'ACTIVO');
@@ -85,7 +85,18 @@ export default async function ProgramasPage({
           </button>
         </form>
 
-        <ProgramaFormModalClient />
+        <div className="flex items-center gap-2">
+          <Link
+            href="/oferta/ficha"
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-md bg-white border border-slate-300 text-slate-800 hover:bg-slate-50 shadow-2xs text-sm font-semibold transition-colors"
+          >
+            <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+            </svg>
+            <span>Exportar Catálogo PDF</span>
+          </Link>
+          <ProgramaFormModalClient />
+        </div>
       </div>
 
       <Card className="overflow-x-auto">

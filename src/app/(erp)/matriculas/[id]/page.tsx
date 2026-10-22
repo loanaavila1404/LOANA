@@ -10,6 +10,8 @@ export const metadata = {
   title: 'Detalle de Matrícula - ERP Brusben'
 };
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export default async function MatriculaDetailPage({
   params
 }: {
@@ -18,29 +20,86 @@ export default async function MatriculaDetailPage({
   await requirePermission(['MATRICULAS.VER', 'COBRANZA.VER', 'SISTEMA.ADMINISTRAR']);
   const supabase = await createClient();
   const resolvedParams = await params;
+  const rawId = decodeURIComponent(resolvedParams.id || '').trim();
 
-  const { data: matricula } = await supabase
+  if (!rawId) {
+    notFound();
+  }
+
+  const isUuid = UUID_REGEX.test(rawId);
+
+  const matriculaQuery = supabase
     .from('matriculas')
     .select(`
       *,
       estudiantes (id, codigo_estudiante, personas (nombres, apellido_paterno, apellido_materno, numero_documento)),
-      ediciones (codigo, nombre, programas (nombre))
-    `)
-    .eq('id', resolvedParams.id)
-    .single();
+      ediciones (codigo, nombre, programas (nombre, codigo), planes_estudio (nombre, codigo))
+    `);
+
+  const { data: matricula, error: matriculaError } = await (
+    isUuid
+      ? matriculaQuery.eq('id', rawId)
+      : matriculaQuery.eq('codigo_matricula', rawId.toUpperCase())
+  ).maybeSingle();
+
+  if (matriculaError) {
+    console.error('[MatriculaDetail] Error al obtener matrícula:', matriculaError);
+    throw new Error(`Error al consultar la matrícula: ${matriculaError.message}`);
+  }
 
   if (!matricula) notFound();
 
-  const est = matricula.estudiantes as any;
-  const persona = est?.personas;
-  const ed = matricula.ediciones as any;
+  const warnings: string[] = [];
+
+  type EstudianteRel = {
+    id: string;
+    codigo_estudiante: string | null;
+    personas: {
+      nombres: string | null;
+      apellido_paterno: string | null;
+      apellido_materno: string | null;
+      numero_documento: string | null;
+    } | {
+      nombres: string | null;
+      apellido_paterno: string | null;
+      apellido_materno: string | null;
+      numero_documento: string | null;
+    }[] | null;
+  };
+
+  type EdicionRel = {
+    codigo: string;
+    nombre: string | null;
+    programas: { nombre: string; codigo: string } | { nombre: string; codigo: string }[] | null;
+    planes_estudio: { nombre: string; codigo: string } | { nombre: string; codigo: string }[] | null;
+  };
+
+  const estRaw = matricula.estudiantes as unknown as EstudianteRel | EstudianteRel[] | null;
+  const est = Array.isArray(estRaw) ? estRaw[0] : estRaw;
+  const persona = Array.isArray(est?.personas) ? est?.personas[0] : est?.personas;
+
+  const edRaw = matricula.ediciones as unknown as EdicionRel | EdicionRel[] | null;
+  const ed = Array.isArray(edRaw) ? edRaw[0] : edRaw;
+  const prog = Array.isArray(ed?.programas) ? ed?.programas[0] : ed?.programas;
+  const plan = Array.isArray(ed?.planes_estudio) ? ed?.planes_estudio[0] : ed?.planes_estudio;
+
+  if (!est && matricula.estudiante_id) {
+    warnings.push('No se pudieron cargar los datos del estudiante vinculado. Verifique que su rol cuente con el permiso ESTUDIANTES.VER (RLS).');
+  }
+  if (!ed && matricula.edicion_id) {
+    warnings.push('No se pudo cargar la edición ni el programa académico. Verifique que su rol cuente con el permiso PROGRAMAS.VER (RLS).');
+  }
 
   // Cargar Cuotas
-  const { data: cuotas } = await supabase
+  const { data: cuotas, error: cuotasError } = await supabase
     .from('cuotas')
     .select('*')
     .eq('matricula_id', matricula.id)
     .order('numero_cuota', { ascending: true });
+
+  if (cuotasError) {
+    warnings.push(`Error al consultar cuotas: ${cuotasError.message}`);
+  }
 
   // Cargar Pagos del estudiante
   const { data: pagos } = await supabase
@@ -49,7 +108,7 @@ export default async function MatriculaDetailPage({
       *,
       pago_aplicaciones (id, cuota_id, importe_aplicado)
     `)
-    .eq('estudiante_id', est.id)
+    .eq('estudiante_id', est?.id || matricula.estudiante_id)
     .order('fecha_pago', { ascending: false });
 
   // Cuotas pendientes para el modal de pago
@@ -57,8 +116,19 @@ export default async function MatriculaDetailPage({
 
   return (
     <div className="space-y-6">
+      {warnings.length > 0 && (
+        <div className="p-4 rounded-md bg-amber-50 border-l-4 border-amber-600 text-amber-950">
+          <p className="font-bold text-sm mb-1">Aviso de diagnóstico de datos / permisos (RLS)</p>
+          <ul className="list-disc list-inside text-xs space-y-1">
+            {warnings.map((w, idx) => (
+              <li key={idx}>{w}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* HEADER */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <Link href="/matriculas" className="text-slate-500 hover:text-slate-800">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -79,19 +149,23 @@ export default async function MatriculaDetailPage({
               </Badge>
             </div>
             <p className="text-sm text-slate-500">
-              {persona?.nombres} {persona?.apellido_paterno} {persona?.apellido_materno} • {persona?.numero_documento}
+              {persona ? `${persona.nombres || ''} ${persona.apellido_paterno || ''} ${persona.apellido_materno || ''}`.trim() : 'Estudiante sin lectura'} • {persona?.numero_documento || '-'}
             </p>
           </div>
         </div>
-        <div className="flex gap-2">
-          {matricula.status === 'ACTIVA' && (
-            <Link href={`/matriculas/${matricula.id}/ficha`} className="bg-slate-100 border border-slate-300 text-slate-700 px-3 py-1.5 rounded-md text-sm font-medium hover:bg-slate-200">
-              Generar Ficha PDF
-            </Link>
-          )}
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/matriculas/${matricula.id}/ficha`}
+            className="inline-flex items-center gap-2 bg-white border border-slate-300 text-slate-800 px-3.5 py-2 rounded-md text-sm font-semibold hover:bg-slate-50 shadow-2xs transition-colors"
+          >
+            <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+            </svg>
+            <span>Ver / Imprimir Ficha PDF</span>
+          </Link>
           {(matricula.status === 'ACTIVA' || matricula.status === 'FINALIZADA') && cuotasPendientes.length > 0 && (
             <PagoFormModalClient 
-              estudianteId={est.id} 
+              estudianteId={est?.id || matricula.estudiante_id} 
               cuotasPendientes={cuotasPendientes} 
             />
           )}
@@ -108,18 +182,24 @@ export default async function MatriculaDetailPage({
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-slate-500 font-medium">Programa</p>
-                  <p className="text-slate-800">{ed?.programas?.nombre}</p>
+                  <p className="text-slate-800">{prog?.nombre || '-'}</p>
                 </div>
                 <div>
                   <p className="text-slate-500 font-medium">Edición</p>
-                  <p className="text-slate-800">{ed?.codigo}</p>
+                  <p className="text-slate-800">{ed?.codigo || '-'}</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-slate-500 font-medium">Código de Estudiante</p>
-                  <p className="text-slate-800">{est.codigo_estudiante || '-'}</p>
+                  <p className="text-slate-500 font-medium">Plan de Estudio</p>
+                  <p className="text-slate-800">{plan?.nombre || '-'}</p>
                 </div>
+                <div>
+                  <p className="text-slate-500 font-medium">Código de Estudiante</p>
+                  <p className="text-slate-800">{est?.codigo_estudiante || '-'}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-slate-500 font-medium">Fecha de Matrícula</p>
                   <p className="text-slate-800">{matricula.fecha_matricula ? new Date(matricula.fecha_matricula).toLocaleDateString('es-PE') : '-'}</p>

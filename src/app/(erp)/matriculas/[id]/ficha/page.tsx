@@ -10,20 +10,30 @@ export const metadata = {
   title: 'Ficha de Matrícula - ERP Brusben'
 };
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export default async function FichaMatriculaPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
-  
-  const supabase = await createClient();
-  
-  // Validate basic access right to MATRICULAS module
-  await requirePermission('MATRICULAS.VER');
+  const rawId = decodeURIComponent(params.id || '').trim();
 
-  // 1. Obtener matrícula
-  const { data: matricula, error: matriculaError } = await supabase
-    .from('matriculas')
-    .select('*')
-    .eq('id', params.id)
-    .maybeSingle();
+  if (!rawId) {
+    notFound();
+  }
+
+  const supabase = await createClient();
+
+  // Validate basic access right to MATRICULAS module
+  await requirePermission(['MATRICULAS.VER', 'MATRICULAS.GESTIONAR', 'COBRANZA.VER', 'SISTEMA.ADMINISTRAR']);
+
+  const isUuid = UUID_REGEX.test(rawId);
+
+  // 1. Obtener matrícula por UUID o por codigo_matricula (evita error PostgreSQL 22P02)
+  const matriculaQuery = supabase.from('matriculas').select('*');
+  const { data: matricula, error: matriculaError } = await (
+    isUuid
+      ? matriculaQuery.eq('id', rawId)
+      : matriculaQuery.eq('codigo_matricula', rawId.toUpperCase())
+  ).maybeSingle();
 
   if (matriculaError) {
     console.error('[Ficha] Error al obtener matrícula:', matriculaError);
@@ -35,25 +45,43 @@ export default async function FichaMatriculaPage(props: { params: Promise<{ id: 
     notFound();
   }
 
+  const warnings: string[] = [];
+
   // 2. Obtener estudiante y persona
   const { data: estudiante, error: estError } = await supabase
     .from('estudiantes')
     .select('codigo_estudiante, personas(nombres, apellido_paterno, apellido_materno, tipo_documento, numero_documento, email, telefono)')
     .eq('id', matricula.estudiante_id)
-    .single();
+    .maybeSingle();
 
-  if (estError) console.error('[Ficha] Error al obtener estudiante:', estError);
+  if (estError) {
+    console.error('[Ficha] Error al obtener estudiante:', estError);
+    warnings.push(`No se pudieron cargar los datos del estudiante (${estError.message}). Verifique el permiso ESTUDIANTES.VER (RLS).`);
+  } else if (!estudiante && matricula.estudiante_id) {
+    warnings.push('No se encontraron los datos del estudiante asociado. Es posible que su rol no cuente con el permiso ESTUDIANTES.VER (restricción RLS).');
+  }
+
   const persona = Array.isArray(estudiante?.personas) ? estudiante?.personas[0] : estudiante?.personas;
+  if (estudiante && !persona) {
+    warnings.push('No se pudieron leer los datos personales del estudiante. Verifique el permiso ESTUDIANTES.VER sobre la tabla personas (RLS).');
+  }
 
-  // 3. Obtener edición y relacionadas
+  // 3. Obtener edición y relacionadas (incluyendo planes_estudio)
   const { data: edicion, error: edError } = await supabase
     .from('ediciones')
-    .select('codigo, modalidad, turno, fecha_inicio, fecha_fin, programas(nombre, tipo_programa), ciclos(nombre, numero_orden), periodos(nombre)')
+    .select('codigo, nombre, modalidad, turno, fecha_inicio, fecha_fin, programas(nombre, codigo, tipo_programa), planes_estudio(nombre, codigo), ciclos(nombre, numero_orden), periodos(nombre, codigo)')
     .eq('id', matricula.edicion_id)
-    .single();
+    .maybeSingle();
 
-  if (edError) console.error('[Ficha] Error al obtener edición:', edError);
+  if (edError) {
+    console.error('[Ficha] Error al obtener edición:', edError);
+    warnings.push(`No se pudo cargar la información de la edición académica (${edError.message}). Verifique el permiso PROGRAMAS.VER (RLS).`);
+  } else if (!edicion && matricula.edicion_id) {
+    warnings.push('No se pudo acceder a la edición y programa académico. Es posible que su rol no cuente con el permiso PROGRAMAS.VER (restricción RLS).');
+  }
+
   const programa = Array.isArray(edicion?.programas) ? edicion?.programas[0] : edicion?.programas;
+  const planEstudio = Array.isArray(edicion?.planes_estudio) ? edicion?.planes_estudio[0] : edicion?.planes_estudio;
   const ciclo = Array.isArray(edicion?.ciclos) ? edicion?.ciclos[0] : edicion?.ciclos;
   const periodo = Array.isArray(edicion?.periodos) ? edicion?.periodos[0] : edicion?.periodos;
 
@@ -64,7 +92,12 @@ export default async function FichaMatriculaPage(props: { params: Promise<{ id: 
     .eq('matricula_id', matricula.id)
     .order('numero_cuota', { ascending: true });
 
-  if (cuotasError) console.error('[Ficha] Error al obtener cuotas:', cuotasError);
+  if (cuotasError) {
+    console.error('[Ficha] Error al obtener cuotas:', cuotasError);
+    warnings.push(`No se pudo cargar el cronograma de cuotas (${cuotasError.message}). Verifique el permiso COBRANZA.VER (RLS).`);
+  } else if ((!cuotasRaw || cuotasRaw.length === 0) && matricula.status === 'ACTIVA') {
+    warnings.push('No se encontraron cuotas visibles para esta matrícula activa. Verifique si su rol cuenta con el permiso COBRANZA.VER (restricción RLS).');
+  }
 
   const cuotas = cuotasRaw?.sort((a, b) => {
     if (a.tipo_cuota !== b.tipo_cuota) {
@@ -86,15 +119,27 @@ export default async function FichaMatriculaPage(props: { params: Promise<{ id: 
     <div className="max-w-4xl mx-auto p-8 bg-white min-h-screen text-slate-900 print:p-0 print:max-w-none">
       
       {/* Non-printable action bar */}
-      <div className="flex justify-between items-center mb-8 print:hidden border-b pb-4">
+      <div className="flex justify-between items-center mb-6 print:hidden border-b pb-4">
         <Link 
           href={`/matriculas/${matricula.id}`}
-          className="text-slate-500 hover:text-slate-800 font-medium text-sm flex items-center gap-2"
+          className="text-slate-600 hover:text-slate-900 font-medium text-sm flex items-center gap-2"
         >
           ← Volver a la matrícula
         </Link>
         <PrintButton />
       </div>
+
+      {/* Bloque de diagnóstico de integridad / RLS (solo en pantalla) */}
+      {warnings.length > 0 && (
+        <div className="mb-6 p-4 rounded-md bg-amber-50 border-l-4 border-amber-600 text-amber-950 print:hidden">
+          <div className="font-bold text-sm mb-1">Aviso de diagnóstico de datos / permisos (RLS)</div>
+          <ul className="list-disc list-inside text-xs space-y-1">
+            {warnings.map((warning, index) => (
+              <li key={index}>{warning}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* Printable Sheet */}
       <div className="print:block border-2 border-slate-200 p-8 rounded-lg print:border-none print:p-0">
@@ -108,7 +153,7 @@ export default async function FichaMatriculaPage(props: { params: Promise<{ id: 
           <div className="text-right">
             <h2 className="text-2xl font-black text-blue-900 uppercase">Ficha de Matrícula</h2>
             <div className="text-lg font-bold text-slate-700 mt-1">{matricula.codigo_matricula}</div>
-            <div className="inline-block mt-2 px-3 py-1 bg-slate-100 border border-slate-300 rounded font-semibold text-sm">
+            <div className="inline-block mt-2 px-3 py-1 bg-slate-100 border border-slate-300 rounded font-semibold text-sm text-slate-800">
               Estado: {matricula.status}
             </div>
           </div>
@@ -122,11 +167,15 @@ export default async function FichaMatriculaPage(props: { params: Promise<{ id: 
               <tbody>
                 <tr className="border-b border-slate-100">
                   <td className="py-2 text-slate-500 w-1/3">Nombre completo</td>
-                  <td className="py-2 font-medium">{persona?.nombres} {persona?.apellido_paterno} {persona?.apellido_materno}</td>
+                  <td className="py-2 font-medium">
+                    {persona ? `${persona.nombres || ''} ${persona.apellido_paterno || ''} ${persona.apellido_materno || ''}`.trim() : '-'}
+                  </td>
                 </tr>
                 <tr className="border-b border-slate-100">
                   <td className="py-2 text-slate-500">Documento</td>
-                  <td className="py-2 font-medium">{persona?.tipo_documento} {persona?.numero_documento}</td>
+                  <td className="py-2 font-medium">
+                    {persona ? `${persona.tipo_documento || ''} ${persona.numero_documento || ''}`.trim() || '-' : '-'}
+                  </td>
                 </tr>
                 <tr className="border-b border-slate-100">
                   <td className="py-2 text-slate-500">Código de estudiante</td>
@@ -137,6 +186,7 @@ export default async function FichaMatriculaPage(props: { params: Promise<{ id: 
                   <td className="py-2 font-medium">
                     {persona?.email && <div>{persona.email}</div>}
                     {persona?.telefono && <div>{persona.telefono}</div>}
+                    {!persona?.email && !persona?.telefono && '-'}
                   </td>
                 </tr>
               </tbody>
@@ -149,23 +199,38 @@ export default async function FichaMatriculaPage(props: { params: Promise<{ id: 
               <tbody>
                 <tr className="border-b border-slate-100">
                   <td className="py-2 text-slate-500 w-1/3">Programa</td>
-                  <td className="py-2 font-medium">{programa?.nombre}</td>
+                  <td className="py-2 font-medium">{programa?.nombre || '-'}</td>
+                </tr>
+                <tr className="border-b border-slate-100">
+                  <td className="py-2 text-slate-500">Plan de Estudio</td>
+                  <td className="py-2 font-medium">
+                    {planEstudio ? `${planEstudio.nombre}${planEstudio.codigo ? ` (${planEstudio.codigo})` : ''}` : '-'}
+                  </td>
                 </tr>
                 <tr className="border-b border-slate-100">
                   <td className="py-2 text-slate-500">Edición / Ciclo</td>
-                  <td className="py-2 font-medium">{edicion?.codigo} - {ciclo?.nombre || `Ciclo ${ciclo?.numero_orden}`}</td>
+                  <td className="py-2 font-medium">
+                    {edicion?.codigo || '-'}
+                    {ciclo ? ` - ${ciclo.nombre || `Ciclo ${ciclo.numero_orden}`}` : ''}
+                  </td>
                 </tr>
                 <tr className="border-b border-slate-100">
                   <td className="py-2 text-slate-500">Periodo</td>
-                  <td className="py-2 font-medium">{periodo?.nombre}</td>
+                  <td className="py-2 font-medium">{periodo?.nombre || '-'}</td>
                 </tr>
                 <tr className="border-b border-slate-100">
                   <td className="py-2 text-slate-500">Modalidad / Turno</td>
-                  <td className="py-2 font-medium">{edicion?.modalidad} / {edicion?.turno}</td>
+                  <td className="py-2 font-medium">{edicion?.modalidad || '-'} / {edicion?.turno || '-'}</td>
                 </tr>
                 <tr className="border-b border-slate-100">
                   <td className="py-2 text-slate-500">Fecha de Matrícula</td>
-                  <td className="py-2 font-medium">{matricula.created_at ? format(new Date(matricula.created_at), "dd 'de' MMMM 'de' yyyy", { locale: es }) : '-'}</td>
+                  <td className="py-2 font-medium">
+                    {matricula.fecha_matricula
+                      ? format(new Date(matricula.fecha_matricula + 'T00:00:00'), "dd 'de' MMMM 'de' yyyy", { locale: es })
+                      : matricula.created_at
+                        ? format(new Date(matricula.created_at), "dd 'de' MMMM 'de' yyyy", { locale: es })
+                        : '-'}
+                  </td>
                 </tr>
               </tbody>
             </table>
