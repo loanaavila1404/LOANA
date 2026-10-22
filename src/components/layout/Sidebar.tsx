@@ -42,14 +42,11 @@ export function Sidebar({ appVersion = '1.0.0', user }: { appVersion?: string, u
         </Link>
         
         {/* Item: CRM Comercial */}
-        <Link className={`flex items-center justify-between px-3 py-2.5 rounded-md group transition-colors ${isActive("/crm") ? "bg-[#c4121a] text-white shadow-sm font-semibold" : "text-slate-300 hover:bg-white/5 hover:text-white"}`} href="/crm">
-          <div className="flex items-center gap-3 truncate">
-            <svg className="w-4 h-4 text-slate-400 group-hover:text-slate-200 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
-            </svg>
-            <span className="truncate">CRM Comercial</span>
-          </div>
-          <span className="text-[10px] font-semibold bg-[#c4121a]/80 text-white px-1.5 py-0.5 rounded-full">0</span>
+        <Link className={`flex items-center gap-3 px-3 py-2.5 rounded-md group transition-colors ${isActive("/crm") ? "bg-[#c4121a] text-white shadow-sm font-semibold" : "text-slate-300 hover:bg-white/5 hover:text-white"}`} href="/crm">
+          <svg className="w-4 h-4 text-slate-400 group-hover:text-slate-200 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
+          </svg>
+          <span className="truncate">CRM Comercial</span>
         </Link>
         
         {/* Item: Personas y estudiantes */}
