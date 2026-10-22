@@ -2,13 +2,13 @@
 
 import React, { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
+import { KanbanBoard } from "./KanbanBoard";
 import {
-  KanbanBoard,
   EnrichedProspecto,
   KANBAN_STAGES,
   normalizeProspectoStage,
   formatCanalLabel,
-} from "./KanbanBoard";
+} from "@/lib/utils/crm";
 import {
   ProspectoFormModalClient,
   AsesorOption,

@@ -13,7 +13,7 @@ import {
   Download,
 } from 'lucide-react';
 import { CRMWorkspaceClient } from '@/components/features/crm/CRMWorkspaceClient';
-import { EnrichedProspecto, normalizeProspectoStage } from '@/components/features/crm/KanbanBoard';
+import { EnrichedProspecto, normalizeProspectoStage } from '@/lib/utils/crm';
 import { AsesorOption } from './prospectos/ProspectoFormModalClient';
 
 export const metadata = {
