@@ -159,9 +159,9 @@ export function ProspectoFormModal({
               className="flex h-[38px] w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-graphite-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               defaultValue="ALTO"
             >
-              <option value="ALTO">Alta 🔥</option>
-              <option value="MEDIO">Media</option>
-              <option value="BAJO">Baja</option>
+              <option value="ALTO">Alta 🔥 (Prioritario)</option>
+              <option value="MEDIO">Media ⚡ (Evaluando)</option>
+              <option value="BAJO">Baja ❄️ (Informativo)</option>
             </select>
           </div>
         </div>

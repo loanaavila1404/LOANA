@@ -23,6 +23,7 @@ import {
   Phone,
   Mail,
   ExternalLink,
+  Calendar,
 } from "lucide-react";
 
 interface CRMWorkspaceClientProps {
@@ -60,6 +61,8 @@ export function CRMWorkspaceClient({
   const [programaFilter, setProgramaFilter] = useState("TODOS");
   const [canalFilter, setCanalFilter] = useState("TODOS");
   const [asesorFilter, setAsesorFilter] = useState("TODOS");
+  const [dateRangeFilter, setDateRangeFilter] = useState("TODOS");
+  const [customDate, setCustomDate] = useState("");
 
   // Sincronizar si cambian los datos del servidor
   React.useEffect(() => {
@@ -89,6 +92,11 @@ export function CRMWorkspaceClient({
   }, [catalogos, prospectos]);
 
   const filteredProspectos = useMemo(() => {
+    const now = new Date();
+    const todayStr = now.toISOString().slice(0, 10);
+    const currentMonthPrefix = now.toISOString().slice(0, 7);
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
     return prospectos.filter(p => {
       // 1. Búsqueda por texto (nombre, apellidos, código, DNI, teléfono, email)
       if (searchQuery.trim()) {
@@ -132,9 +140,36 @@ export function CRMWorkspaceClient({
         }
       }
 
+      // 6. Filtro por Rango de Fechas / Fecha de Registro (created_at)
+      if (dateRangeFilter !== "TODOS") {
+        const createdAtStr = p.created_at || "";
+        if (!createdAtStr) return false;
+        const createdDatePart = createdAtStr.slice(0, 10);
+
+        if (dateRangeFilter === "HOY") {
+          if (createdDatePart !== todayStr) return false;
+        } else if (dateRangeFilter === "7_DIAS") {
+          const createdDate = new Date(createdAtStr);
+          if (createdDate < sevenDaysAgo) return false;
+        } else if (dateRangeFilter === "ESTE_MES") {
+          if (!createdAtStr.startsWith(currentMonthPrefix)) return false;
+        } else if (dateRangeFilter === "FECHA_EXACTA") {
+          if (customDate && createdDatePart !== customDate) return false;
+        }
+      }
+
       return true;
     });
-  }, [prospectos, searchQuery, statusFilter, programaFilter, canalFilter, asesorFilter]);
+  }, [
+    prospectos,
+    searchQuery,
+    statusFilter,
+    programaFilter,
+    canalFilter,
+    asesorFilter,
+    dateRangeFilter,
+    customDate,
+  ]);
 
   const handleStageUpdate = (id: string, newStage: string) => {
     setProspectos(prev =>
@@ -155,6 +190,8 @@ export function CRMWorkspaceClient({
     setProgramaFilter("TODOS");
     setCanalFilter("TODOS");
     setAsesorFilter("TODOS");
+    setDateRangeFilter("TODOS");
+    setCustomDate("");
   };
 
   const hasActiveFilters =
@@ -162,7 +199,8 @@ export function CRMWorkspaceClient({
     statusFilter !== "TODOS" ||
     programaFilter !== "TODOS" ||
     canalFilter !== "TODOS" ||
-    asesorFilter !== "TODOS";
+    asesorFilter !== "TODOS" ||
+    dateRangeFilter !== "TODOS";
 
   const getInitials = (name: string | null | undefined) => {
     if (!name) return "AS";
@@ -201,21 +239,21 @@ export function CRMWorkspaceClient({
     const n = (nivel || "MEDIO").toUpperCase();
     if (n.includes("ALTO") || n.includes("ALTA")) {
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
           Alta 🔥
         </span>
       );
     }
     if (n.includes("BAJO") || n.includes("BAJA")) {
       return (
-        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
-          Baja
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-sky-50 text-sky-700 border border-sky-200">
+          Baja ❄️
         </span>
       );
     }
     return (
-      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
-        Media
+      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+        Media ⚡
       </span>
     );
   };
@@ -277,8 +315,8 @@ export function CRMWorkspaceClient({
           </div>
         </div>
 
-        {/* Filtros en Cascada en Tiempo Real */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 items-center">
+        {/* Filtros en Cascada en Tiempo Real (incluyendo Rango de Fechas) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2.5 items-center">
           {/* 1. Buscador rápido */}
           <div className="relative">
             <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5 pointer-events-none" />
@@ -286,7 +324,7 @@ export function CRMWorkspaceClient({
               type="text"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              placeholder="Buscar por nombre, DNI, código o tel..."
+              placeholder="Buscar nombre, DNI, código..."
               className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#C4121A]/20 focus:border-[#C4121A] text-slate-800"
             />
           </div>
@@ -356,7 +394,38 @@ export function CRMWorkspaceClient({
               <option value="SIN_ASIGNAR">Sin asesor asignado</option>
             </select>
           </div>
+
+          {/* 6. Filtro por Rango de Fechas / Fecha de Registro */}
+          <div className="flex items-center gap-1.5">
+            <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0 hidden sm:inline" />
+            <select
+              value={dateRangeFilter}
+              onChange={e => setDateRangeFilter(e.target.value)}
+              className="w-full py-1.5 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#C4121A]/20 focus:border-[#C4121A] text-slate-700 font-medium"
+            >
+              <option value="TODOS">Fecha: Todos los rangos</option>
+              <option value="HOY">Fecha: Hoy</option>
+              <option value="7_DIAS">Fecha: Últimos 7 días</option>
+              <option value="ESTE_MES">Fecha: Este mes</option>
+              <option value="FECHA_EXACTA">Fecha específica...</option>
+            </select>
+          </div>
         </div>
+
+        {/* Selector de fecha específica cuando se elige FECHA_EXACTA */}
+        {dateRangeFilter === "FECHA_EXACTA" && (
+          <div className="flex items-center gap-2 pt-1">
+            <label className="text-xs font-semibold text-slate-600">
+              Seleccionar fecha de registro:
+            </label>
+            <input
+              type="date"
+              value={customDate}
+              onChange={e => setCustomDate(e.target.value)}
+              className="py-1 px-2.5 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C4121A]/20 focus:border-[#C4121A] text-slate-800"
+            />
+          </div>
+        )}
       </div>
 
       {/* VISTA 1: LISTADO AVANZADO DE PROSPECTOS */}
@@ -371,6 +440,7 @@ export function CRMWorkspaceClient({
                   <th className="py-3.5 px-3">Programa &amp; Canal</th>
                   <th className="py-3.5 px-3">Temperatura</th>
                   <th className="py-3.5 px-3">Asesor Asignado</th>
+                  <th className="py-3.5 px-3">Registro</th>
                   <th className="py-3.5 px-3">Etapa Comercial</th>
                   <th className="py-3.5 px-4 text-right">Acciones</th>
                 </tr>
@@ -378,7 +448,7 @@ export function CRMWorkspaceClient({
               <tbody className="divide-y divide-slate-100 text-slate-700">
                 {filteredProspectos.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-12 text-center text-slate-500">
+                    <td colSpan={8} className="py-12 text-center text-slate-500">
                       No se encontraron prospectos con los criterios seleccionados.
                     </td>
                   </tr>
@@ -395,6 +465,13 @@ export function CRMWorkspaceClient({
                       "Asesor Institucional";
                     const normalizedStage = normalizeProspectoStage(p.status);
                     const fullName = `${p.nombres || ""} ${p.apellidos || ""}`.trim() || p.codigo;
+                    const fechaRegistro = p.created_at
+                      ? new Date(p.created_at).toLocaleDateString("es-PE", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })
+                      : "-";
 
                     return (
                       <tr key={p.id} className="hover:bg-slate-50/80 transition">
@@ -455,6 +532,8 @@ export function CRMWorkspaceClient({
                             <span className="font-medium text-slate-800">{advisorName}</span>
                           </div>
                         </td>
+
+                        <td className="py-3 px-3 text-slate-600 font-medium">{fechaRegistro}</td>
 
                         <td className="py-3 px-3">
                           <select

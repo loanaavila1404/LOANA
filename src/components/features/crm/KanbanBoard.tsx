@@ -45,14 +45,14 @@ export function KanbanBoard({ prospectos, onStageUpdated }: KanbanBoardProps) {
     }
     if (n.includes("BAJO") || n.includes("BAJA")) {
       return (
-        <span className="inline-flex items-center text-[10px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200 shrink-0">
-          Baja
+        <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-sky-700 bg-sky-50 px-2 py-0.5 rounded-full border border-sky-200 shrink-0">
+          Baja ❄️
         </span>
       );
     }
     return (
-      <span className="inline-flex items-center text-[10px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200 shrink-0">
-        Media
+      <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200 shrink-0">
+        Media ⚡
       </span>
     );
   };
