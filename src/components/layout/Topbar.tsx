@@ -22,7 +22,7 @@ export function Topbar({ user, onOpenSidebar, sedeContext }: { user: SessionUser
   return (
     <>
       {/* Desktop Header */}
-      <header className="hidden md:flex h-16 bg-white border-b border-slate-200 px-6 items-center justify-between flex-shrink-0 z-20">
+      <header className="hidden md:flex h-16 bg-white border-b border-slate-200 px-6 items-center justify-between flex-shrink-0 z-20 print:hidden no-print">
         <div className="flex items-center space-x-6 flex-1 max-w-2xl">
           <nav className="flex items-center space-x-2 text-xs text-slate-500 font-medium">
             <span className="text-slate-400">ERP Brusben</span>
@@ -82,7 +82,7 @@ export function Topbar({ user, onOpenSidebar, sedeContext }: { user: SessionUser
       </header>
 
       {/* Mobile Header */}
-      <header className="md:hidden sticky top-0 z-20 bg-white border-b border-slate-200 shadow-sm">
+      <header className="md:hidden sticky top-0 z-20 bg-white border-b border-slate-200 shadow-sm print:hidden no-print">
         <div className="px-3.5 py-2.5 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2.5">
             <button 

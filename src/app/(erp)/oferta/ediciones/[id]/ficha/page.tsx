@@ -3,8 +3,8 @@ import { requirePermission } from '@/lib/auth/permissions';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import PrintButton from '@/app/(erp)/matriculas/[id]/ficha/PrintButton';
+import { BrusbenPdfHeader, BrusbenPdfFooter } from '@/components/ui/BrusbenPdfLayout';
 import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
 
 export const metadata = {
   title: 'Ficha de Edición y Horario Académico - ERP Brusben'
@@ -101,19 +101,9 @@ export default async function FichaEdicionPage({
   });
 
   return (
-    <>
-      <style dangerouslySetInnerHTML={{__html: `
-        @media print {
-          .md\\:w-64, header, nav, .print\\:hidden { display: none !important; }
-          .flex.h-screen, main { height: auto !important; overflow: visible !important; display: block !important; }
-          main { padding: 0 !important; }
-          body { background: white !important; }
-        }
-      `}} />
-
-      <div className="max-w-4xl mx-auto p-8 bg-white min-h-screen text-slate-900 print:p-0 print:max-w-none">
+      <div className="max-w-4xl mx-auto p-6 bg-white text-slate-900 print:p-0 print:m-0 print:max-w-none print:min-h-0">
         {/* Barra superior de acciones (no imprimible) */}
-        <div className="flex justify-between items-center mb-6 print:hidden border-b pb-4">
+        <div className="flex justify-between items-center mb-6 print:hidden no-print border-b pb-4">
           <Link
             href={`/oferta/ediciones/${edicion.id}`}
             className="text-slate-600 hover:text-slate-900 font-medium text-sm flex items-center gap-2"
@@ -124,7 +114,7 @@ export default async function FichaEdicionPage({
         </div>
 
         {warnings.length > 0 && (
-          <div className="mb-6 p-4 rounded-md bg-amber-50 border-l-4 border-amber-600 text-amber-950 print:hidden">
+          <div className="mb-6 p-4 rounded-md bg-amber-50 border-l-4 border-amber-600 text-amber-950 print:hidden no-print">
             <div className="font-bold text-sm mb-1">Aviso de diagnóstico de datos</div>
             <ul className="list-disc list-inside text-xs space-y-1">
               {warnings.map((w, i) => (
@@ -135,24 +125,18 @@ export default async function FichaEdicionPage({
         )}
 
         {/* Hoja Imprimible A4 */}
-        <div className="print:block border-2 border-slate-200 p-8 rounded-lg print:border-none print:p-0">
-          {/* Encabezado Institucional */}
-          <div className="flex justify-between items-start mb-8 border-b-2 border-red-700 pb-6">
-            <div>
-              <h1 className="text-3xl font-bold text-red-700 tracking-tight">Centro de Capacitaciones Brusben</h1>
-              <p className="text-sm text-slate-500 mt-1">Coordinación Académica • Ficha Técnica de Edición y Horarios</p>
-            </div>
-            <div className="text-right">
-              <h2 className="text-xl font-black text-blue-900 uppercase">Horario Académico Oficial</h2>
-              <div className="text-base font-bold text-slate-700 mt-1">Edición: {edicion.codigo}</div>
-              <div className="inline-block mt-2 px-3 py-0.5 bg-slate-100 border border-slate-300 rounded font-semibold text-xs text-slate-800">
-                Estado: {edicion.status || 'ACTIVO'}
-              </div>
-            </div>
-          </div>
+        <div className="print:block border-2 border-slate-200 p-8 rounded-lg print:border-none print:p-0 print:shadow-none">
+          <BrusbenPdfHeader
+            documentType="HORARIO ACADÉMICO OFICIAL"
+            documentTitle={`Ficha Técnica de Edición y Horarios — ${programa?.nombre || edicion.codigo}`}
+            code={edicion.codigo}
+            statusBadge={edicion.status || 'ACTIVO'}
+            statusColor={(edicion.status || 'ACTIVO') === 'ACTIVO' ? 'green' : 'slate'}
+            issuedAt={format(new Date(), 'dd/MM/yyyy HH:mm')}
+          />
 
           {/* Ficha Técnica de la Edición */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-6 mb-6 break-inside-avoid">
             <div className="border border-slate-200 rounded-lg p-4">
               <h3 className="text-sm font-bold text-blue-900 border-b border-slate-200 pb-2 mb-3 uppercase tracking-wide">
                 Datos Académicos del Grupo / Edición
@@ -264,29 +248,14 @@ export default async function FichaEdicionPage({
             )}
           </div>
 
-          {/* Firmas de Conformidad Académica */}
-          <div className="grid grid-cols-2 gap-16 mt-16 pt-8">
-            <div className="text-center">
-              <div className="border-t border-slate-400 pt-3">
-                <div className="font-bold text-sm">Coordinación Académica</div>
-                <div className="text-xs text-slate-500">Centro de Capacitaciones Brusben</div>
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="border-t border-slate-400 pt-3">
-                <div className="font-bold text-sm">Dirección Institucional</div>
-                <div className="text-xs text-slate-500">Visto Bueno Oficial</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Pie de página */}
-          <div className="mt-12 pt-4 border-t border-slate-200 flex justify-between items-center text-xs text-slate-400">
-            <span>Centro de Capacitaciones Brusben — Horario de Edición {edicion.codigo}</span>
-            <span>Emitido el {format(new Date(), "dd/MM/yyyy 'a las' HH:mm", { locale: es })} hrs.</span>
-          </div>
+          <BrusbenPdfFooter
+            leftSignatureLabel="Coordinación Académica Brusben"
+            rightSignatureLabel="Dirección Institucional — Visto Bueno Oficial"
+            verificationCode={`EDI-${edicion.codigo}`}
+            showSignatures={true}
+          />
         </div>
       </div>
-    </>
   );
 }
+

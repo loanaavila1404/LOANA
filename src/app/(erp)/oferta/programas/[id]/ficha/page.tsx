@@ -3,6 +3,7 @@ import { requirePermission } from '@/lib/auth/permissions';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import PrintButton from '@/app/(erp)/matriculas/[id]/ficha/PrintButton';
+import { BrusbenPdfHeader, BrusbenPdfFooter } from '@/components/ui/BrusbenPdfLayout';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -135,19 +136,9 @@ export default async function FichaProgramaPage({
   const totalHorasPrograma = cursos.reduce((acc, c) => acc + (c.horas_semanales || 0), 0);
 
   return (
-    <>
-      <style dangerouslySetInnerHTML={{__html: `
-        @media print {
-          .md\\:w-64, header, nav, .print\\:hidden { display: none !important; }
-          .flex.h-screen, main { height: auto !important; overflow: visible !important; display: block !important; }
-          main { padding: 0 !important; }
-          body { background: white !important; }
-        }
-      `}} />
-
-      <div className="max-w-4xl mx-auto p-8 bg-white min-h-screen text-slate-900 print:p-0 print:max-w-none">
+      <div className="max-w-4xl mx-auto p-6 bg-white text-slate-900 print:p-0 print:m-0 print:max-w-none print:min-h-0">
         {/* Barra superior de acciones (no imprimible) */}
-        <div className="flex justify-between items-center mb-6 print:hidden border-b pb-4">
+        <div className="flex justify-between items-center mb-6 print:hidden no-print border-b pb-4">
           <Link
             href={`/oferta/programas/${programa.id}`}
             className="text-slate-600 hover:text-slate-900 font-medium text-sm flex items-center gap-2"
@@ -158,7 +149,7 @@ export default async function FichaProgramaPage({
         </div>
 
         {warnings.length > 0 && (
-          <div className="mb-6 p-4 rounded-md bg-amber-50 border-l-4 border-amber-600 text-amber-950 print:hidden">
+          <div className="mb-6 p-4 rounded-md bg-amber-50 border-l-4 border-amber-600 text-amber-950 print:hidden no-print">
             <div className="font-bold text-sm mb-1">Aviso de diagnóstico de datos</div>
             <ul className="list-disc list-inside text-xs space-y-1">
               {warnings.map((w, i) => (
@@ -169,24 +160,18 @@ export default async function FichaProgramaPage({
         )}
 
         {/* Hoja Imprimible A4 */}
-        <div className="print:block border-2 border-slate-200 p-8 rounded-lg print:border-none print:p-0">
-          {/* Encabezado Institucional */}
-          <div className="flex justify-between items-start mb-8 border-b-2 border-red-700 pb-6">
-            <div>
-              <h1 className="text-3xl font-bold text-red-700 tracking-tight">Centro de Capacitaciones Brusben</h1>
-              <p className="text-sm text-slate-500 mt-1">Dirección Académica • Catálogo y Malla Curricular Oficial</p>
-            </div>
-            <div className="text-right">
-              <h2 className="text-xl font-black text-blue-900 uppercase">Ficha de Programa Académico</h2>
-              <div className="text-base font-bold text-slate-700 mt-1">Código: {programa.codigo}</div>
-              <div className="inline-block mt-2 px-3 py-0.5 bg-slate-100 border border-slate-300 rounded font-semibold text-xs text-slate-800">
-                Estado: {programa.status || 'ACTIVO'}
-              </div>
-            </div>
-          </div>
+        <div className="print:block border-2 border-slate-200 p-8 rounded-lg print:border-none print:p-0 print:shadow-none">
+          <BrusbenPdfHeader
+            documentType="FICHA DE PROGRAMA ACADÉMICO"
+            documentTitle={`Catálogo y Malla Curricular Oficial — ${programa.nombre}`}
+            code={programa.codigo}
+            statusBadge={programa.status || 'ACTIVO'}
+            statusColor={(programa.status || 'ACTIVO') === 'ACTIVO' ? 'green' : 'slate'}
+            issuedAt={format(new Date(), 'dd/MM/yyyy HH:mm')}
+          />
 
           {/* Resumen General del Programa */}
-          <div className="mb-8 bg-slate-50 border border-slate-200 rounded-lg p-5">
+          <div className="mb-6 bg-slate-50 border border-slate-200 rounded-lg p-5 break-inside-avoid">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
               <div className="md:col-span-2">
                 <p className="text-xs uppercase tracking-wider font-semibold text-slate-500">Denominación del Programa</p>
@@ -370,13 +355,14 @@ export default async function FichaProgramaPage({
             )}
           </div>
 
-          {/* Pie de página institucional */}
-          <div className="mt-14 pt-6 border-t border-slate-200 flex justify-between items-center text-xs text-slate-400">
-            <span>Centro de Capacitaciones Brusben — Oferta Académica Institucional</span>
-            <span>Emitido el {format(new Date(), "dd 'de' MMMM 'de' yyyy 'a las' HH:mm", { locale: es })} hrs.</span>
-          </div>
+          <BrusbenPdfFooter
+            leftSignatureLabel="Coordinación Académica Brusben"
+            rightSignatureLabel="Dirección General — Centro de Capacitaciones Brusben"
+            verificationCode={`PROG-${programa.codigo}`}
+            showSignatures={true}
+          />
         </div>
       </div>
-    </>
   );
 }
+

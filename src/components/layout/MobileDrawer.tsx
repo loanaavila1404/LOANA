@@ -36,7 +36,7 @@ export function MobileDrawer({ isOpen, onClose, user, appVersion = '1.0.0' }: { 
   }
 
   return (
-    <div className={`md:hidden fixed inset-0 z-50 ${isOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}>
+    <div className={`md:hidden fixed inset-0 z-50 print:hidden no-print ${isOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}>
       {/* Backdrop */}
       <div 
         className={`absolute inset-0 bg-black/60 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0'}`}

@@ -23,7 +23,7 @@ export function Sidebar({ appVersion = '1.0.0', user }: { appVersion?: string, u
   };
 
   return (
-    <aside className="w-64 h-full bg-[#181A1F] text-slate-300 flex flex-col flex-shrink-0 z-30 select-none transition-all duration-200">
+    <aside className="w-64 h-full bg-[#181A1F] text-slate-300 flex flex-col flex-shrink-0 z-30 select-none transition-all duration-200 print:hidden no-print">
       {/* Brand & Logo Container */}
       <div className="h-16 px-4 bg-black/25 flex items-center justify-between border-b border-white/5">
         <div className="flex items-center w-full h-full overflow-hidden justify-center py-2">

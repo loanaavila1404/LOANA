@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import React from 'react'
 import Link from 'next/link'
@@ -15,7 +15,7 @@ export function MobileNav({ onOpenSidebar }: { onOpenSidebar: () => void }) {
   };
 
   return (
-    <footer className="md:hidden fixed bottom-0 left-0 right-0 w-full max-w-md mx-auto bg-white border-t border-slate-200 z-30 px-3 py-1.5 flex items-center justify-around shadow-lg">
+    <footer className="md:hidden fixed bottom-0 left-0 right-0 w-full max-w-md mx-auto bg-white border-t border-slate-200 z-30 px-3 py-1.5 flex items-center justify-around shadow-lg print:hidden no-print">
       {/* Tab 1: Inicio */}
       <Link className={cn("flex flex-col items-center gap-0.5", isActive('/dashboard') ? "text-[#c4121a] font-bold" : "text-slate-500 font-medium hover:text-slate-800")} href="/dashboard">
         <svg className="w-5 h-5" fill={isActive('/dashboard') ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">

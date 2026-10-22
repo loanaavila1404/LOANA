@@ -3,6 +3,7 @@ import { requirePermission } from '@/lib/auth/permissions';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import PrintButton from '@/app/(erp)/matriculas/[id]/ficha/PrintButton';
+import { BrusbenPdfHeader, BrusbenPdfFooter } from '@/components/ui/BrusbenPdfLayout';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -265,19 +266,9 @@ export default async function ReporteDetallePage({
   }
 
   return (
-    <>
-      <style dangerouslySetInnerHTML={{__html: `
-        @media print {
-          .md\\:w-64, header, nav, .print\\:hidden { display: none !important; }
-          .flex.h-screen, main { height: auto !important; overflow: visible !important; display: block !important; }
-          main { padding: 0 !important; }
-          body { background: white !important; }
-        }
-      `}} />
-
-      <div className="max-w-5xl mx-auto p-6 bg-white min-h-screen text-slate-900 print:p-0 print:max-w-none">
+      <div className="max-w-5xl mx-auto p-6 bg-white text-slate-900 print:p-0 print:m-0 print:max-w-none print:min-h-0">
         {/* Barra superior (no imprimible) */}
-        <div className="flex justify-between items-center mb-6 print:hidden border-b pb-4">
+        <div className="flex justify-between items-center mb-6 print:hidden no-print border-b pb-4">
           <Link
             href="/reportes"
             className="text-slate-600 hover:text-slate-900 font-medium text-sm flex items-center gap-2"
@@ -288,24 +279,18 @@ export default async function ReporteDetallePage({
         </div>
 
         {/* Documento de Reporte Institucional */}
-        <div className="print:block border-2 border-slate-200 p-8 rounded-lg print:border-none print:p-0">
-          {/* Encabezado Oficial Brusben */}
-          <div className="flex justify-between items-start mb-8 border-b-2 border-red-700 pb-6">
-            <div>
-              <h1 className="text-3xl font-bold text-red-700 tracking-tight">Centro de Capacitaciones Brusben</h1>
-              <p className="text-sm text-slate-500 mt-1">{infoReporte.subtitulo}</p>
-            </div>
-            <div className="text-right">
-              <h2 className="text-xl font-black text-blue-900 uppercase">{infoReporte.titulo}</h2>
-              <div className="text-xs font-mono font-bold text-slate-600 mt-1">Código: {infoReporte.codigo}</div>
-              <div className="inline-block mt-2 px-3 py-0.5 bg-slate-100 border border-slate-300 rounded font-semibold text-xs text-slate-800">
-                Corte: {format(new Date(), 'dd/MM/yyyy HH:mm', { locale: es })}
-              </div>
-            </div>
-          </div>
+        <div className="print:block border-2 border-slate-200 p-8 rounded-lg print:border-none print:p-0 print:shadow-none">
+          <BrusbenPdfHeader
+            documentType="REPORTE EJECUTIVO INSTITUCIONAL"
+            documentTitle={`${infoReporte.titulo} — ${infoReporte.subtitulo}`}
+            code={infoReporte.codigo}
+            statusBadge="DATOS OFICIALES"
+            statusColor="green"
+            issuedAt={format(new Date(), 'dd/MM/yyyy HH:mm', { locale: es })}
+          />
 
           {/* Tarjetas KPI */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 print:grid-cols-4 gap-4 mb-6 break-inside-avoid">
             {kpis.map((kpi, idx) => (
               <div key={idx} className="bg-slate-50 p-4 rounded-lg border border-slate-200 text-center">
                 <div className="text-xs text-slate-500 uppercase font-semibold">{kpi.label}</div>
@@ -315,14 +300,14 @@ export default async function ReporteDetallePage({
           </div>
 
           {/* Tabla Principal */}
-          <div className="mb-10">
+          <div className="mb-8">
             <h3 className="text-base font-bold text-blue-900 border-b border-slate-200 pb-2 mb-4">
               Detalle de Registros ({rows.length})
             </h3>
             {rows.length === 0 ? (
               <p className="text-sm text-slate-500 italic py-4">No existen registros disponibles para este reporte.</p>
             ) : (
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto print:overflow-visible">
                 <table className="w-full text-xs border-collapse">
                   <thead>
                     <tr className="bg-slate-100 border-y border-slate-300 text-slate-700">
@@ -333,7 +318,7 @@ export default async function ReporteDetallePage({
                   </thead>
                   <tbody className="divide-y divide-slate-200">
                     {rows.map((r, rIdx) => (
-                      <tr key={rIdx}>
+                      <tr key={rIdx} className="break-inside-avoid">
                         {r.map((cell, cIdx) => (
                           <td key={cIdx} className={`py-2 px-3 ${cIdx === 0 ? 'font-semibold text-slate-900' : 'text-slate-700'}`}>
                             {cell}
@@ -349,14 +334,14 @@ export default async function ReporteDetallePage({
 
           {/* Tabla Secundaria (si aplica) */}
           {secondaryHeaders.length > 0 && (
-            <div className="mb-10">
+            <div className="mb-8 break-inside-avoid">
               <h3 className="text-base font-bold text-blue-900 border-b border-slate-200 pb-2 mb-4">
                 {secondaryTitle} ({secondaryRows.length})
               </h3>
               {secondaryRows.length === 0 ? (
                 <p className="text-sm text-slate-500 italic py-4">Sin registros secundarios.</p>
               ) : (
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto print:overflow-visible">
                   <table className="w-full text-xs border-collapse">
                     <thead>
                       <tr className="bg-slate-100 border-y border-slate-300 text-slate-700">
@@ -367,7 +352,7 @@ export default async function ReporteDetallePage({
                     </thead>
                     <tbody className="divide-y divide-slate-200">
                       {secondaryRows.map((r, rIdx) => (
-                        <tr key={rIdx}>
+                        <tr key={rIdx} className="break-inside-avoid">
                           {r.map((cell, cIdx) => (
                             <td key={cIdx} className={`py-2 px-3 ${cIdx === 0 ? 'font-semibold text-slate-900' : 'text-slate-700'}`}>
                               {cell}
@@ -382,13 +367,14 @@ export default async function ReporteDetallePage({
             </div>
           )}
 
-          {/* Pie de página */}
-          <div className="mt-12 pt-4 border-t border-slate-200 flex justify-between items-center text-xs text-slate-400">
-            <span>Centro de Capacitaciones Brusben — Sistema ERP Institucional</span>
-            <span>Generado el {format(new Date(), "dd 'de' MMMM 'de' yyyy 'a las' HH:mm", { locale: es })} hrs.</span>
-          </div>
+          <BrusbenPdfFooter
+            leftSignatureLabel="Responsable de Control y Gestión"
+            rightSignatureLabel="Dirección General — Centro de Capacitaciones Brusben"
+            verificationCode={infoReporte.codigo}
+            showSignatures={true}
+          />
         </div>
       </div>
-    </>
   );
 }
+

@@ -3,6 +3,7 @@ import { requirePermission } from '@/lib/auth/permissions';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import PrintButton from './PrintButton';
+import { BrusbenPdfHeader, BrusbenPdfFooter } from '@/components/ui/BrusbenPdfLayout';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -106,20 +107,17 @@ export default async function FichaMatriculaPage(props: { params: Promise<{ id: 
     return (a.numero_cuota || 0) - (b.numero_cuota || 0);
   });
 
+  const statusColor =
+    matricula.status === 'ACTIVA'
+      ? 'green'
+      : matricula.status === 'ANULADA'
+        ? 'red'
+        : 'amber';
+
   return (
-    <>
-      <style dangerouslySetInnerHTML={{__html: `
-        @media print {
-          .md\\:w-64, header, nav, .print\\:hidden { display: none !important; }
-          .flex.h-screen, main { height: auto !important; overflow: visible !important; display: block !important; }
-          main { padding: 0 !important; }
-          body { background: white !important; }
-        }
-      `}} />
-    <div className="max-w-4xl mx-auto p-8 bg-white min-h-screen text-slate-900 print:p-0 print:max-w-none">
-      
+    <div className="max-w-4xl mx-auto p-6 bg-white text-slate-900 print:p-0 print:m-0 print:max-w-none print:min-h-0">
       {/* Non-printable action bar */}
-      <div className="flex justify-between items-center mb-6 print:hidden border-b pb-4">
+      <div className="flex justify-between items-center mb-6 print:hidden no-print border-b pb-4">
         <Link 
           href={`/matriculas/${matricula.id}`}
           className="text-slate-600 hover:text-slate-900 font-medium text-sm flex items-center gap-2"
@@ -131,7 +129,7 @@ export default async function FichaMatriculaPage(props: { params: Promise<{ id: 
 
       {/* Bloque de diagnóstico de integridad / RLS (solo en pantalla) */}
       {warnings.length > 0 && (
-        <div className="mb-6 p-4 rounded-md bg-amber-50 border-l-4 border-amber-600 text-amber-950 print:hidden">
+        <div className="mb-6 p-4 rounded-md bg-amber-50 border-l-4 border-amber-600 text-amber-950 print:hidden no-print">
           <div className="font-bold text-sm mb-1">Aviso de diagnóstico de datos / permisos (RLS)</div>
           <ul className="list-disc list-inside text-xs space-y-1">
             {warnings.map((warning, index) => (
@@ -142,25 +140,18 @@ export default async function FichaMatriculaPage(props: { params: Promise<{ id: 
       )}
 
       {/* Printable Sheet */}
-      <div className="print:block border-2 border-slate-200 p-8 rounded-lg print:border-none print:p-0">
-        
-        {/* Header */}
-        <div className="flex justify-between items-start mb-10 border-b-2 border-red-700 pb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-red-700 tracking-tight">Centro de Capacitaciones Brusben</h1>
-            <p className="text-sm text-slate-500 mt-1">Excelencia académica a tu alcance</p>
-          </div>
-          <div className="text-right">
-            <h2 className="text-2xl font-black text-blue-900 uppercase">Ficha de Matrícula</h2>
-            <div className="text-lg font-bold text-slate-700 mt-1">{matricula.codigo_matricula}</div>
-            <div className="inline-block mt-2 px-3 py-1 bg-slate-100 border border-slate-300 rounded font-semibold text-sm text-slate-800">
-              Estado: {matricula.status}
-            </div>
-          </div>
-        </div>
+      <div className="print:block border-2 border-slate-200 p-8 rounded-lg print:border-none print:p-0 print:shadow-none">
+        <BrusbenPdfHeader
+          documentType="CONSTANCIA OFICIAL DE MATRÍCULA"
+          documentTitle={`Ficha de Matrícula y Compromiso Económico — ${programa?.nombre || 'Programa Académico'}`}
+          code={matricula.codigo_matricula}
+          statusBadge={matricula.status}
+          statusColor={statusColor}
+          issuedAt={format(new Date(), 'dd/MM/yyyy HH:mm')}
+        />
 
         {/* Estudiante & General Info */}
-        <div className="grid grid-cols-2 gap-8 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-6 mb-6 break-inside-avoid">
           <div>
             <h3 className="text-lg font-bold text-blue-900 border-b border-slate-200 pb-2 mb-4">Datos del Estudiante</h3>
             <table className="w-full text-sm">
@@ -282,28 +273,18 @@ export default async function FichaMatriculaPage(props: { params: Promise<{ id: 
           </table>
         </div>
 
-        {/* Signatures */}
-        <div className="grid grid-cols-2 gap-16 mt-20 pt-10">
-          <div className="text-center">
-            <div className="border-t border-slate-400 pt-3">
-              <div className="font-bold">{persona?.nombres} {persona?.apellido_paterno} {persona?.apellido_materno}</div>
-              <div className="text-sm text-slate-500">Firma del Estudiante</div>
-            </div>
-          </div>
-          <div className="text-center">
-            <div className="border-t border-slate-400 pt-3">
-              <div className="font-bold">Centro de Capacitaciones Brusben</div>
-              <div className="text-sm text-slate-500">Sello y Firma Institucional</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="mt-16 text-center text-xs text-slate-400 print:mt-12">
-          Emitido el {format(new Date(), "dd/MM/yyyy 'a las' HH:mm")} hrs. Documento generado por ERP Brusben.
-        </div>
+        <BrusbenPdfFooter
+          leftSignatureLabel={
+            persona
+              ? `${persona.nombres || ''} ${persona.apellido_paterno || ''} ${persona.apellido_materno || ''}`.trim() || 'Firma del Estudiante'
+              : 'Firma del Estudiante'
+          }
+          rightSignatureLabel="Sello y Firma Autorizada — Dirección Académica Brusben"
+          verificationCode={matricula.codigo_matricula}
+          showSignatures={true}
+        />
       </div>
     </div>
-    </>
   );
 }
+
