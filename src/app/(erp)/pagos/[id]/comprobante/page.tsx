@@ -8,7 +8,7 @@ import { ArrowLeft, Printer, CheckCircle2, ShieldCheck } from 'lucide-react';
 import PrintButton from '@/app/(erp)/matriculas/[id]/ficha/PrintButton';
 
 export const metadata = {
-  title: 'Comprobante de Pago - ERP Brusben',
+  title: 'Recibo de Pago Institucional - ERP Brusben',
 };
 
 export default async function ComprobantePagoPage(props: {
@@ -81,8 +81,8 @@ export default async function ComprobantePagoPage(props: {
   const ed = Array.isArray(matriculaData?.ediciones) ? matriculaData?.ediciones[0] : matriculaData?.ediciones;
   const prog = Array.isArray(ed?.programas) ? ed?.programas[0] : ed?.programas;
 
-  const codigoBoleta = pago.comprobante_numero
-    ? `${pago.comprobante_tipo || 'BOL'}-${pago.comprobante_numero}`
+  const codigoRecibo = pago.comprobante_numero
+    ? (pago.comprobante_numero.startsWith('REC-') ? pago.comprobante_numero : `REC-${pago.comprobante_numero}`)
     : `REC-${pago.id.substring(0, 8).toUpperCase()}`;
 
   return (
@@ -98,7 +98,7 @@ export default async function ComprobantePagoPage(props: {
         </Link>
 
         <div className="flex items-center gap-2">
-          <PrintButton label="Imprimir Boleta / PDF" />
+          <PrintButton label="Imprimir Recibo / PDF" />
         </div>
       </div>
 
@@ -106,9 +106,9 @@ export default async function ComprobantePagoPage(props: {
       <div className="max-w-[800px] mx-auto bg-white border border-slate-200 shadow-md p-8 sm:p-10 print:border-none print:shadow-none print:p-0 rounded-xl">
         {/* Encabezado Oficial */}
         <BrusbenPdfHeader
-          documentType="BOLETA OFICIAL DE PAGO"
-          documentTitle="Comprobante de Cancelación y Abono de Pensiones"
-          code={codigoBoleta}
+          documentType="RECIBO DE PAGO INSTITUCIONAL (CONTROL INTERNO)"
+          documentTitle="Constancia de Cancelación y Abono de Pensiones"
+          code={codigoRecibo}
           statusBadge={pago.status === 'ANULADO' ? 'ANULADO' : 'PAGADO'}
           statusColor={pago.status === 'ANULADO' ? 'red' : 'green'}
           issuedAt={pago.fecha_pago ? new Date(pago.fecha_pago).toLocaleDateString('es-PE') : undefined}
@@ -187,7 +187,7 @@ export default async function ComprobantePagoPage(props: {
               {(!pago.pago_aplicaciones || pago.pago_aplicaciones.length === 0) ? (
                 <tr>
                   <td colSpan={4} className="py-4 px-3 text-center text-slate-500 italic">
-                    Pago general a cuenta de aranceles institucionales
+                    Pago general a cuenta de conceptos institucionales y pensiones
                   </td>
                 </tr>
               ) : (
@@ -229,15 +229,21 @@ export default async function ComprobantePagoPage(props: {
           </table>
         </div>
 
-        {/* Nota Institucional y Firmas */}
-        <div className="border-t border-slate-200 pt-4 mb-8 text-[11px] text-slate-500 space-y-1">
-          <p className="flex items-center gap-1 font-semibold text-slate-700">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+        {/* Nota Institucional y Descargo Legal SUNAT */}
+        <div className="border border-slate-200 bg-slate-50/80 rounded-lg p-4 mb-8 text-[11px] text-slate-600 space-y-1.5">
+          <p className="flex items-center gap-1.5 font-bold text-slate-800">
+            <ShieldCheck className="w-4 h-4 text-emerald-600" />
             Certificación Oficial de Pago — Centro de Capacitaciones Brusben
           </p>
-          <p>
-            Este comprobante acredita la cancelación del importe indicado y la amortización de cuotas en el ERP Académico Institucional. Válido para trámites curriculares, constancias de no adeudo y evaluaciones periódicas.
+          <p className="text-slate-600">
+            Este documento acredita la cancelación del importe indicado y la amortización de cuotas en el ERP Académico Institucional. Válido para trámites curriculares, constancias de no adeudo y evaluaciones periódicas.
           </p>
+          <div className="pt-2 border-t border-slate-200 mt-2 flex items-start gap-1.5 text-slate-500 text-[10px] leading-relaxed">
+            <span className="font-extrabold text-[#AD0000] shrink-0 uppercase tracking-wider">Aviso Importante:</span>
+            <span className="font-medium italic">
+              Este documento es un recibo de caja interno de control académico y financiero, no válido como comprobante de pago fiscal ante la SUNAT.
+            </span>
+          </div>
         </div>
 
         {/* Firmas y Sellos */}
@@ -267,7 +273,7 @@ export default async function ComprobantePagoPage(props: {
 
         {/* Pie de página oficial */}
         <div className="mt-8">
-          <BrusbenPdfFooter />
+          <BrusbenPdfFooter showSignatures={false} verificationCode={codigoRecibo} />
         </div>
       </div>
     </div>

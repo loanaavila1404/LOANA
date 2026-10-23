@@ -3,7 +3,6 @@
 import { Card, CardContent } from '@/components/ui/Card';
 import { formatCurrency } from '@/lib/utils/currency';
 import {
-  DollarSign,
   GraduationCap,
   Clock,
   AlertTriangle,
@@ -41,8 +40,8 @@ export function MatriculasMetrics({ metrics }: { metrics: MatriculasMetricsData 
               <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
                 Total Recaudado (Mes)
               </span>
-              <div className="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                <DollarSign className="w-4 h-4" />
+              <div className="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center font-black font-mono text-xs border border-emerald-200">
+                S/
               </div>
             </div>
 

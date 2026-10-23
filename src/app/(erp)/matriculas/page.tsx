@@ -217,7 +217,7 @@ export default async function MatriculasPage() {
         <div>
           <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-red-50 border border-red-100 text-[#C4121A] text-[11px] font-bold uppercase tracking-wider mb-2">
             <Receipt className="w-3.5 h-3.5" />
-            <span>Centro de Control Financiero y Aranceles</span>
+            <span>Centro de Control Financiero y Pensiones</span>
           </div>
           <h1 className="text-2xl font-bold font-heading text-slate-900 tracking-tight">
             Control de Matrículas y Cobranzas

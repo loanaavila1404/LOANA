@@ -169,7 +169,7 @@ export function MatriculaWizardClient({
     });
   }, [ediciones, turnoFilter]);
 
-  // --- PASO 3: PLAN ARANCELARIO Y MODALIDAD DE PAGO ---
+  // --- PASO 3: PLAN DE PENSIONES Y MODALIDAD DE PAGO ---
   const [modalidadPago, setModalidadPago] = useState<'CUOTAS' | 'CONTADO' | 'BECA'>('CUOTAS');
   const [importeMatricula, setImporteMatricula] = useState<number>(150);
   const [importePension, setImportePension] = useState<number>(200);
@@ -429,7 +429,7 @@ export function MatriculaWizardClient({
             </div>
             <div className="hidden sm:block text-left">
               <span className="text-[10px] uppercase font-bold tracking-wider block opacity-70">Paso 3</span>
-              <span className="text-xs font-bold">Plan Arancelario</span>
+              <span className="text-xs font-bold">Pensiones y Pagos</span>
             </div>
           </div>
 
@@ -757,7 +757,7 @@ export function MatriculaWizardClient({
               onClick={() => setCurrentStep(3)}
               className="bg-[#C4121A] hover:bg-red-700 text-white font-semibold flex items-center gap-2"
             >
-              <span>Continuar a Plan Arancelario</span>
+              <span>Continuar a Pensiones y Pagos</span>
               <ArrowRight className="w-4 h-4" />
             </Button>
           </div>
@@ -765,7 +765,7 @@ export function MatriculaWizardClient({
       )}
 
       {/* ============================================================== */}
-      {/* PASO 3: PLAN ARANCELARIO Y MODALIDAD DE PAGO */}
+      {/* PASO 3: PLAN DE PENSIONES Y MODALIDAD DE PAGO */}
       {/* ============================================================== */}
       {currentStep === 3 && (
         <div className="space-y-4 animate-in fade-in-50 duration-200">
@@ -777,7 +777,7 @@ export function MatriculaWizardClient({
                   <span>Modalidad de Pago y Estructura Financiera</span>
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Elige la modalidad para calcular el arancel, aplicar descuentos institucionales y proyectar el cronograma.
+                  Elige la modalidad para calcular las pensiones, aplicar descuentos institucionales y proyectar el cronograma.
                 </p>
               </div>
 
@@ -888,7 +888,7 @@ export function MatriculaWizardClient({
                 </div>
               )}
 
-              {/* Formulario de Aranceles */}
+              {/* Formulario de Pensiones y Pagos */}
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-2">
                 <div className="space-y-1">
                   <label className="text-xs font-semibold text-slate-700">Matrícula (S/)</label>

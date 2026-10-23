@@ -651,10 +651,10 @@ export function MatriculasTableWithDrawer({ initialMatriculas }: Props) {
                   </div>
                 </div>
 
-                {/* 4. Desglose de Aranceles */}
+                {/* 4. Desglose de Pensiones y Pagos */}
                 <div className="border border-slate-200 rounded-xl p-4 space-y-2.5">
                   <span className="text-xs font-bold uppercase tracking-wider text-slate-600 block">
-                    Estructura Arancelaria
+                    Estructura de Pensiones y Pagos
                   </span>
                   
                   <div className="space-y-1.5 text-xs">
