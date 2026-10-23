@@ -55,6 +55,7 @@ export default async function MatriculaDetailPage({
     *,
     estudiantes (
       id,
+      persona_id,
       codigo_estudiante,
       personas (
         id,
@@ -97,9 +98,10 @@ export default async function MatriculaDetailPage({
 
   type EstudianteRel = {
     id: string;
+    persona_id?: string | null;
     codigo_estudiante: string | null;
     personas: {
-      id: string;
+      id?: string | null;
       nombres: string | null;
       apellido_paterno: string | null;
       apellido_materno: string | null;
@@ -127,6 +129,7 @@ export default async function MatriculaDetailPage({
   const estRaw = matricula.estudiantes as unknown as EstudianteRel | EstudianteRel[] | null;
   const est = Array.isArray(estRaw) ? estRaw[0] : estRaw;
   const persona = Array.isArray(est?.personas) ? est?.personas[0] : est?.personas;
+  const personaId = persona?.id || est?.persona_id || est?.id;
 
   const edRaw = matricula.ediciones as unknown as EdicionRel | EdicionRel[] | null;
   const ed = Array.isArray(edRaw) ? edRaw[0] : edRaw;
@@ -253,9 +256,9 @@ export default async function MatriculaDetailPage({
 
               {/* Subtítulo con Estudiante, Documento y Oferta */}
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-slate-600 mt-1">
-                {persona?.id ? (
+                {personaId ? (
                   <Link
-                    href={`/personas/${persona.id}`}
+                    href={`/personas/${personaId}`}
                     className="font-bold text-[#C4121A] hover:underline flex items-center gap-1 group"
                   >
                     <span>{nombreCompleto}</span>
@@ -596,10 +599,10 @@ export default async function MatriculaDetailPage({
                 </div>
               )}
 
-              {persona?.id && (
+              {personaId && (
                 <div className="pt-2 border-t border-slate-100">
                   <Link
-                    href={`/personas/${persona.id}`}
+                    href={`/personas/${personaId}`}
                     className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold transition shadow-2xs"
                   >
                     <span>Ver Ficha 360° del Alumno</span>

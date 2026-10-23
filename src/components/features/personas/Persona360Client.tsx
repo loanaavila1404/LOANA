@@ -32,7 +32,6 @@ import { PersonaFormModal } from "@/components/features/personas/PersonaFormModa
 import { ConvertirEstudianteForm } from "@/components/features/personas/ConvertirEstudianteForm";
 import { TogglePersonaStatusButton } from "@/components/features/personas/TogglePersonaStatusButton";
 import { DocumentoRequisitoItem } from "@/lib/utils/personaUtils";
-import { registrarPagoAction } from "@/app/actions/matriculas";
 import { eliminarPersonaEstudianteAction } from "@/app/actions/personas";
 
 interface Persona360ClientProps {
@@ -83,17 +82,6 @@ export function Persona360Client({
     "documentos"
   );
   const [showCarnetModal, setShowCarnetModal] = useState(false);
-  const [showPagoModal, setShowPagoModal] = useState(false);
-
-  // Estado para el modal de registro de pago rápido con selección de concepto
-  const [isPendingPago, startTransitionPago] = useTransition();
-  const [pagoError, setPagoError] = useState<string | null>(null);
-  const [conceptoSeleccionado, setConceptoSeleccionado] = useState<string>("AUTOMATICO");
-  const [conceptoLibre, setConceptoLibre] = useState<string>("Certificado / Constancia");
-  const [importePago, setImportePago] = useState<number>(0);
-  const [medioPago, setMedioPago] = useState("TRANSFERENCIA");
-  const [numeroOperacion, setNumeroOperacion] = useState("");
-  const [idempotencyKey, setIdempotencyKey] = useState("");
 
   // Estado para el flujo de doble confirmación de eliminación / baja
   const [deleteStep, setDeleteStep] = useState<0 | 1 | 2>(0);
@@ -139,106 +127,7 @@ export function Persona360Client({
     persona_id: persona.id,
   }).toString()}`;
 
-  const openPagoModal = () => {
-    setPagoError(null);
-    const primeraPendiente = cuotasPendientes[0];
-    if (primeraPendiente) {
-      const sugerido = Number(
-        primeraPendiente.saldo !== null && primeraPendiente.saldo !== undefined
-          ? primeraPendiente.saldo
-          : primeraPendiente.importe_neto || 0
-      );
-      setConceptoSeleccionado(primeraPendiente.id);
-      setImportePago(sugerido > 0 ? sugerido : 0);
-    } else {
-      setConceptoSeleccionado("AUTOMATICO");
-      setImportePago(0);
-    }
-    setIdempotencyKey(
-      typeof window !== "undefined" && window.crypto?.randomUUID
-        ? window.crypto.randomUUID()
-        : `pago-${Date.now()}`
-    );
-    setShowPagoModal(true);
-  };
 
-  const handleConceptoPagoChange = (val: string) => {
-    setConceptoSeleccionado(val);
-    if (val !== "AUTOMATICO" && val !== "OTROS") {
-      const cuota = cuotasPendientes.find(c => c.id === val);
-      if (cuota) {
-        const saldo =
-          cuota.saldo !== null && cuota.saldo !== undefined
-            ? Number(cuota.saldo)
-            : Number(cuota.importe_neto || 0);
-        setImportePago(saldo);
-      }
-    }
-  };
-
-  const handleRegistrarPago = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!estudiante?.id) {
-      setPagoError("La persona debe estar registrada como estudiante para registrar pagos.");
-      return;
-    }
-    if (importePago <= 0) {
-      setPagoError("El importe debe ser mayor a S/ 0.00");
-      return;
-    }
-
-    let remaining = Number(importePago);
-    const aplicaciones: { cuota_id: string; importe: number }[] = [];
-
-    // Priorizar la cuota seleccionada en el desplegable Concepto a Cancelar
-    const orderedCuotas =
-      conceptoSeleccionado !== "AUTOMATICO" && conceptoSeleccionado !== "OTROS"
-        ? [
-            ...cuotasPendientes.filter(c => c.id === conceptoSeleccionado),
-            ...cuotasPendientes.filter(c => c.id !== conceptoSeleccionado),
-          ]
-        : cuotasPendientes;
-
-    for (const c of orderedCuotas) {
-      if (remaining <= 0) break;
-      const saldo =
-        c.saldo !== null && c.saldo !== undefined
-          ? Number(c.saldo)
-          : Number(c.importe_neto || 0);
-      if (saldo <= 0) continue;
-      const aplicar = Math.min(saldo, remaining);
-      aplicaciones.push({ cuota_id: c.id, importe: Number(aplicar.toFixed(2)) });
-      remaining = Number((remaining - aplicar).toFixed(2));
-    }
-
-    if (remaining > 0.01) {
-      setPagoError(
-        `El importe ingresado supera el saldo total pendiente (S/ ${saldoPendienteTotal.toFixed(2)}).`
-      );
-      return;
-    }
-
-    startTransitionPago(async () => {
-      const res = await registrarPagoAction({
-        idempotency_key: idempotencyKey,
-        estudiante_id: estudiante.id,
-        importe: Number(importePago),
-        medio_pago: medioPago,
-        numero_operacion:
-          conceptoSeleccionado === "OTROS" && conceptoLibre
-            ? `${numeroOperacion ? `${numeroOperacion} · ` : ""}${conceptoLibre}`
-            : numeroOperacion,
-        cuotas_aplicadas: aplicaciones,
-      });
-
-      if (res?.error) {
-        setPagoError(res.error);
-      } else {
-        setShowPagoModal(false);
-        setNumeroOperacion("");
-      }
-    });
-  };
 
   const handleConfirmDelete = (e: React.FormEvent) => {
     e.preventDefault();
@@ -354,31 +243,22 @@ export function Persona360Client({
 
           {/* Botones de Acción Rápida 360° */}
           <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto justify-start lg:justify-end print:hidden no-print">
-            {/* 1. Registrar nuevo pago o matrícula preseleccionada */}
-            {cuotasPendientes.length > 0 ? (
-              <button
-                type="button"
-                onClick={openPagoModal}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-[#C4121A] hover:bg-[#a00e15] text-white text-xs font-bold shadow-xs transition"
-              >
-                <CreditCard className="w-3.5 h-3.5" />
-                <span>Registrar nuevo pago</span>
-              </button>
-            ) : (
-              <Link
-                href={
-                  matriculaPrincipal
-                    ? `/matriculas/${matriculaPrincipal.id}`
-                    : nuevaMatriculaUrl
-                }
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-[#C4121A] hover:bg-[#a00e15] text-white text-xs font-bold shadow-xs transition"
-              >
-                <CreditCard className="w-3.5 h-3.5" />
-                <span>
-                  {matriculaPrincipal ? "Gestionar pagos" : "Registrar matrícula / pago"}
-                </span>
-              </Link>
-            )}
+            {/* 1. Enlace centralizado a Matrículas y Pagos */}
+            <Link
+              href={
+                matriculaPrincipal
+                  ? `/matriculas/${matriculaPrincipal.id}`
+                  : nuevaMatriculaUrl
+              }
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-[#C4121A] hover:bg-[#a00e15] text-white text-xs font-bold shadow-xs transition"
+            >
+              <CreditCard className="w-3.5 h-3.5" />
+              <span>
+                {matriculaPrincipal
+                  ? "Gestionar en Matrículas y Pagos"
+                  : "Nueva Matrícula"}
+              </span>
+            </Link>
 
             {/* 2. Editar datos */}
             {canEdit && (
@@ -741,15 +621,22 @@ export function Persona360Client({
                   <span className="text-lg font-extrabold text-[#C4121A]">
                     {porcentajeAmortizado}% Amortizado
                   </span>
-                  {cuotasPendientes.length > 0 && (
-                    <button
-                      type="button"
-                      onClick={openPagoModal}
+                  {matriculaPrincipal ? (
+                    <Link
+                      href={`/matriculas/${matriculaPrincipal.id}`}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#C4121A] hover:bg-[#a00e15] text-white text-xs font-bold transition"
+                    >
+                      <CreditCard className="w-3.5 h-3.5" />
+                      <span>Gestionar en Matrículas</span>
+                    </Link>
+                  ) : (
+                    <Link
+                      href={nuevaMatriculaUrl}
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#C4121A] hover:bg-[#a00e15] text-white text-xs font-bold transition"
                     >
                       <PlusCircle className="w-3.5 h-3.5" />
-                      <span>Registrar Pago</span>
-                    </button>
+                      <span>Nueva Matrícula</span>
+                    </Link>
                   )}
                 </div>
               </div>
@@ -1222,149 +1109,7 @@ export function Persona360Client({
         </>
       )}
 
-      {/* MODAL 2: REGISTRAR NUEVO PAGO DIRECTO (CON SELECCIÓN DE CONCEPTO) */}
-      {showPagoModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 print:hidden">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 relative space-y-4">
-            <button
-              type="button"
-              onClick={() => setShowPagoModal(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
-            >
-              <X className="w-5 h-5" />
-            </button>
 
-            <div>
-              <h3 className="text-lg font-extrabold text-slate-900">
-                Registrar Nuevo Pago
-              </h3>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Estudiante: <strong>{nombreCompleto}</strong> · Saldo pendiente: S/{" "}
-                {saldoPendienteTotal.toFixed(2)}
-              </p>
-            </div>
-
-            <form onSubmit={handleRegistrarPago} className="space-y-4">
-              {pagoError && (
-                <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-xs text-red-700 font-medium">
-                  {pagoError}
-                </div>
-              )}
-
-              {/* Campo desplegable: Concepto a Cancelar */}
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-700">
-                  Concepto a Cancelar *
-                </label>
-                <select
-                  value={conceptoSeleccionado}
-                  onChange={e => handleConceptoPagoChange(e.target.value)}
-                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-[#C4121A]/20 font-medium text-slate-800"
-                >
-                  {cuotasPendientes.map(c => {
-                    const saldo =
-                      c.saldo !== null && c.saldo !== undefined
-                        ? Number(c.saldo)
-                        : Number(c.importe_neto || 0);
-                    const etiqueta =
-                      c.concepto ||
-                      (c.tipo_cuota === "MATRICULA"
-                        ? "Matrícula"
-                        : `Pensión ${c.numero_cuota || ""}`);
-                    return (
-                      <option key={c.id} value={c.id}>
-                        {etiqueta} — Saldo: S/ {saldo.toFixed(2)}
-                      </option>
-                    );
-                  })}
-                  <option value="AUTOMATICO">
-                    Distribución automática (cuotas más antiguas)
-                  </option>
-                  <option value="OTROS">
-                    Otros conceptos (Constancia / Carné / Certificado)
-                  </option>
-                </select>
-              </div>
-
-              {conceptoSeleccionado === "OTROS" && (
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-700">
-                    Especificar Concepto
-                  </label>
-                  <Input
-                    type="text"
-                    value={conceptoLibre}
-                    onChange={e => setConceptoLibre(e.target.value)}
-                    placeholder="Ej. Certificado de Estudios / Carné"
-                  />
-                </div>
-              )}
-
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-700">
-                  Importe a Abonar (S/)
-                </label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  min="0.1"
-                  required
-                  value={importePago}
-                  onChange={e => setImportePago(Number(e.target.value))}
-                />
-                <p className="text-[11px] text-slate-500">
-                  Se aplicará al concepto seleccionado y el excedente a las cuotas pendientes.
-                </p>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-700">
-                  Medio de Pago
-                </label>
-                <select
-                  value={medioPago}
-                  onChange={e => setMedioPago(e.target.value)}
-                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-[#C4121A]/20"
-                >
-                  <option value="EFECTIVO">Efectivo en Caja</option>
-                  <option value="TRANSFERENCIA">Transferencia / Yape / Plin</option>
-                  <option value="TARJETA">Tarjeta POS / Pasarela</option>
-                </select>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-700">
-                  Nº de Operación / Recibo (Opcional)
-                </label>
-                <Input
-                  type="text"
-                  value={numeroOperacion}
-                  onChange={e => setNumeroOperacion(e.target.value)}
-                  placeholder="Ej. OP-984512"
-                />
-              </div>
-
-              <div className="pt-3 border-t border-slate-100 flex justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => setShowPagoModal(false)}
-                  disabled={isPendingPago}
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={isPendingPago}
-                  className="bg-[#C4121A] hover:bg-[#a00e15] text-white"
-                >
-                  {isPendingPago ? "Procesando..." : "Confirmar Pago"}
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* MODAL 3: FLUJO DE DOBLE CONFIRMACIÓN PARA ELIMINAR / DAR DE BAJA ESTUDIANTE */}
       {deleteStep > 0 && (

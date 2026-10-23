@@ -42,7 +42,11 @@ export async function confirmarMatriculaAction(payload: unknown) {
 
 export async function registrarPagoAction(payload: unknown) {
   const permissions = await getUserPermissions();
-  if (!permissions.includes('PAGOS.REGISTRAR') && !permissions.includes('SISTEMA.ADMINISTRAR')) {
+  if (
+    !permissions.includes('PAGOS.REGISTRAR') &&
+    !permissions.includes('SISTEMA.ADMINISTRAR') &&
+    !permissions.includes('COBRANZA.VER')
+  ) {
     return { error: 'No tienes permiso para registrar pagos.' };
   }
 

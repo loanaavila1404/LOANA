@@ -57,8 +57,10 @@ export type MatriculaRow = {
   created_at: string | null;
   estudiante: {
     id: string;
+    persona_id?: string | null;
     codigo_estudiante: string | null;
     personas: {
+      id?: string | null;
       nombres: string | null;
       apellido_paterno: string | null;
       apellido_materno: string | null;
@@ -336,7 +338,20 @@ export function MatriculasTableWithDrawer({ initialMatriculas }: Props) {
 
                       {/* Estudiante */}
                       <td className="py-3 px-4">
-                        <div className="font-semibold text-slate-900">{nombreCompleto}</div>
+                        {(() => {
+                          const personaId = p?.id || m.estudiante?.persona_id || m.estudiante?.id;
+                          return personaId ? (
+                            <Link
+                              href={`/personas/${personaId}`}
+                              onClick={e => e.stopPropagation()}
+                              className="font-semibold text-slate-900 hover:text-[#C4121A] hover:underline"
+                            >
+                              {nombreCompleto}
+                            </Link>
+                          ) : (
+                            <div className="font-semibold text-slate-900">{nombreCompleto}</div>
+                          );
+                        })()}
                         <div className="text-slate-500 text-[11px] flex items-center gap-2 mt-0.5">
                           <span>DNI: {p?.numero_documento || '-'}</span>
                           {m.estudiante?.codigo_estudiante && (
@@ -542,6 +557,24 @@ export function MatriculasTableWithDrawer({ initialMatriculas }: Props) {
                         </span>
                       </div>
                     </div>
+
+                    {(() => {
+                      const pId =
+                        selectedMatricula.estudiante?.personas?.id ||
+                        selectedMatricula.estudiante?.persona_id ||
+                        selectedMatricula.estudiante?.id;
+                      return pId ? (
+                        <div className="pt-2 border-t border-slate-200/80 mt-2">
+                          <Link
+                            href={`/personas/${pId}`}
+                            className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#C4121A] hover:underline"
+                          >
+                            <span>Ver Ficha 360° del Estudiante</span>
+                            <ArrowRight className="w-3.5 h-3.5" />
+                          </Link>
+                        </div>
+                      ) : null;
+                    })()}
                   </div>
                 </div>
 

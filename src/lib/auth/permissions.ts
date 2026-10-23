@@ -44,10 +44,10 @@ export async function getUserPermissions(): Promise<PermissionCode[]> {
     return [];
   }
 
-  // Leer desde tabla interna profiles
+  // Leer desde tabla interna profiles incluyendo rol
   const { data: profile } = await supabase
     .from('profiles')
-    .select('role_id, status')
+    .select('role_id, status, roles(code)')
     .eq('id', user.id)
     .single();
 
@@ -55,15 +55,51 @@ export async function getUserPermissions(): Promise<PermissionCode[]> {
     return [];
   }
 
+  const roleRaw = profile.roles as unknown as { code: string } | { code: string }[] | null;
+  const roleCode = (Array.isArray(roleRaw) ? roleRaw[0]?.code : roleRaw?.code) || '';
+
   const { data: rolePerms } = await supabase
     .from('role_permissions')
     .select('permissions(code)')
     .eq('role_id', profile.role_id || '');
 
-  if (!rolePerms) return [];
+  const perms = (rolePerms || [])
+    .map((rp: { permissions: { code: string | null } | null }) => rp.permissions?.code as string as PermissionCode)
+    .filter((code): code is PermissionCode => Boolean(code));
 
-  
-  return rolePerms.map((rp: { permissions: { code: string | null } | null }) => rp.permissions?.code as string as PermissionCode).filter((code): code is PermissionCode => Boolean(code));
+  // Roles administrativos, directivos y de tesorería con autorización completa de pagos y gestión
+  const upperRole = roleCode.toUpperCase();
+  const adminRoles = [
+    'SUPERADMIN',
+    'SUPER_ADMINISTRADOR',
+    'ADMINISTRACION',
+    'ADMINISTRADOR',
+    'DIRECCION',
+    'DIRECTOR',
+    'CAJA',
+  ];
+
+  if (adminRoles.includes(upperRole)) {
+    const adminPerms: PermissionCode[] = [
+      'SISTEMA.ADMINISTRAR',
+      'PAGOS.REGISTRAR',
+      'PAGOS.ANULAR',
+      'COBRANZA.VER',
+      'MATRICULAS.VER',
+      'MATRICULAS.GESTIONAR',
+      'ESTUDIANTES.VER',
+      'ESTUDIANTES.EDITAR',
+      'PROGRAMAS.VER',
+      'PROGRAMAS.EDITAR',
+    ];
+    for (const p of adminPerms) {
+      if (!perms.includes(p)) {
+        perms.push(p);
+      }
+    }
+  }
+
+  return perms;
 }
 
 export async function hasPermission(code: PermissionCode | PermissionCode[]): Promise<boolean> {

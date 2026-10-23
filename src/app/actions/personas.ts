@@ -152,7 +152,7 @@ export async function getPersonaById(id: string) {
   await requirePermission(["ESTUDIANTES.VER", "ESTUDIANTES.EDITAR", "SISTEMA.ADMINISTRAR"]);
 
   const supabase = await createClient();
-  const { data: persona, error: personaError } = await supabase
+  let { data: persona } = await supabase
     .from("personas")
     .select(
       `
@@ -161,9 +161,47 @@ export async function getPersonaById(id: string) {
     `
     )
     .eq("id", id)
-    .single();
+    .maybeSingle();
 
-  if (personaError || !persona) {
+  // Si no se encuentra por persona.id, buscar si el id corresponde a un estudiante_id
+  if (!persona) {
+    const { data: estRecord } = await supabase
+      .from("estudiantes")
+      .select("persona_id")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (estRecord?.persona_id) {
+      const { data: personaByEst } = await supabase
+        .from("personas")
+        .select(
+          `
+          *,
+          estudiantes ( * )
+        `
+        )
+        .eq("id", estRecord.persona_id)
+        .maybeSingle();
+      persona = personaByEst;
+    }
+  }
+
+  // Si aún no se encuentra, buscar por documento de identidad
+  if (!persona) {
+    const { data: personaByDoc } = await supabase
+      .from("personas")
+      .select(
+        `
+        *,
+        estudiantes ( * )
+      `
+      )
+      .eq("numero_documento", id)
+      .maybeSingle();
+    persona = personaByDoc;
+  }
+
+  if (!persona) {
     throw new Error("No se pudo cargar la persona.");
   }
 

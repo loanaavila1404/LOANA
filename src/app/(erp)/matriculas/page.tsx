@@ -22,8 +22,10 @@ export default async function MatriculasPage() {
         *,
         estudiantes (
           id,
+          persona_id,
           codigo_estudiante,
           personas (
+            id,
             nombres,
             apellido_paterno,
             apellido_materno,
