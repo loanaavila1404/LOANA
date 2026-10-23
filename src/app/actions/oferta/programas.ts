@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { getUserPermissions } from '@/lib/auth/permissions';
-import { programaSchema, ProgramaInput } from '@/lib/validators/oferta';
+import { programaSchema } from '@/lib/validators/oferta';
 import { Database } from '@/types/database.types';
 
 type ProgramaRow = Database['public']['Tables']['programas']['Row'];
@@ -14,6 +14,35 @@ export type ProgramaActionState = {
   data?: ProgramaRow;
 };
 
+async function generateNextProgramaCodigo(supabase: Awaited<ReturnType<typeof createClient>>): Promise<string> {
+  const { data: rows } = await supabase
+    .from('programas')
+    .select('codigo');
+
+  let maxNum = 0;
+  for (const r of rows || []) {
+    const match = (r.codigo || '').toUpperCase().match(/PRG-(\d+)/);
+    if (match) {
+      const n = parseInt(match[1], 10);
+      if (!isNaN(n) && n > maxNum) maxNum = n;
+    }
+  }
+
+  let candidateNum = Math.max(maxNum + 1, (rows?.length || 0) + 1);
+  const existingSet = new Set((rows || []).map(r => (r.codigo || '').toUpperCase()));
+
+  while (existingSet.has(`PRG-${String(candidateNum).padStart(3, '0')}`)) {
+    candidateNum++;
+  }
+
+  return `PRG-${String(candidateNum).padStart(3, '0')}`;
+}
+
+export async function getNextProgramaCodigoAction(): Promise<string> {
+  const supabase = await createClient();
+  return generateNextProgramaCodigo(supabase);
+}
+
 export async function createProgramaAction(
   prevState: ProgramaActionState,
   formData: FormData
@@ -23,8 +52,12 @@ export async function createProgramaAction(
     return { error: 'No tienes permiso para crear programas' };
   }
 
+  const supabase = await createClient();
+  const rawCodigo = String(formData.get('codigo') || '').trim().toUpperCase();
+  const finalCodigo = rawCodigo || (await generateNextProgramaCodigo(supabase));
+
   const payload = {
-    codigo: formData.get('codigo'),
+    codigo: finalCodigo,
     nombre: formData.get('nombre'),
     tipo_programa: formData.get('tipo_programa'),
     duracion_cantidad: formData.get('duracion_cantidad') || null,
@@ -40,14 +73,12 @@ export async function createProgramaAction(
     return { error: parsed.error.issues[0].message };
   }
 
-  const supabase = await createClient();
-  
   // Verificación de duplicados manual para no fallar con un error técnico de DB
   const { data: existing } = await supabase
     .from('programas')
     .select('id')
     .eq('codigo', parsed.data.codigo)
-    .single();
+    .maybeSingle();
 
   if (existing) {
     return { error: 'Ya existe un programa con este código' };
@@ -64,17 +95,18 @@ export async function createProgramaAction(
     return { error: 'Ocurrió un error al crear el programa' };
   }
 
-  // Auto-crear estructura básica (Plan Activo + Ciclo Único) internamente
+  // Auto-crear estructura básica (Plan Activo + Ciclo I) internamente
   try {
     const anio = new Date().getFullYear();
-    const codigoBase = `PLAN-${parsed.data.codigo}-${anio}-${Math.floor(Math.random()*1000)}`;
+    const codigoBase = `PLAN-${parsed.data.codigo}-${anio}`;
     const { data: planInsertado, error: planError } = await supabase
       .from('planes_estudio')
       .insert({
         programa_id: data.id,
         codigo: codigoBase,
-        nombre: `Plan vigente ${anio}`,
+        nombre: `Plan Curricular ${anio}`,
         version: '1.0',
+        total_ciclos: parsed.data.total_ciclos || 1,
         status: 'ACTIVO'
       })
       .select('id')
@@ -84,8 +116,7 @@ export async function createProgramaAction(
       await supabase.from('ciclos').insert({
         plan_id: planInsertado.id,
         numero_orden: 1,
-        codigo: 'CICLO-UNICO',
-        nombre: 'Ciclo único',
+        nombre: 'Fundamentos y Formación Base',
         status: 'ACTIVO'
       });
     }
@@ -132,7 +163,7 @@ export async function updateProgramaAction(
     .select('id')
     .eq('codigo', parsed.data.codigo)
     .neq('id', id)
-    .single();
+    .maybeSingle();
 
   if (existing) {
     return { error: 'Ya existe otro programa con este código' };
@@ -202,7 +233,7 @@ export async function createEstructuraBasicaAction(programaId: string): Promise<
     .eq('status', 'ACTIVO')
     .order('created_at', { ascending: false })
     .limit(1)
-    .single();
+    .maybeSingle();
 
   if (existingPlan) {
     planId = existingPlan.id;
@@ -228,7 +259,7 @@ export async function createEstructuraBasicaAction(programaId: string): Promise<
     planId = planInsertado.id;
   }
 
-  // 2. Crear "Ciclo único" si no hay ciclos
+  // 2. Crear "Ciclo 1" si no hay ciclos
   const { count } = await supabase
     .from('ciclos')
     .select('*', { count: 'exact', head: true })
@@ -238,8 +269,7 @@ export async function createEstructuraBasicaAction(programaId: string): Promise<
     await supabase.from('ciclos').insert({
       plan_id: planId,
       numero_orden: 1,
-      codigo: 'CICLO-UNICO',
-      nombre: 'Ciclo único',
+      nombre: 'Ciclo I - Formación Base',
       status: 'ACTIVO'
     });
   }

@@ -1,12 +1,17 @@
 'use client'
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Database } from '@/types/database.types';
-import { createProgramaAction, updateProgramaAction, toggleProgramaStatusAction } from '@/app/actions/oferta/programas';
+import {
+  createProgramaAction,
+  updateProgramaAction,
+  toggleProgramaStatusAction,
+  getNextProgramaCodigoAction,
+} from '@/app/actions/oferta/programas';
 
 type Programa = Database['public']['Tables']['programas']['Row'];
 
@@ -23,6 +28,7 @@ export function ProgramaFormModalClient({
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [codigoValue, setCodigoValue] = useState(programa?.codigo || '');
 
   const normalizeUnidad = (val?: string | null) => {
     const u = (val || 'Meses').trim().toUpperCase();
@@ -32,10 +38,28 @@ export function ProgramaFormModalClient({
     return 'Meses';
   };
 
+  useEffect(() => {
+    if (!isOpen) return;
+    setError(null);
+    if (programa?.codigo) {
+      setCodigoValue(programa.codigo);
+    } else {
+      setCodigoValue('PRG-...');
+      getNextProgramaCodigoAction()
+        .then(code => setCodigoValue(code))
+        .catch(() => setCodigoValue('PRG-001'));
+    }
+  }, [isOpen, programa]);
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
     const formData = new FormData(e.currentTarget);
+    if (codigoValue && codigoValue !== 'PRG-...') {
+      formData.set('codigo', codigoValue.trim().toUpperCase());
+    } else {
+      formData.set('codigo', '');
+    }
 
     startTransition(async () => {
       let result;
@@ -88,16 +112,21 @@ export function ProgramaFormModalClient({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label htmlFor="codigo" className="text-xs font-semibold text-slate-700">
-                Código *
-              </label>
+              <div className="flex items-center justify-between">
+                <label htmlFor="codigo" className="text-xs font-semibold text-slate-700">
+                  Código (Autogenerado)
+                </label>
+                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 rounded">
+                  Automático
+                </span>
+              </div>
               <Input
                 id="codigo"
                 name="codigo"
-                defaultValue={programa?.codigo || ''}
-                required
-                placeholder="EJ: PRG-001"
-                className="uppercase text-slate-900 bg-white"
+                value={codigoValue}
+                onChange={e => setCodigoValue(e.target.value.toUpperCase())}
+                placeholder="PRG-001 (Automático)"
+                className="uppercase font-mono font-bold text-slate-900 bg-slate-50 focus:bg-white"
               />
             </div>
 

@@ -7,10 +7,20 @@ import { BrusbenPdfHeader, BrusbenPdfFooter } from '@/components/ui/BrusbenPdfLa
 import { format } from 'date-fns';
 
 export const metadata = {
-  title: 'Ficha de Edición y Horario Académico - ERP Brusben'
+  title: 'Horario Académico en Cuadrícula Horizontal - ERP Brusben'
 };
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+const COLUMNAS_DIAS = [
+  { key: 'LUNES', label: 'LUNES', short: 'LUN' },
+  { key: 'MARTES', label: 'MARTES', short: 'MAR' },
+  { key: 'MIERCOLES', label: 'MIÉRCOLES', short: 'MIÉ' },
+  { key: 'JUEVES', label: 'JUEVES', short: 'JUE' },
+  { key: 'VIERNES', label: 'VIERNES', short: 'VIE' },
+  { key: 'SABADO', label: 'SÁBADO', short: 'SÁB' },
+  { key: 'DOMINGO', label: 'DOMINGO', short: 'DOM' },
+] as const;
 
 const ORDEN_DIAS: Record<string, number> = {
   LUNES: 1,
@@ -100,162 +110,250 @@ export default async function FichaEdicionPage({
     return (a.hora_inicio || '').localeCompare(b.hora_inicio || '');
   });
 
+  // 3. Construir filas de bloques horarios únicos ordenados cronológicamente
+  const bloquesMap = new Map<string, { key: string; inicio: string; fin: string }>();
+  for (const h of horarios) {
+    const ini = (h.hora_inicio || '08:00').slice(0, 5);
+    const fin = (h.hora_fin || '10:00').slice(0, 5);
+    const key = `${ini}-${fin}`;
+    if (!bloquesMap.has(key)) {
+      bloquesMap.set(key, { key, inicio: ini, fin });
+    }
+  }
+
+  // Si aún no hay sesiones registradas, mostrar bloques de referencia para la cuadrícula
+  const bloquesHorarios =
+    bloquesMap.size > 0
+      ? Array.from(bloquesMap.values()).sort((a, b) => a.key.localeCompare(b.key))
+      : [
+          { key: '08:00-10:00', inicio: '08:00', fin: '10:00' },
+          { key: '10:00-12:00', inicio: '10:00', fin: '12:00' },
+          { key: '15:00-17:00', inicio: '15:00', fin: '17:00' },
+          { key: '19:00-21:00', inicio: '19:00', fin: '21:00' },
+        ];
+
   return (
-      <div className="max-w-4xl mx-auto p-6 bg-white text-slate-900 print:p-0 print:m-0 print:max-w-none print:min-h-0">
-        {/* Barra superior de acciones (no imprimible) */}
-        <div className="flex justify-between items-center mb-6 print:hidden no-print border-b pb-4">
-          <Link
-            href={`/oferta/ediciones/${edicion.id}`}
-            className="text-slate-600 hover:text-slate-900 font-medium text-sm flex items-center gap-2"
-          >
-            ← Volver a la edición
-          </Link>
+    <div
+      className="max-w-7xl mx-auto p-6 bg-white text-slate-900 print:p-0 print:m-0 print:max-w-none print:min-h-0"
+      style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
+    >
+      {/* Configuración de página horizontal (Landscape) al imprimir */}
+      <style>{`
+        @media print {
+          @page {
+            size: A4 landscape;
+            margin: 10mm;
+          }
+          body {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+        }
+      `}</style>
+
+      {/* Barra superior de acciones (no imprimible) */}
+      <div className="flex flex-wrap justify-between items-center gap-3 mb-6 print:hidden no-print border-b border-slate-200 pb-4">
+        <Link
+          href={`/oferta/ediciones/${edicion.id}`}
+          className="text-slate-600 hover:text-[#AD0000] font-semibold text-sm flex items-center gap-2 transition"
+        >
+          ← Volver a la Gestión de Horarios del Grupo ({edicion.codigo})
+        </Link>
+        <div className="flex items-center gap-3">
+          <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-md">
+            Formato: A4 Horizontal (Cuadrícula Semanal)
+          </span>
           <PrintButton label="Descargar / Imprimir Horario PDF" />
         </div>
-
-        {warnings.length > 0 && (
-          <div className="mb-6 p-4 rounded-md bg-amber-50 border-l-4 border-amber-600 text-amber-950 print:hidden no-print">
-            <div className="font-bold text-sm mb-1">Aviso de diagnóstico de datos</div>
-            <ul className="list-disc list-inside text-xs space-y-1">
-              {warnings.map((w, i) => (
-                <li key={i}>{w}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {/* Hoja Imprimible A4 */}
-        <div className="print:block border-2 border-slate-200 p-8 rounded-lg print:border-none print:p-0 print:shadow-none">
-          <BrusbenPdfHeader
-            documentType="HORARIO ACADÉMICO OFICIAL"
-            documentTitle={`Ficha Técnica de Edición y Horarios — ${programa?.nombre || edicion.codigo}`}
-            code={edicion.codigo}
-            statusBadge={edicion.status || 'ACTIVO'}
-            statusColor={(edicion.status || 'ACTIVO') === 'ACTIVO' ? 'green' : 'slate'}
-            issuedAt={format(new Date(), 'dd/MM/yyyy HH:mm')}
-          />
-
-          {/* Ficha Técnica de la Edición */}
-          <div className="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-6 mb-6 break-inside-avoid">
-            <div className="border border-slate-200 rounded-lg p-4">
-              <h3 className="text-sm font-bold text-blue-900 border-b border-slate-200 pb-2 mb-3 uppercase tracking-wide">
-                Datos Académicos del Grupo / Edición
-              </h3>
-              <table className="w-full text-sm">
-                <tbody>
-                  <tr className="border-b border-slate-100">
-                    <td className="py-1.5 text-slate-500 w-2/5">Programa</td>
-                    <td className="py-1.5 font-semibold text-slate-900">
-                      {programa ? `${programa.nombre} (${programa.codigo})` : '-'}
-                    </td>
-                  </tr>
-                  <tr className="border-b border-slate-100">
-                    <td className="py-1.5 text-slate-500">Plan de Estudio</td>
-                    <td className="py-1.5 font-medium text-slate-800">
-                      {plan ? `${plan.nombre} (${plan.codigo})` : '-'}
-                    </td>
-                  </tr>
-                  <tr className="border-b border-slate-100">
-                    <td className="py-1.5 text-slate-500">Periodo Académico</td>
-                    <td className="py-1.5 font-medium text-slate-800">
-                      {periodo ? `${periodo.nombre} (${periodo.codigo})` : '-'}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="py-1.5 text-slate-500">Ciclo</td>
-                    <td className="py-1.5 font-medium text-slate-800">
-                      {ciclo ? `Ciclo ${ciclo.numero_orden}${ciclo.nombre ? ` - ${ciclo.nombre}` : ''}` : '-'}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <div className="border border-slate-200 rounded-lg p-4">
-              <h3 className="text-sm font-bold text-blue-900 border-b border-slate-200 pb-2 mb-3 uppercase tracking-wide">
-                Programación Operativa y Vacantes
-              </h3>
-              <table className="w-full text-sm">
-                <tbody>
-                  <tr className="border-b border-slate-100">
-                    <td className="py-1.5 text-slate-500 w-2/5">Modalidad / Turno</td>
-                    <td className="py-1.5 font-semibold text-slate-900">
-                      {edicion.modalidad || '-'} / {edicion.turno || '-'}
-                    </td>
-                  </tr>
-                  <tr className="border-b border-slate-100">
-                    <td className="py-1.5 text-slate-500">Fecha de Inicio - Fin</td>
-                    <td className="py-1.5 font-medium text-slate-800">
-                      {edicion.fecha_inicio ? format(new Date(edicion.fecha_inicio + 'T00:00:00'), 'dd/MM/yyyy') : '-'} al{' '}
-                      {edicion.fecha_fin ? format(new Date(edicion.fecha_fin + 'T00:00:00'), 'dd/MM/yyyy') : '-'}
-                    </td>
-                  </tr>
-                  <tr className="border-b border-slate-100">
-                    <td className="py-1.5 text-slate-500">Vacantes Totales</td>
-                    <td className="py-1.5 font-medium text-slate-800">{edicion.vacantes ?? '-'}</td>
-                  </tr>
-                  <tr>
-                    <td className="py-1.5 text-slate-500">Inversión Referencial</td>
-                    <td className="py-1.5 font-medium text-slate-800">
-                      Matrícula: S/ {Number(edicion.precio_matricula || 0).toFixed(2)} • Pensión ({edicion.numero_pensiones || 0}): S/ {Number(edicion.precio_pension || 0).toFixed(2)}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Tabla de Horarios de Clases */}
-          <div className="mb-12">
-            <h3 className="text-lg font-bold text-blue-900 border-b border-slate-200 pb-2 mb-4">
-              Programación de Horarios de Clases ({horarios.length} sesión/es)
-            </h3>
-
-            {horarios.length === 0 ? (
-              <div className="p-6 text-center border border-dashed border-slate-300 rounded-md text-sm text-slate-500">
-                No se han registrado sesiones de horario para esta edición académica.
-              </div>
-            ) : (
-              <table className="w-full text-sm border-collapse">
-                <thead>
-                  <tr className="bg-slate-100 border-y border-slate-300 text-slate-700">
-                    <th className="py-3 px-3 text-left font-semibold">Día</th>
-                    <th className="py-3 px-3 text-left font-semibold">Hora Inicio - Fin</th>
-                    <th className="py-3 px-3 text-left font-semibold">Curso / Asignatura</th>
-                    <th className="py-3 px-3 text-left font-semibold">Docente</th>
-                    <th className="py-3 px-3 text-left font-semibold">Aula / Ambiente</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200">
-                  {horarios.map(h => {
-                    const curso = Array.isArray(h.cursos) ? h.cursos[0] : h.cursos;
-                    return (
-                      <tr key={h.id}>
-                        <td className="py-3 px-3 font-bold text-slate-900">{h.dia_semana || '-'}</td>
-                        <td className="py-3 px-3 font-mono text-slate-700">
-                          {h.hora_inicio?.slice(0, 5) || '-'} - {h.hora_fin?.slice(0, 5) || '-'}
-                        </td>
-                        <td className="py-3 px-3 font-medium text-slate-900">
-                          {curso ? `${curso.codigo ? `${curso.codigo} - ` : ''}${curso.nombre}` : '-'}
-                        </td>
-                        <td className="py-3 px-3 text-slate-700">{h.docente || 'Por asignar'}</td>
-                        <td className="py-3 px-3 text-slate-700">{h.ubicacion || 'Por definir'}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            )}
-          </div>
-
-          <BrusbenPdfFooter
-            leftSignatureLabel="Coordinación Académica Brusben"
-            rightSignatureLabel="Dirección Institucional — Visto Bueno Oficial"
-            verificationCode={`EDI-${edicion.codigo}`}
-            showSignatures={true}
-          />
-        </div>
       </div>
+
+      {warnings.length > 0 && (
+        <div className="mb-6 p-4 rounded-md bg-amber-50 border-l-4 border-amber-600 text-amber-950 print:hidden no-print">
+          <div className="font-bold text-sm mb-1">Aviso de diagnóstico de datos</div>
+          <ul className="list-disc list-inside text-xs space-y-1">
+            {warnings.map((w, i) => (
+              <li key={i}>{w}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Hoja Imprimible A4 Horizontal */}
+      <div className="print:block border-2 border-slate-200 p-6 sm:p-8 rounded-xl print:border-none print:p-0 print:shadow-none">
+        <BrusbenPdfHeader
+          documentType="HORARIO ACADÉMICO OFICIAL"
+          documentTitle={`Horario de Clases en Cuadrícula Semanal — ${programa?.nombre || edicion.codigo}`}
+          code={edicion.codigo}
+          statusBadge={edicion.status || 'ACTIVO'}
+          statusColor={(edicion.status || 'ACTIVO') === 'ACTIVO' ? 'green' : 'slate'}
+          issuedAt={format(new Date(), 'dd/MM/yyyy HH:mm')}
+        />
+
+        {/* Franja Resumen de Datos Académicos y Operativos del Grupo */}
+        <div className="grid grid-cols-2 md:grid-cols-4 print:grid-cols-4 gap-3 mb-5 break-inside-avoid">
+          <div className="border border-slate-200 rounded-lg p-3 bg-slate-50/70">
+            <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#AD0000] block">
+              Programa y Plan Curricular
+            </span>
+            <p className="text-xs font-extrabold text-slate-900 mt-0.5 line-clamp-1">
+              {programa ? `${programa.nombre} (${programa.codigo})` : '-'}
+            </p>
+            <p className="text-[11px] text-slate-600 mt-0.5">
+              Plan: {plan ? `${plan.nombre} (${plan.codigo})` : '-'}
+            </p>
+          </div>
+
+          <div className="border border-slate-200 rounded-lg p-3 bg-slate-50/70">
+            <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#AD0000] block">
+              Grupo, Periodo y Ciclo
+            </span>
+            <p className="text-xs font-extrabold text-slate-900 mt-0.5">
+              {edicion.nombre || `Grupo ${edicion.codigo}`} ({edicion.codigo})
+            </p>
+            <p className="text-[11px] text-slate-600 mt-0.5">
+              {periodo ? periodo.nombre : 'Periodo Vigente'} •{' '}
+              {ciclo ? `Ciclo ${ciclo.numero_orden}${ciclo.nombre ? ` (${ciclo.nombre})` : ''}` : 'Ciclo I'}
+            </p>
+          </div>
+
+          <div className="border border-slate-200 rounded-lg p-3 bg-slate-50/70">
+            <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#AD0000] block">
+              Modalidad, Turno y Vigencia
+            </span>
+            <p className="text-xs font-extrabold text-slate-900 mt-0.5">
+              {edicion.modalidad || 'PRESENCIAL'} / {edicion.turno || 'REGULAR'}
+            </p>
+            <p className="text-[11px] text-slate-600 mt-0.5">
+              {edicion.fecha_inicio ? format(new Date(edicion.fecha_inicio + 'T00:00:00'), 'dd/MM/yyyy') : '-'} al{' '}
+              {edicion.fecha_fin ? format(new Date(edicion.fecha_fin + 'T00:00:00'), 'dd/MM/yyyy') : '-'}
+            </p>
+          </div>
+
+          <div className="border border-slate-200 rounded-lg p-3 bg-slate-50/70">
+            <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#AD0000] block">
+              Capacidad y Régimen
+            </span>
+            <p className="text-xs font-extrabold text-slate-900 mt-0.5">
+              Vacantes Ofertadas: {edicion.vacantes ?? '-'} cupos
+            </p>
+            <p className="text-[11px] text-slate-600 mt-0.5">
+              {edicion.precio_matricula !== null && edicion.precio_matricula !== undefined
+                ? `Matrícula: S/ ${Number(edicion.precio_matricula).toFixed(2)}`
+                : 'Matrícula: Seg. tarifario'}{' '}
+              •{' '}
+              {edicion.precio_pension !== null && edicion.precio_pension !== undefined
+                ? `Pensión: S/ ${Number(edicion.precio_pension).toFixed(2)}`
+                : 'Pensión: Seg. tarifario'}
+            </p>
+          </div>
+        </div>
+
+        {/* CUADRÍCULA HORIZONTAL DE HORARIO SEMANAL (DÍAS EN COLUMNAS, BLOQUES EN FILAS) */}
+        <div className="mb-6 break-inside-avoid">
+          <div className="flex items-center justify-between mb-2.5">
+            <h3 className="text-xs sm:text-sm font-black uppercase tracking-wider text-slate-900 flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-xs bg-[#AD0000] inline-block" />
+              Cuadrícula Horizontal de Horario Semanal ({horarios.length} sesión/es programadas)
+            </h3>
+            <span className="text-[10px] font-bold text-slate-500 uppercase">
+              Columnas: Días de la Semana • Filas: Bloques Horarios
+            </span>
+          </div>
+
+          <div className="overflow-x-auto border-2 border-slate-800 rounded-lg">
+            <table className="w-full border-collapse table-fixed text-xs">
+              <thead>
+                <tr className="bg-[#181A1F] text-white">
+                  <th className="w-[125px] py-2.5 px-2 text-center font-extrabold uppercase tracking-wider border-r border-slate-700 text-[10px] bg-[#AD0000]">
+                    Bloque Horario
+                  </th>
+                  {COLUMNAS_DIAS.map(dia => (
+                    <th
+                      key={dia.key}
+                      className="py-2.5 px-2 text-center font-extrabold uppercase tracking-wider border-r last:border-r-0 border-slate-700 text-[10px]"
+                    >
+                      {dia.label}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-300">
+                {bloquesHorarios.map((bloque, idx) => (
+                  <tr
+                    key={bloque.key}
+                    className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/60'}
+                  >
+                    {/* Columna 1: Bloque Horario */}
+                    <td className="py-3 px-2 text-center font-mono font-extrabold text-slate-900 bg-slate-100 border-r border-slate-300 align-middle">
+                      <div className="text-xs text-[#AD0000]">{bloque.inicio}</div>
+                      <div className="text-[10px] text-slate-400 font-sans">a</div>
+                      <div className="text-xs text-slate-800">{bloque.fin}</div>
+                    </td>
+
+                    {/* Columnas de Lunes a Domingo */}
+                    {COLUMNAS_DIAS.map(dia => {
+                      const sesionesCelda = horarios.filter(h => {
+                        const ini = (h.hora_inicio || '').slice(0, 5);
+                        const fin = (h.hora_fin || '').slice(0, 5);
+                        return h.dia_semana === dia.key && `${ini}-${fin}` === bloque.key;
+                      });
+
+                      return (
+                        <td
+                          key={dia.key}
+                          className="p-1.5 border-r last:border-r-0 border-slate-200 align-top min-h-[72px]"
+                        >
+                          {sesionesCelda.length === 0 ? (
+                            <div className="h-full min-h-[56px] flex items-center justify-center text-[10px] text-slate-300 font-medium select-none">
+                              —
+                            </div>
+                          ) : (
+                            <div className="space-y-1.5">
+                              {sesionesCelda.map(ses => {
+                                const cursoObj = Array.isArray(ses.cursos)
+                                  ? ses.cursos[0]
+                                  : ses.cursos;
+                                return (
+                                  <div
+                                    key={ses.id}
+                                    className="p-2 rounded-md border border-red-200 border-l-4 border-l-[#AD0000] bg-red-50/70 text-left space-y-1 shadow-2xs"
+                                  >
+                                    {cursoObj?.codigo && (
+                                      <span className="inline-block px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-[#AD0000] text-white">
+                                        {cursoObj.codigo}
+                                      </span>
+                                    )}
+                                    <p className="font-extrabold text-slate-900 text-[11px] leading-snug">
+                                      {cursoObj?.nombre || 'Asignatura'}
+                                    </p>
+                                    <div className="text-[10px] text-slate-700 font-semibold leading-tight">
+                                      Docente: <span className="font-normal">{ses.docente || 'Por asignar'}</span>
+                                    </div>
+                                    <div className="text-[10px] text-slate-600 font-semibold leading-tight">
+                                      Aula: <span className="font-normal">{ses.ubicacion || 'Sede Central'}</span>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <BrusbenPdfFooter
+          leftSignatureLabel="Coordinación Académica Brusben"
+          rightSignatureLabel="Dirección Institucional — Visto Bueno Oficial"
+          verificationCode={`HOR-${edicion.codigo}`}
+          showSignatures={true}
+        />
+      </div>
+    </div>
   );
 }
-

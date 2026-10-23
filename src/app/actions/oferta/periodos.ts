@@ -30,6 +30,8 @@ export async function createPeriodoAction(formData: FormData) {
   if (error) return { error: 'Ocurrió un error al crear el periodo' };
 
   revalidatePath('/oferta/periodos');
+  revalidatePath('/oferta/ediciones');
+  revalidatePath('/oferta/programas');
   return { success: true, data };
 }
 
@@ -51,13 +53,15 @@ export async function updatePeriodoAction(id: string, formData: FormData) {
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
   const supabase = await createClient();
-  const { data: existing } = await supabase.from('periodos').select('id').eq('codigo', parsed.data.codigo).neq('id', id).single();
+  const { data: existing } = await supabase.from('periodos').select('id').eq('codigo', parsed.data.codigo).neq('id', id).maybeSingle();
   if (existing) return { error: 'Ya existe otro periodo con este código' };
 
   const { data, error } = await supabase.from('periodos').update(parsed.data).eq('id', id).select().single();
   if (error) return { error: 'Ocurrió un error al actualizar el periodo' };
 
   revalidatePath('/oferta/periodos');
+  revalidatePath('/oferta/ediciones');
+  revalidatePath('/oferta/programas');
   return { success: true, data };
 }
 

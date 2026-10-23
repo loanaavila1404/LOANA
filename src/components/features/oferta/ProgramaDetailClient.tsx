@@ -728,11 +728,15 @@ export function ProgramaDetailClient({
                         <div className="text-slate-600">
                           Matrícula:{" "}
                           <strong className="text-slate-900">
-                            S/ {Number(ed.precio_matricula || 0).toFixed(2)}
+                            {ed.precio_matricula !== null && ed.precio_matricula !== undefined
+                              ? `S/ ${Number(ed.precio_matricula).toFixed(2)}`
+                              : "Sin configurar"}
                           </strong>{" "}
                           · Pensión:{" "}
                           <strong className="text-slate-900">
-                            S/ {Number(ed.precio_pension || 0).toFixed(2)}
+                            {ed.precio_pension !== null && ed.precio_pension !== undefined
+                              ? `S/ ${Number(ed.precio_pension).toFixed(2)}`
+                              : "Sin configurar"}
                           </strong>
                         </div>
                         <div className="flex items-center gap-2">
@@ -741,7 +745,7 @@ export function ProgramaDetailClient({
                             className="inline-flex items-center gap-1 px-2.5 py-1 rounded border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold"
                           >
                             <FileText className="w-3.5 h-3.5 text-[#C4121A]" />
-                            <span>PDF</span>
+                            <span>Horario PDF</span>
                           </Link>
                           <Link
                             href={`/oferta/ediciones/${ed.id}`}

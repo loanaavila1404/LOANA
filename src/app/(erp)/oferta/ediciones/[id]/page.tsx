@@ -6,10 +6,11 @@ import { Badge } from '@/components/ui/Badge';
 import Link from 'next/link';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table';
 import { HorarioFormModalClient } from './HorarioFormModalClient';
-import { Calendar, Clock, MapPin, UserCheck, BookOpen, ArrowLeft, FileText, Users } from 'lucide-react';
+import { EdicionFormModalClient } from '../EdicionFormModalClient';
+import { Calendar, Clock, MapPin, UserCheck, BookOpen, ArrowLeft, FileText, Users, LayoutGrid } from 'lucide-react';
 
 export const metadata = {
-  title: 'Detalle de Edición y Horarios - ERP Brusben'
+  title: 'Detalle de Edición y Horarios de Clases - ERP Brusben'
 };
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -33,6 +34,16 @@ const ETIQUETA_DIAS: Record<string, string> = {
   SABADO: 'Sábado',
   DOMINGO: 'Domingo',
 };
+
+const COLUMNAS_DIAS = [
+  { key: 'LUNES', label: 'LUNES' },
+  { key: 'MARTES', label: 'MARTES' },
+  { key: 'MIERCOLES', label: 'MIÉRCOLES' },
+  { key: 'JUEVES', label: 'JUEVES' },
+  { key: 'VIERNES', label: 'VIERNES' },
+  { key: 'SABADO', label: 'SÁBADO' },
+  { key: 'DOMINGO', label: 'DOMINGO' },
+] as const;
 
 export default async function EdicionDetailPage({
   params
@@ -73,6 +84,14 @@ export default async function EdicionDetailPage({
   const planRel = Array.isArray(edicion.planes_estudio) ? edicion.planes_estudio[0] : edicion.planes_estudio;
   const periodoRel = Array.isArray(edicion.periodos) ? edicion.periodos[0] : edicion.periodos;
   const cicloRel = Array.isArray(edicion.ciclos) ? edicion.ciclos[0] : edicion.ciclos;
+
+  // Catálogos para permitir editar la edición desde aquí
+  const [{ data: programasCat }, { data: planesCat }, { data: periodosCat }, { data: ciclosCat }] = await Promise.all([
+    supabase.from('programas').select('id, nombre').eq('status', 'ACTIVO').order('nombre'),
+    supabase.from('planes_estudio').select('id, nombre, programa_id').eq('status', 'ACTIVO').order('nombre'),
+    supabase.from('periodos').select('id, nombre, codigo').eq('status', 'ACTIVO').order('fecha_inicio', { ascending: false }),
+    supabase.from('ciclos').select('id, nombre, plan_id, numero_orden').eq('status', 'ACTIVO').order('numero_orden'),
+  ]);
 
   // 1. Obtener horarios de la edición y ordenarlos por día y hora de inicio
   const { data: horariosRaw } = await supabase
@@ -157,9 +176,21 @@ export default async function EdicionDetailPage({
   const vacantesTotales = Number(edicion.vacantes || 30);
   const libres = Math.max(0, vacantesTotales - ocupadas);
 
+  // 4. Bloques horarios únicos para la vista previa de cuadrícula horizontal
+  const bloquesMap = new Map<string, { key: string; inicio: string; fin: string }>();
+  for (const h of horarios) {
+    const ini = (h.hora_inicio || '08:00').slice(0, 5);
+    const fin = (h.hora_fin || '10:00').slice(0, 5);
+    const key = `${ini}-${fin}`;
+    if (!bloquesMap.has(key)) {
+      bloquesMap.set(key, { key, inicio: ini, fin });
+    }
+  }
+  const bloquesHorarios = Array.from(bloquesMap.values()).sort((a, b) => a.key.localeCompare(b.key));
+
   return (
     <div className="space-y-6">
-      {/* Cabecera Institucional de la Edición / Grupo */}
+      {/* 1. CABECERA INSTITUCIONAL DE LA EDICIÓN / GRUPO */}
       <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-2xs">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="space-y-2">
@@ -211,12 +242,21 @@ export default async function EdicionDetailPage({
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
+            <EdicionFormModalClient
+              edicion={edicion}
+              programas={programasCat || []}
+              planes={planesCat || []}
+              periodos={periodosCat || []}
+              ciclos={ciclosCat || []}
+              triggerText="Editar Edición"
+              variant="outline"
+            />
             <Link
               href={`/oferta/ediciones/${edicion.id}/ficha`}
-              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-white border border-slate-300 text-slate-800 hover:bg-slate-50 shadow-2xs text-xs font-bold transition-colors"
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-white border border-slate-300 text-slate-800 hover:bg-red-50 hover:border-red-200 hover:text-[#C4121A] shadow-2xs text-xs font-bold transition-colors"
             >
               <FileText className="w-4 h-4 text-[#C4121A]" />
-              <span>Descargar Horario PDF</span>
+              <span>Descargar Horario PDF (Cuadrícula)</span>
             </Link>
             <HorarioFormModalClient
               edicionId={edicion.id}
@@ -272,36 +312,51 @@ export default async function EdicionDetailPage({
               Inversión Académica
             </span>
             <p className="text-sm font-bold text-slate-900 mt-1">
-              Matrícula: S/ {Number(edicion.precio_matricula || 0).toFixed(2)} · Pensión: S/{' '}
-              {Number(edicion.precio_pension || 0).toFixed(2)}
+              Matrícula:{' '}
+              {edicion.precio_matricula !== null && edicion.precio_matricula !== undefined
+                ? `S/ ${Number(edicion.precio_matricula).toFixed(2)}`
+                : 'Sin configurar'}{' '}
+              · Pensión:{' '}
+              {edicion.precio_pension !== null && edicion.precio_pension !== undefined
+                ? `S/ ${Number(edicion.precio_pension).toFixed(2)}`
+                : 'Sin configurar'}
             </p>
           </div>
         </div>
       </div>
 
-      {/* SECCIÓN INDEPENDIENTE Y ORDENADA DE GESTIÓN DE HORARIOS */}
+      {/* 2. SECCIÓN INDEPENDIENTE Y ESTRUCTURADA DE HORARIOS DE CLASES */}
       <Card className="bg-white border-slate-200 shadow-2xs overflow-hidden">
-        <div className="p-5 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/60">
+        <div className="p-5 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/70">
           <div>
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4 text-[#C4121A]" />
               <h2 className="text-base font-extrabold text-slate-900">
-                Programación y Gestión de Horarios de Clases
+                Horarios de Clases del Grupo ({edicion.codigo})
               </h2>
               <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-200/80 text-slate-800">
                 {horarios.length} sesiones
               </span>
             </div>
             <p className="text-xs text-slate-500 mt-0.5">
-              Sesiones semanales ordenadas cronológicamente y vinculadas a las asignaturas del programa ({cursosDisponibles.length} cursos habilitados).
+              Asocia los cursos de la malla curricular ({cursosDisponibles.length} asignaturas disponibles) a su bloque horario, día, docente y ambiente.
             </p>
           </div>
 
-          <HorarioFormModalClient
-            edicionId={edicion.id}
-            cursos={cursosDisponibles}
-            triggerText="+ Agregar Sesión de Horario"
-          />
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/oferta/ediciones/${edicion.id}/ficha`}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 text-xs font-bold transition"
+            >
+              <LayoutGrid className="w-3.5 h-3.5 text-[#C4121A]" />
+              <span>Ver / Imprimir Cuadrícula PDF</span>
+            </Link>
+            <HorarioFormModalClient
+              edicionId={edicion.id}
+              cursos={cursosDisponibles}
+              triggerText="+ Agregar Sesión de Horario"
+            />
+          </div>
         </div>
 
         <div className="overflow-x-auto">
@@ -310,9 +365,9 @@ export default async function EdicionDetailPage({
               <TableRow className="bg-slate-50">
                 <TableHead className="font-bold text-slate-700">Día de Semana</TableHead>
                 <TableHead className="font-bold text-slate-700">Bloque Horario</TableHead>
-                <TableHead className="font-bold text-slate-700">Curso / Asignatura</TableHead>
+                <TableHead className="font-bold text-slate-700">Curso / Asignatura de la Malla</TableHead>
                 <TableHead className="font-bold text-slate-700">Docente Asignado</TableHead>
-                <TableHead className="font-bold text-slate-700">Aula / Ubicación</TableHead>
+                <TableHead className="font-bold text-slate-700">Aula / Ambiente</TableHead>
                 <TableHead className="text-right font-bold text-slate-700">Acciones</TableHead>
               </TableRow>
             </TableHeader>
@@ -383,6 +438,87 @@ export default async function EdicionDetailPage({
             </TableBody>
           </Table>
         </div>
+
+        {/* Vista Previa de Cuadrícula Horizontal de Horario Semanal */}
+        {bloquesHorarios.length > 0 && (
+          <div className="p-5 border-t border-slate-200 bg-slate-50/40 space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-700 flex items-center gap-2">
+                <LayoutGrid className="w-4 h-4 text-[#C4121A]" />
+                <span>Vista Previa en Cuadrícula Horizontal (Lunes a Domingo)</span>
+              </h3>
+              <Link
+                href={`/oferta/ediciones/${edicion.id}/ficha`}
+                className="text-xs font-bold text-[#C4121A] hover:underline"
+              >
+                Abrir Formato Oficial PDF para Imprimir →
+              </Link>
+            </div>
+
+            <div className="overflow-x-auto border border-slate-200 rounded-xl bg-white">
+              <table className="w-full border-collapse table-fixed text-xs">
+                <thead>
+                  <tr className="bg-slate-900 text-white">
+                    <th className="w-[115px] py-2 px-2 text-center font-bold uppercase text-[10px] bg-[#C4121A]">
+                      Bloque Horario
+                    </th>
+                    {COLUMNAS_DIAS.map(dia => (
+                      <th
+                        key={dia.key}
+                        className="py-2 px-2 text-center font-bold uppercase text-[10px] border-l border-slate-700"
+                      >
+                        {dia.label}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  {bloquesHorarios.map(bloque => (
+                    <tr key={bloque.key}>
+                      <td className="py-2.5 px-2 text-center font-mono font-bold text-slate-800 bg-slate-50 border-r border-slate-200">
+                        {bloque.inicio} - {bloque.fin}
+                      </td>
+                      {COLUMNAS_DIAS.map(dia => {
+                        const sesiones = horarios.filter(h => {
+                          const ini = (h.hora_inicio || '').slice(0, 5);
+                          const fin = (h.hora_fin || '').slice(0, 5);
+                          return h.dia_semana === dia.key && `${ini}-${fin}` === bloque.key;
+                        });
+
+                        return (
+                          <td key={dia.key} className="p-1.5 border-r last:border-r-0 border-slate-100 align-top">
+                            {sesiones.length === 0 ? (
+                              <div className="text-center text-slate-300 text-[10px] py-2">—</div>
+                            ) : (
+                              <div className="space-y-1">
+                                {sesiones.map(ses => {
+                                  const cursoObj = Array.isArray(ses.cursos) ? ses.cursos[0] : ses.cursos;
+                                  return (
+                                    <div
+                                      key={ses.id}
+                                      className="p-1.5 rounded bg-red-50/70 border border-red-200 border-l-3 border-l-[#C4121A]"
+                                    >
+                                      <p className="font-bold text-slate-900 text-[11px] leading-tight">
+                                        {cursoObj?.nombre || 'Curso'}
+                                      </p>
+                                      <p className="text-[10px] text-slate-600 mt-0.5">
+                                        {ses.docente || 'Por asignar'} • {ses.ubicacion || 'Sede Central'}
+                                      </p>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </Card>
     </div>
   );

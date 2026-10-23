@@ -66,15 +66,26 @@ export function OfertaProgramasClient({
         e => (e.status || "").toUpperCase() === "ACTIVO"
       );
 
-      const edicionRef = edicionesActivas[0] || progEdiciones[0] || null;
-      const inversionMensual = edicionRef?.precio_pension
-        ? Number(edicionRef.precio_pension)
-        : prog.tipo_programa === "CARRERA_TECNICA"
-          ? 250
-          : 180;
-      const inversionMatricula = edicionRef?.precio_matricula
-        ? Number(edicionRef.precio_matricula)
-        : 100;
+      const edicionConPrecio =
+        edicionesActivas.find(
+          e =>
+            (e.precio_pension !== null && e.precio_pension !== undefined) ||
+            (e.precio_matricula !== null && e.precio_matricula !== undefined)
+        ) ||
+        progEdiciones.find(
+          e =>
+            (e.precio_pension !== null && e.precio_pension !== undefined) ||
+            (e.precio_matricula !== null && e.precio_matricula !== undefined)
+        );
+      const edicionRef = edicionConPrecio || edicionesActivas[0] || progEdiciones[0] || null;
+      const inversionMensual =
+        edicionRef?.precio_pension !== null && edicionRef?.precio_pension !== undefined
+          ? Number(edicionRef.precio_pension)
+          : null;
+      const inversionMatricula =
+        edicionRef?.precio_matricula !== null && edicionRef?.precio_matricula !== undefined
+          ? Number(edicionRef.precio_matricula)
+          : null;
 
       const totalCreditos = progCursos.reduce(
         (acc, c) => acc + Number(c.creditos || 0),
@@ -397,18 +408,32 @@ export function OfertaProgramasClient({
                         <span className="text-[10px] font-bold uppercase text-slate-400 block">
                           Inversión Mensual
                         </span>
-                        <span className="text-lg font-extrabold text-slate-900">
-                          S/ {prog.inversionMensual.toFixed(2)}
-                        </span>
-                        <span className="text-[10px] text-slate-500 ml-1">/ mes</span>
+                        {prog.inversionMensual !== null ? (
+                          <>
+                            <span className="text-lg font-extrabold text-slate-900">
+                              S/ {prog.inversionMensual.toFixed(2)}
+                            </span>
+                            <span className="text-[10px] text-slate-500 ml-1">/ mes</span>
+                          </>
+                        ) : (
+                          <span className="text-xs font-semibold text-slate-400 italic">
+                            Sin configurar
+                          </span>
+                        )}
                       </div>
                       <div className="text-right">
                         <span className="text-[10px] font-bold uppercase text-slate-400 block">
                           Derecho Matrícula
                         </span>
-                        <span className="text-sm font-bold text-[#C4121A]">
-                          S/ {prog.inversionMatricula.toFixed(2)}
-                        </span>
+                        {prog.inversionMatricula !== null ? (
+                          <span className="text-sm font-bold text-[#C4121A]">
+                            S/ {prog.inversionMatricula.toFixed(2)}
+                          </span>
+                        ) : (
+                          <span className="text-xs font-semibold text-slate-400 italic">
+                            Sin configurar
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -511,11 +536,17 @@ export function OfertaProgramasClient({
                         </td>
                         <td className="py-3.5 px-3">
                           <p className="font-bold text-slate-900">
-                            Pensión: S/ {Number(ed.precio_pension || 0).toFixed(2)}
+                            Pensión:{" "}
+                            {ed.precio_pension !== null && ed.precio_pension !== undefined
+                              ? `S/ ${Number(ed.precio_pension).toFixed(2)}`
+                              : "Sin configurar"}
                           </p>
                           <p className="text-[11px] text-slate-500">
-                            Matrícula: S/ {Number(ed.precio_matricula || 0).toFixed(2)} (
-                            {ed.numero_pensiones || 1} cuotas)
+                            Matrícula:{" "}
+                            {ed.precio_matricula !== null && ed.precio_matricula !== undefined
+                              ? `S/ ${Number(ed.precio_matricula).toFixed(2)}`
+                              : "Sin configurar"}
+                            {ed.numero_pensiones ? ` (${ed.numero_pensiones} cuotas)` : ""}
                           </p>
                         </td>
                         <td className="py-3.5 px-3 text-[11px] text-slate-600">
@@ -559,9 +590,22 @@ export function OfertaProgramasClient({
                         </td>
                         <td className="py-3.5 px-4 text-right">
                           <div className="inline-flex items-center gap-1.5">
+                            <EdicionFormModalClient
+                              edicion={ed}
+                              programas={programas.map(p => ({ id: p.id, nombre: p.nombre }))}
+                              planes={planes.map(pl => ({
+                                id: pl.id,
+                                nombre: pl.nombre,
+                                programa_id: pl.programa_id,
+                              }))}
+                              periodos={periodos}
+                              ciclos={ciclos}
+                              triggerText="Editar"
+                              variant="outline"
+                            />
                             <Link
                               href={`/oferta/ediciones/${ed.id}/ficha`}
-                              title="Ficha PDF de Edición"
+                              title="Horario en Cuadrícula PDF"
                               className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-[#C4121A] hover:bg-red-50 transition"
                             >
                               <FileText className="w-3.5 h-3.5" />
@@ -570,7 +614,7 @@ export function OfertaProgramasClient({
                               href={`/oferta/ediciones/${ed.id}`}
                               className="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-[#C4121A] text-white text-xs font-bold transition"
                             >
-                              Gestionar
+                              Horarios
                             </Link>
                           </div>
                         </td>
