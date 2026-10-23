@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { createCursoAction } from '@/app/actions/oferta/planes';
+import { createCursoAction, getNextCursoCodigoAction } from '@/app/actions/oferta/planes';
 
 type PlanOpt = { id: string; codigo: string | null; nombre: string | null; programa_id: string | null };
 type CicloOpt = { id: string; nombre: string | null; plan_id: string | null; numero_orden: number | null };
@@ -41,7 +41,10 @@ export function CursoNuevoModalClient({
   useEffect(() => {
     if (!isOpen) return;
     setError(null);
-    setCodigo('');
+    setCodigo('CRS-...');
+    getNextCursoCodigoAction()
+      .then(code => setCodigo(code))
+      .catch(() => setCodigo(''));
     setNombre('');
     setCreditos('');
     setHoras('');
@@ -69,7 +72,8 @@ export function CursoNuevoModalClient({
     const fd = new FormData();
     fd.set('plan_id', planId);
     fd.set('ciclo_id', cicloId);
-    fd.set('codigo', codigo.trim().toUpperCase());
+    const codigoLimpio = codigo.trim().toUpperCase();
+    fd.set('codigo', codigoLimpio === 'CRS-...' ? '' : codigoLimpio);
     fd.set('nombre', nombre);
     fd.set('creditos', creditos);
     fd.set('horas_semanales', horas);
@@ -105,12 +109,17 @@ export function CursoNuevoModalClient({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-xs font-bold text-slate-700">Código</label>
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-700">Código (Autogenerado)</label>
+                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 rounded">
+                  Automático
+                </span>
+              </div>
               <Input
                 value={codigo}
-                onChange={e => setCodigo(e.target.value)}
-                placeholder="EJ: CRS-101"
-                className="uppercase text-slate-900 bg-white"
+                onChange={e => setCodigo(e.target.value.toUpperCase())}
+                placeholder="CRS-001 (Automático)"
+                className="uppercase font-mono font-bold text-slate-900 bg-slate-50 focus:bg-white"
               />
             </div>
             <div className="space-y-1">

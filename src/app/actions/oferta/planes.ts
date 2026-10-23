@@ -5,6 +5,31 @@ import { createClient } from '@/lib/supabase/server';
 import { getUserPermissions } from '@/lib/auth/permissions';
 import { planEstudioSchema, cicloSchema, cursoSchema } from '@/lib/validators/oferta';
 
+async function generateNextCursoCodigo(supabase: Awaited<ReturnType<typeof createClient>>): Promise<string> {
+  const { data: rows } = await supabase.from('cursos').select('codigo');
+
+  let maxNum = 0;
+  const existing = new Set<string>();
+  for (const r of rows || []) {
+    const cod = (r.codigo || '').toUpperCase().trim();
+    if (cod) existing.add(cod);
+    const match = cod.match(/^CRS-(\d+)$/);
+    if (match) {
+      const n = parseInt(match[1], 10);
+      if (!isNaN(n) && n > maxNum) maxNum = n;
+    }
+  }
+
+  let next = maxNum + 1;
+  while (existing.has(`CRS-${String(next).padStart(3, '0')}`)) next++;
+  return `CRS-${String(next).padStart(3, '0')}`;
+}
+
+export async function getNextCursoCodigoAction(): Promise<string> {
+  const supabase = await createClient();
+  return generateNextCursoCodigo(supabase);
+}
+
 // --- PLANES DE ESTUDIO ---
 export async function createPlanAction(formData: FormData) {
   const permissions = await getUserPermissions();
@@ -204,10 +229,15 @@ export async function createCursoAction(formData: FormData) {
     return { error: 'No tienes permiso para crear cursos' };
   }
 
+  const supabase = await createClient();
+
+  const rawCodigo = String(formData.get('codigo') || '').trim().toUpperCase();
+  const finalCodigo = rawCodigo || (await generateNextCursoCodigo(supabase));
+
   const payload = {
     plan_id: formData.get('plan_id'),
     ciclo_id: formData.get('ciclo_id'),
-    codigo: formData.get('codigo') || null,
+    codigo: finalCodigo,
     nombre: formData.get('nombre'),
     horas_semanales: formData.get('horas_semanales') || null,
     creditos: formData.get('creditos') || null,
@@ -217,7 +247,13 @@ export async function createCursoAction(formData: FormData) {
   const parsed = cursoSchema.safeParse(payload);
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
-  const supabase = await createClient();
+  const { data: duplicado } = await supabase
+    .from('cursos')
+    .select('id')
+    .eq('codigo', finalCodigo)
+    .maybeSingle();
+  if (duplicado) return { error: `Ya existe un curso con el código ${finalCodigo}` };
+
   const { data, error } = await supabase
     .from('cursos')
     .insert({
