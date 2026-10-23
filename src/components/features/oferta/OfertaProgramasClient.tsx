@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { ProgramaFormModalClient } from "@/app/(erp)/oferta/programas/ProgramaFormModalClient";
 import { EdicionFormModalClient } from "@/app/(erp)/oferta/ediciones/EdicionFormModalClient";
+import { CursoNuevoModalClient } from "@/app/(erp)/oferta/programas/CursoNuevoModalClient";
 import { HorarioFormModalClient } from "@/app/(erp)/oferta/ediciones/[id]/HorarioFormModalClient";
 
 const ORDEN_DIAS: Record<string, number> = {
@@ -310,6 +311,16 @@ export function OfertaProgramasClient({
               }))}
               periodos={periodos}
               ciclos={ciclos}
+            />
+            <CursoNuevoModalClient
+              planes={planes.map(pl => ({
+                id: pl.id,
+                codigo: pl.codigo,
+                nombre: pl.nombre,
+                programa_id: pl.programa_id,
+              }))}
+              ciclos={ciclos}
+              programas={programas.map(p => ({ id: p.id, nombre: p.nombre }))}
             />
             <ProgramaFormModalClient triggerText="+ Nuevo Programa" />
           </div>

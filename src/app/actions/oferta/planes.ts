@@ -238,6 +238,8 @@ export async function createCursoAction(formData: FormData) {
     revalidatePath(`/oferta/programas/${programa.data.programa_id}`);
   }
   revalidatePath('/oferta/programas');
+  revalidatePath('/oferta/ediciones');
+  revalidatePath('/oferta/ediciones/[id]', 'page');
 
   return { success: true, data };
 }
