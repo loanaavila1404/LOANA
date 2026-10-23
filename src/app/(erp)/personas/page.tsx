@@ -118,7 +118,7 @@ export default async function PersonasPage({
         </div>
         <div className="flex items-center gap-2.5 w-full sm:w-auto">
           <Link
-            href="/reportes/padron_estudiantes"
+            href="/reportes/padron-estudiantes"
             className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-2xs transition"
           >
             <FileText className="w-3.5 h-3.5 text-[#C4121A]" />

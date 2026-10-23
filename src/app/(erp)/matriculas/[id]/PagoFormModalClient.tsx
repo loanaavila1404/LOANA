@@ -17,6 +17,8 @@ export function PagoFormModalClient({
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
+  const [conceptoSeleccionado, setConceptoSeleccionado] = useState<string>('AUTOMATICO');
+  const [conceptoLibre, setConceptoLibre] = useState<string>('Certificado / Constancia');
   const [importe, setImporte] = useState<number>(0);
   const [medioPago, setMedioPago] = useState('TRANSFERENCIA');
   const [numeroOperacion, setNumeroOperacion] = useState('');
@@ -24,11 +26,35 @@ export function PagoFormModalClient({
 
   const handleOpen = () => {
     setIdempotencyKey(window.crypto.randomUUID());
+    setError(null);
+    const primera = cuotasPendientes[0];
+    if (primera) {
+      const saldoInicial =
+        primera.saldo !== null && primera.saldo !== undefined
+          ? Number(primera.saldo)
+          : Number(primera.importe_neto || 0);
+      setConceptoSeleccionado(primera.id);
+      setImporte(saldoInicial);
+    } else {
+      setConceptoSeleccionado('AUTOMATICO');
+      setImporte(0);
+    }
     setIsOpen(true);
   };
 
-  // Para simplificar, aplicaremos el pago automáticamente a la cuota más antigua
-  // En un sistema real complejo, permitiríamos seleccionar a qué cuotas aplicar.
+  const handleConceptoChange = (val: string) => {
+    setConceptoSeleccionado(val);
+    if (val !== 'AUTOMATICO' && val !== 'OTROS') {
+      const cuota = cuotasPendientes.find(c => c.id === val);
+      if (cuota) {
+        const saldo =
+          cuota.saldo !== null && cuota.saldo !== undefined
+            ? Number(cuota.saldo)
+            : Number(cuota.importe_neto || 0);
+        setImporte(saldo);
+      }
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -37,22 +63,31 @@ export function PagoFormModalClient({
       return;
     }
 
-    // Distribuir el importe entre las cuotas pendientes
-    let remaining = importe;
-    const aplicaciones = [];
+    let remaining = Number(importe);
+    const aplicaciones: { cuota_id: string; importe: number }[] = [];
 
-    for (const c of cuotasPendientes) {
+    // Si eligió una cuota específica, priorizar aplicarla primero a esa cuota
+    const orderedCuotas =
+      conceptoSeleccionado !== 'AUTOMATICO' && conceptoSeleccionado !== 'OTROS'
+        ? [
+            ...cuotasPendientes.filter(c => c.id === conceptoSeleccionado),
+            ...cuotasPendientes.filter(c => c.id !== conceptoSeleccionado),
+          ]
+        : cuotasPendientes;
+
+    for (const c of orderedCuotas) {
       if (remaining <= 0) break;
-      const saldo = c.saldo === null ? c.importe_neto : c.saldo;
+      const saldo = c.saldo === null ? Number(c.importe_neto || 0) : Number(c.saldo);
+      if (saldo <= 0) continue;
       const aAplicar = Math.min(saldo, remaining);
       aplicaciones.push({
         cuota_id: c.id,
-        importe: aAplicar
+        importe: Number(aAplicar.toFixed(2))
       });
-      remaining -= aAplicar;
+      remaining = Number((remaining - aAplicar).toFixed(2));
     }
 
-    if (remaining > 0) {
+    if (remaining > 0.01) {
       setError('El importe es mayor al total de la deuda pendiente');
       return;
     }
@@ -62,7 +97,10 @@ export function PagoFormModalClient({
       estudiante_id: estudianteId,
       importe: Number(importe),
       medio_pago: medioPago,
-      numero_operacion: numeroOperacion,
+      numero_operacion:
+        conceptoSeleccionado === 'OTROS' && conceptoLibre
+          ? `${numeroOperacion ? `${numeroOperacion} · ` : ''}${conceptoLibre}`
+          : numeroOperacion,
       cuotas_aplicadas: aplicaciones
     };
 
@@ -105,6 +143,48 @@ export function PagoFormModalClient({
           {error && <div className="p-3 bg-red-50 text-red-700 text-sm rounded-md border border-red-200">{error}</div>}
 
           <div className="space-y-1">
+            <label className="text-sm font-medium text-slate-700">Concepto a Cancelar *</label>
+            <select
+              value={conceptoSeleccionado}
+              onChange={e => handleConceptoChange(e.target.value)}
+              className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 bg-white"
+            >
+              {cuotasPendientes.map(c => {
+                const saldo =
+                  c.saldo !== null && c.saldo !== undefined
+                    ? Number(c.saldo)
+                    : Number(c.importe_neto || 0);
+                const etiqueta =
+                  c.concepto ||
+                  (c.tipo_cuota === 'MATRICULA'
+                    ? 'Matrícula'
+                    : `Pensión ${c.numero_cuota || ''}`);
+                return (
+                  <option key={c.id} value={c.id}>
+                    {etiqueta} — Saldo: S/ {saldo.toFixed(2)}
+                  </option>
+                );
+              })}
+              <option value="AUTOMATICO">
+                Distribución automática (cuotas más antiguas)
+              </option>
+              <option value="OTROS">Otros conceptos (Constancia / Carné / Derecho)</option>
+            </select>
+          </div>
+
+          {conceptoSeleccionado === 'OTROS' && (
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-slate-700">Detalle del Concepto</label>
+              <Input
+                type="text"
+                value={conceptoLibre}
+                onChange={e => setConceptoLibre(e.target.value)}
+                placeholder="Ej. Emisión de Certificado / Duplicado de Carné"
+              />
+            </div>
+          )}
+
+          <div className="space-y-1">
             <label className="text-sm font-medium text-slate-700">Importe a Pagar (S/)</label>
             <Input
               type="number"
@@ -114,7 +194,9 @@ export function PagoFormModalClient({
               value={importe}
               onChange={e => setImporte(Number(e.target.value))}
             />
-            <p className="text-xs text-slate-500">Se aplicará automáticamente a la(s) cuota(s) más antigua(s).</p>
+            <p className="text-xs text-slate-500">
+              Se imputará al concepto seleccionado y el excedente a las cuotas pendientes.
+            </p>
           </div>
 
           <div className="space-y-1">

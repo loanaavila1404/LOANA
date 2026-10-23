@@ -11,7 +11,15 @@ export const metadata = {
   title: 'Detalle de Reporte Institucional - ERP Brusben'
 };
 
-const TIPOS_VALIDOS = new Set(['financiero', 'academico', 'asistencia', 'crm', 'demografia']);
+const TIPOS_VALIDOS = new Set([
+  'financiero',
+  'academico',
+  'asistencia',
+  'crm',
+  'demografia',
+  'padron_estudiantes',
+  'padron-estudiantes',
+]);
 
 export default async function ReporteDetallePage({
   params,
@@ -20,7 +28,7 @@ export default async function ReporteDetallePage({
   params: Promise<{ tipo: string }>;
   searchParams: Promise<{ print?: string }>;
 }) {
-  await requirePermission(['REPORTES.VER', 'SISTEMA.ADMINISTRAR']);
+  await requirePermission(['REPORTES.VER', 'ESTUDIANTES.VER', 'SISTEMA.ADMINISTRAR']);
   const resolvedParams = await params;
   const resolvedSearch = await searchParams;
   const tipoRaw = decodeURIComponent(resolvedParams.tipo || '').trim().toLowerCase();
@@ -29,8 +37,13 @@ export default async function ReporteDetallePage({
     notFound();
   }
 
-  // Alias 'asistencia' -> 'academico' para evitar cualquier 404 histórico
-  const tipo = tipoRaw === 'asistencia' ? 'academico' : tipoRaw;
+  // Alias 'asistencia' -> 'academico' y 'padron_estudiantes' -> 'demografia' para evitar 404
+  const tipo =
+    tipoRaw === 'asistencia'
+      ? 'academico'
+      : tipoRaw === 'padron_estudiantes' || tipoRaw === 'padron-estudiantes'
+        ? 'demografia'
+        : tipoRaw;
   const autoPrint = resolvedSearch?.print === '1';
   const supabase = await createClient();
 

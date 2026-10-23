@@ -2,6 +2,7 @@
 
 import React, { useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   CheckCircle2,
   AlertTriangle,
@@ -23,6 +24,7 @@ import {
   MapPin,
   Mail,
   Phone,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -31,6 +33,7 @@ import { ConvertirEstudianteForm } from "@/components/features/personas/Converti
 import { TogglePersonaStatusButton } from "@/components/features/personas/TogglePersonaStatusButton";
 import { DocumentoRequisitoItem } from "@/lib/utils/personaUtils";
 import { registrarPagoAction } from "@/app/actions/matriculas";
+import { eliminarPersonaEstudianteAction } from "@/app/actions/personas";
 
 interface Persona360ClientProps {
   persona: any;
@@ -75,19 +78,28 @@ export function Persona360Client({
   integridad,
   initials,
 }: Persona360ClientProps) {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<"documentos" | "financiero" | "academico">(
     "documentos"
   );
   const [showCarnetModal, setShowCarnetModal] = useState(false);
   const [showPagoModal, setShowPagoModal] = useState(false);
 
-  // Estado para el modal de registro de pago rápido
+  // Estado para el modal de registro de pago rápido con selección de concepto
   const [isPendingPago, startTransitionPago] = useTransition();
   const [pagoError, setPagoError] = useState<string | null>(null);
+  const [conceptoSeleccionado, setConceptoSeleccionado] = useState<string>("AUTOMATICO");
+  const [conceptoLibre, setConceptoLibre] = useState<string>("Certificado / Constancia");
   const [importePago, setImportePago] = useState<number>(0);
   const [medioPago, setMedioPago] = useState("TRANSFERENCIA");
   const [numeroOperacion, setNumeroOperacion] = useState("");
   const [idempotencyKey, setIdempotencyKey] = useState("");
+
+  // Estado para el flujo de doble confirmación de eliminación / baja
+  const [deleteStep, setDeleteStep] = useState<0 | 1 | 2>(0);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [isPendingDelete, startTransitionDelete] = useTransition();
 
   // Cálculos financieros reales sobre cuotas y pagos
   const cuotasActivas = cuotas.filter(
@@ -100,7 +112,10 @@ export function Persona360Client({
   const saldoPendienteTotal = cuotasActivas.reduce((acc, c) => {
     const st = (c.status || "").toUpperCase();
     if (st === "PAGADA") return acc;
-    const s = c.saldo !== null && c.saldo !== undefined ? Number(c.saldo) : Number(c.importe_neto || 0);
+    const s =
+      c.saldo !== null && c.saldo !== undefined
+        ? Number(c.saldo)
+        : Number(c.importe_neto || 0);
     return acc + Math.max(0, s);
   }, 0);
   const totalAmortizado = Math.max(0, totalComprometido - saldoPendienteTotal);
@@ -118,23 +133,47 @@ export function Persona360Client({
     c => c.fecha_vencimiento && c.fecha_vencimiento < todayIso
   );
 
+  // URL de nueva matrícula con preselección automática del estudiante
+  const nuevaMatriculaUrl = `/matriculas/nueva?${new URLSearchParams({
+    ...(estudiante?.id ? { estudiante_id: estudiante.id } : {}),
+    persona_id: persona.id,
+  }).toString()}`;
+
   const openPagoModal = () => {
     setPagoError(null);
     const primeraPendiente = cuotasPendientes[0];
-    const sugerido = primeraPendiente
-      ? Number(
-          primeraPendiente.saldo !== null && primeraPendiente.saldo !== undefined
-            ? primeraPendiente.saldo
-            : primeraPendiente.importe_neto || 0
-        )
-      : 0;
-    setImportePago(sugerido > 0 ? sugerido : 0);
+    if (primeraPendiente) {
+      const sugerido = Number(
+        primeraPendiente.saldo !== null && primeraPendiente.saldo !== undefined
+          ? primeraPendiente.saldo
+          : primeraPendiente.importe_neto || 0
+      );
+      setConceptoSeleccionado(primeraPendiente.id);
+      setImportePago(sugerido > 0 ? sugerido : 0);
+    } else {
+      setConceptoSeleccionado("AUTOMATICO");
+      setImportePago(0);
+    }
     setIdempotencyKey(
       typeof window !== "undefined" && window.crypto?.randomUUID
         ? window.crypto.randomUUID()
         : `pago-${Date.now()}`
     );
     setShowPagoModal(true);
+  };
+
+  const handleConceptoPagoChange = (val: string) => {
+    setConceptoSeleccionado(val);
+    if (val !== "AUTOMATICO" && val !== "OTROS") {
+      const cuota = cuotasPendientes.find(c => c.id === val);
+      if (cuota) {
+        const saldo =
+          cuota.saldo !== null && cuota.saldo !== undefined
+            ? Number(cuota.saldo)
+            : Number(cuota.importe_neto || 0);
+        setImportePago(saldo);
+      }
+    }
   };
 
   const handleRegistrarPago = (e: React.FormEvent) => {
@@ -151,7 +190,16 @@ export function Persona360Client({
     let remaining = Number(importePago);
     const aplicaciones: { cuota_id: string; importe: number }[] = [];
 
-    for (const c of cuotasPendientes) {
+    // Priorizar la cuota seleccionada en el desplegable Concepto a Cancelar
+    const orderedCuotas =
+      conceptoSeleccionado !== "AUTOMATICO" && conceptoSeleccionado !== "OTROS"
+        ? [
+            ...cuotasPendientes.filter(c => c.id === conceptoSeleccionado),
+            ...cuotasPendientes.filter(c => c.id !== conceptoSeleccionado),
+          ]
+        : cuotasPendientes;
+
+    for (const c of orderedCuotas) {
       if (remaining <= 0) break;
       const saldo =
         c.saldo !== null && c.saldo !== undefined
@@ -176,7 +224,10 @@ export function Persona360Client({
         estudiante_id: estudiante.id,
         importe: Number(importePago),
         medio_pago: medioPago,
-        numero_operacion: numeroOperacion,
+        numero_operacion:
+          conceptoSeleccionado === "OTROS" && conceptoLibre
+            ? `${numeroOperacion ? `${numeroOperacion} · ` : ""}${conceptoLibre}`
+            : numeroOperacion,
         cuotas_aplicadas: aplicaciones,
       });
 
@@ -185,6 +236,26 @@ export function Persona360Client({
       } else {
         setShowPagoModal(false);
         setNumeroOperacion("");
+      }
+    });
+  };
+
+  const handleConfirmDelete = (e: React.FormEvent) => {
+    e.preventDefault();
+    setDeleteError(null);
+    if (deleteConfirmText.trim().toUpperCase() !== "ELIMINAR") {
+      setDeleteError('Por favor escriba exactamente la palabra "ELIMINAR" para confirmar.');
+      return;
+    }
+
+    startTransitionDelete(async () => {
+      const res = await eliminarPersonaEstudianteAction(persona.id, deleteConfirmText);
+      if (!res.success) {
+        setDeleteError(res.message || "No se pudo eliminar el registro.");
+      } else {
+        setDeleteStep(0);
+        router.push("/personas");
+        router.refresh();
       }
     });
   };
@@ -206,7 +277,7 @@ export function Persona360Client({
   return (
     <div className="space-y-6">
       {/* 1. CABECERA DE PERFIL 360° */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs relative overflow-hidden">
+      <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs relative overflow-hidden print:hidden">
         <div className="absolute top-0 right-0 w-72 h-72 bg-[#C4121A]/5 rounded-full blur-3xl pointer-events-none" />
 
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 relative z-10">
@@ -282,8 +353,8 @@ export function Persona360Client({
           </div>
 
           {/* Botones de Acción Rápida 360° */}
-          <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto justify-start lg:justify-end print:hidden no-print">
-            {/* 1. Registrar nuevo pago */}
+          <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto justify-start lg:justify-end print:hidden no-print">
+            {/* 1. Registrar nuevo pago o matrícula preseleccionada */}
             {cuotasPendientes.length > 0 ? (
               <button
                 type="button"
@@ -298,7 +369,7 @@ export function Persona360Client({
                 href={
                   matriculaPrincipal
                     ? `/matriculas/${matriculaPrincipal.id}`
-                    : "/matriculas/nueva"
+                    : nuevaMatriculaUrl
                 }
                 className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-[#C4121A] hover:bg-[#a00e15] text-white text-xs font-bold shadow-xs transition"
               >
@@ -349,12 +420,29 @@ export function Persona360Client({
               <IdCard className="w-3.5 h-3.5 text-red-400" />
               <span>Carné digital</span>
             </button>
+
+            {/* 5. Eliminar / Dar de baja estudiante (Doble confirmación) */}
+            {canEdit && (
+              <button
+                type="button"
+                onClick={() => {
+                  setDeleteError(null);
+                  setDeleteConfirmText("");
+                  setDeleteStep(1);
+                }}
+                title="Eliminar o dar de baja estudiante"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-red-200 bg-red-50/70 hover:bg-red-100 text-red-700 text-xs font-bold transition"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Eliminar</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
 
       {/* 2. TARJETAS DE RESUMEN TÉCNICO E INSTITUCIONAL (4 TARJETAS) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 print:hidden">
         {/* Tarjeta 1: Sede y Ubicación Técnica */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs space-y-2">
           <div className="flex items-center justify-between">
@@ -506,7 +594,7 @@ export function Persona360Client({
       </div>
 
       {/* 3. SECCIONES DE PESTAÑAS INTERACTIVAS */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden print:hidden">
         {/* Barra de Pestañas */}
         <div className="border-b border-slate-200 bg-slate-50/70 px-5 pt-3 flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap gap-2">
@@ -927,7 +1015,7 @@ export function Persona360Client({
                     Matrículas Vinculadas al Estudiante ({matriculas.length})
                   </h3>
                   <Link
-                    href="/matriculas/nueva"
+                    href={nuevaMatriculaUrl}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#C4121A] hover:bg-[#a00e15] text-white text-xs font-bold transition"
                   >
                     <PlusCircle className="w-3.5 h-3.5" />
@@ -1002,99 +1090,139 @@ export function Persona360Client({
         )}
       </div>
 
-      {/* MODAL 1: CARNÉ DIGITAL ESTUDIANTIL BRUSBEN */}
+      {/* MODAL 1: CARNÉ DIGITAL ESTUDIANTIL BRUSBEN (CON @MEDIA PRINT AISLADO Y CENTRADO) */}
       {showCarnetModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 print:hidden">
-          <div className="bg-white rounded-2xl max-w-sm w-full overflow-hidden shadow-2xl border border-slate-200 relative">
-            <button
-              type="button"
-              onClick={() => setShowCarnetModal(false)}
-              className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center"
+        <>
+          <style>{`
+            @media print {
+              @page {
+                size: A4 portrait;
+                margin: 15mm;
+              }
+              body * {
+                visibility: hidden !important;
+              }
+              #brusben-carnet-print-area,
+              #brusben-carnet-print-area * {
+                visibility: visible !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+              }
+              #brusben-carnet-print-area {
+                position: fixed !important;
+                left: 50% !important;
+                top: 25mm !important;
+                transform: translateX(-50%) !important;
+                width: 88mm !important;
+                max-width: 88mm !important;
+                margin: 0 !important;
+                box-shadow: none !important;
+                border: 1px solid #cbd5e1 !important;
+                border-radius: 14px !important;
+                background: #ffffff !important;
+                z-index: 99999 !important;
+              }
+              .carnet-no-print {
+                display: none !important;
+                visibility: hidden !important;
+              }
+            }
+          `}</style>
+          <div className="fixed inset-0 z-50 bg-black/60 print:bg-transparent flex items-center justify-center p-4">
+            <div
+              id="brusben-carnet-print-area"
+              className="bg-white rounded-2xl max-w-sm w-full overflow-hidden shadow-2xl border border-slate-200 relative"
             >
-              <X className="w-4 h-4" />
-            </button>
+              <button
+                type="button"
+                onClick={() => setShowCarnetModal(false)}
+                className="carnet-no-print absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center print:hidden"
+              >
+                <X className="w-4 h-4" />
+              </button>
 
-            {/* Cabecera Institucional del Carné */}
-            <div className="bg-gradient-to-br from-[#C4121A] to-[#8B0B11] text-white p-5 text-center">
-              <p className="text-[10px] font-bold uppercase tracking-widest opacity-90">
-                Centro de Capacitaciones Brusben
-              </p>
-              <h3 className="text-sm font-extrabold tracking-wide mt-0.5 uppercase">
-                Carné Digital Estudiantil
-              </h3>
-            </div>
-
-            {/* Cuerpo del Carné */}
-            <div className="p-6 text-center space-y-4">
-              <div className="w-20 h-20 rounded-2xl bg-[#181A1F] text-white font-extrabold text-2xl flex items-center justify-center mx-auto border-4 border-red-100 shadow-md">
-                {initials}
-              </div>
-
-              <div>
-                <h4 className="text-base font-extrabold text-slate-900">
-                  {nombreCompleto}
-                </h4>
-                <p className="text-xs font-mono font-bold text-[#C4121A] mt-0.5">
-                  {codigoEstudiantil}
+              {/* Cabecera Institucional del Carné */}
+              <div className="bg-gradient-to-br from-[#C4121A] to-[#8B0B11] text-white p-5 text-center">
+                <p className="text-[10px] font-bold uppercase tracking-widest opacity-90">
+                  Centro de Capacitaciones Brusben
                 </p>
-                <p className="text-xs text-slate-600 mt-1 font-medium">
-                  {nombrePrograma}
-                </p>
+                <h3 className="text-sm font-extrabold tracking-wide mt-0.5 uppercase">
+                  Carné Digital Estudiantil
+                </h3>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 text-left bg-slate-50 p-3 rounded-xl border border-slate-200 text-[11px]">
+              {/* Cuerpo del Carné */}
+              <div className="p-6 text-center space-y-4">
+                <div className="w-20 h-20 rounded-2xl bg-[#181A1F] text-white font-extrabold text-2xl flex items-center justify-center mx-auto border-4 border-red-100 shadow-md">
+                  {initials}
+                </div>
+
                 <div>
-                  <span className="text-slate-400 block uppercase font-bold text-[9px]">
-                    Documento
-                  </span>
-                  <span className="font-mono font-bold text-slate-800">
-                    {persona.tipo_documento || "DNI"} {persona.numero_documento}
-                  </span>
+                  <h4 className="text-base font-extrabold text-slate-900">
+                    {nombreCompleto}
+                  </h4>
+                  <p className="text-xs font-mono font-bold text-[#C4121A] mt-0.5">
+                    {codigoEstudiantil}
+                  </p>
+                  <p className="text-xs text-slate-600 mt-1 font-medium">
+                    {nombrePrograma}
+                  </p>
                 </div>
-                <div>
-                  <span className="text-slate-400 block uppercase font-bold text-[9px]">
-                    Sede / Modalidad
-                  </span>
-                  <span className="font-bold text-slate-800">
-                    {edicionPrincipal?.modalidad || "PRESENCIAL"}
-                  </span>
-                </div>
-              </div>
 
-              {/* QR / Código de Validación Institucional */}
-              <div className="pt-2 flex flex-col items-center justify-center">
-                <div className="p-3 bg-slate-100 rounded-xl border border-slate-200 inline-flex items-center justify-center">
-                  <QrCode className="w-16 h-16 text-slate-800" />
+                <div className="grid grid-cols-2 gap-2 text-left bg-slate-50 p-3 rounded-xl border border-slate-200 text-[11px]">
+                  <div>
+                    <span className="text-slate-400 block uppercase font-bold text-[9px]">
+                      Documento
+                    </span>
+                    <span className="font-mono font-bold text-slate-800">
+                      {persona.tipo_documento || "DNI"} {persona.numero_documento}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block uppercase font-bold text-[9px]">
+                      Sede / Modalidad
+                    </span>
+                    <span className="font-bold text-slate-800">
+                      {edicionPrincipal?.modalidad || "PRESENCIAL"}
+                    </span>
+                  </div>
                 </div>
-                <span className="text-[10px] font-mono text-slate-400 mt-1.5">
-                  ID-VERIF: {persona.id.slice(0, 13).toUpperCase()}
-                </span>
-              </div>
 
-              <div className="pt-2 flex gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setShowCarnetModal(false)}
-                  className="w-full text-xs"
-                >
-                  Cerrar
-                </Button>
-                <Button
-                  type="button"
-                  onClick={() => window.print()}
-                  className="w-full bg-[#C4121A] hover:bg-[#a00e15] text-white text-xs"
-                >
-                  <Printer className="w-3.5 h-3.5 mr-1.5" />
-                  Imprimir
-                </Button>
+                {/* QR / Código de Validación Institucional */}
+                <div className="pt-2 flex flex-col items-center justify-center">
+                  <div className="p-3 bg-slate-100 rounded-xl border border-slate-200 inline-flex items-center justify-center">
+                    <QrCode className="w-16 h-16 text-slate-800" />
+                  </div>
+                  <span className="text-[10px] font-mono text-slate-400 mt-1.5">
+                    ID-VERIF: {persona.id.slice(0, 13).toUpperCase()}
+                  </span>
+                </div>
+
+                <div className="carnet-no-print pt-2 flex gap-2 print:hidden">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowCarnetModal(false)}
+                    className="w-full text-xs"
+                  >
+                    Cerrar
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => window.print()}
+                    className="w-full bg-[#C4121A] hover:bg-[#a00e15] text-white text-xs"
+                  >
+                    <Printer className="w-3.5 h-3.5 mr-1.5" />
+                    Imprimir Carné
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </>
       )}
 
-      {/* MODAL 2: REGISTRAR NUEVO PAGO DIRECTO */}
+      {/* MODAL 2: REGISTRAR NUEVO PAGO DIRECTO (CON SELECCIÓN DE CONCEPTO) */}
       {showPagoModal && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 print:hidden">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 relative space-y-4">
@@ -1123,6 +1251,55 @@ export function Persona360Client({
                 </div>
               )}
 
+              {/* Campo desplegable: Concepto a Cancelar */}
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700">
+                  Concepto a Cancelar *
+                </label>
+                <select
+                  value={conceptoSeleccionado}
+                  onChange={e => handleConceptoPagoChange(e.target.value)}
+                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-[#C4121A]/20 font-medium text-slate-800"
+                >
+                  {cuotasPendientes.map(c => {
+                    const saldo =
+                      c.saldo !== null && c.saldo !== undefined
+                        ? Number(c.saldo)
+                        : Number(c.importe_neto || 0);
+                    const etiqueta =
+                      c.concepto ||
+                      (c.tipo_cuota === "MATRICULA"
+                        ? "Matrícula"
+                        : `Pensión ${c.numero_cuota || ""}`);
+                    return (
+                      <option key={c.id} value={c.id}>
+                        {etiqueta} — Saldo: S/ {saldo.toFixed(2)}
+                      </option>
+                    );
+                  })}
+                  <option value="AUTOMATICO">
+                    Distribución automática (cuotas más antiguas)
+                  </option>
+                  <option value="OTROS">
+                    Otros conceptos (Constancia / Carné / Certificado)
+                  </option>
+                </select>
+              </div>
+
+              {conceptoSeleccionado === "OTROS" && (
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-700">
+                    Especificar Concepto
+                  </label>
+                  <Input
+                    type="text"
+                    value={conceptoLibre}
+                    onChange={e => setConceptoLibre(e.target.value)}
+                    placeholder="Ej. Certificado de Estudios / Carné"
+                  />
+                </div>
+              )}
+
               <div className="space-y-1">
                 <label className="text-xs font-bold text-slate-700">
                   Importe a Abonar (S/)
@@ -1136,7 +1313,7 @@ export function Persona360Client({
                   onChange={e => setImportePago(Number(e.target.value))}
                 />
                 <p className="text-[11px] text-slate-500">
-                  Se amortizarán automáticamente las cuotas pendientes más antiguas.
+                  Se aplicará al concepto seleccionado y el excedente a las cuotas pendientes.
                 </p>
               </div>
 
@@ -1185,6 +1362,124 @@ export function Persona360Client({
                 </Button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 3: FLUJO DE DOBLE CONFIRMACIÓN PARA ELIMINAR / DAR DE BAJA ESTUDIANTE */}
+      {deleteStep > 0 && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 print:hidden">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-red-200 relative space-y-4">
+            <button
+              type="button"
+              onClick={() => setDeleteStep(0)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-red-100 text-red-700 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-red-600 block">
+                  Confirmación de Seguridad ({deleteStep} de 2)
+                </span>
+                <h3 className="text-base font-extrabold text-slate-900">
+                  {deleteStep === 1
+                    ? "¿Está seguro de eliminar este estudiante?"
+                    : "Confirmación Extrema de Eliminación / Baja"}
+                </h3>
+              </div>
+            </div>
+
+            {deleteStep === 1 ? (
+              <div className="space-y-4">
+                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 space-y-1">
+                  <p>
+                    <strong>Estudiante:</strong> {nombreCompleto}
+                  </p>
+                  <p>
+                    <strong>Documento:</strong> {persona.tipo_documento || "DNI"}{" "}
+                    {persona.numero_documento}
+                  </p>
+                  <p>
+                    <strong>Código:</strong> {codigoEstudiantil}
+                  </p>
+                </div>
+
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Esta acción retirará al estudiante del padrón activo (si cuenta con pagos o matrículas históricas, se aplicará la baja definitiva preservando la auditoría institucional).
+                </p>
+
+                <div className="pt-2 border-t border-slate-100 flex justify-end gap-2">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => setDeleteStep(0)}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => setDeleteStep(2)}
+                    className="bg-red-600 hover:bg-red-700 text-white text-xs font-bold"
+                  >
+                    Sí, continuar al paso final &rarr;
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleConfirmDelete} className="space-y-4">
+                {deleteError && (
+                  <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-xs text-red-700 font-semibold">
+                    {deleteError}
+                  </div>
+                )}
+
+                <p className="text-xs text-slate-600">
+                  Para ejecutar la eliminación definitiva de{" "}
+                  <strong className="text-slate-900">{nombreCompleto}</strong>, escriba la palabra clave{" "}
+                  <strong className="font-mono text-red-700 bg-red-50 px-1.5 py-0.5 rounded border border-red-200">
+                    ELIMINAR
+                  </strong>{" "}
+                  en el siguiente recuadro:
+                </p>
+
+                <Input
+                  type="text"
+                  required
+                  value={deleteConfirmText}
+                  onChange={e => setDeleteConfirmText(e.target.value)}
+                  placeholder="Escriba ELIMINAR para confirmar"
+                  className="font-mono uppercase border-red-300 focus:ring-red-500"
+                />
+
+                <div className="pt-2 border-t border-slate-100 flex justify-between gap-2">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => setDeleteStep(1)}
+                    disabled={isPendingDelete}
+                  >
+                    &larr; Atrás
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={
+                      isPendingDelete ||
+                      deleteConfirmText.trim().toUpperCase() !== "ELIMINAR"
+                    }
+                    className="bg-[#C4121A] hover:bg-[#900d13] text-white text-xs font-bold"
+                  >
+                    {isPendingDelete
+                      ? "Procesando baja..."
+                      : "Confirmar eliminación definitiva"}
+                  </Button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}

@@ -561,3 +561,79 @@ export async function getPersonasMetrics() {
     countInactivos: enReservaOInactivos,
   };
 }
+
+export async function eliminarPersonaEstudianteAction(
+  personaId: string,
+  confirmacionTexto: string
+): Promise<ActionState> {
+  await requirePermission(["ESTUDIANTES.EDITAR", "SISTEMA.ADMINISTRAR"]);
+
+  if (confirmacionTexto.trim().toUpperCase() !== "ELIMINAR") {
+    return error('Debe escribir exactamente la palabra "ELIMINAR" para confirmar la operación.');
+  }
+
+  try {
+    const supabase = await createClient();
+
+    const { data: est } = await supabase
+      .from("estudiantes")
+      .select("id")
+      .eq("persona_id", personaId)
+      .maybeSingle();
+
+    if (est?.id) {
+      const [{ count: matCount }, { count: pagCount }] = await Promise.all([
+        supabase
+          .from("matriculas")
+          .select("id", { count: "exact", head: true })
+          .eq("estudiante_id", est.id),
+        supabase
+          .from("pagos")
+          .select("id", { count: "exact", head: true })
+          .eq("estudiante_id", est.id),
+      ]);
+
+      // Si posee historial financiero o de matrículas, aplicar baja definitiva institucional (INACTIVO) para preservar trazabilidad contable
+      if ((matCount && matCount > 0) || (pagCount && pagCount > 0)) {
+        await supabase
+          .from("estudiantes")
+          .update({ status: "INACTIVO" })
+          .eq("id", est.id);
+        const { error: updErr } = await supabase
+          .from("personas")
+          .update({ status: "INACTIVO" })
+          .eq("id", personaId);
+        if (updErr) throw updErr;
+
+        revalidatePath("/personas");
+        return success(
+          "El estudiante cuenta con historial de matrículas/pagos; se aplicó la baja definitiva institucional preservando la auditoría."
+        );
+      }
+
+      await supabase.from("estudiantes").delete().eq("id", est.id);
+    }
+
+    const { error: delError } = await supabase
+      .from("personas")
+      .delete()
+      .eq("id", personaId);
+
+    if (delError) {
+      // Fallback seguro a baja definitiva si alguna restricción de llave foránea impide el borrado físico
+      await supabase
+        .from("personas")
+        .update({ status: "INACTIVO" })
+        .eq("id", personaId);
+    }
+
+    revalidatePath("/personas");
+    return success("Estudiante eliminado / dado de baja del padrón exitosamente.");
+  } catch (err: unknown) {
+    console.error("eliminarPersonaEstudianteAction error:", err);
+    return error(
+      (err as Error).message || "Ocurrió un error al eliminar o dar de baja el registro."
+    );
+  }
+}
+
