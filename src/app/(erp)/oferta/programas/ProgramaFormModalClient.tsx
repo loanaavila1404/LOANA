@@ -13,7 +13,12 @@ import {
   getNextProgramaCodigoAction,
 } from '@/app/actions/oferta/programas';
 
-type Programa = Database['public']['Tables']['programas']['Row'];
+type Programa = Database['public']['Tables']['programas']['Row'] & {
+  inversionMatricula?: number | null;
+  inversionMensual?: number | null;
+  precio_matricula?: number | null;
+  precio_pension?: number | null;
+};
 
 export function ProgramaFormModalClient({
   programa,
@@ -92,6 +97,11 @@ export function ProgramaFormModalClient({
     });
   };
 
+  const initialMatricula =
+    programa?.inversionMatricula ?? programa?.precio_matricula ?? '';
+  const initialPension =
+    programa?.inversionMensual ?? programa?.precio_pension ?? '';
+
   return (
     <>
       <Button variant={variant} onClick={() => setIsOpen(true)}>
@@ -163,7 +173,7 @@ export function ProgramaFormModalClient({
 
           <div className="space-y-1">
             <label htmlFor="descripcion" className="text-xs font-semibold text-slate-700">
-              Descripción (opcional)
+              Descripción / Sumilla (opcional)
             </label>
             <textarea
               id="descripcion"
@@ -218,6 +228,41 @@ export function ProgramaFormModalClient({
                 <option value="Semanas">Semanas</option>
                 <option value="Horas">Horas</option>
               </select>
+            </div>
+          </div>
+
+          {/* PASO 1: Campos de Precios (Derecho de Matrícula e Inversión Mensual / Pensión) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
+            <div className="space-y-1">
+              <label htmlFor="precio_matricula" className="text-xs font-semibold text-slate-700">
+                Derecho de Matrícula (S/)
+              </label>
+              <Input
+                id="precio_matricula"
+                name="precio_matricula"
+                type="number"
+                step="0.01"
+                min="0"
+                defaultValue={initialMatricula}
+                placeholder="Ej: 100.00"
+                className="text-slate-900 bg-white"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label htmlFor="precio_pension" className="text-xs font-semibold text-slate-700">
+                Inversión Mensual / Pensión (S/)
+              </label>
+              <Input
+                id="precio_pension"
+                name="precio_pension"
+                type="number"
+                step="0.01"
+                min="0"
+                defaultValue={initialPension}
+                placeholder="Ej: 250.00"
+                className="text-slate-900 bg-white"
+              />
             </div>
           </div>
 

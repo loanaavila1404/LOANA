@@ -36,6 +36,7 @@ export default async function ProgramasPage({
     { data: periodosRaw },
     { data: ciclosRaw },
     { data: matriculasRaw },
+    { data: horariosRaw },
   ] = await Promise.all([
     supabase.from("programas").select("*").order("created_at", { ascending: false }),
     supabase
@@ -50,6 +51,10 @@ export default async function ProgramasPage({
       .from("matriculas")
       .select("id, edicion_id, status")
       .in("status", ["ACTIVA", "RESERVADA", "PREMATRICULA", "FINALIZADA"]),
+    supabase
+      .from("horarios")
+      .select("*, cursos(id, nombre, codigo, creditos, horas_semanales)")
+      .order("hora_inicio", { ascending: true }),
   ]);
 
   const programas = programasRaw || [];
@@ -59,6 +64,7 @@ export default async function ProgramasPage({
   const periodos = periodosRaw || [];
   const ciclos = ciclosRaw || [];
   const matriculas = matriculasRaw || [];
+  const horarios = horariosRaw || [];
 
   // Mapa de ocupación por edición
   const matriculasCountByEdicion: Record<string, number> = {};
@@ -304,6 +310,7 @@ export default async function ProgramasPage({
         planes={planes}
         periodos={periodos}
         ciclos={ciclos}
+        horarios={horarios}
         matriculasCountByEdicion={matriculasCountByEdicion}
         initialTab={initialTab}
       />

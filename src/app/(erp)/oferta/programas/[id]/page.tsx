@@ -90,7 +90,10 @@ export default async function ProgramaDetailPage({
         .select("id, edicion_id")
         .in("edicion_id", edicionIds)
         .in("status", ["ACTIVA", "RESERVADA", "PREMATRICULA", "FINALIZADA"]),
-      supabase.from("horarios").select("*").in("edicion_id", edicionIds),
+      supabase
+        .from("horarios")
+        .select("*, cursos(id, nombre, codigo, creditos, horas_semanales)")
+        .in("edicion_id", edicionIds),
     ]);
 
     for (const m of matData || []) {

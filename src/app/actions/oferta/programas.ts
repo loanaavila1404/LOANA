@@ -38,6 +38,172 @@ async function generateNextProgramaCodigo(supabase: Awaited<ReturnType<typeof cr
   return `PRG-${String(candidateNum).padStart(3, '0')}`;
 }
 
+async function generateNextEdicionCodigo(supabase: Awaited<ReturnType<typeof createClient>>): Promise<string> {
+  const { data: rows } = await supabase
+    .from('ediciones')
+    .select('codigo');
+
+  let maxNum = 0;
+  for (const r of rows || []) {
+    const match = (r.codigo || '').toUpperCase().match(/ED-(\d+)/);
+    if (match) {
+      const n = parseInt(match[1], 10);
+      if (!isNaN(n) && n > maxNum) maxNum = n;
+    }
+  }
+
+  let candidateNum = Math.max(maxNum + 1, (rows?.length || 0) + 1);
+  const existingSet = new Set((rows || []).map(r => (r.codigo || '').toUpperCase()));
+
+  while (existingSet.has(`ED-${String(candidateNum).padStart(3, '0')}`)) {
+    candidateNum++;
+  }
+
+  return `ED-${String(candidateNum).padStart(3, '0')}`;
+}
+
+async function syncProgramaPreciosToEdiciones(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  programaId: string,
+  codigoPrograma: string,
+  nombrePrograma: string,
+  totalCiclos: number | null | undefined,
+  rawPrecioMatricula: FormDataEntryValue | null,
+  rawPrecioPension: FormDataEntryValue | null
+) {
+  const hasMat = rawPrecioMatricula !== null && String(rawPrecioMatricula).trim() !== '';
+  const hasPen = rawPrecioPension !== null && String(rawPrecioPension).trim() !== '';
+  if (!hasMat && !hasPen) return;
+
+  const precioMatricula = hasMat ? Number(rawPrecioMatricula) : null;
+  const precioPension = hasPen ? Number(rawPrecioPension) : null;
+
+  // 1. Verificar si ya existen ediciones para este programa
+  const { data: edicionesExistentes } = await supabase
+    .from('ediciones')
+    .select('id, status')
+    .eq('programa_id', programaId)
+    .order('created_at', { ascending: false });
+
+  if (edicionesExistentes && edicionesExistentes.length > 0) {
+    const updatePayload: { precio_matricula?: number | null; precio_pension?: number | null } = {};
+    if (hasMat) updatePayload.precio_matricula = precioMatricula;
+    if (hasPen) updatePayload.precio_pension = precioPension;
+
+    await supabase
+      .from('ediciones')
+      .update(updatePayload)
+      .eq('programa_id', programaId);
+    return;
+  }
+
+  // 2. Si el programa aún no tiene ediciones, asegurar Plan + Ciclo + Periodo y crear edición base con los precios
+  try {
+    const anio = new Date().getFullYear();
+
+    let planId: string | null = null;
+    const { data: planExistente } = await supabase
+      .from('planes_estudio')
+      .select('id')
+      .eq('programa_id', programaId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (planExistente) {
+      planId = planExistente.id;
+    } else {
+      const { data: nuevoPlan } = await supabase
+        .from('planes_estudio')
+        .insert({
+          programa_id: programaId,
+          codigo: `PLAN-${codigoPrograma}-${anio}`,
+          nombre: `Plan Curricular ${anio}`,
+          version: '1.0',
+          total_ciclos: totalCiclos || 1,
+          status: 'ACTIVO',
+        })
+        .select('id')
+        .maybeSingle();
+      planId = nuevoPlan?.id || null;
+    }
+
+    if (!planId) return;
+
+    let cicloId: string | null = null;
+    const { data: cicloExistente } = await supabase
+      .from('ciclos')
+      .select('id')
+      .eq('plan_id', planId)
+      .order('numero_orden', { ascending: true })
+      .limit(1)
+      .maybeSingle();
+
+    if (cicloExistente) {
+      cicloId = cicloExistente.id;
+    } else {
+      const { data: nuevoCiclo } = await supabase
+        .from('ciclos')
+        .insert({
+          plan_id: planId,
+          numero_orden: 1,
+          nombre: 'Fundamentos y Formación Base',
+          status: 'ACTIVO',
+        })
+        .select('id')
+        .maybeSingle();
+      cicloId = nuevoCiclo?.id || null;
+    }
+
+    if (!cicloId) return;
+
+    let periodoId: string | null = null;
+    const { data: periodoExistente } = await supabase
+      .from('periodos')
+      .select('id')
+      .eq('status', 'ACTIVO')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (periodoExistente) {
+      periodoId = periodoExistente.id;
+    } else {
+      const { data: nuevoPeriodo } = await supabase
+        .from('periodos')
+        .insert({
+          codigo: `${anio}-I`,
+          nombre: `Periodo Académico ${anio}-I`,
+          status: 'ACTIVO',
+        })
+        .select('id')
+        .maybeSingle();
+      periodoId = nuevoPeriodo?.id || null;
+    }
+
+    if (!periodoId) return;
+
+    const edCodigo = await generateNextEdicionCodigo(supabase);
+    await supabase.from('ediciones').insert({
+      programa_id: programaId,
+      plan_id: planId,
+      periodo_id: periodoId,
+      ciclo_id: cicloId,
+      codigo: edCodigo,
+      nombre: `Grupo Base - ${nombrePrograma}`,
+      turno: 'MANANA',
+      modalidad: 'PRESENCIAL',
+      vacantes: 30,
+      precio_matricula: precioMatricula,
+      precio_pension: precioPension,
+      numero_pensiones: totalCiclos ? totalCiclos * 3 : 6,
+      status: 'ACTIVO',
+    });
+  } catch (err) {
+    console.error('Error sincronizando precios en edición base del programa:', err);
+  }
+}
+
 export async function getNextProgramaCodigoAction(): Promise<string> {
   const supabase = await createClient();
   return generateNextProgramaCodigo(supabase);
@@ -73,7 +239,6 @@ export async function createProgramaAction(
     return { error: parsed.error.issues[0].message };
   }
 
-  // Verificación de duplicados manual para no fallar con un error técnico de DB
   const { data: existing } = await supabase
     .from('programas')
     .select('id')
@@ -124,7 +289,19 @@ export async function createProgramaAction(
     console.error('Error silencioso al crear estructura básica', e);
   }
 
+  // Sincronizar Derecho de Matrícula e Inversión Mensual / Pensión
+  await syncProgramaPreciosToEdiciones(
+    supabase,
+    data.id,
+    data.codigo,
+    data.nombre,
+    data.total_ciclos,
+    formData.get('precio_matricula'),
+    formData.get('precio_pension')
+  );
+
   revalidatePath('/oferta/programas');
+  revalidatePath('/oferta/ediciones');
   return { success: true, data };
 }
 
@@ -157,7 +334,6 @@ export async function updateProgramaAction(
 
   const supabase = await createClient();
 
-  // Verificar código duplicado en OTRO programa
   const { data: existing } = await supabase
     .from('programas')
     .select('id')
@@ -181,8 +357,20 @@ export async function updateProgramaAction(
     return { error: 'Ocurrió un error al actualizar el programa' };
   }
 
+  // Sincronizar Derecho de Matrícula e Inversión Mensual / Pensión
+  await syncProgramaPreciosToEdiciones(
+    supabase,
+    data.id,
+    data.codigo,
+    data.nombre,
+    data.total_ciclos,
+    formData.get('precio_matricula'),
+    formData.get('precio_pension')
+  );
+
   revalidatePath('/oferta/programas');
   revalidatePath(`/oferta/programas/${id}`);
+  revalidatePath('/oferta/ediciones');
   return { success: true, data };
 }
 
@@ -220,11 +408,9 @@ export async function createEstructuraBasicaAction(programaId: string): Promise<
 
   const supabase = await createClient();
   
-  // Buscar programa
   const { data: programa } = await supabase.from('programas').select('*').eq('id', programaId).single();
   if (!programa) return { error: 'Programa no encontrado' };
 
-  // 1. Buscar o crear Plan Activo
   let planId;
   const { data: existingPlan } = await supabase
     .from('planes_estudio')
@@ -259,7 +445,6 @@ export async function createEstructuraBasicaAction(programaId: string): Promise<
     planId = planInsertado.id;
   }
 
-  // 2. Crear "Ciclo 1" si no hay ciclos
   const { count } = await supabase
     .from('ciclos')
     .select('*', { count: 'exact', head: true })

@@ -35,6 +35,8 @@ export async function createHorarioAction(formData: FormData) {
   if (error) return { error: 'Ocurrió un error al crear el horario' };
 
   revalidatePath(`/oferta/ediciones/${parsed.data.edicion_id}`);
+  revalidatePath(`/oferta/ediciones/${parsed.data.edicion_id}/ficha`);
+  revalidatePath('/oferta/programas');
   return { success: true, data };
 }
 
@@ -68,5 +70,7 @@ export async function updateHorarioAction(id: string, formData: FormData) {
   if (error) return { error: 'Ocurrió un error al actualizar el horario' };
 
   revalidatePath(`/oferta/ediciones/${parsed.data.edicion_id}`);
+  revalidatePath(`/oferta/ediciones/${parsed.data.edicion_id}/ficha`);
+  revalidatePath('/oferta/programas');
   return { success: true, data };
 }
