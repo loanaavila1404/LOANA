@@ -1,6 +1,7 @@
-﻿'use client'
+'use client'
 
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 
@@ -14,7 +15,20 @@ interface ModalProps {
   variant?: 'default' | 'light'
 }
 
-export function Modal({ isOpen, onClose, title, children, footer, className, variant = 'default' }: ModalProps) {
+export function Modal({
+  isOpen,
+  onClose,
+  title,
+  children,
+  footer,
+  className,
+}: ModalProps) {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
@@ -31,50 +45,46 @@ export function Modal({ isOpen, onClose, title, children, footer, className, var
     }
   }, [isOpen, onClose])
 
-  if (!isOpen) return null
+  if (!isOpen || !mounted) return null
 
-  const isLight = variant === 'light';
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div 
+  const modalContent = (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 backdrop-blur-xs p-4 text-slate-900 animate-in fade-in duration-150">
+      <div
         className={cn(
-          isLight 
-            ? "bg-white border-slate-200" 
-            : "bg-canvas border-border",
-          "rounded-xl shadow-lg border w-full max-w-lg flex flex-col max-h-[90vh]", 
+          'bg-white text-slate-900 border-slate-200 rounded-2xl shadow-2xl border w-full max-w-lg flex flex-col max-h-[90vh]',
           className
         )}
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
       >
-        <div className={cn("flex items-center justify-between p-4 border-b", isLight ? "border-slate-200" : "border-border")}>
-          <h2 id="modal-title" className={cn("text-lg font-semibold font-heading", isLight ? "text-slate-900" : "text-graphite-900")}>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200">
+          <h2
+            id="modal-title"
+            className="text-base font-extrabold font-heading text-slate-900"
+          >
             {title}
           </h2>
-          <button 
+          <button
+            type="button"
             onClick={onClose}
-            className={cn(
-              "p-1 rounded-md transition-colors focus:outline-none focus:ring-2",
-              isLight 
-                ? "text-slate-500 hover:bg-slate-100 focus:ring-[#c4121a]" 
-                : "text-graphite-500 hover:bg-graphite-100 focus:ring-primary"
-            )}
+            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-[#c4121a]"
             aria-label="Cerrar"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
-        <div className="p-4 overflow-y-auto flex-1 custom-scrollbar">
+        <div className="p-5 overflow-y-auto flex-1 text-slate-900 custom-scrollbar">
           {children}
         </div>
         {footer && (
-          <div className={cn("p-4 border-t rounded-b-xl", isLight ? "border-slate-200 bg-slate-50" : "border-border bg-canvas/50")}>
+          <div className="px-5 py-3.5 border-t border-slate-200 bg-slate-50 rounded-b-2xl">
             {footer}
           </div>
         )}
       </div>
     </div>
   )
+
+  return createPortal(modalContent, document.body)
 }

@@ -5,9 +5,10 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@
 import { Badge } from '@/components/ui/Badge';
 import Link from 'next/link';
 import { EdicionFormModalClient } from './EdicionFormModalClient';
+import { ArrowLeft, Clock, FileText } from 'lucide-react';
 
 export const metadata = {
-  title: 'Ediciones - ERP Brusben'
+  title: 'Ediciones y Horarios - ERP Brusben'
 };
 
 export default async function EdicionesPage({
@@ -47,28 +48,22 @@ export default async function EdicionesPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <form className="flex gap-2 w-full sm:w-auto">
-          <input
-            type="text"
-            name="q"
-            defaultValue={query}
-            placeholder="Buscar por código o nombre..."
-            className="border border-slate-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 w-full sm:w-64"
-          />
-          <select 
-            name="status" 
-            defaultValue={statusFilter}
-            className="border border-slate-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 bg-white"
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
+        <div>
+          <Link
+            href="/oferta/programas"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-[#C4121A] mb-1 transition"
           >
-            <option value="TODOS">Todos</option>
-            <option value="ACTIVO">Activos</option>
-            <option value="INACTIVO">Inactivos</option>
-          </select>
-          <button type="submit" className="bg-slate-100 border border-slate-300 px-3 py-1.5 rounded-md text-sm font-medium hover:bg-slate-200">
-            Filtrar
-          </button>
-        </form>
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Volver al Panel de Oferta Académica</span>
+          </Link>
+          <h2 className="text-xl font-extrabold text-slate-900">
+            Ediciones, Grupos Activos y Gestión de Horarios
+          </h2>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Selecciona una edición o grupo para programar sus sesiones de horarios semanales, docentes y aulas.
+          </p>
+        </div>
 
         <EdicionFormModalClient 
           programas={programas || []} 
@@ -78,57 +73,108 @@ export default async function EdicionesPage({
         />
       </div>
 
-      <Card className="overflow-x-auto">
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+        <form className="flex gap-2 w-full sm:w-auto">
+          <input
+            type="text"
+            name="q"
+            defaultValue={query}
+            placeholder="Buscar por código o nombre..."
+            className="border border-slate-300 rounded-md px-3 py-1.5 text-sm text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-red-500 w-full sm:w-64"
+          />
+          <select 
+            name="status" 
+            defaultValue={statusFilter}
+            className="border border-slate-300 rounded-md px-3 py-1.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 bg-white"
+          >
+            <option value="TODOS">Todos</option>
+            <option value="ACTIVO">Activos</option>
+            <option value="INACTIVO">Inactivos</option>
+          </select>
+          <button type="submit" className="bg-slate-900 text-white px-4 py-1.5 rounded-md text-sm font-semibold hover:bg-[#C4121A] transition">
+            Filtrar
+          </button>
+        </form>
+      </div>
+
+      <Card className="overflow-x-auto bg-white border-slate-200 shadow-2xs">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Código</TableHead>
-              <TableHead>Programa</TableHead>
-              <TableHead>Plan de Estudio</TableHead>
-              <TableHead>Modalidad / Turno</TableHead>
-              <TableHead>Fechas</TableHead>
-              <TableHead>Vacantes</TableHead>
-              <TableHead>Estado</TableHead>
+            <TableRow className="bg-slate-50">
+              <TableHead className="font-bold text-slate-700">Código / Grupo</TableHead>
+              <TableHead className="font-bold text-slate-700">Programa</TableHead>
+              <TableHead className="font-bold text-slate-700">Plan de Estudio</TableHead>
+              <TableHead className="font-bold text-slate-700">Modalidad / Turno</TableHead>
+              <TableHead className="font-bold text-slate-700">Fechas</TableHead>
+              <TableHead className="font-bold text-slate-700">Vacantes</TableHead>
+              <TableHead className="font-bold text-slate-700">Estado</TableHead>
+              <TableHead className="text-right font-bold text-slate-700">Horarios y Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {(!ediciones || ediciones.length === 0) ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-8 text-slate-500">
-                  No se encontraron ediciones.
+                <TableCell colSpan={8} className="text-center py-8 text-slate-500">
+                  No se encontraron ediciones registradas.
                 </TableCell>
               </TableRow>
             ) : (
               ediciones.map((edicion) => (
                 <TableRow key={edicion.id} className="hover:bg-slate-50">
                   <TableCell className="font-medium text-slate-900">
-                    <Link href={`/oferta/ediciones/${edicion.id}`} className="text-red-600 hover:underline">
+                    <Link href={`/oferta/ediciones/${edicion.id}`} className="font-mono font-bold text-[#C4121A] hover:underline block">
                       {edicion.codigo}
                     </Link>
+                    <span className="text-xs text-slate-500">{edicion.nombre || 'Grupo Regular'}</span>
                   </TableCell>
-                  <TableCell>{(edicion as unknown as { programas: { nombre: string } })?.programas?.nombre || '-'}</TableCell>
-                  <TableCell>{(edicion as unknown as { planes_estudio: { nombre: string } })?.planes_estudio?.nombre || '-'}</TableCell>
+                  <TableCell className="font-semibold text-slate-800">
+                    {(edicion as unknown as { programas: { nombre: string } })?.programas?.nombre || '-'}
+                  </TableCell>
+                  <TableCell className="text-slate-600">
+                    {(edicion as unknown as { planes_estudio: { nombre: string } })?.planes_estudio?.nombre || '-'}
+                  </TableCell>
                   <TableCell>
                     <div className="flex flex-col gap-1">
-                      <span className="text-sm">{edicion.modalidad || '-'}</span>
+                      <span className="text-xs font-bold text-slate-800">{edicion.modalidad || '-'}</span>
                       <span className="text-xs text-slate-500">{edicion.turno || '-'}</span>
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="flex flex-col gap-1 text-sm">
+                    <div className="flex flex-col gap-1 text-xs">
                       <span>
-                        Inicio: {edicion.fecha_inicio ? new Date(edicion.fecha_inicio).toLocaleDateString('es-PE') : '-'}
+                        Inicio: {edicion.fecha_inicio ? new Date(edicion.fecha_inicio + 'T00:00:00').toLocaleDateString('es-PE') : '-'}
                       </span>
-                      <span className="text-xs text-slate-500">
-                        Fin: {edicion.fecha_fin ? new Date(edicion.fecha_fin).toLocaleDateString('es-PE') : '-'}
+                      <span className="text-slate-500">
+                        Fin: {edicion.fecha_fin ? new Date(edicion.fecha_fin + 'T00:00:00').toLocaleDateString('es-PE') : '-'}
                       </span>
                     </div>
                   </TableCell>
-                  <TableCell>{edicion.vacantes !== null ? edicion.vacantes : '-'}</TableCell>
+                  <TableCell className="font-bold text-slate-800">
+                    {edicion.vacantes !== null ? edicion.vacantes : '-'}
+                  </TableCell>
                   <TableCell>
                     <Badge variant={edicion.status === 'ACTIVO' ? 'success' : 'default'}>
                       {edicion.status || 'Desconocido'}
                     </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="inline-flex items-center gap-1.5">
+                      <Link
+                        href={`/oferta/ediciones/${edicion.id}/ficha`}
+                        title="Descargar Horario PDF"
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-200 text-slate-700 hover:bg-red-50 hover:text-[#C4121A] text-xs font-semibold transition"
+                      >
+                        <FileText className="w-3.5 h-3.5" />
+                        <span>PDF</span>
+                      </Link>
+                      <Link
+                        href={`/oferta/ediciones/${edicion.id}`}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-[#C4121A] text-white text-xs font-bold transition"
+                      >
+                        <Clock className="w-3.5 h-3.5" />
+                        <span>Horarios</span>
+                      </Link>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))

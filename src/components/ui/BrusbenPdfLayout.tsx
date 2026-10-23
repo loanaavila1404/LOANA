@@ -58,7 +58,7 @@ export function BrusbenPdfHeader({
               Formación Continua, Especialización Profesional y Certificación
             </p>
             <p className="text-[11px] text-slate-500 mt-0.5">
-              {sede} • Lima, Perú
+              {sede} — Tumbes, Perú
             </p>
           </div>
         </div>

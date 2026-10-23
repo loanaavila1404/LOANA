@@ -1,45 +1,26 @@
 import { ReactNode } from 'react';
-import Link from 'next/link';
 import { requirePermission } from '@/lib/auth/permissions';
+import { BookOpen } from 'lucide-react';
 
 export default async function OfertaLayout({ children }: { children: ReactNode }) {
   await requirePermission(['PROGRAMAS.VER', 'SISTEMA.ADMINISTRAR']);
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 max-w-[1440px] mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold font-heading text-graphite-900">Oferta Académica</h1>
-        <p className="text-sm text-graphite-500">
-          Gestiona los programas, periodos, planes de estudio y ediciones.
+        <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-red-50 border border-red-100 text-[#C4121A] text-[11px] font-bold uppercase tracking-wider mb-2">
+          <BookOpen className="w-3.5 h-3.5" />
+          <span>Gestión Curricular y Programación</span>
+        </div>
+        <h1 className="text-2xl font-bold font-heading text-slate-900 tracking-tight">
+          Oferta Académica Institucional
+        </h1>
+        <p className="text-sm text-slate-600 mt-1">
+          Administración integral de programas formativos, mallas curriculares por ciclos, ediciones activas, vacantes y horarios de clases.
         </p>
       </div>
 
-      <div className="border-b border-slate-200">
-        <nav className="-mb-px flex space-x-8" aria-label="Tabs">
-          <Link
-            href="/oferta/programas"
-            className="border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
-          >
-            Programas
-          </Link>
-          <Link
-            href="/oferta/periodos"
-            className="border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
-          >
-            Periodos
-          </Link>
-          <Link
-            href="/oferta/ediciones"
-            className="border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
-          >
-            Ediciones
-          </Link>
-        </nav>
-      </div>
-
-      <div className="mt-4">
-        {children}
-      </div>
+      <div>{children}</div>
     </div>
   );
 }

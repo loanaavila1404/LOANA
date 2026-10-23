@@ -370,11 +370,16 @@ export function ProgramaDetailClient({
                         <select
                           value={duracionUnidad}
                           onChange={e => setDuracionUnidad(e.target.value)}
-                          className="w-full border border-slate-300 rounded-md px-2 py-2 text-xs bg-white"
+                          className="w-full border border-slate-300 rounded-md px-2 py-2 text-xs text-slate-900 bg-white"
                         >
-                          <option value="MESES">Meses</option>
-                          <option value="SEMANAS">Semanas</option>
-                          <option value="HORAS">Horas</option>
+                          <option value="Meses">Meses</option>
+                          <option value="Años">Años</option>
+                          <option value="Semanas">Semanas</option>
+                          <option value="Horas">Horas</option>
+                          <option value="MESES" hidden>Meses</option>
+                          <option value="ANIOS" hidden>Años</option>
+                          <option value="SEMANAS" hidden>Semanas</option>
+                          <option value="HORAS" hidden>Horas</option>
                         </select>
                       </div>
                       <div>
@@ -742,7 +747,7 @@ export function ProgramaDetailClient({
                             href={`/oferta/ediciones/${ed.id}`}
                             className="px-3 py-1 rounded bg-slate-900 hover:bg-[#C4121A] text-white font-bold transition"
                           >
-                            Ver Grupo
+                            Ver Grupo y Horarios
                           </Link>
                         </div>
                       </div>

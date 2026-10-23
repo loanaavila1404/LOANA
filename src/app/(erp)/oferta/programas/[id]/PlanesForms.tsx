@@ -1,71 +1,209 @@
 'use client'
+
 import { Database } from '@/types/database.types';
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { createPlanAction, updatePlanAction, createCicloAction, updateCicloAction, createCursoAction, updateCursoAction } from '@/app/actions/oferta/planes';
+import {
+  createPlanAction,
+  updatePlanAction,
+  createCicloAction,
+  updateCicloAction,
+  createCursoAction,
+  updateCursoAction,
+} from '@/app/actions/oferta/planes';
 
-export function PlanFormModalClient({ programaId, plan, trigger }: { programaId: string, plan?: Database['public']['Tables']['planes_estudio']['Row'], trigger: React.ReactNode }) {
+export function PlanFormModalClient({
+  programaId,
+  plan,
+  trigger,
+}: {
+  programaId: string;
+  plan?: Database['public']['Tables']['planes_estudio']['Row'];
+  trigger: React.ReactNode;
+}) {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
+  const [codigo, setCodigo] = useState(plan?.codigo || '');
+  const [nombre, setNombre] = useState(plan?.nombre || '');
+  const [version, setVersion] = useState(plan?.version || '2026.1');
+  const [totalCiclos, setTotalCiclos] = useState<string>(
+    plan?.total_ciclos !== null && plan?.total_ciclos !== undefined
+      ? String(plan.total_ciclos)
+      : '2'
+  );
+  const [vigenciaDesde, setVigenciaDesde] = useState(
+    plan?.fecha_vigencia_desde
+      ? String(plan.fecha_vigencia_desde).slice(0, 10)
+      : '2026-01-01'
+  );
+  const [vigenciaHasta, setVigenciaHasta] = useState(
+    plan?.fecha_vigencia_hasta
+      ? String(plan.fecha_vigencia_hasta).slice(0, 10)
+      : ''
+  );
+
+  useEffect(() => {
+    if (isOpen) {
+      setError(null);
+      setCodigo(plan?.codigo || '');
+      setNombre(plan?.nombre || '');
+      setVersion(plan?.version || '2026.1');
+      setTotalCiclos(
+        plan?.total_ciclos !== null && plan?.total_ciclos !== undefined
+          ? String(plan.total_ciclos)
+          : '2'
+      );
+      setVigenciaDesde(
+        plan?.fecha_vigencia_desde
+          ? String(plan.fecha_vigencia_desde).slice(0, 10)
+          : '2026-01-01'
+      );
+      setVigenciaHasta(
+        plan?.fecha_vigencia_hasta
+          ? String(plan.fecha_vigencia_hasta).slice(0, 10)
+          : ''
+      );
+    }
+  }, [isOpen, plan]);
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
-    const formData = new FormData(e.currentTarget);
+    const formData = new FormData();
     formData.append('programa_id', programaId);
-    
-    startTransition(async () => {
-      let res;
-      if (plan) res = await updatePlanAction(plan.id, formData);
-      else res = await createPlanAction(formData);
+    formData.append('codigo', codigo);
+    formData.append('nombre', nombre);
+    formData.append('version', version);
+    formData.append('total_ciclos', totalCiclos);
+    formData.append('fecha_vigencia_desde', vigenciaDesde);
+    formData.append('fecha_vigencia_hasta', vigenciaHasta);
+    formData.append('status', plan?.status || 'ACTIVO');
 
-      if (res?.error) setError(res.error);
-      else setIsOpen(false);
+    startTransition(async () => {
+      const res = plan
+        ? await updatePlanAction(plan.id, formData)
+        : await createPlanAction(formData);
+
+      if (res?.error) {
+        setError(res.error);
+      } else {
+        setIsOpen(false);
+        router.refresh();
+      }
     });
   };
 
   return (
     <>
-      <div onClick={() => setIsOpen(true)} className="inline-block cursor-pointer">{trigger}</div>
-      <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} title={plan ? 'Editar Plan de Estudio' : 'Nuevo Plan de Estudio'}>
-        <form onSubmit={handleSubmit} className="space-y-4 pt-4">
-          {error && <div className="p-2 text-sm text-red-600 bg-red-50 rounded">{error}</div>}
-          <div className="grid grid-cols-2 gap-4">
+      <div onClick={() => setIsOpen(true)} className="inline-block cursor-pointer">
+        {trigger}
+      </div>
+      <Modal
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        title={plan ? 'Editar Plan de Estudio' : 'Nuevo Plan de Estudio'}
+      >
+        <form onSubmit={handleSubmit} className="space-y-4 text-slate-900">
+          {error && (
+            <div className="p-3 text-xs font-semibold text-red-700 bg-red-50 border border-red-200 rounded-lg">
+              {error}
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-xs font-medium">Código</label>
-              <Input name="codigo" defaultValue={plan?.codigo || ''} required className="uppercase" />
+              <label className="text-xs font-bold text-slate-700">Código del Plan *</label>
+              <Input
+                name="codigo"
+                value={codigo}
+                onChange={e => setCodigo(e.target.value)}
+                required
+                placeholder="EJ: PLN-2026-01"
+                className="uppercase text-slate-900 bg-white"
+              />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-medium">Nombre</label>
-              <Input name="nombre" defaultValue={plan?.nombre || ''} required />
+              <label className="text-xs font-bold text-slate-700">Nombre del Plan *</label>
+              <Input
+                name="nombre"
+                value={nombre}
+                onChange={e => setNombre(e.target.value)}
+                required
+                placeholder="Ej: Plan Curricular 2026"
+                className="text-slate-900 bg-white"
+              />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-xs font-medium">Versión</label>
-              <Input name="version" defaultValue={plan?.version || ''} />
+              <label className="text-xs font-bold text-slate-700">Versión</label>
+              <Input
+                name="version"
+                value={version}
+                onChange={e => setVersion(e.target.value)}
+                placeholder="Ej: 2026.1"
+                className="text-slate-900 bg-white"
+              />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-medium">Total Ciclos</label>
-              <Input type="number" name="total_ciclos" defaultValue={plan?.total_ciclos || ''} min="1" />
+              <label className="text-xs font-bold text-slate-700">Total Ciclos</label>
+              <Input
+                type="number"
+                name="total_ciclos"
+                value={totalCiclos}
+                onChange={e => setTotalCiclos(e.target.value)}
+                min="1"
+                className="text-slate-900 bg-white"
+              />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-xs font-medium">Vigencia Desde</label>
-              <Input type="date" name="fecha_vigencia_desde" defaultValue={plan?.fecha_vigencia_desde || ''} />
+              <label className="text-xs font-bold text-slate-700">Vigencia Desde</label>
+              <Input
+                type="date"
+                name="fecha_vigencia_desde"
+                value={vigenciaDesde}
+                onChange={e => setVigenciaDesde(e.target.value)}
+                className="text-slate-900 bg-white"
+              />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-medium">Vigencia Hasta</label>
-              <Input type="date" name="fecha_vigencia_hasta" defaultValue={plan?.fecha_vigencia_hasta || ''} />
+              <label className="text-xs font-bold text-slate-700">Vigencia Hasta</label>
+              <Input
+                type="date"
+                name="fecha_vigencia_hasta"
+                value={vigenciaHasta}
+                onChange={e => setVigenciaHasta(e.target.value)}
+                className="text-slate-900 bg-white"
+              />
             </div>
           </div>
-          <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="ghost" onClick={() => setIsOpen(false)} disabled={isPending}>Cancelar</Button>
-            <Button type="submit" disabled={isPending}>Guardar</Button>
+
+          <div className="flex justify-end gap-2 pt-4 border-t border-slate-100">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setIsOpen(false)}
+              disabled={isPending}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              disabled={isPending}
+              className="bg-[#C4121A] hover:bg-[#a00e15] text-white"
+            >
+              {isPending ? 'Guardando...' : 'Guardar Plan'}
+            </Button>
           </div>
         </form>
       </Modal>
@@ -73,44 +211,124 @@ export function PlanFormModalClient({ programaId, plan, trigger }: { programaId:
   );
 }
 
-export function CicloFormModalClient({ planId, ciclo, trigger }: { planId: string, ciclo?: Database['public']['Tables']['ciclos']['Row'], trigger: React.ReactNode }) {
+export function CicloFormModalClient({
+  planId,
+  ciclo,
+  trigger,
+}: {
+  planId: string;
+  ciclo?: Database['public']['Tables']['ciclos']['Row'];
+  trigger: React.ReactNode;
+}) {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
+  const [numeroOrden, setNumeroOrden] = useState<string>(
+    ciclo?.numero_orden !== null && ciclo?.numero_orden !== undefined
+      ? String(ciclo.numero_orden)
+      : '1'
+  );
+  const [nombre, setNombre] = useState(ciclo?.nombre || '');
+
+  useEffect(() => {
+    if (isOpen) {
+      setError(null);
+      setNumeroOrden(
+        ciclo?.numero_orden !== null && ciclo?.numero_orden !== undefined
+          ? String(ciclo.numero_orden)
+          : '1'
+      );
+      setNombre(ciclo?.nombre || '');
+    }
+  }, [isOpen, ciclo]);
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
-    const formData = new FormData(e.currentTarget);
+    const formData = new FormData();
     formData.append('plan_id', planId);
-    
-    startTransition(async () => {
-      let res;
-      if (ciclo) res = await updateCicloAction(ciclo.id, formData);
-      else res = await createCicloAction(formData);
+    formData.append('numero_orden', numeroOrden);
+    formData.append('nombre', nombre);
+    formData.append('status', ciclo?.status || 'ACTIVO');
 
-      if (res?.error) setError(res.error);
-      else setIsOpen(false);
+    startTransition(async () => {
+      const res = ciclo
+        ? await updateCicloAction(ciclo.id, formData)
+        : await createCicloAction(formData);
+
+      if (res?.error) {
+        setError(res.error);
+      } else {
+        setIsOpen(false);
+        router.refresh();
+      }
     });
   };
 
   return (
     <>
-      <div onClick={() => setIsOpen(true)} className="inline-block cursor-pointer">{trigger}</div>
-      <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} title={ciclo ? 'Editar Ciclo' : 'Nuevo Ciclo'}>
-        <form onSubmit={handleSubmit} className="space-y-4 pt-4">
-          {error && <div className="p-2 text-sm text-red-600 bg-red-50 rounded">{error}</div>}
+      <div onClick={() => setIsOpen(true)} className="inline-block cursor-pointer">
+        {trigger}
+      </div>
+      <Modal
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        title={ciclo ? 'Editar Ciclo Formativo' : 'Agregar Ciclo Formativo'}
+      >
+        <form onSubmit={handleSubmit} className="space-y-4 text-slate-900">
+          {error && (
+            <div className="p-3 text-xs font-semibold text-red-700 bg-red-50 border border-red-200 rounded-lg">
+              {error}
+            </div>
+          )}
+
           <div className="space-y-1">
-            <label className="text-xs font-medium">Número de Orden</label>
-            <Input type="number" name="numero_orden" defaultValue={ciclo?.numero_orden || ''} required min="1" />
+            <label className="text-xs font-bold text-slate-700">
+              Número de Orden del Ciclo *
+            </label>
+            <Input
+              type="number"
+              name="numero_orden"
+              value={numeroOrden}
+              onChange={e => setNumeroOrden(e.target.value)}
+              required
+              min="1"
+              placeholder="Ej: 1"
+              className="text-slate-900 bg-white"
+            />
           </div>
+
           <div className="space-y-1">
-            <label className="text-xs font-medium">Nombre (Opcional)</label>
-            <Input name="nombre" defaultValue={ciclo?.nombre || ''} placeholder="Ej: Primer Ciclo" />
+            <label className="text-xs font-bold text-slate-700">
+              Denominación del Ciclo (Opcional)
+            </label>
+            <Input
+              name="nombre"
+              value={nombre}
+              onChange={e => setNombre(e.target.value)}
+              placeholder="Ej: Ciclo I - Fundamentos Técnicos"
+              className="text-slate-900 bg-white"
+            />
           </div>
-          <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="ghost" onClick={() => setIsOpen(false)} disabled={isPending}>Cancelar</Button>
-            <Button type="submit" disabled={isPending}>Guardar</Button>
+
+          <div className="flex justify-end gap-2 pt-4 border-t border-slate-100">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setIsOpen(false)}
+              disabled={isPending}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              disabled={isPending}
+              className="bg-[#C4121A] hover:bg-[#a00e15] text-white"
+            >
+              {isPending ? 'Guardando...' : 'Guardar Ciclo'}
+            </Button>
           </div>
         </form>
       </Modal>
@@ -118,55 +336,162 @@ export function CicloFormModalClient({ planId, ciclo, trigger }: { planId: strin
   );
 }
 
-export function CursoFormModalClient({ planId, cicloId, curso, trigger }: { planId: string, cicloId: string, curso?: Database['public']['Tables']['cursos']['Row'], trigger: React.ReactNode }) {
+export function CursoFormModalClient({
+  planId,
+  cicloId,
+  curso,
+  trigger,
+}: {
+  planId: string;
+  cicloId: string;
+  curso?: Database['public']['Tables']['cursos']['Row'];
+  trigger: React.ReactNode;
+}) {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
+  const [codigo, setCodigo] = useState(curso?.codigo || '');
+  const [nombre, setNombre] = useState(curso?.nombre || '');
+  const [creditos, setCreditos] = useState<string>(
+    curso?.creditos !== null && curso?.creditos !== undefined
+      ? String(curso.creditos)
+      : '4'
+  );
+  const [horasSemanales, setHorasSemanales] = useState<string>(
+    curso?.horas_semanales !== null && curso?.horas_semanales !== undefined
+      ? String(curso.horas_semanales)
+      : '4'
+  );
+
+  useEffect(() => {
+    if (isOpen) {
+      setError(null);
+      setCodigo(curso?.codigo || '');
+      setNombre(curso?.nombre || '');
+      setCreditos(
+        curso?.creditos !== null && curso?.creditos !== undefined
+          ? String(curso.creditos)
+          : '4'
+      );
+      setHorasSemanales(
+        curso?.horas_semanales !== null && curso?.horas_semanales !== undefined
+          ? String(curso.horas_semanales)
+          : '4'
+      );
+    }
+  }, [isOpen, curso]);
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
-    const formData = new FormData(e.currentTarget);
+    const formData = new FormData();
     formData.append('plan_id', planId);
     formData.append('ciclo_id', cicloId);
-    
-    startTransition(async () => {
-      let res;
-      if (curso) res = await updateCursoAction(curso.id, formData);
-      else res = await createCursoAction(formData);
+    formData.append('codigo', codigo);
+    formData.append('nombre', nombre);
+    formData.append('creditos', creditos);
+    formData.append('horas_semanales', horasSemanales);
+    formData.append('status', curso?.status || 'ACTIVO');
 
-      if (res?.error) setError(res.error);
-      else setIsOpen(false);
+    startTransition(async () => {
+      const res = curso
+        ? await updateCursoAction(curso.id, formData)
+        : await createCursoAction(formData);
+
+      if (res?.error) {
+        setError(res.error);
+      } else {
+        setIsOpen(false);
+        router.refresh();
+      }
     });
   };
 
   return (
     <>
-      <div onClick={() => setIsOpen(true)} className="inline-block cursor-pointer">{trigger}</div>
-      <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} title={curso ? 'Editar Curso' : 'Nuevo Curso'}>
-        <form onSubmit={handleSubmit} className="space-y-4 pt-4">
-          {error && <div className="p-2 text-sm text-red-600 bg-red-50 rounded">{error}</div>}
+      <div onClick={() => setIsOpen(true)} className="inline-block cursor-pointer">
+        {trigger}
+      </div>
+      <Modal
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        title={curso ? 'Editar Asignatura / Curso' : 'Agregar Asignatura al Ciclo'}
+      >
+        <form onSubmit={handleSubmit} className="space-y-4 text-slate-900">
+          {error && (
+            <div className="p-3 text-xs font-semibold text-red-700 bg-red-50 border border-red-200 rounded-lg">
+              {error}
+            </div>
+          )}
+
           <div className="space-y-1">
-            <label className="text-xs font-medium">Código</label>
-            <Input name="codigo" defaultValue={curso?.codigo || ''} className="uppercase" />
+            <label className="text-xs font-bold text-slate-700">Código de Curso</label>
+            <Input
+              name="codigo"
+              value={codigo}
+              onChange={e => setCodigo(e.target.value)}
+              placeholder="EJ: CRS-101"
+              className="uppercase text-slate-900 bg-white"
+            />
           </div>
+
           <div className="space-y-1">
-            <label className="text-xs font-medium">Nombre</label>
-            <Input name="nombre" defaultValue={curso?.nombre || ''} required />
+            <label className="text-xs font-bold text-slate-700">
+              Nombre de la Asignatura *
+            </label>
+            <Input
+              name="nombre"
+              value={nombre}
+              onChange={e => setNombre(e.target.value)}
+              required
+              placeholder="Ej: Anatomía y Fisiología Aplicada"
+              className="text-slate-900 bg-white"
+            />
           </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-xs font-medium">Créditos</label>
-              <Input type="number" name="creditos" defaultValue={curso?.creditos || ''} min="0" />
+              <label className="text-xs font-bold text-slate-700">Créditos</label>
+              <Input
+                type="number"
+                name="creditos"
+                value={creditos}
+                onChange={e => setCreditos(e.target.value)}
+                min="0"
+                className="text-slate-900 bg-white"
+              />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-medium">Horas Semanales</label>
-              <Input type="number" name="horas_semanales" defaultValue={curso?.horas_semanales || ''} min="0" />
+              <label className="text-xs font-bold text-slate-700">Horas Semanales</label>
+              <Input
+                type="number"
+                name="horas_semanales"
+                value={horasSemanales}
+                onChange={e => setHorasSemanales(e.target.value)}
+                min="0"
+                className="text-slate-900 bg-white"
+              />
             </div>
           </div>
-          <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="ghost" onClick={() => setIsOpen(false)} disabled={isPending}>Cancelar</Button>
-            <Button type="submit" disabled={isPending}>Guardar</Button>
+
+          <div className="flex justify-end gap-2 pt-4 border-t border-slate-100">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setIsOpen(false)}
+              disabled={isPending}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              disabled={isPending}
+              className="bg-[#C4121A] hover:bg-[#a00e15] text-white"
+            >
+              {isPending ? 'Guardando...' : 'Guardar Curso'}
+            </Button>
           </div>
         </form>
       </Modal>

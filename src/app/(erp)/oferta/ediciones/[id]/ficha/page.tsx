@@ -46,7 +46,7 @@ export default async function FichaEdicionPage({
       programas (codigo, nombre, tipo_programa),
       planes_estudio (codigo, nombre, version),
       periodos (codigo, nombre, fecha_inicio, fecha_fin),
-      ciclos (codigo, nombre, numero_orden)
+      ciclos (id, nombre, numero_orden)
     `);
 
   const { data: edicion, error: edicionError } = await (
