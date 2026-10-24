@@ -94,6 +94,58 @@ function montoEnLetras(monto: number): string {
   return `${partes.join(' ')} CON ${centavosStr}`;
 }
 
+// Resuelve de manera exacta y explícita el concepto de la cuota pagada
+function resolverConceptoCuota(
+  cuota: any,
+  pago: any,
+  index: number = 0,
+  periodoNombre?: string | null
+): { titulo: string; detalle?: string } {
+  if (cuota) {
+    const rawConcepto = (cuota.concepto || '').trim();
+    const tipo = (cuota.tipo_cuota || '').toUpperCase();
+    const num = cuota.numero_cuota;
+
+    let titulo = rawConcepto;
+    if (!titulo) {
+      if (tipo === 'MATRICULA') {
+        titulo = 'Matrícula';
+      } else if (tipo === 'PENSION') {
+        const numCuota = num !== null && num !== undefined && num > 0 ? num : index + 1;
+        titulo = `Pensión ${numCuota}`;
+      } else {
+        titulo = 'Concepto Institucional';
+      }
+    }
+
+    const detalle = periodoNombre ? `Periodo Académico: ${periodoNombre}` : undefined;
+    return { titulo, detalle };
+  }
+
+  // Fallback si no hay cuota vinculada directamente en la aplicación
+  if (pago?.numero_operacion && pago.numero_operacion.includes('·')) {
+    const conceptoOp = pago.numero_operacion.split('·')[1].trim();
+    if (conceptoOp) {
+      return {
+        titulo: conceptoOp,
+        detalle: periodoNombre ? `Periodo Académico: ${periodoNombre}` : undefined,
+      };
+    }
+  }
+
+  if (pago?.observaciones && pago.observaciones.trim().length > 3) {
+    return {
+      titulo: pago.observaciones.trim(),
+      detalle: periodoNombre ? `Periodo Académico: ${periodoNombre}` : undefined,
+    };
+  }
+
+  return {
+    titulo: 'Abono / Cuota Institucional',
+    detalle: periodoNombre ? `Periodo Académico: ${periodoNombre}` : undefined,
+  };
+}
+
 export default async function ComprobantePagoPage(props: {
   params: Promise<{ id: string }>;
 }) {
@@ -162,16 +214,22 @@ export default async function ComprobantePagoPage(props: {
       .select(`
         id,
         codigo_matricula,
-        costo_total,
+        importe_matricula,
+        importe_pension,
+        numero_pensiones,
         descuento_total,
-        sedes ( nombre, direccion, ciudad ),
-        periodos ( codigo, nombre ),
+        edicion_id,
+        estudiante_id,
         ediciones (
+          id,
           codigo,
           nombre,
           modalidad,
           turno,
-          programas ( codigo, nombre, tipo )
+          programa_id,
+          periodo_id,
+          programas ( id, codigo, nombre, tipo_programa ),
+          periodos ( id, codigo, nombre )
         )
       `)
       .eq('id', firstCuota.matricula_id)
@@ -186,16 +244,22 @@ export default async function ComprobantePagoPage(props: {
       .select(`
         id,
         codigo_matricula,
-        costo_total,
+        importe_matricula,
+        importe_pension,
+        numero_pensiones,
         descuento_total,
-        sedes ( nombre, direccion, ciudad ),
-        periodos ( codigo, nombre ),
+        edicion_id,
+        estudiante_id,
         ediciones (
+          id,
           codigo,
           nombre,
           modalidad,
           turno,
-          programas ( codigo, nombre, tipo )
+          programa_id,
+          periodo_id,
+          programas ( id, codigo, nombre, tipo_programa ),
+          periodos ( id, codigo, nombre )
         )
       `)
       .eq('estudiante_id', est.id)
@@ -205,10 +269,48 @@ export default async function ComprobantePagoPage(props: {
     matriculaData = m;
   }
 
-  const ed = Array.isArray(matriculaData?.ediciones) ? matriculaData?.ediciones[0] : matriculaData?.ediciones;
-  const prog = Array.isArray(ed?.programas) ? ed?.programas[0] : ed?.programas;
-  const periodo = Array.isArray(matriculaData?.periodos) ? matriculaData?.periodos[0] : matriculaData?.periodos;
-  const sede = Array.isArray(matriculaData?.sedes) ? matriculaData?.sedes[0] : matriculaData?.sedes;
+  let ed = Array.isArray(matriculaData?.ediciones) ? matriculaData?.ediciones[0] : matriculaData?.ediciones;
+  let prog = Array.isArray(ed?.programas) ? ed?.programas[0] : ed?.programas;
+  let periodo = Array.isArray(ed?.periodos) ? ed?.periodos[0] : ed?.periodos;
+
+  // Fallbacks de recuperación por ID directo si la relación anidada viniera nula
+  if (!prog && ed?.programa_id) {
+    const { data: progRes } = await supabase
+      .from('programas')
+      .select('id, codigo, nombre, tipo_programa')
+      .eq('id', ed.programa_id)
+      .maybeSingle();
+    if (progRes) prog = progRes;
+  }
+
+  if (!periodo && ed?.periodo_id) {
+    const { data: perRes } = await supabase
+      .from('periodos')
+      .select('id, codigo, nombre')
+      .eq('id', ed.periodo_id)
+      .maybeSingle();
+    if (perRes) periodo = perRes;
+  }
+
+  if (!ed && matriculaData?.edicion_id) {
+    const { data: edRes } = await supabase
+      .from('ediciones')
+      .select('id, codigo, nombre, modalidad, turno, programa_id, periodo_id, programas(id, codigo, nombre, tipo_programa), periodos(id, codigo, nombre)')
+      .eq('id', matriculaData.edicion_id)
+      .maybeSingle();
+    if (edRes) {
+      ed = edRes;
+      if (!prog) prog = Array.isArray(ed.programas) ? ed.programas[0] : ed.programas;
+      if (!periodo) periodo = Array.isArray(ed.periodos) ? ed.periodos[0] : ed.periodos;
+    }
+  }
+
+  // Nombre real de la carrera en mayúsculas, sin texto genérico quemado
+  const carreraNombre = (
+    prog?.nombre ||
+    ed?.nombre ||
+    'Carrera Técnica / Formación Profesional'
+  ).toUpperCase();
 
   // Resumen financiero global de la matrícula para contexto administrativo
   let resumenGlobal: { totalComprometido: number; saldoPendienteGlobal: number; totalPagadoGlobal: number } | null = null;
@@ -401,9 +503,25 @@ export default async function ComprobantePagoPage(props: {
             <div className="space-y-1.5">
               <div>
                 <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Carrera / Especialización</span>
-                <p className="font-extrabold text-sm text-slate-900 leading-tight">
-                  {prog?.nombre || 'Formación Técnica / Certificación Modular'}
-                </p>
+                <div className="flex items-baseline gap-2 flex-wrap">
+                  <p className="font-extrabold text-sm text-slate-900 leading-tight uppercase">
+                    {carreraNombre}
+                  </p>
+                  {prog?.codigo && (
+                    <span className="text-[10px] font-mono font-bold text-slate-500 uppercase">
+                      ({prog.codigo})
+                    </span>
+                  )}
+                </div>
+                {prog?.tipo_programa && (
+                  <span className="text-[10px] font-semibold text-slate-500 uppercase block mt-0.5">
+                    {prog.tipo_programa === 'CARRERA_TECNICA'
+                      ? 'Carrera Técnica'
+                      : prog.tipo_programa === 'CURSO_CORTO'
+                      ? 'Curso Corto'
+                      : 'Programa Modular'}
+                  </span>
+                )}
               </div>
               <div className="grid grid-cols-2 gap-2 pt-1.5 border-t border-slate-200/70 text-slate-700">
                 <div>
@@ -419,7 +537,7 @@ export default async function ComprobantePagoPage(props: {
               </div>
               <div className="pt-1 border-t border-slate-200/60 text-[11px] text-slate-600 flex justify-between">
                 <span>Periodo: <strong className="text-slate-800">{periodo?.nombre || periodo?.codigo || 'Ciclo Activo'}</strong></span>
-                <span>Sede: <strong className="text-slate-800">{sede?.nombre || 'Sede Central · Tumbes'}</strong></span>
+                <span>Sede: <strong className="text-slate-800">Sede Central · Tumbes</strong></span>
               </div>
             </div>
           </div>
@@ -483,34 +601,48 @@ export default async function ComprobantePagoPage(props: {
             </thead>
             <tbody className="divide-y divide-slate-200 bg-white">
               {aplicaciones.length === 0 ? (
-                <tr>
-                  <td className="py-3 px-3 text-center font-mono text-slate-500 border-r border-slate-200">1</td>
-                  <td className="py-3 px-3 font-semibold text-slate-800 border-r border-slate-200">
-                    {(pago.numero_operacion?.includes('·') ? pago.numero_operacion.split('·')[1].trim() : '') ||
-                      pago.observaciones ||
-                      'Pago general a cuenta de conceptos institucionales y pensiones'}
-                  </td>
-                  <td className="py-3 px-3 text-center text-slate-500 border-r border-slate-200">
-                    {fechaPagoFormateada}
-                  </td>
-                  <td className="py-3 px-3 text-right text-slate-700 font-mono border-r border-slate-200">
-                    {formatCurrency(Number(pago.importe) || 0)}
-                  </td>
-                  <td className="py-3 px-3 text-right font-black text-[#990000] font-mono border-r border-slate-200 bg-red-50/30">
-                    {formatCurrency(Number(pago.importe) || 0)}
-                  </td>
-                  <td className="py-3 px-3 text-right text-emerald-700 font-mono font-bold">
-                    {formatCurrency(0)}
-                  </td>
-                </tr>
+                (() => {
+                  const { titulo: conceptoTitulo, detalle: conceptoDetalle } = resolverConceptoCuota(
+                    null,
+                    pago,
+                    0,
+                    periodo?.nombre || periodo?.codigo
+                  );
+                  return (
+                    <tr>
+                      <td className="py-3 px-3 text-center font-mono text-slate-500 border-r border-slate-200">1</td>
+                      <td className="py-3 px-3 font-semibold text-slate-800 border-r border-slate-200">
+                        <span className="block leading-tight font-bold text-slate-900">{conceptoTitulo}</span>
+                        {conceptoDetalle && (
+                          <span className="text-[10px] text-slate-500 font-medium block mt-0.5">
+                            {conceptoDetalle}
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-3 px-3 text-center text-slate-500 border-r border-slate-200">
+                        {fechaPagoFormateada}
+                      </td>
+                      <td className="py-3 px-3 text-right text-slate-700 font-mono border-r border-slate-200">
+                        {formatCurrency(Number(pago.importe) || 0)}
+                      </td>
+                      <td className="py-3 px-3 text-right font-black text-[#990000] font-mono border-r border-slate-200 bg-red-50/30">
+                        {formatCurrency(Number(pago.importe) || 0)}
+                      </td>
+                      <td className="py-3 px-3 text-right text-emerald-700 font-mono font-bold">
+                        {formatCurrency(0)}
+                      </td>
+                    </tr>
+                  );
+                })()
               ) : (
                 aplicaciones.map((app: any, idx: number) => {
                   const c = app.cuotas;
-                  const conceptoLabel =
-                    c?.concepto ||
-                    (c?.tipo_cuota === 'MATRICULA'
-                      ? 'Derecho de Matrícula Regular'
-                      : `Pensión N° 0${c?.numero_cuota || idx + 1}${periodo?.codigo ? ` - Ciclo ${periodo.codigo}` : ''}`);
+                  const { titulo: conceptoTitulo, detalle: conceptoDetalle } = resolverConceptoCuota(
+                    c,
+                    pago,
+                    idx,
+                    periodo?.nombre || periodo?.codigo
+                  );
 
                   const importeCuota = Number(c?.importe_neto || app.importe_aplicado || 0);
                   const montoAmortizado = Number(app.importe_aplicado || 0);
@@ -525,10 +657,10 @@ export default async function ComprobantePagoPage(props: {
                         {idx + 1}
                       </td>
                       <td className="py-2.5 px-3 font-semibold text-slate-800 border-r border-slate-200">
-                        <span className="block leading-tight">{conceptoLabel}</span>
-                        {c?.tipo_cuota && (
-                          <span className="text-[10px] text-slate-400 uppercase font-mono block mt-0.5">
-                            Tipo: {c.tipo_cuota}
+                        <span className="block leading-tight font-bold text-slate-900">{conceptoTitulo}</span>
+                        {conceptoDetalle && (
+                          <span className="text-[10px] text-slate-500 font-medium block mt-0.5">
+                            {conceptoDetalle}
                           </span>
                         )}
                       </td>
