@@ -368,12 +368,50 @@ export default async function ComprobantePagoPage(props: {
   const aplicaciones = pago.pago_aplicaciones || [];
 
   return (
-    <div className="min-h-screen bg-slate-100 py-6 sm:py-8 print:py-0 print:bg-white text-slate-800">
+    <div className="min-h-screen bg-slate-100 py-4 sm:py-6 print:py-0 print:bg-white text-slate-800">
+      {/* Estilos específicos para impresión forzada en 1 sola hoja A4 */}
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            @page {
+              size: A4 portrait;
+              margin: 6mm 8mm 6mm 8mm;
+            }
+            @media print {
+              html, body {
+                height: 100% !important;
+                max-height: 100vh !important;
+                overflow: hidden !important;
+                background: #ffffff !important;
+                font-size: 11px !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+              }
+              .receipt-container {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                max-height: 98vh !important;
+                overflow: hidden !important;
+                padding: 4px 6px !important;
+                font-size: 11px !important;
+                border: none !important;
+                box-shadow: none !important;
+                margin: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+              }
+            }
+          `,
+        }}
+      />
+
       {/* Barra superior de acciones (oculta al imprimir) */}
-      <div className="max-w-[850px] mx-auto px-4 mb-4 flex items-center justify-between print:hidden">
+      <div className="max-w-[850px] mx-auto px-4 mb-3 flex items-center justify-between print:hidden">
         <Link
           href="/matriculas"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white border border-slate-300 px-3.5 py-2 rounded-lg shadow-2xs hover:bg-slate-50 transition"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white border border-slate-300 px-3.5 py-1.5 rounded-lg shadow-2xs hover:bg-slate-50 transition"
         >
           <ArrowLeft className="w-4 h-4 text-slate-500" />
           <span>Volver a Matrículas</span>
@@ -384,53 +422,53 @@ export default async function ComprobantePagoPage(props: {
         </div>
       </div>
 
-      {/* Contenedor del Comprobante (Hoja A4 / Carta para impresión profesional sin descuadres) */}
-      <div className="max-w-[850px] mx-auto bg-white border border-slate-300 shadow-xl rounded-xl p-8 sm:p-10 print:border-none print:shadow-none print:p-0 print:m-0 print:max-w-none print:w-full font-sans text-slate-800">
+      {/* Contenedor del Comprobante (Hoja A4 / Carta para impresión profesional en 1 sola hoja) */}
+      <div className="receipt-container max-w-[850px] mx-auto bg-white border border-slate-300 shadow-xl rounded-xl p-6 sm:p-7 print:p-1 print:border-none print:shadow-none print:m-0 print:max-w-none print:w-full font-sans text-slate-800">
         
         {/* ============================================================== */}
         {/* CABECERA CORPORATIVA OFICIAL BRUSBEN */}
         {/* ============================================================== */}
-        <header className="border-t-4 border-[#990000] pt-4 pb-4 border-b border-slate-300 mb-5 break-inside-avoid">
-          <div className="flex flex-col sm:flex-row print:flex-row items-start sm:items-center print:items-center justify-between gap-4">
+        <header className="border-t-4 border-[#990000] pt-3 pb-3 print:pt-1.5 print:pb-2 border-b border-slate-300 mb-3.5 print:mb-2 break-inside-avoid">
+          <div className="flex flex-col sm:flex-row print:flex-row items-start sm:items-center print:items-center justify-between gap-3">
             
             {/* Logo y Membrete Institucional */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/logo-brusben.png"
                 alt="Centro de Capacitaciones Brusben"
-                className="h-16 w-auto object-contain shrink-0"
+                className="h-14 sm:h-16 print:h-11 w-auto object-contain shrink-0"
               />
               <div>
                 <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#990000]">
                   Centro de Capacitaciones
                 </p>
-                <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 uppercase leading-none">
+                <h1 className="text-xl sm:text-2xl print:text-xl font-black tracking-tight text-slate-900 uppercase leading-none">
                   BRUSBEN
                 </h1>
-                <p className="text-xs text-slate-600 font-semibold mt-1 leading-tight">
+                <p className="text-xs print:text-[11px] text-slate-600 font-semibold mt-0.5 leading-tight">
                   Formación Continua, Especialización Profesional y Certificación
                 </p>
-                <p className="text-[11px] text-slate-500 mt-0.5">
+                <p className="text-[10px] text-slate-500 mt-0.5">
                   Sede Central: Tumbes, Perú · RUC Institucional: 20608934521
                 </p>
               </div>
             </div>
 
             {/* Recuadro de Control Documental */}
-            <div className="w-full sm:w-auto print:w-auto min-w-[250px] border-2 border-slate-800 rounded-lg p-3 bg-slate-50/80 text-left sm:text-right print:text-right shrink-0">
-              <p className="text-[11px] font-black uppercase tracking-wider text-[#990000]">
+            <div className="w-full sm:w-auto print:w-auto min-w-[230px] border-2 border-slate-800 rounded-lg p-2.5 print:p-2 bg-slate-50/80 text-left sm:text-right print:text-right shrink-0">
+              <p className="text-[10px] font-black uppercase tracking-wider text-[#990000]">
                 RECIBO DE PAGO INSTITUCIONAL
               </p>
-              <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500">
+              <p className="text-[8.5px] font-bold uppercase tracking-widest text-slate-500">
                 (CONTROL INTERNO DE CAJA)
               </p>
-              <p className="text-lg font-black font-mono text-slate-900 mt-1 tracking-tight">
+              <p className="text-base sm:text-lg print:text-base font-black font-mono text-slate-900 mt-0.5 tracking-tight">
                 {codigoRecibo}
               </p>
-              <div className="mt-2 flex sm:justify-end print:justify-end items-center gap-2 flex-wrap">
+              <div className="mt-1.5 flex sm:justify-end print:justify-end items-center gap-2 flex-wrap">
                 <span
-                  className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black uppercase border ${
+                  className={`inline-flex items-center px-1.5 py-0.5 rounded text-[9.5px] font-black uppercase border ${
                     isAnulado
                       ? 'bg-red-50 text-red-700 border-red-300'
                       : 'bg-emerald-50 text-emerald-800 border-emerald-300'
@@ -438,7 +476,7 @@ export default async function ComprobantePagoPage(props: {
                 >
                   {isAnulado ? 'ANULADO' : '✓ PAGADO / CONFORME'}
                 </span>
-                <span className="text-[10px] font-mono text-slate-500 font-medium">
+                <span className="text-[9.5px] font-mono text-slate-500 font-medium">
                   {fechaPagoFormateada}
                 </span>
               </div>
@@ -446,11 +484,11 @@ export default async function ComprobantePagoPage(props: {
           </div>
 
           {/* Subcabecera: Fecha y Hora Exacta de Emisión */}
-          <div className="mt-3 pt-2.5 border-t border-slate-200 flex flex-wrap items-center justify-between text-[11px] text-slate-600">
+          <div className="mt-2 pt-1.5 border-t border-slate-200 flex flex-wrap items-center justify-between text-[10.5px] text-slate-600">
             <div>
               <span className="font-bold text-slate-800 uppercase tracking-wide">Constancia Oficial de Abono y Cancelación</span>
             </div>
-            <div className="flex items-center gap-3 text-[10px] text-slate-500">
+            <div className="flex items-center gap-2.5 text-[9.5px] text-slate-500">
               <span>Emisión: <strong className="text-slate-700">{fechaEmisionCompleta}</strong> a las <strong className="text-slate-700">{horaEmision}</strong></span>
               <span>·</span>
               <span className="font-mono">Tumbes - Perú</span>
@@ -461,32 +499,32 @@ export default async function ComprobantePagoPage(props: {
         {/* ============================================================== */}
         {/* BLOQUE DE DATOS: ESTUDIANTE Y PROGRAMA (2 COLUMNAS PERFECTAS) */}
         {/* ============================================================== */}
-        <div className="grid grid-cols-2 gap-4 mb-5 break-inside-avoid">
+        <div className="grid grid-cols-2 gap-3 mb-3.5 print:mb-2 break-inside-avoid">
           {/* Tarjeta 1: Estudiante / Titular */}
-          <div className="border border-slate-300 rounded-lg p-3.5 bg-slate-50/70 text-xs">
-            <div className="flex items-center gap-1.5 border-b border-slate-200 pb-2 mb-2.5 text-[#990000] font-extrabold uppercase text-[10px] tracking-wider">
+          <div className="border border-slate-300 rounded-lg p-3 print:p-2 bg-slate-50/70 text-xs">
+            <div className="flex items-center gap-1.5 border-b border-slate-200 pb-1.5 mb-2 text-[#990000] font-extrabold uppercase text-[9.5px] tracking-wider">
               <UserCheck className="w-3.5 h-3.5" />
               <span>Datos del Estudiante / Titular</span>
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <div>
-                <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Apellidos y Nombres</span>
+                <span className="text-[9.5px] uppercase font-bold text-slate-400 block tracking-wider">Apellidos y Nombres</span>
                 <p className="font-extrabold text-sm text-slate-900 leading-tight">
                   {persona?.nombres} {persona?.apellido_paterno} {persona?.apellido_materno}
                 </p>
               </div>
-              <div className="grid grid-cols-2 gap-2 pt-1.5 border-t border-slate-200/70 text-slate-700">
+              <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-200/70 text-slate-700">
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block">{persona?.tipo_documento || 'DNI'}</span>
+                  <span className="text-[9.5px] uppercase font-bold text-slate-400 block">{persona?.tipo_documento || 'DNI'}</span>
                   <span className="font-mono font-bold text-slate-900 text-xs">{persona?.numero_documento || '-'}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Código Alumno</span>
+                  <span className="text-[9.5px] uppercase font-bold text-slate-400 block">Código Alumno</span>
                   <span className="font-mono font-bold text-[#990000] text-xs">{est?.codigo_estudiante || 'Pendiente'}</span>
                 </div>
               </div>
               {(persona?.telefono || persona?.email) && (
-                <div className="pt-1 border-t border-slate-200/60 text-[11px] text-slate-600 truncate">
+                <div className="pt-0.5 border-t border-slate-200/60 text-[10.5px] text-slate-600 truncate">
                   <span className="text-slate-400">Contacto: </span>
                   <span className="font-medium text-slate-800">{persona?.telefono || '-'} · {persona?.email || '-'}</span>
                 </div>
@@ -495,26 +533,26 @@ export default async function ComprobantePagoPage(props: {
           </div>
 
           {/* Tarjeta 2: Programa Académico y Matrícula */}
-          <div className="border border-slate-300 rounded-lg p-3.5 bg-slate-50/70 text-xs">
-            <div className="flex items-center gap-1.5 border-b border-slate-200 pb-2 mb-2.5 text-[#990000] font-extrabold uppercase text-[10px] tracking-wider">
+          <div className="border border-slate-300 rounded-lg p-3 print:p-2 bg-slate-50/70 text-xs">
+            <div className="flex items-center gap-1.5 border-b border-slate-200 pb-1.5 mb-2 text-[#990000] font-extrabold uppercase text-[9.5px] tracking-wider">
               <GraduationCap className="w-3.5 h-3.5" />
               <span>Programa Académico y Matrícula</span>
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <div>
-                <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Carrera / Especialización</span>
+                <span className="text-[9.5px] uppercase font-bold text-slate-400 block tracking-wider">Carrera / Especialización</span>
                 <div className="flex items-baseline gap-2 flex-wrap">
                   <p className="font-extrabold text-sm text-slate-900 leading-tight uppercase">
                     {carreraNombre}
                   </p>
                   {prog?.codigo && (
-                    <span className="text-[10px] font-mono font-bold text-slate-500 uppercase">
+                    <span className="text-[9.5px] font-mono font-bold text-slate-500 uppercase">
                       ({prog.codigo})
                     </span>
                   )}
                 </div>
                 {prog?.tipo_programa && (
-                  <span className="text-[10px] font-semibold text-slate-500 uppercase block mt-0.5">
+                  <span className="text-[9.5px] font-semibold text-slate-500 uppercase block mt-0.5">
                     {prog.tipo_programa === 'CARRERA_TECNICA'
                       ? 'Carrera Técnica'
                       : prog.tipo_programa === 'CURSO_CORTO'
@@ -523,19 +561,19 @@ export default async function ComprobantePagoPage(props: {
                   </span>
                 )}
               </div>
-              <div className="grid grid-cols-2 gap-2 pt-1.5 border-t border-slate-200/70 text-slate-700">
+              <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-200/70 text-slate-700">
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Edición / Grupo</span>
+                  <span className="text-[9.5px] uppercase font-bold text-slate-400 block">Edición / Grupo</span>
                   <span className="font-semibold text-slate-900 text-xs truncate block" title={ed?.nombre || ed?.codigo}>
                     {ed?.codigo ? `${ed.codigo} ` : ''}{ed?.nombre ? `(${ed.nombre})` : 'Edición Regular'}
                   </span>
                 </div>
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block">N° Matrícula</span>
+                  <span className="text-[9.5px] uppercase font-bold text-slate-400 block">N° Matrícula</span>
                   <span className="font-mono font-bold text-[#990000] text-xs">{matriculaData?.codigo_matricula || 'MAT-REGULAR'}</span>
                 </div>
               </div>
-              <div className="pt-1 border-t border-slate-200/60 text-[11px] text-slate-600 flex justify-between">
+              <div className="pt-0.5 border-t border-slate-200/60 text-[10.5px] text-slate-600 flex justify-between">
                 <span>Periodo: <strong className="text-slate-800">{periodo?.nombre || periodo?.codigo || 'Ciclo Activo'}</strong></span>
                 <span>Sede: <strong className="text-slate-800">Sede Central · Tumbes</strong></span>
               </div>
@@ -546,9 +584,9 @@ export default async function ComprobantePagoPage(props: {
         {/* ============================================================== */}
         {/* BARRA DE DATOS OPERATIVOS Y FINANCIEROS (4 COLUMNAS) */}
         {/* ============================================================== */}
-        <div className="grid grid-cols-4 gap-3 border border-slate-300 rounded-lg p-3 bg-white mb-5 text-xs break-inside-avoid">
+        <div className="grid grid-cols-4 gap-2.5 border border-slate-300 rounded-lg p-2.5 print:p-2 bg-white mb-3.5 print:mb-2 text-xs break-inside-avoid">
           <div className="border-r border-slate-200 pr-2">
-            <span className="text-[10px] uppercase font-bold text-slate-400 block">Medio de Pago</span>
+            <span className="text-[9.5px] uppercase font-bold text-slate-400 block">Medio de Pago</span>
             <div className="flex items-center gap-1.5 mt-0.5">
               <CreditCard className="w-3.5 h-3.5 text-slate-600 shrink-0" />
               <span className="font-bold text-slate-900 uppercase">{pago.medio_pago || 'TRANSFERENCIA'}</span>
@@ -556,19 +594,19 @@ export default async function ComprobantePagoPage(props: {
           </div>
 
           <div className="border-r border-slate-200 pr-2">
-            <span className="text-[10px] uppercase font-bold text-slate-400 block">N° Operación / Ref.</span>
+            <span className="text-[9.5px] uppercase font-bold text-slate-400 block">N° Operación / Ref.</span>
             <span className="font-mono font-bold text-[#990000] block mt-0.5 truncate" title={pago.numero_operacion || 'Caja / Directo'}>
               {pago.numero_operacion || 'Caja / Efectivo'}
             </span>
           </div>
 
           <div className="border-r border-slate-200 pr-2">
-            <span className="text-[10px] uppercase font-bold text-slate-400 block">Fecha del Abono</span>
+            <span className="text-[9.5px] uppercase font-bold text-slate-400 block">Fecha del Abono</span>
             <span className="font-semibold text-slate-800 block mt-0.5">{fechaPagoFormateada}</span>
           </div>
 
           <div>
-            <span className="text-[10px] uppercase font-bold text-slate-400 block">Caja Responsable</span>
+            <span className="text-[9.5px] uppercase font-bold text-slate-400 block">Caja Responsable</span>
             <span className="font-semibold text-slate-800 block mt-0.5">Caja Central · Tumbes</span>
           </div>
         </div>
@@ -576,27 +614,27 @@ export default async function ComprobantePagoPage(props: {
         {/* ============================================================== */}
         {/* TABLA DE DETALLE EXPLÍCITO DE CUOTAS Y CONCEPTOS AMORTIZADOS */}
         {/* ============================================================== */}
-        <div className="mb-5 overflow-hidden rounded-lg border border-slate-300 break-inside-avoid">
-          <div className="bg-[#990000] text-white py-2 px-3.5 flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider">
+        <div className="mb-3.5 print:mb-2 overflow-hidden rounded-lg border border-slate-300 break-inside-avoid">
+          <div className="bg-[#990000] text-white py-1.5 px-3 print:py-1 print:px-2 flex items-center justify-between">
+            <span className="text-[11px] print:text-[10px] font-bold uppercase tracking-wider">
               Detalle Explícito de Cuotas y Amortizaciones
             </span>
-            <span className="text-[10px] uppercase font-semibold text-red-100">
+            <span className="text-[9.5px] uppercase font-semibold text-red-100">
               Moneda Oficial: Soles (PEN - S/)
             </span>
           </div>
 
-          <table className="w-full text-xs text-left border-collapse table-fixed">
+          <table className="w-full text-xs print:text-[10.5px] text-left border-collapse table-fixed">
             <thead>
-              <tr className="bg-slate-100 text-slate-700 font-bold uppercase text-[10px] tracking-wider border-b border-slate-300">
-                <th className="py-2.5 px-3 text-center w-[6%] border-r border-slate-200">N°</th>
-                <th className="py-2.5 px-3 w-[40%] border-r border-slate-200">Concepto / Cuota Detallada</th>
-                <th className="py-2.5 px-3 text-center w-[14%] border-r border-slate-200">Vencimiento</th>
-                <th className="py-2.5 px-3 text-right w-[14%] border-r border-slate-200">Importe Cuota</th>
-                <th className="py-2.5 px-3 text-right w-[14%] border-r border-slate-200 bg-red-50/50 text-[#990000]">
+              <tr className="bg-slate-100 text-slate-700 font-bold uppercase text-[9.5px] print:text-[9px] tracking-wider border-b border-slate-300">
+                <th className="py-1.5 px-2.5 print:py-1 print:px-2 text-center w-[6%] border-r border-slate-200">N°</th>
+                <th className="py-1.5 px-2.5 print:py-1 print:px-2 w-[40%] border-r border-slate-200">Concepto / Cuota Detallada</th>
+                <th className="py-1.5 px-2.5 print:py-1 print:px-2 text-center w-[14%] border-r border-slate-200">Vencimiento</th>
+                <th className="py-1.5 px-2.5 print:py-1 print:px-2 text-right w-[14%] border-r border-slate-200">Importe Cuota</th>
+                <th className="py-1.5 px-2.5 print:py-1 print:px-2 text-right w-[14%] border-r border-slate-200 bg-red-50/50 text-[#990000]">
                   Amortizado Hoy
                 </th>
-                <th className="py-2.5 px-3 text-right w-[12%]">Saldo Restante</th>
+                <th className="py-1.5 px-2.5 print:py-1 print:px-2 text-right w-[12%]">Saldo Restante</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 bg-white">
@@ -610,25 +648,25 @@ export default async function ComprobantePagoPage(props: {
                   );
                   return (
                     <tr>
-                      <td className="py-3 px-3 text-center font-mono text-slate-500 border-r border-slate-200">1</td>
-                      <td className="py-3 px-3 font-semibold text-slate-800 border-r border-slate-200">
+                      <td className="py-2 px-2.5 print:py-1 print:px-2 text-center font-mono text-slate-500 border-r border-slate-200">1</td>
+                      <td className="py-2 px-2.5 print:py-1 print:px-2 font-semibold text-slate-800 border-r border-slate-200">
                         <span className="block leading-tight font-bold text-slate-900">{conceptoTitulo}</span>
                         {conceptoDetalle && (
-                          <span className="text-[10px] text-slate-500 font-medium block mt-0.5">
+                          <span className="text-[9.5px] text-slate-500 font-medium block mt-0.5">
                             {conceptoDetalle}
                           </span>
                         )}
                       </td>
-                      <td className="py-3 px-3 text-center text-slate-500 border-r border-slate-200">
+                      <td className="py-2 px-2.5 print:py-1 print:px-2 text-center text-slate-500 border-r border-slate-200">
                         {fechaPagoFormateada}
                       </td>
-                      <td className="py-3 px-3 text-right text-slate-700 font-mono border-r border-slate-200">
+                      <td className="py-2 px-2.5 print:py-1 print:px-2 text-right text-slate-700 font-mono border-r border-slate-200">
                         {formatCurrency(Number(pago.importe) || 0)}
                       </td>
-                      <td className="py-3 px-3 text-right font-black text-[#990000] font-mono border-r border-slate-200 bg-red-50/30">
+                      <td className="py-2 px-2.5 print:py-1 print:px-2 text-right font-black text-[#990000] font-mono border-r border-slate-200 bg-red-50/30">
                         {formatCurrency(Number(pago.importe) || 0)}
                       </td>
-                      <td className="py-3 px-3 text-right text-emerald-700 font-mono font-bold">
+                      <td className="py-2 px-2.5 print:py-1 print:px-2 text-right text-emerald-700 font-mono font-bold">
                         {formatCurrency(0)}
                       </td>
                     </tr>
@@ -653,29 +691,29 @@ export default async function ComprobantePagoPage(props: {
 
                   return (
                     <tr key={app.id || idx} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-2.5 px-3 text-center font-mono text-slate-500 border-r border-slate-200 font-bold">
+                      <td className="py-1.5 px-2.5 print:py-1 print:px-2 text-center font-mono text-slate-500 border-r border-slate-200 font-bold">
                         {idx + 1}
                       </td>
-                      <td className="py-2.5 px-3 font-semibold text-slate-800 border-r border-slate-200">
+                      <td className="py-1.5 px-2.5 print:py-1 print:px-2 font-semibold text-slate-800 border-r border-slate-200">
                         <span className="block leading-tight font-bold text-slate-900">{conceptoTitulo}</span>
                         {conceptoDetalle && (
-                          <span className="text-[10px] text-slate-500 font-medium block mt-0.5">
+                          <span className="text-[9.5px] text-slate-500 font-medium block mt-0.5">
                             {conceptoDetalle}
                           </span>
                         )}
                       </td>
-                      <td className="py-2.5 px-3 text-center text-slate-600 border-r border-slate-200 font-mono">
+                      <td className="py-1.5 px-2.5 print:py-1 print:px-2 text-center text-slate-600 border-r border-slate-200 font-mono">
                         {c?.fecha_vencimiento
                           ? new Date(c.fecha_vencimiento).toLocaleDateString('es-PE')
                           : 'Al Día'}
                       </td>
-                      <td className="py-2.5 px-3 text-right text-slate-700 border-r border-slate-200 font-mono">
+                      <td className="py-1.5 px-2.5 print:py-1 print:px-2 text-right text-slate-700 border-r border-slate-200 font-mono">
                         {formatCurrency(importeCuota)}
                       </td>
-                      <td className="py-2.5 px-3 text-right font-black text-[#990000] border-r border-slate-200 bg-red-50/40 font-mono">
+                      <td className="py-1.5 px-2.5 print:py-1 print:px-2 text-right font-black text-[#990000] border-r border-slate-200 bg-red-50/40 font-mono">
                         {formatCurrency(montoAmortizado)}
                       </td>
-                      <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-800">
+                      <td className="py-1.5 px-2.5 print:py-1 print:px-2 text-right font-mono font-bold text-slate-800">
                         {saldoRestante === 0 ? (
                           <span className="text-emerald-700 font-black">CANCELADO (S/ 0.00)</span>
                         ) : (
@@ -689,14 +727,14 @@ export default async function ComprobantePagoPage(props: {
             </tbody>
             <tfoot>
               {/* Fila de Total Cancelado */}
-              <tr className="bg-slate-100 font-bold border-t-2 border-slate-400">
-                <td colSpan={4} className="py-3 px-3 text-right uppercase text-slate-800 tracking-wider text-xs border-r border-slate-300">
+              <tr className="bg-slate-100 font-bold border-t border-slate-400">
+                <td colSpan={4} className="py-2 px-2.5 print:py-1 print:px-2 text-right uppercase text-slate-800 tracking-wider text-[11px] print:text-[10px] border-r border-slate-300">
                   Total Cancelado en esta Operación:
                 </td>
-                <td className="py-3 px-3 text-right text-base font-black text-[#990000] font-mono border-r border-slate-300 bg-red-100/50">
+                <td className="py-2 px-2.5 print:py-1 print:px-2 text-right text-sm sm:text-base print:text-sm font-black text-[#990000] font-mono border-r border-slate-300 bg-red-100/50">
                   {formatCurrency(Number(pago.importe) || 0)}
                 </td>
-                <td className="py-3 px-3 text-right text-[11px] font-bold text-emerald-800">
+                <td className="py-2 px-2.5 print:py-1 print:px-2 text-right text-[10px] font-bold text-emerald-800">
                   {aplicaciones.length > 0 && aplicaciones.every((a: any) => (a.cuotas?.saldo ?? 0) === 0)
                     ? 'Cuotas Cubiertas'
                     : 'Abono Procesado'}
@@ -704,7 +742,7 @@ export default async function ComprobantePagoPage(props: {
               </tr>
               {/* Fila con Importe en Letras */}
               <tr className="bg-slate-50 border-t border-slate-200 text-slate-700">
-                <td colSpan={6} className="py-2 px-3 text-[11px]">
+                <td colSpan={6} className="py-1.5 px-2.5 print:py-1 print:px-2 text-[10.5px] print:text-[9.5px]">
                   <span className="font-extrabold uppercase text-slate-500 mr-2">SON:</span>
                   <span className="font-bold text-slate-900 uppercase font-mono">
                     {montoEnLetras(Number(pago.importe) || 0)}
@@ -719,25 +757,25 @@ export default async function ComprobantePagoPage(props: {
         {/* RESUMEN FINANCIERO GLOBAL DEL EXPEDIENTE (CONTEXTO GENERAL) */}
         {/* ============================================================== */}
         {resumenGlobal && (
-          <div className="mb-5 p-3 rounded-lg bg-slate-50 border border-slate-200 text-xs break-inside-avoid">
-            <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 block mb-1.5">
+          <div className="mb-3.5 print:mb-2 p-2.5 print:p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs break-inside-avoid">
+            <span className="text-[9.5px] uppercase font-bold tracking-wider text-slate-500 block mb-1">
               Estado Financiero General del Expediente Académico
             </span>
-            <div className="grid grid-cols-3 gap-3 text-center">
-              <div className="bg-white p-2 rounded border border-slate-200">
-                <span className="text-[10px] text-slate-500 block">Total Comprometido</span>
+            <div className="grid grid-cols-3 gap-2.5 text-center">
+              <div className="bg-white p-1.5 rounded border border-slate-200">
+                <span className="text-[9.5px] text-slate-500 block">Total Comprometido</span>
                 <span className="font-bold text-slate-900 font-mono text-xs">
                   {formatCurrency(resumenGlobal.totalComprometido)}
                 </span>
               </div>
-              <div className="bg-white p-2 rounded border border-slate-200">
-                <span className="text-[10px] text-slate-500 block">Total Pagado a la Fecha</span>
+              <div className="bg-white p-1.5 rounded border border-slate-200">
+                <span className="text-[9.5px] text-slate-500 block">Total Pagado a la Fecha</span>
                 <span className="font-bold text-emerald-700 font-mono text-xs">
                   {formatCurrency(resumenGlobal.totalPagadoGlobal)}
                 </span>
               </div>
-              <div className="bg-white p-2 rounded border border-slate-200">
-                <span className="text-[10px] text-slate-500 block">Saldo Deudor Restante</span>
+              <div className="bg-white p-1.5 rounded border border-slate-200">
+                <span className="text-[9.5px] text-slate-500 block">Saldo Deudor Restante</span>
                 <span className={`font-black font-mono text-xs ${resumenGlobal.saldoPendienteGlobal > 0 ? 'text-[#990000]' : 'text-emerald-700'}`}>
                   {formatCurrency(resumenGlobal.saldoPendienteGlobal)}
                 </span>
@@ -749,15 +787,15 @@ export default async function ComprobantePagoPage(props: {
         {/* ============================================================== */}
         {/* NOTA INSTITUCIONAL Y DESCARGO LEGAL ANTE SUNAT */}
         {/* ============================================================== */}
-        <div className="border border-slate-300 bg-slate-50/80 rounded-lg p-3.5 mb-6 text-xs text-slate-600 space-y-1.5 break-inside-avoid">
-          <div className="flex items-center gap-1.5 font-bold text-slate-900 text-xs">
-            <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+        <div className="border border-slate-300 bg-slate-50/80 rounded-lg p-2.5 print:p-2 mb-3.5 print:mb-2 text-xs text-slate-600 space-y-1 break-inside-avoid">
+          <div className="flex items-center gap-1.5 font-bold text-slate-900 text-[11px] print:text-[10px]">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
             <span>Certificación de Pago Interno — Centro de Capacitaciones Brusben</span>
           </div>
-          <p className="text-[11px] text-slate-600 leading-relaxed">
+          <p className="text-[10.5px] print:text-[9.5px] text-slate-600 leading-snug">
             Este recibo acredita la cancelación del importe especificado y la amortización de cuotas en el Sistema ERP Académico Institucional. Válido para trámites curriculares internos, derecho a evaluaciones periódicas y constancias de no adeudo.
           </p>
-          <div className="pt-2 border-t border-slate-200 flex items-start gap-1.5 text-slate-500 text-[10px]">
+          <div className="pt-1 border-t border-slate-200 flex items-start gap-1.5 text-slate-500 text-[9.5px] print:text-[8.5px]">
             <span className="font-black text-[#990000] shrink-0 uppercase tracking-wider">Aviso Importante:</span>
             <span className="font-semibold italic">
               Recibo de pago interno para control académico y financiero. No válido como comprobante fiscal ante la SUNAT.
@@ -768,18 +806,18 @@ export default async function ComprobantePagoPage(props: {
         {/* ============================================================== */}
         {/* FIRMAS Y SELLOS INSTITUCIONALES (ALINEADOS Y ESTRUCTURADOS) */}
         {/* ============================================================== */}
-        <div className="grid grid-cols-2 gap-8 pt-6 border-t-2 border-dashed border-slate-300 text-center text-xs break-inside-avoid">
+        <div className="grid grid-cols-2 gap-6 pt-3.5 print:pt-2 border-t-2 border-dashed border-slate-300 text-center text-xs break-inside-avoid">
           {/* Firma Estudiante */}
           <div className="flex flex-col justify-end">
-            <div className="h-14" />
-            <div className="border-t border-slate-400 pt-2 max-w-[260px] mx-auto w-full">
-              <p className="font-bold text-slate-900 uppercase leading-tight">
+            <div className="h-8 print:h-5" />
+            <div className="border-t border-slate-400 pt-1.5 max-w-[240px] mx-auto w-full">
+              <p className="font-bold text-slate-900 uppercase leading-tight text-xs print:text-[10.5px]">
                 {persona?.nombres} {persona?.apellido_paterno}
               </p>
-              <p className="text-[10px] text-slate-500 font-medium mt-0.5">
+              <p className="text-[9.5px] text-slate-500 font-medium mt-0.5">
                 {persona?.tipo_documento || 'DNI'}: {persona?.numero_documento || '-'}
               </p>
-              <p className="text-[10px] text-slate-400 mt-0.5 uppercase tracking-wider font-semibold">
+              <p className="text-[9.5px] text-slate-400 mt-0.5 uppercase tracking-wider font-semibold">
                 Firma del Estudiante / Titular
               </p>
             </div>
@@ -787,18 +825,18 @@ export default async function ComprobantePagoPage(props: {
 
           {/* Sello y Validación Tesorería */}
           <div>
-            <div className="border-2 border-emerald-600 bg-emerald-50/60 rounded-xl p-3 max-w-[280px] mx-auto shadow-2xs">
-              <div className="flex items-center justify-center gap-1 text-emerald-800 font-black text-[11px] uppercase tracking-wider">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <div className="border-2 border-emerald-600 bg-emerald-50/60 rounded-xl p-2.5 print:p-1.5 max-w-[260px] mx-auto shadow-2xs">
+              <div className="flex items-center justify-center gap-1 text-emerald-800 font-black text-[10.5px] print:text-[9.5px] uppercase tracking-wider">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                 <span>Pago Registrado en Tesorería</span>
               </div>
-              <p className="text-[10px] font-bold text-slate-800 mt-1 uppercase">
+              <p className="text-[9.5px] font-bold text-slate-800 mt-0.5 uppercase">
                 Centro de Capacitaciones Brusben
               </p>
-              <p className="text-[9px] text-slate-600 font-mono">
+              <p className="text-[8.5px] text-slate-600 font-mono">
                 AUT: {codigoRecibo} · {fechaPagoFormateada}
               </p>
-              <div className="mt-2 pt-1.5 border-t border-emerald-200 text-[9px] text-emerald-900 font-semibold uppercase">
+              <div className="mt-1.5 pt-1 border-t border-emerald-200 text-[8.5px] text-emerald-900 font-semibold uppercase">
                 Área de Caja y Cobranzas
               </div>
             </div>
@@ -808,7 +846,7 @@ export default async function ComprobantePagoPage(props: {
         {/* ============================================================== */}
         {/* PIE DE DOCUMENTO Y VERIFICACIÓN */}
         {/* ============================================================== */}
-        <footer className="mt-8 pt-3 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-2 text-[10px] text-slate-400 break-inside-avoid">
+        <footer className="mt-4 pt-2 print:mt-1.5 print:pt-1 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-1 text-[9.5px] print:text-[8.5px] text-slate-400 break-inside-avoid">
           <div>
             <span className="font-bold text-slate-600">CENTRO DE CAPACITACIONES BRUSBEN</span> · Sistema Integrado de Control Académico y Financiero
           </div>

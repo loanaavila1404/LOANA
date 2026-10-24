@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { registrarPagoAction } from '@/app/actions/matriculas';
-import { AlertTriangle, ArrowLeft } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, CheckCircle2, FileText, ExternalLink } from 'lucide-react';
 
 export function PagoFormModalClient({
   estudianteId,
@@ -25,11 +25,13 @@ export function PagoFormModalClient({
   const [numeroOperacion, setNumeroOperacion] = useState('');
   const [idempotencyKey, setIdempotencyKey] = useState<string>('');
   const [isConfirming, setIsConfirming] = useState<boolean>(false);
+  const [pagoExitosoId, setPagoExitosoId] = useState<string | null>(null);
 
   const handleOpen = () => {
     setIdempotencyKey(window.crypto.randomUUID());
     setError(null);
     setIsConfirming(false);
+    setPagoExitosoId(null);
     const primera = cuotasPendientes[0];
     if (primera) {
       const saldoInicial =
@@ -135,6 +137,7 @@ export function PagoFormModalClient({
       remaining = Number((remaining - aAplicar).toFixed(2));
     }
 
+    const conceptoFinal = getConceptoLabel();
     const payload = {
       idempotency_key: idempotencyKey,
       estudiante_id: estudianteId,
@@ -144,6 +147,7 @@ export function PagoFormModalClient({
         conceptoSeleccionado === 'OTROS' && conceptoLibre
           ? `${numeroOperacion ? `${numeroOperacion} · ` : ''}${conceptoLibre}`
           : numeroOperacion,
+      observaciones: conceptoFinal,
       cuotas_aplicadas: aplicaciones
     };
 
@@ -153,10 +157,9 @@ export function PagoFormModalClient({
         setError(res.error);
         setIsConfirming(false);
       } else {
-        setIsOpen(false);
+        const id = (res as any).pago_id ? String((res as any).pago_id) : null;
+        setPagoExitosoId(id);
         setIsConfirming(false);
-        setImporte(0);
-        setNumeroOperacion('');
         setError(null);
       }
     });
@@ -177,6 +180,7 @@ export function PagoFormModalClient({
           onClick={() => {
             setIsOpen(false);
             setIsConfirming(false);
+            setPagoExitosoId(null);
           }}
           className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
         >
@@ -185,11 +189,69 @@ export function PagoFormModalClient({
           </svg>
         </button>
 
-        <h2 className="text-xl font-bold text-slate-800 mb-6">Registrar Pago</h2>
+        <h2 className="text-xl font-bold text-slate-800 mb-6">
+          {pagoExitosoId ? 'Comprobante de Pago' : 'Registrar Pago'}
+        </h2>
 
         {error && <div className="p-3 bg-red-50 text-red-700 text-sm rounded-md border border-red-200 mb-4">{error}</div>}
 
-        {isConfirming ? (
+        {pagoExitosoId ? (
+          <div className="space-y-5 animate-in fade-in-50 duration-200 text-center py-2">
+            <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-2">
+              <CheckCircle2 className="w-7 h-7" />
+            </div>
+            <div>
+              <h3 className="text-lg font-black text-slate-900">¡Pago Registrado con Éxito!</h3>
+              <p className="text-xs text-slate-500 mt-1">
+                El abono ha sido procesado e imputado en el sistema institucional.
+              </p>
+            </div>
+
+            <div className="bg-slate-50 rounded-xl p-3.5 border border-slate-200 text-xs space-y-2 text-left">
+              <div className="flex justify-between items-center py-1 border-b border-slate-200">
+                <span className="text-slate-500 font-medium">Concepto:</span>
+                <span className="font-bold text-slate-800 text-right truncate max-w-[200px]">{getConceptoLabel()}</span>
+              </div>
+              <div className="flex justify-between items-center py-1 border-b border-slate-200">
+                <span className="text-slate-500 font-medium">Importe Pagado:</span>
+                <span className="font-black text-sm text-[#C4121A]">S/ {Number(importe).toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between items-center py-1">
+                <span className="text-slate-500 font-medium">Medio de Pago:</span>
+                <span className="font-semibold text-slate-800">{medioPago}</span>
+              </div>
+            </div>
+
+            <div className="space-y-2 pt-2">
+              <a
+                href={`/pagos/${pagoExitosoId}/comprobante`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#C4121A] hover:bg-red-700 text-white font-bold text-xs shadow-md transition"
+              >
+                <FileText className="w-4 h-4" />
+                <span>Ver Recibo de Pago (PDF)</span>
+                <ExternalLink className="w-3.5 h-3.5 text-red-200" />
+              </a>
+
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setPagoExitosoId(null);
+                  setIsOpen(false);
+                  setIsConfirming(false);
+                  setImporte(0);
+                  setNumeroOperacion('');
+                  setError(null);
+                }}
+                className="w-full text-xs font-semibold"
+              >
+                Cerrar y Continuar
+              </Button>
+            </div>
+          </div>
+        ) : isConfirming ? (
           <div className="space-y-5 animate-in fade-in-50 duration-200">
             <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 space-y-2.5">
               <div className="flex items-center gap-2 font-bold text-amber-800 text-sm">

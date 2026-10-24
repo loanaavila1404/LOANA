@@ -73,7 +73,7 @@ export async function registrarPagoAction(payload: unknown) {
   }
 
   revalidatePath('/matriculas');
-  return { success: true, pago_id: data };
+  return { success: true, pago_id: data as unknown as string };
 }
 
 export async function anularPagoAction(pagoId: string, motivo: string) {

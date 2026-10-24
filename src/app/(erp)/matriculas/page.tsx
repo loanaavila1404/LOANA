@@ -10,9 +10,12 @@ export const metadata = {
   title: 'Matrículas y Control Financiero - ERP Brusben',
 };
 
-export default async function MatriculasPage() {
+export default async function MatriculasPage(props: {
+  searchParams?: Promise<{ desde?: string; hasta?: string }>;
+}) {
   await requirePermission(['MATRICULAS.VER', 'SISTEMA.ADMINISTRAR']);
   const supabase = await createClient();
+  const searchParams = props.searchParams ? await props.searchParams : {};
 
   // Consultar matrículas con estudiantes y ediciones
   const [{ data: matriculasRaw }, { data: cuotasRaw }, { data: pagosRaw }] = await Promise.all([
@@ -66,6 +69,21 @@ export default async function MatriculasPage() {
 
   const cuotas = (cuotasRaw || []) as CuotaItem[];
   const pagos = pagosRaw || [];
+
+  const fechaDesde = searchParams.desde || `${currentMonth}-01`;
+  const fechaHasta = searchParams.hasta || today;
+
+  // Filtrado de pagos según rango seleccionado
+  const pagosEnPeriodo = pagos.filter(p => {
+    if (!p.fecha_pago) return false;
+    return p.fecha_pago >= fechaDesde && p.fecha_pago <= fechaHasta;
+  });
+
+  const totalRecaudadoPeriodo = pagosEnPeriodo.reduce(
+    (acc, p) => acc + (Number(p.importe) || 0),
+    0
+  );
+  const pagosPeriodoCount = pagosEnPeriodo.length;
 
   // Mapear cuotas por matrícula
   const cuotasByMatricula = new Map<string, CuotaItem[]>();
@@ -196,6 +214,10 @@ export default async function MatriculasPage() {
 
   const metricsData: MatriculasMetricsData = {
     totalRecaudadoMes,
+    totalRecaudadoPeriodo,
+    fechaDesde,
+    fechaHasta,
+    pagosPeriodoCount,
     metaMes,
     porcentajeMeta,
     matriculasActivas,
