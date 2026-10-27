@@ -28,6 +28,8 @@ import {
   PieChart,
   UserCheck,
   Percent,
+  Printer,
+  ClipboardList,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -47,6 +49,13 @@ export interface ReportePrograma {
   status?: string | null;
 }
 
+export interface ReporteCiclo {
+  id: string;
+  nombre: string;
+  numero_orden?: number | null;
+  plan_id?: string | null;
+}
+
 export interface ReporteEdicion {
   id: string;
   codigo: string;
@@ -57,6 +66,7 @@ export interface ReporteEdicion {
   status?: string | null;
   programa_id?: string | null;
   periodo_id?: string | null;
+  ciclo_id?: string | null;
   programas?: {
     id: string;
     codigo: string;
@@ -67,6 +77,11 @@ export interface ReporteEdicion {
     id: string;
     codigo: string;
     nombre: string;
+  } | null;
+  ciclos?: {
+    id: string;
+    nombre: string;
+    numero_orden?: number | null;
   } | null;
 }
 
@@ -82,6 +97,16 @@ export interface ReporteMatricula {
   numero_pensiones?: number | null;
   descuento_total?: number | null;
   created_at?: string | null;
+  estudiantes?: {
+    id: string;
+    codigo_estudiante?: string | null;
+    personas?: {
+      nombres?: string | null;
+      apellido_paterno?: string | null;
+      apellido_materno?: string | null;
+      numero_documento?: string | null;
+    } | null;
+  } | null;
   ediciones?: ReporteEdicion | null;
 }
 
@@ -101,12 +126,22 @@ export interface ReporteCuota {
     id: string;
     codigo_matricula: string;
     edicion_id: string;
+    estudiantes?: {
+      id: string;
+      codigo_estudiante?: string | null;
+      personas?: {
+        nombres?: string | null;
+        apellido_paterno?: string | null;
+        apellido_materno?: string | null;
+      } | null;
+    } | null;
     ediciones?: {
       id: string;
       modalidad?: string | null;
       turno?: string | null;
       periodo_id?: string | null;
       programa_id?: string | null;
+      ciclo_id?: string | null;
       programas?: {
         id: string;
         nombre: string;
@@ -145,6 +180,7 @@ export interface ReportePago {
           turno?: string | null;
           periodo_id?: string | null;
           programa_id?: string | null;
+          ciclo_id?: string | null;
           programas?: {
             id: string;
             nombre: string;
@@ -182,6 +218,7 @@ export interface ReportesAnalyticsProps {
   periodos: ReportePeriodo[];
   programas: ReportePrograma[];
   ediciones: ReporteEdicion[];
+  ciclos: ReporteCiclo[];
   matriculas: ReporteMatricula[];
   cuotas: ReporteCuota[];
   pagos: ReportePago[];
@@ -243,6 +280,7 @@ export function ReportesAnalyticsClient({
   periodos,
   programas,
   ediciones,
+  ciclos,
   matriculas,
   cuotas,
   pagos,
@@ -258,6 +296,11 @@ export function ReportesAnalyticsClient({
 
   // Pestaña activa
   const [activeTab, setActiveTab] = useState<TabKey>('resumen');
+
+  // Estado del Generador de Nómina Académica por Ciclo y Carrera
+  const [nominaProgramaId, setNominaProgramaId] = useState<string>(programas[0]?.id || '');
+  const [nominaCicloId, setNominaCicloId] = useState<string>('TODOS');
+  const [nominaEdicionId, setNominaEdicionId] = useState<string>('');
 
   const hayFiltrosActivos =
     periodoFiltro !== 'TODOS' ||
@@ -295,7 +338,6 @@ export function ReportesAnalyticsClient({
 
     // 2. Filtrar Matrículas
     const matList = matriculas.filter(m => {
-      // Si el filtro de periodo/modalidad/área aplica y no está en edMap
       if (periodoFiltro !== 'TODOS' || modalidadFiltro !== 'TODAS' || areaFiltro !== 'TODAS') {
         if (!edMap.has(m.edicion_id)) return false;
       }
@@ -317,7 +359,6 @@ export function ReportesAnalyticsClient({
       if (periodoFiltro === 'TODOS' && modalidadFiltro === 'TODAS' && areaFiltro === 'TODAS') {
         return true;
       }
-      // Revisar si aplica a cuotas de matrículas filtradas
       const apps = p.pago_aplicaciones || [];
       if (apps.length > 0) {
         return apps.some(a => {
@@ -325,7 +366,6 @@ export function ReportesAnalyticsClient({
           return mId && matIds.has(mId);
         });
       }
-      // Si no tiene aplicaciones explícitas pero no hay matrículas filtradas activas
       return matList.length === matriculas.length;
     });
 
@@ -356,7 +396,6 @@ export function ReportesAnalyticsClient({
       .reduce((acc, p) => acc + Number(p.importe || 0), 0);
   }, [pagosFiltrados]);
 
-  // Meta del ciclo calculada o estimada (suma de contratos o meta institucional mínima)
   const metaCiclo = useMemo(() => {
     const totalContratado = matriculasFiltradas.reduce((acc, m) => {
       const mat = Number(m.importe_matricula || 0);
@@ -366,12 +405,12 @@ export function ReportesAnalyticsClient({
       const contract = mat + pen * numPen - desc;
       return acc + (contract > 0 ? contract : 0);
     }, 0);
-    return Math.max(totalContratado, 50000); // Meta de referencia institucional
+    return Math.max(totalContratado, 50000);
   }, [matriculasFiltradas]);
 
   const porcentajeMeta = metaCiclo > 0 ? Math.min(Math.round((totalRecaudado / metaCiclo) * 100), 100) : 0;
 
-  // 2. Matrículas Vigentes / Alumnos Activos (con indicador de aforo)
+  // 2. Matrículas Vigentes / Alumnos Activos
   const matriculasActivas = useMemo(() => {
     return matriculasFiltradas.filter(m => (m.status || '').toUpperCase() === 'ACTIVA').length;
   }, [matriculasFiltradas]);
@@ -392,7 +431,7 @@ export function ReportesAnalyticsClient({
 
   const tasaConversion = totalProspectos > 0 ? ((prospectosConvertidos / totalProspectos) * 100).toFixed(1) : '0.0';
 
-  // 4. Índice de Morosidad / Cuotas Vencidas
+  // 4. Cartera de Cuotas y Morosidad
   const hoyIso = new Date().toISOString().split('T')[0];
   const { cuotasVencidasCount, montoMorosidad, totalSaldoPendiente, totalCarteraEmitida } = useMemo(() => {
     let countVencidas = 0;
@@ -427,16 +466,16 @@ export function ReportesAnalyticsClient({
 
   const porcentajeMorosidad = totalSaldoPendiente > 0 ? Math.round((montoMorosidad / totalSaldoPendiente) * 100) : 0;
 
-  // Desglose por Medio de Pago para Pestaña de Finanzas
+  // PASO 2: Desglose limpio y estructurado de Canales de Cobranza
   const mediosPagoDesglose = useMemo(() => {
-    const mapa: Record<string, { total: number; count: number }> = {
-      YAPE: { total: 0, count: 0 },
-      PLIN: { total: 0, count: 0 },
-      BCP: { total: 0, count: 0 },
-      TRANSFERENCIA: { total: 0, count: 0 },
-      EFECTIVO: { total: 0, count: 0 },
-      TARJETA: { total: 0, count: 0 },
-      OTRO: { total: 0, count: 0 },
+    const mapa: Record<string, { total: number; count: number; nombre: string }> = {
+      YAPE: { total: 0, count: 0, nombre: 'Yape Móvil' },
+      PLIN: { total: 0, count: 0, nombre: 'Plin Interbancario' },
+      BCP: { total: 0, count: 0, nombre: 'Transferencia BCP' },
+      TRANSFERENCIA: { total: 0, count: 0, nombre: 'Otros Bancos / Transferencia' },
+      EFECTIVO: { total: 0, count: 0, nombre: 'Efectivo en Caja Institucional' },
+      TARJETA: { total: 0, count: 0, nombre: 'Tarjeta Débito / Crédito (POS)' },
+      OTRO: { total: 0, count: 0, nombre: 'Otros Medios Autorizados' },
     };
 
     pagosFiltrados
@@ -452,14 +491,14 @@ export function ReportesAnalyticsClient({
         else if (medio.includes('EFECT') || medio.includes('CAJA')) key = 'EFECTIVO';
         else if (medio.includes('TARJ') || medio.includes('POS') || medio.includes('VISA')) key = 'TARJETA';
 
-        if (!mapa[key]) mapa[key] = { total: 0, count: 0 };
         mapa[key].total += imp;
         mapa[key].count += 1;
       });
 
     return Object.entries(mapa)
-      .map(([medio, d]) => ({
-        medio,
+      .map(([key, d]) => ({
+        key,
+        nombre: d.nombre,
         total: d.total,
         count: d.count,
         porcentaje: totalRecaudado > 0 ? Math.round((d.total / totalRecaudado) * 100) : 0,
@@ -468,7 +507,40 @@ export function ReportesAnalyticsClient({
       .sort((a, b) => b.total - a.total);
   }, [pagosFiltrados, totalRecaudado]);
 
-  // Desglose por Programas para Resumen Ejecutivo
+  // Ediciones filtradas para el Generador de Nómina Académica
+  const edicionesParaNomina = useMemo(() => {
+    return ediciones.filter(ed => {
+      if (nominaProgramaId && ed.programa_id !== nominaProgramaId) return false;
+      if (nominaCicloId !== 'TODOS' && ed.ciclo_id !== nominaCicloId) return false;
+      return true;
+    });
+  }, [ediciones, nominaProgramaId, nominaCicloId]);
+
+  // Edición activa seleccionada en el generador de nómina
+  const edicionNominaSeleccionada = useMemo(() => {
+    if (nominaEdicionId) {
+      const encontrada = edicionesParaNomina.find(e => e.id === nominaEdicionId);
+      if (encontrada) return encontrada;
+    }
+    return edicionesParaNomina[0] || null;
+  }, [edicionesParaNomina, nominaEdicionId]);
+
+  // Conteo de estudiantes en la edición seleccionada
+  const alumnosEnEdicionNomina = useMemo(() => {
+    if (!edicionNominaSeleccionada) return 0;
+    return matriculas.filter(
+      m => m.edicion_id === edicionNominaSeleccionada.id && m.status !== 'ANULADA'
+    ).length;
+  }, [matriculas, edicionNominaSeleccionada]);
+
+  // Cuotas críticas para Pestaña de Finanzas
+  const cuotasCriticas = useMemo(() => {
+    return cuotasFiltradas
+      .filter(c => Number(c.saldo ?? c.importe_neto ?? 0) > 0 && (c.status === 'VENCIDA' || (c.fecha_vencimiento && c.fecha_vencimiento < hoyIso)))
+      .slice(0, 8);
+  }, [cuotasFiltradas, hoyIso]);
+
+  // Resumen de programas
   const programasResumen = useMemo(() => {
     const mapa = new Map<
       string,
@@ -525,30 +597,7 @@ export function ReportesAnalyticsClient({
       .sort((a, b) => b.matriculados - a.matriculados);
   }, [programas, edicionesFiltradas, matriculasFiltradas, cuotasFiltradas]);
 
-  // Cuotas críticas para Pestaña de Finanzas
-  const cuotasCriticas = useMemo(() => {
-    return cuotasFiltradas
-      .filter(c => Number(c.saldo ?? c.importe_neto ?? 0) > 0 && (c.status === 'VENCIDA' || (c.fecha_vencimiento && c.fecha_vencimiento < hoyIso)))
-      .slice(0, 8);
-  }, [cuotasFiltradas, hoyIso]);
-
-  // Distribución por Modalidad para Pestaña Académica
-  const modalidadesResumen = useMemo(() => {
-    const mapa: Record<string, number> = { PRESENCIAL: 0, SEMIPRESENCIAL: 0, VIRTUAL: 0 };
-    matriculasFiltradas.forEach(m => {
-      const mod = (m.ediciones?.modalidad || 'PRESENCIAL').toUpperCase();
-      if (mapa[mod] !== undefined) mapa[mod] += 1;
-      else mapa.PRESENCIAL += 1;
-    });
-    const total = matriculasFiltradas.length || 1;
-    return [
-      { mod: 'Presencial', count: mapa.PRESENCIAL, pct: Math.round((mapa.PRESENCIAL / total) * 100), color: 'bg-emerald-500' },
-      { mod: 'Semipresencial', count: mapa.SEMIPRESENCIAL, pct: Math.round((mapa.SEMIPRESENCIAL / total) * 100), color: 'bg-blue-500' },
-      { mod: 'Virtual', count: mapa.VIRTUAL, pct: Math.round((mapa.VIRTUAL / total) * 100), color: 'bg-purple-500' },
-    ];
-  }, [matriculasFiltradas]);
-
-  // Embudo CRM para Pestaña Comercial
+  // Embudo CRM
   const embudoCRM = useMemo(() => {
     const nuevos = prospectosFiltrados.filter(p => p.status === 'NUEVO' || !p.status).length;
     const contactados = prospectosFiltrados.filter(p => p.status === 'CONTACTADO' || p.status === 'EN_SEGUIMIENTO').length;
@@ -599,11 +648,20 @@ export function ReportesAnalyticsClient({
             Reportes Institucionales y Analítica
           </h1>
           <p className="text-sm text-slate-500">
-            Centro de mando directivo: indicadores de rendimiento en tiempo real y exportación de reportes PDF oficiales.
+            Control de indicadores de rendimiento, balance financiero y emisión de reportes PDF oficiales.
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5 shrink-0">
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+          {/* Botón directo a Nómina de Estudiantes */}
+          <Link
+            href={edicionNominaSeleccionada ? `/reportes/nomina?edicionId=${edicionNominaSeleccionada.id}&print=1` : '/reportes/nomina?print=1'}
+            target="_blank"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-2xs transition"
+          >
+            <ClipboardList className="w-3.5 h-3.5 text-red-400" />
+            <span>Nómina por Aula (PDF)</span>
+          </Link>
           <Link
             href="/reportes/financiero?print=1"
             target="_blank"
@@ -627,7 +685,7 @@ export function ReportesAnalyticsClient({
           PASO 1: FILTROS GLOBALES DE ANALÍTICA (SUPERIORES)
       ======================================================== */}
       <Card className="bg-white border-slate-200 shadow-2xs">
-        <div className="p-4 sm:p-4.5 space-y-3">
+        <div className="p-4 space-y-3">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-md bg-slate-100 text-slate-700 flex items-center justify-center shrink-0 border border-slate-200">
@@ -635,10 +693,10 @@ export function ReportesAnalyticsClient({
               </div>
               <div>
                 <span className="text-xs font-bold text-slate-900 block leading-tight">
-                  Filtros Globales de Analítica en Tiempo Real
+                  Filtros Globales de Analítica
                 </span>
                 <span className="text-[11px] text-slate-500">
-                  Segmentación instantánea para los 4 módulos de inteligencia operativa y reportes exportables.
+                  Segmentación instantánea para los 4 módulos de analítica y reportes imprimibles.
                 </span>
               </div>
             </div>
@@ -736,10 +794,10 @@ export function ReportesAnalyticsClient({
           <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">
             <span>
               Registros en alcance: <strong>{matriculasFiltradas.length}</strong> matrículas,{' '}
-              <strong>{pagosFiltrados.length}</strong> pagos, <strong>{prospectosFiltrados.length}</strong> prospectos CRM.
+              <strong>{pagosFiltrados.length}</strong> pagos validados, <strong>{prospectosFiltrados.length}</strong> prospectos CRM.
             </span>
             <span className="font-mono text-slate-400">
-              Moneda Oficial: <strong className="text-slate-700">Soles (S/)</strong>
+              Moneda: <strong className="text-slate-700">Soles (S/)</strong>
             </span>
           </div>
         </div>
@@ -771,7 +829,6 @@ export function ReportesAnalyticsClient({
               </div>
             </div>
 
-            {/* Barra de Progreso de Meta */}
             <div className="space-y-1">
               <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
                 <div
@@ -812,7 +869,6 @@ export function ReportesAnalyticsClient({
               </div>
             </div>
 
-            {/* Barra de Ocupación de Aforo */}
             <div className="space-y-1">
               <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
                 <div
@@ -821,7 +877,7 @@ export function ReportesAnalyticsClient({
                 />
               </div>
               <div className="flex items-center justify-between text-[10.5px]">
-                <span className="text-slate-500">Aforo institucional cubierto</span>
+                <span className="text-slate-500">Aforo institucional</span>
                 <span className="font-extrabold text-blue-900">{porcentajeAforo}% ocupado</span>
               </div>
             </div>
@@ -852,7 +908,6 @@ export function ReportesAnalyticsClient({
               </div>
             </div>
 
-            {/* Embudo Rápido */}
             <div className="space-y-1">
               <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
                 <div
@@ -861,7 +916,7 @@ export function ReportesAnalyticsClient({
                 />
               </div>
               <div className="flex items-center justify-between text-[10.5px]">
-                <span className="text-slate-500">Efectividad de ventas</span>
+                <span className="text-slate-500">Efectividad comercial</span>
                 <span className="font-extrabold text-emerald-700">
                   {prospectosConvertidos} matriculados
                 </span>
@@ -898,7 +953,6 @@ export function ReportesAnalyticsClient({
               </div>
             </div>
 
-            {/* Nivel de Riesgo */}
             <div className="space-y-1">
               <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
                 <div
@@ -909,7 +963,7 @@ export function ReportesAnalyticsClient({
                 />
               </div>
               <div className="flex items-center justify-between text-[10.5px]">
-                <span className="text-slate-500">Mora sobre cartera pendiente</span>
+                <span className="text-slate-500">Mora sobre cartera</span>
                 <span className={`font-extrabold ${porcentajeMorosidad > 20 ? 'text-red-700' : 'text-amber-700'}`}>
                   {porcentajeMorosidad}% cartera
                 </span>
@@ -918,6 +972,147 @@ export function ReportesAnalyticsClient({
           </CardContent>
         </Card>
       </div>
+
+      {/* ========================================================
+          PASO 1 (NUEVO): GENERADOR DE NÓMINA ACADÉMICA POR CICLO Y CARRERA
+      ======================================================== */}
+      <Card className="border-slate-300 bg-linear-to-r from-slate-900 via-slate-800 to-slate-900 text-white shadow-sm overflow-hidden">
+        <div className="p-4 sm:p-5 space-y-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-700 pb-3">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-[#C4121A] text-white flex items-center justify-center shrink-0 shadow-xs">
+                <ClipboardList className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm sm:text-base font-black tracking-tight text-white flex items-center gap-2">
+                  <span>Generador de Nómina Académica por Programa, Ciclo y Aula</span>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-extrabold uppercase bg-red-950 text-red-200 border border-red-800">
+                    PDF A4
+                  </span>
+                </h3>
+                <p className="text-xs text-slate-300">
+                  Seleccione el programa, ciclo y grupo para emitir la nómina oficial de alumnos con DNI, código institucional y estado de matrícula.
+                </p>
+              </div>
+            </div>
+
+            {edicionNominaSeleccionada && (
+              <Link
+                href={`/reportes/nomina?edicionId=${edicionNominaSeleccionada.id}&print=1`}
+                target="_blank"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#C4121A] hover:bg-red-700 text-white text-xs font-bold shadow-md transition shrink-0"
+              >
+                <Printer className="w-4 h-4" />
+                <span>Generar e Imprimir Nómina Oficial (PDF)</span>
+              </Link>
+            )}
+          </div>
+
+          {/* Selectores de Filtrado de Nómina */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {/* 1. Carrera / Programa */}
+            <div>
+              <label htmlFor="nomina-prog" className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
+                1. Carrera o Programa Técnico
+              </label>
+              <select
+                id="nomina-prog"
+                value={nominaProgramaId}
+                onChange={e => {
+                  setNominaProgramaId(e.target.value);
+                  setNominaEdicionId(''); // Reiniciar grupo seleccionado
+                }}
+                className="w-full px-2.5 py-2 text-xs font-bold text-slate-900 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C4121A]"
+              >
+                {programas.map(p => (
+                  <option key={p.id} value={p.id}>
+                    {p.nombre} ({p.codigo})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* 2. Ciclo Académico */}
+            <div>
+              <label htmlFor="nomina-ciclo" className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
+                2. Ciclo Académico
+              </label>
+              <select
+                id="nomina-ciclo"
+                value={nominaCicloId}
+                onChange={e => {
+                  setNominaCicloId(e.target.value);
+                  setNominaEdicionId('');
+                }}
+                className="w-full px-2.5 py-2 text-xs font-bold text-slate-900 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C4121A]"
+              >
+                <option value="TODOS">Todos los Ciclos del Programa</option>
+                {ciclos.map(c => (
+                  <option key={c.id} value={c.id}>
+                    {c.nombre || `Ciclo ${c.numero_orden || ''}`}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* 3. Edición / Grupo / Aula */}
+            <div>
+              <label htmlFor="nomina-edicion" className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
+                3. Edición / Grupo de Clase
+              </label>
+              <select
+                id="nomina-edicion"
+                value={edicionNominaSeleccionada?.id || ''}
+                onChange={e => setNominaEdicionId(e.target.value)}
+                disabled={edicionesParaNomina.length === 0}
+                className="w-full px-2.5 py-2 text-xs font-bold text-slate-900 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C4121A] disabled:opacity-50"
+              >
+                {edicionesParaNomina.length === 0 ? (
+                  <option value="">No hay ediciones en este criterio</option>
+                ) : (
+                  edicionesParaNomina.map(e => (
+                    <option key={e.id} value={e.id}>
+                      {e.codigo} — {e.modalidad || 'Presencial'} / {e.turno || 'Regular'} ({e.vacantes || '-'} vac.)
+                    </option>
+                  ))
+                )}
+              </select>
+            </div>
+          </div>
+
+          {/* Resumen Informativo del Grupo Seleccionado */}
+          {edicionNominaSeleccionada ? (
+            <div className="bg-slate-800/80 rounded-lg p-3 border border-slate-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+              <div className="space-y-0.5">
+                <div className="font-bold text-white flex items-center gap-2">
+                  <span>Grupo Activo: {edicionNominaSeleccionada.codigo}</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-900 text-emerald-200">
+                    {edicionNominaSeleccionada.status || 'ACTIVO'}
+                  </span>
+                </div>
+                <div className="text-slate-300 text-[11px]">
+                  Modalidad: <strong>{edicionNominaSeleccionada.modalidad || 'Presencial'}</strong> · Turno: <strong>{edicionNominaSeleccionada.turno || 'Regular'}</strong>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4 text-slate-200">
+                <div>
+                  <span className="text-[10px] text-slate-400 block uppercase">Alumnos en Nómina</span>
+                  <span className="font-black text-sm text-white">{alumnosEnEdicionNomina} matriculados</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-400 block uppercase">Aforo de Vacantes</span>
+                  <span className="font-black text-sm text-white">{edicionNominaSeleccionada.vacantes || '-'} lugares</span>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <p className="text-xs text-amber-200 italic">
+              Seleccione una carrera con ediciones abiertas para previsualizar y generar la nómina.
+            </p>
+          )}
+        </div>
+      </Card>
 
       {/* ========================================================
           PASO 2: PESTAÑAS DE NAVEGACIÓN ANALÍTICA
@@ -1135,17 +1330,53 @@ export function ReportesAnalyticsClient({
               </CardContent>
             </Card>
 
-            {/* Centro de Documentos y Reportes Descargables Oficiales */}
+            {/* Centro de Documentos Oficiales con Enlace a Nómina y Reportes */}
             <div>
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide">
-                  Dossier de Reportes Institucionales Oficiales (PDF A4)
+                  Dossier de Reportes y Documentos Oficiales Brusben (PDF A4)
                 </h3>
-                <span className="text-xs text-slate-500">Formato oficial membretado con firmas autorizadas</span>
+                <span className="text-xs text-slate-500">Documentos oficiales listos para impresión con firmas directivas</span>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {/* 1. Reporte Financiero */}
+                {/* 1. Nómina por Aula */}
+                <div className="border border-slate-200 bg-white rounded-xl p-4 shadow-2xs flex flex-col justify-between hover:border-slate-300 transition">
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-extrabold px-2 py-0.5 rounded bg-slate-900 text-white">
+                        NOM-AULA
+                      </span>
+                      <ClipboardList className="w-4 h-4 text-slate-800" />
+                    </div>
+                    <h4 className="text-sm font-bold text-slate-900 mt-2">
+                      Nómina de Alumnos por Aula
+                    </h4>
+                    <p className="text-xs text-slate-500 mt-1">
+                      Padrón oficial de clase con DNI, código, estado y espacio de firmas de control.
+                    </p>
+                  </div>
+                  <div className="pt-3 mt-3 border-t border-slate-100 flex gap-2">
+                    <Link
+                      href={edicionNominaSeleccionada ? `/reportes/nomina?edicionId=${edicionNominaSeleccionada.id}` : '/reportes/nomina'}
+                      className="flex-1"
+                    >
+                      <Button variant="outline" className="w-full text-xs h-8">
+                        Ver
+                      </Button>
+                    </Link>
+                    <Link
+                      href={edicionNominaSeleccionada ? `/reportes/nomina?edicionId=${edicionNominaSeleccionada.id}&print=1` : '/reportes/nomina?print=1'}
+                      target="_blank"
+                    >
+                      <Button variant="secondary" className="px-2.5 h-8 text-xs font-bold" title="Descargar Nómina PDF">
+                        <Download className="w-3.5 h-3.5 text-[#C4121A]" />
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+
+                {/* 2. Reporte Financiero */}
                 <div className="border border-slate-200 bg-white rounded-xl p-4 shadow-2xs flex flex-col justify-between hover:border-slate-300 transition">
                   <div>
                     <div className="flex items-center justify-between">
@@ -1175,7 +1406,7 @@ export function ReportesAnalyticsClient({
                   </div>
                 </div>
 
-                {/* 2. Reporte Académico */}
+                {/* 3. Reporte Académico */}
                 <div className="border border-slate-200 bg-white rounded-xl p-4 shadow-2xs flex flex-col justify-between hover:border-slate-300 transition">
                   <div>
                     <div className="flex items-center justify-between">
@@ -1205,36 +1436,6 @@ export function ReportesAnalyticsClient({
                   </div>
                 </div>
 
-                {/* 3. Reporte Comercial CRM */}
-                <div className="border border-slate-200 bg-white rounded-xl p-4 shadow-2xs flex flex-col justify-between hover:border-slate-300 transition">
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-extrabold px-2 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-200">
-                        REP-CRM-03
-                      </span>
-                      <BarChart3 className="w-4 h-4 text-purple-600" />
-                    </div>
-                    <h4 className="text-sm font-bold text-slate-900 mt-2">
-                      Embudo Comercial y Ventas
-                    </h4>
-                    <p className="text-xs text-slate-500 mt-1">
-                      Tasa de conversión de prospectos, rendimiento por canal de captación y seguimiento.
-                    </p>
-                  </div>
-                  <div className="pt-3 mt-3 border-t border-slate-100 flex gap-2">
-                    <Link href="/reportes/crm" className="flex-1">
-                      <Button variant="outline" className="w-full text-xs h-8">
-                        Ver
-                      </Button>
-                    </Link>
-                    <Link href="/reportes/crm?print=1" target="_blank">
-                      <Button variant="secondary" className="px-2.5 h-8 text-xs font-bold" title="Descargar PDF">
-                        <Download className="w-3.5 h-3.5 text-[#C4121A]" />
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-
                 {/* 4. Padrón Institucional */}
                 <div className="border border-slate-200 bg-white rounded-xl p-4 shadow-2xs flex flex-col justify-between hover:border-slate-300 transition">
                   <div>
@@ -1245,10 +1446,10 @@ export function ReportesAnalyticsClient({
                       <Users className="w-4 h-4 text-[#C4121A]" />
                     </div>
                     <h4 className="text-sm font-bold text-slate-900 mt-2">
-                      Padrón Oficial de Alumnos
+                      Padrón General de Alumnos
                     </h4>
                     <p className="text-xs text-slate-500 mt-1">
-                      Nómina consolidada con códigos estudiantiles, DNI, programa y estado documental.
+                      Nómina consolidada con códigos estudiantiles, DNI, programa y sellos de dirección.
                     </p>
                   </div>
                   <div className="pt-3 mt-3 border-t border-slate-100 flex gap-2">
@@ -1270,134 +1471,217 @@ export function ReportesAnalyticsClient({
         )}
 
         {/* ========================================================
-            CONTENIDO TAB 2: FINANZAS Y COBRANZAS
+            CONTENIDO TAB 2: FINANZAS Y COBRANZAS (PASO 2: LIMPIEZA Y CLARIDAD)
         ======================================================== */}
         {activeTab === 'finanzas' && (
           <div className="space-y-6">
-            {/* Balance General de Tesorería */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="p-4 rounded-xl border border-slate-200 bg-white shadow-2xs">
-                <span className="text-xs font-bold text-slate-500 uppercase">Cartera Total Emitida</span>
-                <div className="text-xl font-black text-slate-900 mt-1">
-                  {formatCurrency(totalCarteraEmitida)}
-                </div>
-                <p className="text-[11px] text-slate-400 mt-0.5">Suma de cuotas generadas</p>
-              </div>
-
-              <div className="p-4 rounded-xl border border-emerald-200 bg-emerald-50/40 shadow-2xs">
-                <span className="text-xs font-bold text-emerald-800 uppercase">Total Recaudado en Caja</span>
-                <div className="text-xl font-black text-emerald-800 mt-1">
-                  {formatCurrency(totalRecaudado)}
-                </div>
-                <p className="text-[11px] text-emerald-600 mt-0.5">
-                  {pagosFiltrados.length} transacciones validadas
+            {/* Banner de Resumen Ejecutivo de Tesorería */}
+            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wide block">
+                  Estado Financiero y Cobranzas del Ciclo
+                </span>
+                <p className="text-sm text-slate-700 mt-0.5">
+                  Se ha recaudado un total de <strong className="text-slate-900">{formatCurrency(totalRecaudado)}</strong> sobre una cartera emitida de{' '}
+                  <strong className="text-slate-900">{formatCurrency(totalCarteraEmitida)}</strong>, registrando una efectividad de cobranza del{' '}
+                  <strong className="text-emerald-700">{100 - porcentajeMorosidad}%</strong>.
                 </p>
               </div>
 
-              <div className="p-4 rounded-xl border border-blue-200 bg-blue-50/40 shadow-2xs">
-                <span className="text-xs font-bold text-blue-900 uppercase">Saldo Pendiente al Día</span>
-                <div className="text-xl font-black text-blue-900 mt-1">
-                  {formatCurrency(Math.max(totalSaldoPendiente - montoMorosidad, 0))}
+              <Link
+                href="/reportes/financiero?print=1"
+                target="_blank"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#C4121A] hover:bg-red-800 text-white text-xs font-bold shadow-2xs transition shrink-0"
+              >
+                <Download className="w-4 h-4" />
+                <span>Exportar Reporte Financiero (PDF A4)</span>
+              </Link>
+            </div>
+
+            {/* 4 Métricas Clave Limpias y Elegantes */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="p-4 rounded-xl border border-slate-200 bg-white shadow-2xs space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-500 uppercase">Recaudado en Caja</span>
+                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
                 </div>
-                <p className="text-[11px] text-blue-700 mt-0.5">Por vencer según cronograma</p>
+                <div className="text-2xl font-black text-slate-900">
+                  {formatCurrency(totalRecaudado)}
+                </div>
+                <p className="text-[11px] text-emerald-700 font-medium">
+                  {pagosFiltrados.length} pagos validados
+                </p>
               </div>
 
-              <div className="p-4 rounded-xl border border-red-200 bg-red-50/40 shadow-2xs">
-                <span className="text-xs font-bold text-red-800 uppercase">Saldo en Mora (Vencido)</span>
-                <div className="text-xl font-black text-red-800 mt-1">
+              <div className="p-4 rounded-xl border border-slate-200 bg-white shadow-2xs space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-500 uppercase">Saldo al Día</span>
+                  <span className="w-2 h-2 rounded-full bg-blue-500" />
+                </div>
+                <div className="text-2xl font-black text-slate-900">
+                  {formatCurrency(Math.max(totalSaldoPendiente - montoMorosidad, 0))}
+                </div>
+                <p className="text-[11px] text-slate-500 font-medium">
+                  Cuotas por vencer según cronograma
+                </p>
+              </div>
+
+              <div className="p-4 rounded-xl border border-slate-200 bg-white shadow-2xs space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-500 uppercase">Cartera Vencida</span>
+                  <span className="w-2 h-2 rounded-full bg-red-500" />
+                </div>
+                <div className="text-2xl font-black text-red-700">
                   {formatCurrency(montoMorosidad)}
                 </div>
-                <p className="text-[11px] text-red-600 mt-0.5">{cuotasVencidasCount} cuotas vencidas</p>
+                <p className="text-[11px] text-red-600 font-medium">
+                  {cuotasVencidasCount} cuotas fuera de plazo ({porcentajeMorosidad}%)
+                </p>
+              </div>
+
+              <div className="p-4 rounded-xl border border-slate-200 bg-white shadow-2xs space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-500 uppercase">Cartera Total Emitida</span>
+                  <span className="w-2 h-2 rounded-full bg-slate-400" />
+                </div>
+                <div className="text-2xl font-black text-slate-900">
+                  {formatCurrency(totalCarteraEmitida)}
+                </div>
+                <p className="text-[11px] text-slate-500 font-medium">
+                  Base contractual de cuotas
+                </p>
               </div>
             </div>
 
-            {/* Recaudación por Medio de Pago */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card className="border-slate-200 bg-white shadow-2xs">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base font-bold text-slate-900 flex items-center justify-between">
-                    <span className="flex items-center gap-2">
-                      <CreditCard className="w-4 h-4 text-[#C4121A]" />
-                      Recaudación por Canal de Cobro
-                    </span>
-                    <span className="text-xs font-mono font-semibold text-slate-500">
+            {/* PASO 2: Recaudación por Canal de Cobro — Tabla Limpia, Ordenada y Comprensible */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <Card className="border-slate-200 bg-white shadow-2xs">
+                  <CardHeader className="pb-3 flex flex-row items-center justify-between">
+                    <div>
+                      <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
+                        <CreditCard className="w-4 h-4 text-[#C4121A]" />
+                        Recaudación por Canal de Cobro
+                      </CardTitle>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Volumen de operaciones y montos recaudados clasificados por medio de pago.
+                      </p>
+                    </div>
+                    <span className="text-xs font-mono font-bold text-slate-900 bg-slate-100 px-2.5 py-1 rounded-md">
                       Total: {formatCurrency(totalRecaudado)}
                     </span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3.5 pt-2">
-                  {mediosPagoDesglose.length === 0 ? (
-                    <p className="text-xs text-slate-400 italic py-4 text-center">
-                      No hay pagos registrados para este criterio.
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs text-left border-collapse">
+                        <thead>
+                          <tr className="bg-slate-50 border-y border-slate-200 text-slate-600 uppercase text-[10px] tracking-wider font-bold">
+                            <th className="py-2.5 px-4">Canal / Medio de Cobro</th>
+                            <th className="py-2.5 px-3 text-center">N° Operaciones</th>
+                            <th className="py-2.5 px-4 text-right">Monto Recaudado</th>
+                            <th className="py-2.5 px-4 text-center">Participación %</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {mediosPagoDesglose.length === 0 ? (
+                            <tr>
+                              <td colSpan={4} className="py-6 text-center text-slate-400 italic">
+                                No se registran pagos en el periodo seleccionado.
+                              </td>
+                            </tr>
+                          ) : (
+                            mediosPagoDesglose.map(m => (
+                              <tr key={m.key} className="hover:bg-slate-50/80 transition">
+                                <td className="py-2.5 px-4 font-bold text-slate-900 flex items-center gap-2">
+                                  <div className="w-2 h-2 rounded-full bg-[#C4121A]" />
+                                  <span>{m.nombre}</span>
+                                </td>
+                                <td className="py-2.5 px-3 text-center font-mono font-semibold text-slate-700">
+                                  {m.count}
+                                </td>
+                                <td className="py-2.5 px-4 text-right font-mono font-bold text-slate-900">
+                                  {formatCurrency(m.total)}
+                                </td>
+                                <td className="py-2.5 px-4">
+                                  <div className="flex items-center gap-2 max-w-[120px] mx-auto">
+                                    <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                      <div
+                                        className="bg-[#C4121A] h-full rounded-full"
+                                        style={{ width: `${m.porcentaje}%` }}
+                                      />
+                                    </div>
+                                    <span className="text-[10px] font-mono font-bold text-slate-600 w-7 text-right">
+                                      {m.porcentaje}%
+                                    </span>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                        {mediosPagoDesglose.length > 0 && (
+                          <tfoot>
+                            <tr className="bg-slate-50/80 border-t border-slate-200 font-bold text-slate-900">
+                              <td className="py-2.5 px-4 uppercase text-[10.5px]">Total Consolidado</td>
+                              <td className="py-2.5 px-3 text-center font-mono">{pagosFiltrados.length}</td>
+                              <td className="py-2.5 px-4 text-right font-mono text-[#C4121A]">{formatCurrency(totalRecaudado)}</td>
+                              <td className="py-2.5 px-4 text-center font-mono">100%</td>
+                            </tr>
+                          </tfoot>
+                        )}
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Tarjeta de Documento Oficial REP-FIN-01 */}
+              <div>
+                <Card className="border-slate-200 bg-white shadow-2xs h-full flex flex-col justify-between">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        Documento Oficial
+                      </span>
+                      <span className="text-xs font-mono text-slate-400">REP-FIN-01</span>
+                    </div>
+                    <CardTitle className="text-base font-bold text-slate-900 mt-2">
+                      Reporte de Caja y Cobranzas
+                    </CardTitle>
+                    <p className="text-xs text-slate-500 mt-1">
+                      Genera el informe imprimible en formato A4 con membrete institucional de Brusben y detalle de transacciones.
                     </p>
-                  ) : (
-                    mediosPagoDesglose.map(m => (
-                      <div key={m.medio} className="space-y-1">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="font-bold text-slate-800 flex items-center gap-2">
-                            {m.medio}
-                            <span className="text-[10px] font-normal text-slate-500">
-                              ({m.count} {m.count === 1 ? 'operación' : 'operaciones'})
-                            </span>
-                          </span>
-                          <span className="font-mono font-bold text-slate-900">
-                            {formatCurrency(m.total)}{' '}
-                            <span className="text-slate-400 text-[10px]">({m.porcentaje}%)</span>
-                          </span>
-                        </div>
-                        <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                          <div
-                            className="bg-[#C4121A] h-full rounded-full transition-all"
-                            style={{ width: `${m.porcentaje}%` }}
-                          />
-                        </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4 pt-2">
+                    <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-2 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Recaudado Confirmado:</span>
+                        <strong className="text-slate-900">{formatCurrency(totalRecaudado)}</strong>
                       </div>
-                    ))
-                  )}
-                </CardContent>
-              </Card>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Cartera en Mora:</span>
+                        <strong className="text-red-700">{formatCurrency(montoMorosidad)}</strong>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Efectividad de Cobro:</span>
+                        <strong className="text-emerald-700">{100 - porcentajeMorosidad}%</strong>
+                      </div>
+                    </div>
 
-              {/* Botón y Acceso a Reporte PDF Oficial */}
-              <Card className="border-slate-200 bg-white shadow-2xs flex flex-col justify-between">
-                <CardHeader className="pb-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
-                      Reporte Oficial Verificable
-                    </span>
-                    <span className="text-xs font-mono text-slate-400">REF: REP-FIN-01</span>
-                  </div>
-                  <CardTitle className="text-base font-bold text-slate-900 mt-2">
-                    Reporte Financiero y de Cobranza (PDF)
-                  </CardTitle>
-                  <p className="text-xs text-slate-600 mt-1">
-                    Documento formal con membrete institucional de Brusben, detalle cronológico de ingresos,
-                    cartera de cuotas y firmas de tesorería y dirección.
-                  </p>
-                </CardHeader>
-                <CardContent className="space-y-4 pt-2">
-                  <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-2 text-xs">
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">Total Ingresos Validados:</span>
-                      <strong className="text-slate-900">{formatCurrency(totalRecaudado)}</strong>
+                    <div className="space-y-2">
+                      <Link href="/reportes/financiero?print=1" target="_blank" className="block">
+                        <Button className="w-full text-xs font-bold gap-2">
+                          <Download className="w-4 h-4" />
+                          <span>Descargar Reporte PDF (A4)</span>
+                        </Button>
+                      </Link>
+                      <Link href="/reportes/financiero" className="block text-center text-xs font-bold text-slate-600 hover:text-slate-900 hover:underline">
+                        Ver vista previa detallada &rarr;
+                      </Link>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">Cartera en Mora:</span>
-                      <strong className="text-red-700">{formatCurrency(montoMorosidad)}</strong>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">Tasa de Efectividad:</span>
-                      <strong className="text-emerald-700">{100 - porcentajeMorosidad}%</strong>
-                    </div>
-                  </div>
-
-                  <Link href="/reportes/financiero?print=1" target="_blank" className="block">
-                    <Button className="w-full text-xs font-bold gap-2">
-                      <Download className="w-4 h-4" />
-                      <span>Descargar Reporte Financiero Oficial (PDF A4)</span>
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
 
             {/* Cuotas Críticas en Mora */}
@@ -1409,7 +1693,7 @@ export function ReportesAnalyticsClient({
                     Cartera Vencida Prioritaria para Gestión de Cobranza
                   </CardTitle>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    Cuotas que superaron la fecha límite de pago y requieren acción de cobranza preventiva.
+                    Cuotas vencidas que requieren contacto inmediato vía WhatsApp o llamada telefónica.
                   </p>
                 </div>
                 <Link
@@ -1425,10 +1709,10 @@ export function ReportesAnalyticsClient({
                     <thead>
                       <tr className="bg-slate-50 border-y border-slate-200 text-slate-600 uppercase text-[10px] tracking-wider font-bold">
                         <th className="py-2.5 px-4">Cód. Matrícula</th>
+                        <th className="py-2.5 px-3">Estudiante</th>
                         <th className="py-2.5 px-3">Concepto</th>
-                        <th className="py-2.5 px-3">Programa</th>
                         <th className="py-2.5 px-3 text-center">Vencimiento</th>
-                        <th className="py-2.5 px-4 text-right">Saldo Pendiente</th>
+                        <th className="py-2.5 px-4 text-right">Saldo en Mora</th>
                         <th className="py-2.5 px-3 text-center">Estado</th>
                       </tr>
                     </thead>
@@ -1442,17 +1726,19 @@ export function ReportesAnalyticsClient({
                       ) : (
                         cuotasCriticas.map(c => {
                           const mat = c.matriculas;
-                          const prog = mat?.ediciones?.programas;
+                          const est = mat?.estudiantes;
+                          const per = est?.personas;
+                          const nombre = per ? `${per.apellido_paterno || ''} ${per.nombres || ''}`.trim() : (est?.codigo_estudiante || '-');
                           return (
                             <tr key={c.id} className="hover:bg-slate-50/80 transition">
                               <td className="py-2.5 px-4 font-mono font-bold text-slate-900">
                                 {mat?.codigo_matricula || '-'}
                               </td>
-                              <td className="py-2.5 px-3 text-slate-700">
-                                {c.concepto || 'Cuota Institucional'}
+                              <td className="py-2.5 px-3 font-semibold text-slate-800">
+                                {nombre}
                               </td>
-                              <td className="py-2.5 px-3 text-slate-600 truncate max-w-[200px]">
-                                {prog?.nombre || 'General'}
+                              <td className="py-2.5 px-3 text-slate-700">
+                                {c.concepto || 'Pensión Académica'}
                               </td>
                               <td className="py-2.5 px-3 text-center font-mono text-slate-600">
                                 {c.fecha_vencimiento || '-'}
@@ -1482,29 +1768,6 @@ export function ReportesAnalyticsClient({
         ======================================================== */}
         {activeTab === 'academico' && (
           <div className="space-y-6">
-            {/* Tarjetas de Distribución Modalidad y Turno */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {modalidadesResumen.map(m => (
-                <div key={m.mod} className="p-4 rounded-xl border border-slate-200 bg-white shadow-2xs space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-600 uppercase">
-                      Modalidad {m.mod}
-                    </span>
-                    <span className="text-xs font-mono font-bold text-slate-900">
-                      {m.pct}%
-                    </span>
-                  </div>
-                  <div className="text-xl font-black text-slate-900">
-                    {m.count}{' '}
-                    <span className="text-xs font-medium text-slate-500">estudiantes</span>
-                  </div>
-                  <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                    <div className={`${m.color} h-full rounded-full`} style={{ width: `${m.pct}%` }} />
-                  </div>
-                </div>
-              ))}
-            </div>
-
             {/* Ocupación por Cohorte y Edición Académica */}
             <Card className="border-slate-200 bg-white shadow-2xs">
               <CardHeader className="pb-3 flex flex-row items-center justify-between">
@@ -1513,7 +1776,7 @@ export function ReportesAnalyticsClient({
                     Ocupación de Cohortes y Ediciones Académicas
                   </CardTitle>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    Seguimiento de vacantes ofertadas vs estudiantes activos por grupo y turno.
+                    Seguimiento de vacantes ofertadas vs estudiantes activos por grupo, con acceso a su nómina de clase.
                   </p>
                 </div>
                 <div className="flex gap-2">
@@ -1540,18 +1803,19 @@ export function ReportesAnalyticsClient({
                   <table className="w-full text-xs text-left border-collapse">
                     <thead>
                       <tr className="bg-slate-50 border-y border-slate-200 text-slate-600 uppercase text-[10px] tracking-wider font-bold">
-                        <th className="py-2.5 px-4">Código Edición</th>
+                        <th className="py-2.5 px-4">Código Grupo</th>
                         <th className="py-2.5 px-3">Programa Académico</th>
                         <th className="py-2.5 px-3 text-center">Modalidad / Turno</th>
                         <th className="py-2.5 px-3 text-center">Vacantes</th>
                         <th className="py-2.5 px-4 text-center">Aforo Cubierto</th>
                         <th className="py-2.5 px-3 text-center">Estado</th>
+                        <th className="py-2.5 px-3 text-center">Acción Nómina</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
                       {edicionesFiltradas.length === 0 ? (
                         <tr>
-                          <td colSpan={6} className="py-6 text-center text-slate-400 italic">
+                          <td colSpan={7} className="py-6 text-center text-slate-400 italic">
                             No existen ediciones registradas bajo estos filtros.
                           </td>
                         </tr>
@@ -1599,6 +1863,16 @@ export function ReportesAnalyticsClient({
                                 }`}>
                                   {ed.status || 'ACTIVO'}
                                 </span>
+                              </td>
+                              <td className="py-3 px-3 text-center">
+                                <Link
+                                  href={`/reportes/nomina?edicionId=${ed.id}&print=1`}
+                                  target="_blank"
+                                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-800 text-[11px] font-bold transition"
+                                >
+                                  <Printer className="w-3 h-3 text-[#C4121A]" />
+                                  <span>Nómina PDF</span>
+                                </Link>
                               </td>
                             </tr>
                           );

@@ -9,6 +9,7 @@ import {
   ReporteCuota,
   ReportePago,
   ReporteProspecto,
+  ReporteCiclo,
 } from '@/components/features/reportes/ReportesAnalyticsClient';
 
 export const metadata = {
@@ -25,6 +26,7 @@ export default async function ReportesPage() {
     { data: periodosData },
     { data: programasData },
     { data: edicionesData },
+    { data: ciclosData },
     { data: matriculasData },
     { data: cuotasData },
     { data: pagosData },
@@ -52,10 +54,16 @@ export default async function ReportesPage() {
         status,
         programa_id,
         periodo_id,
+        ciclo_id,
         programas (id, codigo, nombre, tipo_programa),
-        periodos (id, codigo, nombre)
+        periodos (id, codigo, nombre),
+        ciclos (id, nombre, numero_orden)
       `)
       .order('created_at', { ascending: false }),
+    supabase
+      .from('ciclos')
+      .select('id, nombre, plan_id, numero_orden')
+      .order('numero_orden', { ascending: true }),
     supabase
       .from('matriculas')
       .select(`
@@ -70,6 +78,16 @@ export default async function ReportesPage() {
         numero_pensiones,
         descuento_total,
         created_at,
+        estudiantes (
+          id,
+          codigo_estudiante,
+          personas (
+            nombres,
+            apellido_paterno,
+            apellido_materno,
+            numero_documento
+          )
+        ),
         ediciones (
           id,
           codigo,
@@ -80,8 +98,10 @@ export default async function ReportesPage() {
           status,
           periodo_id,
           programa_id,
+          ciclo_id,
           programas (id, codigo, nombre, tipo_programa),
-          periodos (id, codigo, nombre)
+          periodos (id, codigo, nombre),
+          ciclos (id, nombre, numero_orden)
         )
       `)
       .order('created_at', { ascending: false }),
@@ -103,12 +123,22 @@ export default async function ReportesPage() {
           id,
           codigo_matricula,
           edicion_id,
+          estudiantes (
+            id,
+            codigo_estudiante,
+            personas (
+              nombres,
+              apellido_paterno,
+              apellido_materno
+            )
+          ),
           ediciones (
             id,
             modalidad,
             turno,
             periodo_id,
             programa_id,
+            ciclo_id,
             programas (id, nombre, codigo, tipo_programa)
           )
         )
@@ -144,6 +174,7 @@ export default async function ReportesPage() {
                 turno,
                 periodo_id,
                 programa_id,
+                ciclo_id,
                 programas (id, nombre, codigo, tipo_programa)
               )
             )
@@ -178,6 +209,7 @@ export default async function ReportesPage() {
       periodos={(periodosData || []) as ReportePeriodo[]}
       programas={(programasData || []) as ReportePrograma[]}
       ediciones={(edicionesData || []) as unknown as ReporteEdicion[]}
+      ciclos={(ciclosData || []) as ReporteCiclo[]}
       matriculas={(matriculasData || []) as unknown as ReporteMatricula[]}
       cuotas={(cuotasData || []) as unknown as ReporteCuota[]}
       pagos={(pagosData || []) as unknown as ReportePago[]}

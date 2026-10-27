@@ -104,39 +104,56 @@ export interface BrusbenPdfFooterProps {
   rightSignatureLabel?: string
   verificationCode?: string
   showSignatures?: boolean
+  singleSignature?: boolean
 }
 
 export function BrusbenPdfFooter({
   leftSignatureLabel = 'Firma del Estudiante / Titular',
-  rightSignatureLabel = 'Sello y Firma Autorizada — Dirección Académica Brusben',
+  rightSignatureLabel = 'Sello y Firma Autorizada — Dirección Académica / Administración Brusben',
   verificationCode,
   showSignatures = true,
+  singleSignature = false,
 }: BrusbenPdfFooterProps) {
   return (
     <footer className="mt-8 pt-4 border-t border-slate-200 break-inside-avoid">
       {showSignatures && (
-        <div className="grid grid-cols-2 gap-10 pt-10 pb-5 px-4">
-          <div className="text-center">
-            <div className="border-t border-slate-400 pt-2 mx-auto max-w-[240px]">
-              <p className="text-xs font-bold text-slate-800">
-                {leftSignatureLabel}
-              </p>
-              <p className="text-[10px] text-slate-500 mt-0.5">
-                Conformidad de datos y condiciones académicas
-              </p>
+        singleSignature ? (
+          <div className="flex justify-center pt-8 pb-4 px-4">
+            <div className="text-center">
+              <div className="border-t border-slate-400 pt-2 mx-auto min-w-[280px]">
+                <p className="text-xs font-bold text-slate-800">
+                  {rightSignatureLabel}
+                </p>
+                <p className="text-[10px] text-slate-500 mt-0.5">
+                  Centro de Capacitaciones Brusben
+                </p>
+              </div>
             </div>
           </div>
-          <div className="text-center">
-            <div className="border-t border-slate-400 pt-2 mx-auto max-w-[260px]">
-              <p className="text-xs font-bold text-slate-800">
-                {rightSignatureLabel}
-              </p>
-              <p className="text-[10px] text-slate-500 mt-0.5">
-                Centro de Capacitaciones Brusben
-              </p>
+        ) : (
+          <div className="grid grid-cols-2 gap-10 pt-10 pb-5 px-4">
+            <div className="text-center">
+              <div className="border-t border-slate-400 pt-2 mx-auto max-w-[240px]">
+                <p className="text-xs font-bold text-slate-800">
+                  {leftSignatureLabel}
+                </p>
+                <p className="text-[10px] text-slate-500 mt-0.5">
+                  Conformidad de datos y condiciones académicas
+                </p>
+              </div>
+            </div>
+            <div className="text-center">
+              <div className="border-t border-slate-400 pt-2 mx-auto max-w-[260px]">
+                <p className="text-xs font-bold text-slate-800">
+                  {rightSignatureLabel}
+                </p>
+                <p className="text-[10px] text-slate-500 mt-0.5">
+                  Centro de Capacitaciones Brusben
+                </p>
+              </div>
             </div>
           </div>
-        </div>
+        )
       )}
 
       <div className="pt-3 border-t border-slate-200 flex flex-col sm:flex-row print:flex-row items-start sm:items-center print:items-center justify-between gap-2 text-[10px] text-slate-500">

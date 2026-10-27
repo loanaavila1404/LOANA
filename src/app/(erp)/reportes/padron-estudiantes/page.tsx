@@ -292,7 +292,11 @@ export default async function PadronEstudiantesPdfPage({
           </table>
         </div>
 
-        <BrusbenPdfFooter />
+        <BrusbenPdfFooter
+          singleSignature={true}
+          rightSignatureLabel="Sello y Firma Autorizada — Dirección Académica / Administración Brusben"
+          verificationCode="PAD-EST-2026"
+        />
       </div>
     </div>
   );
