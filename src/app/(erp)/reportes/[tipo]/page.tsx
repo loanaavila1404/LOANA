@@ -280,6 +280,39 @@ export default async function ReporteDetallePage({
 
   return (
       <div className="max-w-5xl mx-auto p-6 bg-white text-slate-900 print:p-0 print:m-0 print:max-w-none print:min-h-0">
+        <style dangerouslySetInnerHTML={{ __html: `
+          @page {
+            size: A4 portrait;
+            margin: 8mm 8mm 8mm 8mm;
+          }
+          @media print {
+            html, body {
+              background: #ffffff !important;
+              color: #0f172a !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            .no-print, .print\\:hidden {
+              display: none !important;
+            }
+            .report-pdf-card {
+              border: none !important;
+              padding: 0 !important;
+              box-shadow: none !important;
+            }
+            table {
+              width: 100% !important;
+              border-collapse: collapse !important;
+            }
+            thead {
+              display: table-header-group !important;
+            }
+            tr {
+              page-break-inside: avoid !important;
+            }
+          }
+        `}} />
+
         {/* Barra superior (no imprimible) */}
         <div className="flex justify-between items-center mb-6 print:hidden no-print border-b pb-4">
           <Link
@@ -292,7 +325,7 @@ export default async function ReporteDetallePage({
         </div>
 
         {/* Documento de Reporte Institucional */}
-        <div className="print:block border-2 border-slate-200 p-8 rounded-lg print:border-none print:p-0 print:shadow-none">
+        <div className="report-pdf-card print:block border-2 border-slate-200 p-8 rounded-lg print:border-none print:p-0 print:shadow-none">
           <BrusbenPdfHeader
             documentType="REPORTE EJECUTIVO INSTITUCIONAL"
             documentTitle={`${infoReporte.titulo} — ${infoReporte.subtitulo}`}

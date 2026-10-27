@@ -121,6 +121,39 @@ export default async function PadronEstudiantesPdfPage({
 
   return (
     <div className="max-w-5xl mx-auto p-6 bg-white text-slate-900 print:p-0 print:m-0 print:max-w-none print:min-h-0">
+      <style dangerouslySetInnerHTML={{ __html: `
+        @page {
+          size: A4 portrait;
+          margin: 8mm 8mm 8mm 8mm;
+        }
+        @media print {
+          html, body {
+            background: #ffffff !important;
+            color: #0f172a !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          .no-print, .print\\:hidden {
+            display: none !important;
+          }
+          .padron-pdf-card {
+            border: none !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+          }
+          table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+          }
+          thead {
+            display: table-header-group !important;
+          }
+          tr {
+            page-break-inside: avoid !important;
+          }
+        }
+      `}} />
+
       {/* Barra superior no imprimible */}
       <div className="flex flex-wrap justify-between items-center gap-3 mb-6 print:hidden no-print border-b border-slate-200 pb-4">
         <div className="flex items-center gap-3">
@@ -138,7 +171,7 @@ export default async function PadronEstudiantesPdfPage({
       </div>
 
       {/* Documento Imprimible A4 */}
-      <div className="border border-slate-300 rounded-sm p-8 print:border-none print:p-0 bg-white space-y-6">
+      <div className="padron-pdf-card border border-slate-300 rounded-sm p-8 print:border-none print:p-0 bg-white space-y-6">
         <BrusbenPdfHeader
           documentType="PADRÓN INSTITUCIONAL DE PERSONAS Y ESTUDIANTES"
           documentTitle="Registro Oficial de Identidad, Asignación Académica y Estado Documental"
