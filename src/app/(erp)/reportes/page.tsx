@@ -204,12 +204,28 @@ export default async function ReportesPage() {
     supabase.from('estudiantes').select('*', { count: 'exact', head: true }).eq('status', 'ACTIVO'),
   ]);
 
+  // Deduplicación preventiva de ciclos académicos por nombre
+  const ciclosVistos = new Set<string>();
+  const ciclosUnicos: ReporteCiclo[] = [];
+  ((ciclosData || []) as ReporteCiclo[]).forEach(c => {
+    const nombreNormalizado = (c.nombre || (c.numero_orden ? `Ciclo ${c.numero_orden}` : 'Ciclo Regular')).trim().toLowerCase();
+    if (!ciclosVistos.has(nombreNormalizado)) {
+      ciclosVistos.add(nombreNormalizado);
+      ciclosUnicos.push({
+        id: c.id,
+        nombre: (c.nombre || (c.numero_orden ? `Ciclo ${c.numero_orden}` : 'Ciclo Regular')).trim(),
+        numero_orden: c.numero_orden,
+        plan_id: c.plan_id,
+      });
+    }
+  });
+
   return (
     <ReportesAnalyticsClient
       periodos={(periodosData || []) as ReportePeriodo[]}
       programas={(programasData || []) as ReportePrograma[]}
       ediciones={(edicionesData || []) as unknown as ReporteEdicion[]}
-      ciclos={(ciclosData || []) as ReporteCiclo[]}
+      ciclos={ciclosUnicos}
       matriculas={(matriculasData || []) as unknown as ReporteMatricula[]}
       cuotas={(cuotasData || []) as unknown as ReporteCuota[]}
       pagos={(pagosData || []) as unknown as ReportePago[]}

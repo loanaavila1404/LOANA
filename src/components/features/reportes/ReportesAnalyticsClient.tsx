@@ -299,7 +299,7 @@ export function ReportesAnalyticsClient({
 
   // Estado del Generador de Nómina Académica por Ciclo y Carrera
   const [nominaProgramaId, setNominaProgramaId] = useState<string>(programas[0]?.id || '');
-  const [nominaCicloId, setNominaCicloId] = useState<string>('TODOS');
+  const [nominaCicloNombre, setNominaCicloNombre] = useState<string>('TODOS');
   const [nominaEdicionId, setNominaEdicionId] = useState<string>('');
 
   const hayFiltrosActivos =
@@ -507,14 +507,58 @@ export function ReportesAnalyticsClient({
       .sort((a, b) => b.total - a.total);
   }, [pagosFiltrados, totalRecaudado]);
 
+  // Ciclos únicos sin duplicados agrupados por nombre limpio con Map/Set
+  const ciclosUnicos = useMemo(() => {
+    const mapaNombres = new Map<string, { clave: string; nombre: string; orden: number }>();
+
+    // 1. Ciclos de las ediciones del programa seleccionado si aplica
+    const ciclosDelPrograma: Array<{ id?: string; nombre?: string | null; numero_orden?: number | null }> = [];
+    if (nominaProgramaId) {
+      ediciones
+        .filter(ed => ed.programa_id === nominaProgramaId && ed.ciclos)
+        .forEach(ed => {
+          if (ed.ciclos) ciclosDelPrograma.push(ed.ciclos);
+        });
+    }
+
+    // 2. Si no hay ciclos en las ediciones del programa, usar el catálogo general de ciclos
+    const fuente = ciclosDelPrograma.length > 0 ? ciclosDelPrograma : ciclos;
+
+    fuente.forEach(c => {
+      const nombreLimpio = (
+        c.nombre ||
+        (c.numero_orden ? `Ciclo ${c.numero_orden}` : 'Ciclo Regular')
+      ).trim();
+      const clave = nombreLimpio.toLowerCase();
+      if (!mapaNombres.has(clave)) {
+        mapaNombres.set(clave, {
+          clave,
+          nombre: nombreLimpio,
+          orden: c.numero_orden || 99,
+        });
+      }
+    });
+
+    return Array.from(mapaNombres.values()).sort((a, b) => {
+      if (a.orden !== b.orden) return a.orden - b.orden;
+      return a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' });
+    });
+  }, [ciclos, ediciones, nominaProgramaId]);
+
   // Ediciones filtradas para el Generador de Nómina Académica
   const edicionesParaNomina = useMemo(() => {
     return ediciones.filter(ed => {
       if (nominaProgramaId && ed.programa_id !== nominaProgramaId) return false;
-      if (nominaCicloId !== 'TODOS' && ed.ciclo_id !== nominaCicloId) return false;
+      if (nominaCicloNombre !== 'TODOS') {
+        const edCicloNombre = (
+          ed.ciclos?.nombre ||
+          (ed.ciclos?.numero_orden ? `Ciclo ${ed.ciclos.numero_orden}` : '')
+        ).trim().toLowerCase();
+        if (edCicloNombre !== nominaCicloNombre.trim().toLowerCase()) return false;
+      }
       return true;
     });
-  }, [ediciones, nominaProgramaId, nominaCicloId]);
+  }, [ediciones, nominaProgramaId, nominaCicloNombre]);
 
   // Edición activa seleccionada en el generador de nómina
   const edicionNominaSeleccionada = useMemo(() => {
@@ -1020,6 +1064,7 @@ export function ReportesAnalyticsClient({
                 value={nominaProgramaId}
                 onChange={e => {
                   setNominaProgramaId(e.target.value);
+                  setNominaCicloNombre('TODOS');
                   setNominaEdicionId(''); // Reiniciar grupo seleccionado
                 }}
                 className="w-full px-2.5 py-2 text-xs font-bold text-slate-900 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C4121A]"
@@ -1039,17 +1084,17 @@ export function ReportesAnalyticsClient({
               </label>
               <select
                 id="nomina-ciclo"
-                value={nominaCicloId}
+                value={nominaCicloNombre}
                 onChange={e => {
-                  setNominaCicloId(e.target.value);
+                  setNominaCicloNombre(e.target.value);
                   setNominaEdicionId('');
                 }}
                 className="w-full px-2.5 py-2 text-xs font-bold text-slate-900 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C4121A]"
               >
                 <option value="TODOS">Todos los Ciclos del Programa</option>
-                {ciclos.map(c => (
-                  <option key={c.id} value={c.id}>
-                    {c.nombre || `Ciclo ${c.numero_orden || ''}`}
+                {ciclosUnicos.map(c => (
+                  <option key={c.clave} value={c.nombre}>
+                    {c.nombre}
                   </option>
                 ))}
               </select>
