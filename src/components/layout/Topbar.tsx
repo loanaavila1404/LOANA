@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { SessionUser, SedeContextType } from '@/lib/types'
 import { SedeSelector } from './SedeSelector'
+import { createClient } from '@/lib/supabase/client'
 import {
   globalSearch,
   getOperationalNotifications,
@@ -43,6 +44,22 @@ export function Topbar({
   const [notifications, setNotifications] = useState<OperationalNotificationItem[]>([])
   const [isNotifOpen, setIsNotifOpen] = useState(false)
   const [isLoadingNotif, setIsLoadingNotif] = useState(true)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
+
+  const handleSignOut = async () => {
+    try {
+      setIsLoggingOut(true)
+      const supabase = createClient()
+      await supabase.auth.signOut()
+      router.push('/login')
+      router.refresh()
+    } catch (err) {
+      console.error('Error al cerrar sesión:', err)
+      window.location.href = '/login'
+    } finally {
+      setIsLoggingOut(false)
+    }
+  }
 
   const getInitials = (name: string) => {
     return (
@@ -368,12 +385,19 @@ export function Topbar({
               )}
             </div>
 
-            <form action="/auth/signout" method="post">
-              <button
-                className="p-1.5 text-slate-400 hover:text-[#c4121a] hover:bg-rose-50 rounded-md transition-colors"
-                title="Cerrar sesión"
-                type="submit"
-              >
+            <button
+              onClick={handleSignOut}
+              disabled={isLoggingOut}
+              className="p-1.5 text-slate-400 hover:text-[#c4121a] hover:bg-rose-50 rounded-md transition-colors cursor-pointer disabled:opacity-50"
+              title="Cerrar sesión"
+              type="button"
+            >
+              {isLoggingOut ? (
+                <svg className="w-4 h-4 animate-spin text-[#c4121a]" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+              ) : (
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
@@ -382,8 +406,8 @@ export function Topbar({
                     strokeWidth="2"
                   />
                 </svg>
-              </button>
-            </form>
+              )}
+            </button>
           </div>
         </div>
       </header>
@@ -431,7 +455,7 @@ export function Topbar({
                 </span>
               )}
             </button>
-            <div className="flex items-center pl-1 border-l border-slate-200">
+            <div className="flex items-center pl-1 border-l border-slate-200 gap-1.5">
               <div className="relative">
                 <div className="w-8 h-8 rounded-full bg-slate-200 border border-slate-300 flex items-center justify-center font-bold text-slate-700 text-xs shadow-xs overflow-hidden">
                   {user.photoUrl ? (
@@ -445,6 +469,30 @@ export function Topbar({
                 </div>
                 <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full" />
               </div>
+
+              <button
+                onClick={handleSignOut}
+                disabled={isLoggingOut}
+                className="p-1 text-slate-400 hover:text-[#c4121a] hover:bg-rose-50 rounded-md transition-colors disabled:opacity-50"
+                title="Cerrar sesión"
+                type="button"
+              >
+                {isLoggingOut ? (
+                  <svg className="w-4 h-4 animate-spin text-[#c4121a]" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                ) : (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                    />
+                  </svg>
+                )}
+              </button>
             </div>
           </div>
         </div>

@@ -1,9 +1,10 @@
 'use client'
 import { SessionUser } from '@/lib/types'
 
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 
 export function MobileDrawer({ isOpen, onClose, user, appVersion = '1.0.0' }: { isOpen: boolean; onClose: () => void; user: SessionUser; appVersion?: string }) {
   
@@ -11,6 +12,24 @@ export function MobileDrawer({ isOpen, onClose, user, appVersion = '1.0.0' }: { 
   
   const canViewReportes = perms.includes('SISTEMA.ADMINISTRAR')
   const pathname = usePathname();
+  const router = useRouter();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleSignOut = async () => {
+    try {
+      setIsLoggingOut(true);
+      const supabase = createClient();
+      await supabase.auth.signOut();
+      onClose();
+      router.push('/login');
+      router.refresh();
+    } catch (err) {
+      console.error('Error al cerrar sesión:', err);
+      window.location.href = '/login';
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
 
   const isActive = (path: string) => {
     if (path === '/dashboard' && pathname === '/dashboard') return true;
@@ -152,8 +171,31 @@ export function MobileDrawer({ isOpen, onClose, user, appVersion = '1.0.0' }: { 
         </nav>
         
         {/* Drawer Footer */}
-        <div className="p-3 bg-[#111215] text-[11px] border-t border-slate-800 flex items-center justify-center text-slate-500 mt-auto">
+        <div className="p-3 bg-[#111215] text-[11px] border-t border-slate-800 flex items-center justify-between text-slate-500 mt-auto">
           <span>ERP Brusben v{appVersion}</span>
+          <button
+            onClick={handleSignOut}
+            disabled={isLoggingOut}
+            className="flex items-center gap-1.5 text-slate-400 hover:text-[#c4121a] active:text-red-400 transition-colors cursor-pointer disabled:opacity-50"
+            title="Cerrar sesión"
+            type="button"
+          >
+            {isLoggingOut ? (
+              <span>Saliendo...</span>
+            ) : (
+              <>
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                  />
+                </svg>
+                <span>Cerrar sesión</span>
+              </>
+            )}
+          </button>
         </div>
       </div>
       
