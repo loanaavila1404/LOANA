@@ -450,7 +450,7 @@ export default async function ComprobantePagoPage(props: {
                   Formación Continua, Especialización Profesional y Certificación
                 </p>
                 <p className="text-[10px] text-slate-500 mt-0.5">
-                  Sede Central: Tumbes, Perú · RUC Institucional: 20608934521
+                  Sede Central: Tumbes, Perú · RUC Institucional: 20409499849
                 </p>
               </div>
             </div>

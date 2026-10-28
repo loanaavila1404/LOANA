@@ -100,7 +100,7 @@ export function LoginSplitScreen({ initialError }: LoginSplitScreenProps) {
               </span>
             </h1>
             <p className="text-slate-300 text-xs sm:text-sm leading-relaxed max-w-xl font-normal">
-              Bienvenido al entorno unificado de control institucional del Centro de Capacitaciones Brusben E.I.R.L. Sede Central Tumbes. Gestión académica, seguimiento docente y control operativo en tiempo real.
+              Bienvenido al entorno unificado de control institucional del Centro de Capacitaciones Brusben. Sede Central Tumbes. Gestión académica, seguimiento docente y control operativo en tiempo real.
             </p>
           </div>
         </div>
@@ -358,7 +358,7 @@ export function LoginSplitScreen({ initialError }: LoginSplitScreenProps) {
         {/* Pie de Página Institucional */}
         <div className="border-t border-slate-200/80 pt-4 text-center">
           <p className="text-xs text-slate-500 font-medium">
-            2026 Centro de Capacitaciones Brusben E.I.R.L. • RUC: 28601234567 • Perú
+            2026 Centro de Capacitaciones Brusben • RUC: 20409499849 • Perú
           </p>
         </div>
 

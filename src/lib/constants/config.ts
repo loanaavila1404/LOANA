@@ -1,6 +1,7 @@
 export const APP_CONFIG = {
   APP_NAME: 'ERP Brusben',
   INSTITUTION_NAME: 'Centro de Capacitaciones Brusben',
+  RUC: '20409499849',
   VERSION: '1.0.0',
   TIMEZONE: 'America/Lima',
   LOCALE: 'es-PE',
