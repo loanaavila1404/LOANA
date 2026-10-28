@@ -79,3 +79,43 @@ export async function updateUser(data: EditUserFormData): Promise<ActionState> {
     return error(((err as Error).message) || "Ocurrió un error al actualizar el usuario");
   }
 }
+
+export interface InviteUserPayload {
+  nombre: string;
+  email: string;
+  dni: string;
+  rolCodigo: string;
+  sede: string;
+}
+
+export interface InviteUserResult {
+  token: string;
+  activationUrl: string;
+  email: string;
+  nombre: string;
+}
+
+export async function inviteUser(payload: InviteUserPayload): Promise<ActionState<InviteUserResult>> {
+  try {
+    const email = payload.email.trim().toLowerCase();
+    if (!email || !email.includes("@")) {
+      return error("El correo institucional ingresado no es válido.") as ActionState<InviteUserResult>;
+    }
+
+    // Generar token único simulado para pruebas locales sin SMTP
+    const token = `act_loc_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+    const activationUrl = `/auth/activar?token=${token}&email=${encodeURIComponent(email)}`;
+
+    revalidatePath("/usuarios");
+
+    return success("Invitación generada exitosamente para entorno local", {
+      token,
+      activationUrl,
+      email,
+      nombre: payload.nombre,
+    });
+  } catch (err: unknown) {
+    console.error("inviteUser error:", err);
+    return error(((err as Error).message) || "Error al generar la invitación de usuario") as ActionState<InviteUserResult>;
+  }
+}

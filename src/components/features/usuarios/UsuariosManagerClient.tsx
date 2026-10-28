@@ -24,11 +24,15 @@ import {
   Building,
   UserPlus,
   RefreshCw,
-  Info
+  Info,
+  Copy,
+  ExternalLink,
+  Check,
+  MailCheck
 } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
-import { updateUser } from "@/app/actions/usuarios";
+import { updateUser, inviteUser } from "@/app/actions/usuarios";
 
 export type RolCodigo = 
   | 'SUPERADMIN' 
@@ -293,9 +297,9 @@ export function UsuariosManagerClient({
   initialProfiles = [], 
   currentUserEmail = 'loanaavila.la@gmail.com' 
 }: UsuariosManagerClientProps) {
-  // Construir la lista de usuarios exclusivamente con registros reales de base de datos
+  // Construir la lista de usuarios con sede única Sede Central - Tumbes
   const initialUsers: UsuarioInstitucional[] = useMemo(() => {
-    return initialProfiles.map((p, idx) => {
+    return initialProfiles.map((p) => {
       const rawRoleCode = (p.roles?.code || p.roles?.name || 'SUPERADMIN').toUpperCase();
       let matchedRol: RolCodigo = 'SUPERADMIN';
       if (rawRoleCode === 'SUPERADMIN' || rawRoleCode.includes('SUPER')) matchedRol = 'SUPERADMIN';
@@ -349,7 +353,6 @@ export function UsuariosManagerClient({
   const [selectedUser, setSelectedUser] = useState<UsuarioInstitucional | null>(null);
   const [targetRol, setTargetRol] = useState<RolCodigo>('SUPERADMIN');
   const [targetStatus, setTargetStatus] = useState<EstadoUsuario>('ACTIVO');
-  const [targetSede, setTargetSede] = useState<string>('Sede Central - Tumbes');
   
   // Estado para modal de Invitar Usuario
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
@@ -357,12 +360,21 @@ export function UsuariosManagerClient({
   const [inviteNombre, setInviteNombre] = useState("");
   const [inviteDni, setInviteDni] = useState("");
   const [inviteRol, setInviteRol] = useState<RolCodigo>('ASESOR_COMERCIAL');
-  const [inviteSede, setInviteSede] = useState<string>('Sede Central - Tumbes');
+
+  // Estado para el modal de simulación de invitación local
+  const [simulatedInvite, setSimulatedInvite] = useState<{
+    nombre: string;
+    email: string;
+    rol: string;
+    token: string;
+    url: string;
+  } | null>(null);
+  const [copiedLink, setCopiedLink] = useState(false);
 
   const [isPending, startTransition] = useTransition();
   const [modalFeedback, setModalFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
-  // Cálculos de KPIs de Seguridad estrictamente con datos reales
+  // Cálculos de KPIs de Seguridad
   const totalActivos = useMemo(() => usuarios.filter(u => u.status === 'ACTIVO').length, [usuarios]);
   const totalSuperadmins = useMemo(() => usuarios.filter(u => u.rolCodigo === 'SUPERADMIN' && u.status === 'ACTIVO').length, [usuarios]);
   const totalOperativoDocente = useMemo(() => usuarios.filter(u => ['COORDINACION_ACADEMICA', 'CAJA', 'ASESOR_COMERCIAL', 'DOCENTE'].includes(u.rolCodigo) && u.status === 'ACTIVO').length, [usuarios]);
@@ -381,11 +393,6 @@ export function UsuariosManagerClient({
         u.sede.toLowerCase().includes(term);
 
       if (!matchSearch) return false;
-
-      // Filtro por Sede
-      if (selectedSede !== "TODAS" && u.sede !== selectedSede) {
-        return false;
-      }
 
       // Filtro por Estado
       if (selectedStatus !== "TODOS" && u.status !== selectedStatus) {
@@ -408,14 +415,13 @@ export function UsuariosManagerClient({
 
       return true;
     });
-  }, [usuarios, searchTerm, activeTab, selectedSede, selectedStatus]);
+  }, [usuarios, searchTerm, activeTab, selectedStatus]);
 
   // Manejo de apertura del modal RBAC
   const handleOpenRbacModal = (user: UsuarioInstitucional) => {
     setSelectedUser(user);
     setTargetRol(user.rolCodigo);
     setTargetStatus(user.status);
-    setTargetSede(user.sede);
     setModalFeedback(null);
     setIsModalOpen(true);
   };
@@ -438,11 +444,10 @@ export function UsuariosManagerClient({
         id: selectedUser.id,
         rolCodigo: targetRol,
         status: targetStatus,
-        sede: targetSede,
+        sede: 'Sede Central - Tumbes',
       });
 
       if (result.success) {
-        // Actualizar en el estado local de forma reactiva
         setUsuarios(prev => prev.map(u => {
           if (u.id === selectedUser.id) {
             return {
@@ -450,7 +455,7 @@ export function UsuariosManagerClient({
               rolCodigo: targetRol,
               rolNombre: CAT_ROLES[targetRol].nombre,
               status: targetStatus,
-              sede: targetSede,
+              sede: 'Sede Central - Tumbes',
             };
           }
           return u;
@@ -474,9 +479,14 @@ export function UsuariosManagerClient({
     });
   };
 
-  // Manejo de invitación de nuevo usuario real
-  const handleInviteSubmit = (e: React.FormEvent) => {
+  // Manejo de invitación de nuevo usuario con simulación local
+  const handleInviteSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const token = `act_loc_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+    const activationUrl = `${origin}/auth/activar?token=${token}&email=${encodeURIComponent(inviteEmail.trim().toLowerCase())}`;
+
     const newUser: UsuarioInstitucional = {
       id: `usr-${Date.now()}`,
       nombres: inviteNombre.split(' ')[0] || inviteNombre,
@@ -486,9 +496,9 @@ export function UsuariosManagerClient({
       dni: inviteDni.trim() || 'Por asignar',
       rolCodigo: inviteRol,
       rolNombre: CAT_ROLES[inviteRol].nombre,
-      sede: inviteSede,
+      sede: 'Sede Central - Tumbes',
       area: inviteRol === 'SUPERADMIN' ? 'Tecnología y Dirección' : inviteRol === 'DIRECCION' ? 'Dirección Ejecutiva' : inviteRol === 'COORDINACION_ACADEMICA' ? 'Área Académica' : inviteRol === 'CAJA' ? 'Tesorería & Cobranzas' : inviteRol === 'ASESOR_COMERCIAL' ? 'Fuerza de Ventas' : 'Plana Docente',
-      ultimoAcceso: 'Invitación Enviada',
+      ultimoAcceso: 'Invitación Simulada Enviada',
       dispositivo: {
         so: 'Pendiente',
         browser: 'Web App',
@@ -500,6 +510,16 @@ export function UsuariosManagerClient({
 
     setUsuarios(prev => [newUser, ...prev]);
     setIsInviteModalOpen(false);
+
+    // Abrir modal de simulación local con enlace directo
+    setSimulatedInvite({
+      nombre: inviteNombre,
+      email: inviteEmail.trim().toLowerCase(),
+      rol: CAT_ROLES[inviteRol].nombre,
+      token,
+      url: activationUrl,
+    });
+
     setInviteEmail("");
     setInviteNombre("");
     setInviteDni("");
@@ -521,11 +541,11 @@ export function UsuariosManagerClient({
                 </h1>
                 <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#C4121A]/10 text-[#C4121A] border border-[#C4121A]/20">
                   <BadgeCheck className="w-3.5 h-3.5" />
-                  Módulo Oficial
+                  Módulo Oficial · Tumbes
                 </span>
               </div>
               <p className="text-sm text-slate-600 mt-0.5">
-                Directorio verificado de identidades institucionales, roles RBAC y directivas de autenticación en base de datos.
+                Directorio verificado de identidades institucionales, roles RBAC y directivas de autenticación en Sede Central - Tumbes.
               </p>
             </div>
           </div>
@@ -542,7 +562,7 @@ export function UsuariosManagerClient({
         </div>
       </div>
 
-      {/* PASO 1: TARJETAS DE RESUMEN Y MÉTRICAS DE SEGURIDAD BASADAS EN DATOS REALES */}
+      {/* PASO 1: TARJETAS DE RESUMEN Y MÉTRICAS DE SEGURIDAD */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* KPI 1: Usuarios Activos */}
         <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
@@ -602,7 +622,7 @@ export function UsuariosManagerClient({
               <span className="px-1.5 py-0.5 rounded bg-blue-50 border border-blue-200">
                 {totalOperativoDocente > 0 ? `${totalOperativoDocente} asignados` : '0 registrados'}
               </span>
-              <span className="text-slate-600">{totalOperativoDocente > 0 ? 'En sedes activas' : 'Sin personal adicional'}</span>
+              <span className="text-slate-600">Sede Central - Tumbes</span>
             </div>
           </div>
         </div>
@@ -629,7 +649,7 @@ export function UsuariosManagerClient({
         </div>
       </div>
 
-      {/* PASO 2: LISTADO DE USUARIOS REALES Y FILTROS AVANZADOS */}
+      {/* PASO 2: LISTADO DE USUARIOS Y FILTROS */}
       <div className="bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden">
         {/* BARRA DE HERRAMIENTAS Y PESTAÑAS */}
         <div className="p-4 border-b border-slate-200 bg-slate-50/50 space-y-4">
@@ -664,7 +684,7 @@ export function UsuariosManagerClient({
             })}
           </div>
 
-          {/* Filtros: Búsqueda, Sede y Estado */}
+          {/* Filtros: Búsqueda, Sede Única y Estado */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-3 pt-1">
             {/* Input de Búsqueda */}
             <div className="md:col-span-6 relative">
@@ -686,17 +706,15 @@ export function UsuariosManagerClient({
               )}
             </div>
 
-            {/* Selector de Sede */}
+            {/* Selector de Sede Única Fija en Tumbes */}
             <div className="md:col-span-3">
               <select
                 value={selectedSede}
                 onChange={(e) => setSelectedSede(e.target.value)}
                 className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#C4121A]/30 focus:border-[#C4121A] shadow-xs"
               >
-                <option value="TODAS">Todas las Sedes</option>
+                <option value="TODAS">Sede Central - Tumbes (Sede Única)</option>
                 <option value="Sede Central - Tumbes">Sede Central - Tumbes</option>
-                <option value="Sede San Juan de Lurigancho">Sede San Juan de Lurigancho</option>
-                <option value="Sede Los Olivos">Sede Los Olivos</option>
               </select>
             </div>
 
@@ -820,7 +838,7 @@ export function UsuariosManagerClient({
                       {/* Sede & Área */}
                       <td className="py-3.5 px-4">
                         <div className="font-semibold text-slate-800 text-xs flex items-center gap-1">
-                          <Building className="w-3.5 h-3.5 text-slate-600 shrink-0" />
+                          <Building className="w-3.5 h-3.5 text-[#C4121A] shrink-0" />
                           <span>{usuario.sede}</span>
                         </div>
                         <div className="text-[11px] text-slate-600 mt-0.5 font-medium">
@@ -886,7 +904,7 @@ export function UsuariosManagerClient({
                     <div className="flex flex-col items-center justify-center text-slate-600 space-y-2">
                       <Search className="h-8 w-8 text-slate-600 stroke-1" />
                       <p className="font-bold text-slate-700">No se encontraron colaboradores con los filtros seleccionados</p>
-                      <p className="text-xs text-slate-600">Intenta modificando el término de búsqueda, la sede o el estado.</p>
+                      <p className="text-xs text-slate-600">Intenta modificando el término de búsqueda o el estado.</p>
                       <button 
                         onClick={() => { setSearchTerm(""); setSelectedSede("TODAS"); setSelectedStatus("TODOS"); setActiveTab('TODOS'); }}
                         className="mt-2 text-xs font-bold text-[#C4121A] hover:underline"
@@ -1133,22 +1151,16 @@ export function UsuariosManagerClient({
               </div>
             </div>
 
-            {/* SEDE ASIGNADA Y ESTADO DE LA CUENTA */}
+            {/* SEDE INSTITUCIONAL FIJA Y ESTADO DE LA CUENTA */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
               <div>
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                  Sede Asignada
+                  Sede Institucional
                 </label>
-                <select
-                  value={targetSede}
-                  onChange={(e) => setTargetSede(e.target.value)}
-                  disabled={selectedUser.isProtected || isPending}
-                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#C4121A]/30 focus:border-[#C4121A] disabled:bg-slate-100 disabled:cursor-not-allowed"
-                >
-                  <option value="Sede Central - Tumbes">Sede Central - Tumbes</option>
-                  <option value="Sede San Juan de Lurigancho">Sede San Juan de Lurigancho</option>
-                  <option value="Sede Los Olivos">Sede Los Olivos</option>
-                </select>
+                <div className="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 flex items-center gap-2 select-none">
+                  <Building className="w-4 h-4 text-[#C4121A] shrink-0" />
+                  <span>Sede Central - Tumbes</span>
+                </div>
               </div>
 
               <div>
@@ -1201,7 +1213,7 @@ export function UsuariosManagerClient({
         )}
       </Modal>
 
-      {/* MODAL PARA INVITAR NUEVO COLABORADOR */}
+      {/* MODAL PARA INVITAR NUEVO COLABORADOR (SEDE FIJA TUMBES) */}
       <Modal
         isOpen={isInviteModalOpen}
         onClose={() => setIsInviteModalOpen(false)}
@@ -1210,7 +1222,7 @@ export function UsuariosManagerClient({
       >
         <form onSubmit={handleInviteSubmit} className="space-y-4">
           <p className="text-xs text-slate-600">
-            Completa los datos del colaborador. Se le asignarán los privilegios del rol seleccionado y podrá activar su cuenta institucional.
+            Completa los datos del colaborador. Al trabajar en entorno de desarrollo local, se generará inmediatamente un enlace de activación directo para probar la cuenta.
           </p>
 
           <div>
@@ -1276,23 +1288,18 @@ export function UsuariosManagerClient({
             </div>
             <div>
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                Sede Inicial
+                Sede Institucional
               </label>
-              <select
-                value={inviteSede}
-                onChange={(e) => setInviteSede(e.target.value)}
-                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#C4121A]/30 focus:border-[#C4121A]"
-              >
-                <option value="Sede Central - Tumbes">Sede Central - Tumbes</option>
-                <option value="Sede San Juan de Lurigancho">Sede San Juan de Lurigancho</option>
-                <option value="Sede Los Olivos">Sede Los Olivos</option>
-              </select>
+              <div className="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 flex items-center gap-2 select-none">
+                <Building className="w-4 h-4 text-[#C4121A] shrink-0" />
+                <span>Sede Central - Tumbes</span>
+              </div>
             </div>
           </div>
 
           <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-600 flex items-start gap-2">
             <Info className="w-4 h-4 text-slate-600 shrink-0 mt-0.5" />
-            <span>El colaborador recibirá un correo institucional de bienvenida con instrucciones para configurar su contraseña y activar el doble factor de autenticación (2FA).</span>
+            <span>Al confirmar, se generará una credencial y token simulado con el enlace directo para verificar la cuenta de inmediato en localhost.</span>
           </div>
 
           <div className="flex justify-end gap-3 pt-3 border-t border-slate-200">
@@ -1306,12 +1313,116 @@ export function UsuariosManagerClient({
             </Button>
             <Button
               type="submit"
-              className="bg-[#C4121A] hover:bg-[#a50f16] text-white px-5 py-2 rounded-xl text-xs font-bold shadow-xs"
+              className="bg-[#C4121A] hover:bg-[#a50f16] text-white px-5 py-2 rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5"
             >
-              Enviar Invitación
+              <MailCheck className="w-4 h-4" />
+              <span>Generar Invitación Local</span>
             </Button>
           </div>
         </form>
+      </Modal>
+
+      {/* MODAL DE SIMULACIÓN DE ENLACE DE INVITACIÓN LOCAL */}
+      <Modal
+        isOpen={Boolean(simulatedInvite)}
+        onClose={() => setSimulatedInvite(null)}
+        title="Invitación Generada (Simulación en Entorno Local)"
+        className="max-w-xl"
+      >
+        {simulatedInvite && (
+          <div className="space-y-4">
+            <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-900 flex items-start gap-3">
+              <MailCheck className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <span className="font-bold text-sm block text-emerald-800">
+                  Invitación y token generados para {simulatedInvite.nombre}
+                </span>
+                <p className="text-slate-600 leading-relaxed">
+                  En entorno de desarrollo local (sin servidor SMTP activo), el correo no se envía externamente a una bandeja de entrada. Puedes copiar el enlace directo de activación o abrirlo en una nueva pestaña para probar la verificación de la cuenta.
+                </p>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2 text-xs">
+              <div className="flex justify-between items-center text-slate-600">
+                <span>Colaborador Invitado:</span>
+                <span className="font-bold text-slate-900">{simulatedInvite.nombre}</span>
+              </div>
+              <div className="flex justify-between items-center text-slate-600">
+                <span>Correo Institucional:</span>
+                <span className="font-semibold text-slate-800">{simulatedInvite.email}</span>
+              </div>
+              <div className="flex justify-between items-center text-slate-600">
+                <span>Rol Asignado:</span>
+                <span className="font-semibold text-[#C4121A]">{simulatedInvite.rol}</span>
+              </div>
+              <div className="flex justify-between items-center text-slate-600">
+                <span>Sede Institucional:</span>
+                <span className="font-semibold text-slate-800">Sede Central - Tumbes</span>
+              </div>
+              <div className="flex justify-between items-center text-slate-600">
+                <span>Token de Activación:</span>
+                <span className="font-mono text-[11px] text-slate-700 bg-slate-200 px-1.5 py-0.5 rounded">
+                  {simulatedInvite.token}
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                Enlace Directo de Activación
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  readOnly
+                  value={simulatedInvite.url}
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono text-slate-700 select-all focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(simulatedInvite.url);
+                    setCopiedLink(true);
+                    setTimeout(() => setCopiedLink(false), 2000);
+                  }}
+                  className="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold shrink-0 flex items-center gap-1.5 transition-all shadow-xs"
+                >
+                  {copiedLink ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>¡Copiado!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5" />
+                      <span>Copiar</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-3 border-t border-slate-200">
+              <a
+                href={simulatedInvite.url}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-[#C4121A] hover:underline"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                <span>Abrir y probar enlace en nueva pestaña</span>
+              </a>
+              <Button
+                type="button"
+                onClick={() => setSimulatedInvite(null)}
+                className="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2 rounded-xl text-xs font-bold"
+              >
+                Entendido / Cerrar
+              </Button>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   );
