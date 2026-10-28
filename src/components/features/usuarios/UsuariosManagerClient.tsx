@@ -320,7 +320,7 @@ export function UsuariosManagerClient({
         dni: 'Institucional',
         rolCodigo: matchedRol,
         rolNombre: CAT_ROLES[matchedRol]?.nombre || 'Super Administrador',
-        sede: 'Sede Central (Breña)',
+        sede: 'Sede Central - Tumbes',
         area: matchedRol === 'SUPERADMIN' ? 'Tecnología y Dirección' : matchedRol === 'DIRECCION' ? 'Dirección Ejecutiva' : matchedRol === 'COORDINACION_ACADEMICA' ? 'Área Académica' : matchedRol === 'CAJA' ? 'Tesorería & Cobranzas' : matchedRol === 'ASESOR_COMERCIAL' ? 'Fuerza de Ventas' : 'Plana Docente',
         ultimoAcceso: p.last_access_at 
           ? new Date(p.last_access_at).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) 
@@ -349,7 +349,7 @@ export function UsuariosManagerClient({
   const [selectedUser, setSelectedUser] = useState<UsuarioInstitucional | null>(null);
   const [targetRol, setTargetRol] = useState<RolCodigo>('SUPERADMIN');
   const [targetStatus, setTargetStatus] = useState<EstadoUsuario>('ACTIVO');
-  const [targetSede, setTargetSede] = useState<string>('Sede Central (Breña)');
+  const [targetSede, setTargetSede] = useState<string>('Sede Central - Tumbes');
   
   // Estado para modal de Invitar Usuario
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
@@ -357,7 +357,7 @@ export function UsuariosManagerClient({
   const [inviteNombre, setInviteNombre] = useState("");
   const [inviteDni, setInviteDni] = useState("");
   const [inviteRol, setInviteRol] = useState<RolCodigo>('ASESOR_COMERCIAL');
-  const [inviteSede, setInviteSede] = useState<string>('Sede Central (Breña)');
+  const [inviteSede, setInviteSede] = useState<string>('Sede Central - Tumbes');
 
   const [isPending, startTransition] = useTransition();
   const [modalFeedback, setModalFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -694,7 +694,7 @@ export function UsuariosManagerClient({
                 className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#C4121A]/30 focus:border-[#C4121A] shadow-xs"
               >
                 <option value="TODAS">Todas las Sedes</option>
-                <option value="Sede Central (Breña)">Sede Central (Breña)</option>
+                <option value="Sede Central - Tumbes">Sede Central - Tumbes</option>
                 <option value="Sede San Juan de Lurigancho">Sede San Juan de Lurigancho</option>
                 <option value="Sede Los Olivos">Sede Los Olivos</option>
               </select>
@@ -1145,7 +1145,7 @@ export function UsuariosManagerClient({
                   disabled={selectedUser.isProtected || isPending}
                   className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#C4121A]/30 focus:border-[#C4121A] disabled:bg-slate-100 disabled:cursor-not-allowed"
                 >
-                  <option value="Sede Central (Breña)">Sede Central (Breña)</option>
+                  <option value="Sede Central - Tumbes">Sede Central - Tumbes</option>
                   <option value="Sede San Juan de Lurigancho">Sede San Juan de Lurigancho</option>
                   <option value="Sede Los Olivos">Sede Los Olivos</option>
                 </select>
@@ -1283,7 +1283,7 @@ export function UsuariosManagerClient({
                 onChange={(e) => setInviteSede(e.target.value)}
                 className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#C4121A]/30 focus:border-[#C4121A]"
               >
-                <option value="Sede Central (Breña)">Sede Central (Breña)</option>
+                <option value="Sede Central - Tumbes">Sede Central - Tumbes</option>
                 <option value="Sede San Juan de Lurigancho">Sede San Juan de Lurigancho</option>
                 <option value="Sede Los Olivos">Sede Los Olivos</option>
               </select>
