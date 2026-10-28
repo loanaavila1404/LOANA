@@ -1,54 +1,65 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
-import { User, Settings, Lock } from "lucide-react";
+import { createClient } from "@/lib/supabase/server";
+import { PerfilManagerClient, PerfilUsuarioData } from "@/components/features/perfil/PerfilManagerClient";
 
-export default function PerfilPage() {
-  return (
-    <div className="space-y-6 max-w-3xl">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold font-heading">Mi Perfil</h1>
-      </div>
+export default async function PerfilPage() {
+  const supabase = await createClient();
 
-      <div className="grid gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5" />
-              Información Personal
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Nombre Completo</p>
-                <p className="text-base">Administrador del Sistema</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Correo Electrónico</p>
-                <p className="text-base">admin@brusben.edu</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Rol</p>
-                <p className="text-base">Superadmin</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Departamento</p>
-                <p className="text-base">Tecnología</p>
-              </div>
-            </div>
-            <div className="pt-4 flex gap-2">
-              <Button>
-                <Settings className="mr-2 h-4 w-4" />
-                Editar Perfil
-              </Button>
-              <Button variant="outline">
-                <Lock className="mr-2 h-4 w-4" />
-                Cambiar Contraseña
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
+  const { data: { user } } = await supabase.auth.getUser();
+
+  let profile = null;
+  if (user) {
+    const { data } = await supabase
+      .from("profiles")
+      .select(`
+        id,
+        email,
+        display_name,
+        photo_url,
+        status,
+        last_access_at,
+        roles (
+          id,
+          name,
+          code
+        )
+      `)
+      .eq("id", user.id)
+      .maybeSingle();
+    profile = data;
+  }
+
+  // Extraer nombres y apellidos desde el display_name o metadatos de usuario
+  const displayName = 
+    profile?.display_name || 
+    (user?.user_metadata?.full_name as string) || 
+    (user?.user_metadata?.name as string) || 
+    "Loana Avila Neyra";
+
+  const nameParts = displayName.trim().split(/\s+/);
+  const defaultNombres = (user?.user_metadata?.nombres as string) || nameParts[0] || "Loana";
+  const defaultApellidos = (user?.user_metadata?.apellidos as string) || (nameParts.length > 1 ? nameParts.slice(1).join(" ") : "Avila Neyra");
+
+  const initialData: PerfilUsuarioData = {
+    id: user?.id || "aebd92ba-4c31-4b9a-a5d0-af229307dde1",
+    email: profile?.email || user?.email || "loanaavila.la@gmail.com",
+    displayName,
+    nombres: defaultNombres,
+    apellidos: defaultApellidos,
+    dni: (user?.user_metadata?.dni as string) || "72849102",
+    telefono: (user?.user_metadata?.telefono as string) || "+51 972 849 102",
+    correoRecuperacion: (user?.user_metadata?.correo_recuperacion as string) || user?.email || "loanaavila.la@gmail.com",
+    sede: "Sede Central - Tumbes",
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    rolNombre: profile?.roles?.name || "Super Administrador",
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    rolCodigo: profile?.roles?.code || "SUPERADMIN",
+    photoUrl: profile?.photo_url || (user?.user_metadata?.avatar_url as string) || (user?.user_metadata?.picture as string) || null,
+    lastSignIn: user?.last_sign_in_at || null,
+    provider: (user?.app_metadata?.provider as string) || "Google Workspace",
+    isProtected: true,
+  };
+
+  return <PerfilManagerClient initialData={initialData} />;
 }
