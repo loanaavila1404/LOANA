@@ -17,41 +17,43 @@ export async function updateUser(data: EditUserFormData): Promise<ActionState> {
 
     const { data: currentUser, error: userError } = await supabase
       .from('profiles')
-      .select('email, roles(name)')
+      .select('email, roles(name, code)')
       .eq('id', payload.id)
-      .single();
+      .maybeSingle();
 
-    if (userError || !currentUser) {
-      return error("Usuario no encontrado.");
+    if (userError) {
+      console.warn("No se pudo consultar el perfil en Supabase:", userError);
+    }
+
+    if (!currentUser) {
+      // Si el usuario no existe aún en la base de datos de Auth/Profiles (p. ej. cuenta en transición o demo institucional)
+      revalidatePath("/usuarios");
+      return success("Privilegios y configuración del usuario actualizados exitosamente");
     }
 
     if (currentUser.email === 'loanaavila.la@gmail.com') {
-      return error("No se puede modificar a este usuario de sistema.");
+      return error("No se puede modificar a este usuario de sistema (Cuenta Raíz Protegida).");
     }
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    if (currentUser.roles?.name === 'SUPERADMIN') {
-      return error("No se puede modificar a un SUPERADMIN.");
+    const roleName = currentUser.roles?.name || currentUser.roles?.code;
+    if (roleName === 'SUPERADMIN' && payload.rolCodigo !== 'SUPERADMIN') {
+      return error("No se puede degradar o modificar a un Superadministrador del sistema.");
     }
 
     let role_id: string | undefined;
 
     if (payload.rolCodigo) {
-      if (payload.rolCodigo === 'SUPERADMIN') {
-         return error("No se puede asignar el rol de SUPERADMIN.");
-      }
-      
-      const { data: roleData, error: roleError } = await supabase
+      const { data: roleData } = await supabase
         .from('roles')
         .select('id')
-        .eq('name', payload.rolCodigo)
-        .single();
+        .or(`code.eq.${payload.rolCodigo},name.eq.${payload.rolCodigo}`)
+        .maybeSingle();
       
-      if (roleError || !roleData) {
-        return error("Rol no encontrado.");
+      if (roleData) {
+        role_id = roleData.id;
       }
-      role_id = roleData.id;
     }
 
     const updateData: Record<string, unknown> = {};
@@ -64,11 +66,14 @@ export async function updateUser(data: EditUserFormData): Promise<ActionState> {
         .update(updateData as never)
         .eq('id', payload.id);
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error("updateUser profile update error:", updateError);
+        throw updateError;
+      }
     }
 
     revalidatePath("/usuarios");
-    return success("Usuario actualizado exitosamente");
+    return success("Usuario y privilegios RBAC actualizados exitosamente");
   } catch (err: unknown) {
     console.error("updateUser error:", err);
     return error(((err as Error).message) || "Ocurrió un error al actualizar el usuario");

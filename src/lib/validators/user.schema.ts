@@ -24,9 +24,10 @@ export const updateProfileSchema = z.object({
 });
 
 export const editUserSchema = z.object({
-  id: z.string().uuid(),
-  rolCodigo: z.enum(CODIGOS_ROL).optional(),
+  id: z.string().min(1, "El ID de usuario es requerido"),
+  rolCodigo: z.string().optional(),
   status: z.enum(['ACTIVO', 'INACTIVO', 'BLOQUEADO']).optional(),
+  sede: z.string().optional(),
 });
 
 export type EditUserFormData = z.infer<typeof editUserSchema>;
