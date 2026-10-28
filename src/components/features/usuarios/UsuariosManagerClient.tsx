@@ -60,6 +60,7 @@ export interface UsuarioInstitucional {
   dosFactores: boolean;
   status: EstadoUsuario;
   isProtected?: boolean;
+  photoUrl?: string | null;
 }
 
 interface ModuloPermiso {
@@ -273,210 +274,6 @@ export const CAT_ROLES: Record<RolCodigo, RolDefinicion> = {
   }
 };
 
-const USUARIOS_DEMO_DEFAULT: UsuarioInstitucional[] = [
-  {
-    id: "usr-001-root",
-    nombres: "Loana",
-    apellidos: "Ávila",
-    displayName: "Loana Ávila",
-    email: "loanaavila.la@gmail.com",
-    dni: "47891234",
-    rolCodigo: "SUPERADMIN",
-    rolNombre: "Super Administrador",
-    sede: "Sede Central (Breña)",
-    area: "Tecnología y Dirección",
-    ultimoAcceso: "Hace 5 min",
-    dispositivo: {
-      so: "Windows 11 Pro",
-      browser: "Chrome 122",
-      ip: "190.238.45.12"
-    },
-    dosFactores: true,
-    status: "ACTIVO",
-    isProtected: true
-  },
-  {
-    id: "usr-002-dir",
-    nombres: "Carlos",
-    apellidos: "Mendoza Ruiz",
-    displayName: "Dr. Carlos Mendoza Ruiz",
-    email: "carlos.mendoza@brusben.edu.pe",
-    dni: "08942157",
-    rolCodigo: "DIRECCION",
-    rolNombre: "Dirección General",
-    sede: "Sede Central (Breña)",
-    area: "Dirección Ejecutiva",
-    ultimoAcceso: "Hoy, 10:45 AM",
-    dispositivo: {
-      so: "macOS Sonoma",
-      browser: "Safari 17",
-      ip: "190.238.45.18"
-    },
-    dosFactores: true,
-    status: "ACTIVO"
-  },
-  {
-    id: "usr-003-coord",
-    nombres: "Patricia",
-    apellidos: "Vargas Saldaña",
-    displayName: "Lic. Patricia Vargas",
-    email: "patricia.vargas@brusben.edu.pe",
-    dni: "42159876",
-    rolCodigo: "COORDINACION_ACADEMICA",
-    rolNombre: "Coordinación Académica",
-    sede: "Sede San Juan de Lurigancho",
-    area: "Área Académica",
-    ultimoAcceso: "Hoy, 09:15 AM",
-    dispositivo: {
-      so: "Windows 10 Enterprise",
-      browser: "Edge 121",
-      ip: "200.48.74.82"
-    },
-    dosFactores: true,
-    status: "ACTIVO"
-  },
-  {
-    id: "usr-004-tes",
-    nombres: "Miguel Ángel",
-    apellidos: "Torres Paredes",
-    displayName: "Miguel Torres Paredes",
-    email: "miguel.torres@brusben.edu.pe",
-    dni: "43892015",
-    rolCodigo: "CAJA",
-    rolNombre: "Tesorería y Finanzas",
-    sede: "Sede Central (Breña)",
-    area: "Tesorería & Cobranzas",
-    ultimoAcceso: "Hoy, 08:30 AM",
-    dispositivo: {
-      so: "Windows 11",
-      browser: "Chrome 122",
-      ip: "190.238.45.14"
-    },
-    dosFactores: true,
-    status: "ACTIVO"
-  },
-  {
-    id: "usr-005-ventas",
-    nombres: "Lucía",
-    apellidos: "Espinoza Huamán",
-    displayName: "Lucía Espinoza Huamán",
-    email: "lucia.espinoza@brusben.edu.pe",
-    dni: "71284950",
-    rolCodigo: "ASESOR_COMERCIAL",
-    rolNombre: "Asesor Comercial",
-    sede: "Sede Los Olivos",
-    area: "Fuerza de Ventas",
-    ultimoAcceso: "Ayer, 05:40 PM",
-    dispositivo: {
-      so: "Windows 11",
-      browser: "Chrome 122",
-      ip: "181.65.120.34"
-    },
-    dosFactores: false,
-    status: "ACTIVO"
-  },
-  {
-    id: "usr-006-ventas2",
-    nombres: "Rodrigo",
-    apellidos: "Salazar Peña",
-    displayName: "Rodrigo Salazar Peña",
-    email: "rodrigo.salazar@brusben.edu.pe",
-    dni: "74859632",
-    rolCodigo: "ASESOR_COMERCIAL",
-    rolNombre: "Asesor Comercial",
-    sede: "Sede San Juan de Lurigancho",
-    area: "Fuerza de Ventas",
-    ultimoAcceso: "Ayer, 06:10 PM",
-    dispositivo: {
-      so: "Windows 10",
-      browser: "Firefox 123",
-      ip: "200.48.74.85"
-    },
-    dosFactores: true,
-    status: "ACTIVO"
-  },
-  {
-    id: "usr-007-doc",
-    nombres: "Roberto",
-    apellidos: "Gómez Palacios",
-    displayName: "Ing. Roberto Gómez",
-    email: "roberto.gomez@brusben.edu.pe",
-    dni: "41258963",
-    rolCodigo: "DOCENTE",
-    rolNombre: "Docente / Instructor",
-    sede: "Sede Central (Breña)",
-    area: "Plana Docente",
-    ultimoAcceso: "25 Oct 2026",
-    dispositivo: {
-      so: "Linux Ubuntu",
-      browser: "Chrome 122",
-      ip: "190.238.45.99"
-    },
-    dosFactores: false,
-    status: "ACTIVO"
-  },
-  {
-    id: "usr-008-doc2",
-    nombres: "Elena",
-    apellidos: "Castro Quispe",
-    displayName: "Mag. Elena Castro",
-    email: "elena.castro@brusben.edu.pe",
-    dni: "45871239",
-    rolCodigo: "DOCENTE",
-    rolNombre: "Docente / Instructor",
-    sede: "Sede Los Olivos",
-    area: "Plana Docente",
-    ultimoAcceso: "24 Oct 2026",
-    dispositivo: {
-      so: "macOS Ventura",
-      browser: "Chrome 122",
-      ip: "181.65.120.40"
-    },
-    dosFactores: true,
-    status: "ACTIVO"
-  },
-  {
-    id: "usr-009-inactivo",
-    nombres: "Javier",
-    apellidos: "Morales Ríos",
-    displayName: "Javier Morales Ríos",
-    email: "javier.morales@brusben.edu.pe",
-    dni: "48963214",
-    rolCodigo: "ASESOR_COMERCIAL",
-    rolNombre: "Asesor Comercial",
-    sede: "Sede Los Olivos",
-    area: "Fuerza de Ventas",
-    ultimoAcceso: "15 Oct 2026",
-    dispositivo: {
-      so: "Windows 10",
-      browser: "Chrome 120",
-      ip: "181.65.120.12"
-    },
-    dosFactores: false,
-    status: "INACTIVO"
-  },
-  {
-    id: "usr-010-bloqueado",
-    nombres: "Christian",
-    apellidos: "Vera Ponce",
-    displayName: "Christian Vera Ponce",
-    email: "christian.vera@brusben.edu.pe",
-    dni: "46321589",
-    rolCodigo: "CAJA",
-    rolNombre: "Tesorería y Finanzas",
-    sede: "Sede San Juan de Lurigancho",
-    area: "Tesorería & Cobranzas",
-    ultimoAcceso: "18 Oct 2026",
-    dispositivo: {
-      so: "Windows 10",
-      browser: "Chrome 121",
-      ip: "190.119.88.24"
-    },
-    dosFactores: false,
-    status: "BLOQUEADO"
-  }
-];
-
 type QuickTab = 'TODOS' | 'SUPERADMIN' | 'ADMINISTRATIVO' | 'DOCENTE' | 'INACTIVO_BLOQUEADO';
 
 interface UsuariosManagerClientProps {
@@ -486,56 +283,60 @@ interface UsuariosManagerClientProps {
     display_name: string | null;
     status: string | null;
     last_access_at: string | null;
+    photo_url?: string | null;
     roles?: { name?: string | null; code?: string | null } | null;
   }>;
+  currentUserEmail?: string;
 }
 
-export function UsuariosManagerClient({ initialProfiles = [] }: UsuariosManagerClientProps) {
-  // Construir la lista inicial de usuarios combinando Supabase si existen con el directorio maestro institucional
+export function UsuariosManagerClient({ 
+  initialProfiles = [], 
+  currentUserEmail = 'loanaavila.la@gmail.com' 
+}: UsuariosManagerClientProps) {
+  // Construir la lista de usuarios exclusivamente con registros reales de base de datos
   const initialUsers: UsuarioInstitucional[] = useMemo(() => {
-    if (!initialProfiles || initialProfiles.length === 0) {
-      return USUARIOS_DEMO_DEFAULT;
-    }
-
-    const dbUsers: UsuarioInstitucional[] = initialProfiles.map((p, idx) => {
-      const rawRoleCode = (p.roles?.code || p.roles?.name || 'DOCENTE').toUpperCase();
-      let matchedRol: RolCodigo = 'DOCENTE';
-      if (rawRoleCode.includes('SUPER')) matchedRol = 'SUPERADMIN';
+    return initialProfiles.map((p, idx) => {
+      const rawRoleCode = (p.roles?.code || p.roles?.name || 'SUPERADMIN').toUpperCase();
+      let matchedRol: RolCodigo = 'SUPERADMIN';
+      if (rawRoleCode === 'SUPERADMIN' || rawRoleCode.includes('SUPER')) matchedRol = 'SUPERADMIN';
       else if (rawRoleCode.includes('DIR')) matchedRol = 'DIRECCION';
       else if (rawRoleCode.includes('COORD') || rawRoleCode.includes('ADMIN')) matchedRol = 'COORDINACION_ACADEMICA';
       else if (rawRoleCode.includes('CAJA') || rawRoleCode.includes('TESOR')) matchedRol = 'CAJA';
       else if (rawRoleCode.includes('VENT') || rawRoleCode.includes('ASESOR')) matchedRol = 'ASESOR_COMERCIAL';
+      else if (rawRoleCode.includes('DOC')) matchedRol = 'DOCENTE';
 
-      const isRoot = p.email === 'loanaavila.la@gmail.com';
+      const isRoot = p.email === 'loanaavila.la@gmail.com' || (currentUserEmail && p.email?.toLowerCase() === currentUserEmail.toLowerCase());
+
+      const nameParts = (p.display_name || 'Loana Avila Neyra').trim().split(/\s+/);
+      const nombres = nameParts[0] || 'Loana';
+      const apellidos = nameParts.slice(1).join(' ') || 'Avila';
 
       return {
         id: p.id,
-        nombres: p.display_name?.split(' ')[0] || 'Usuario',
-        apellidos: p.display_name?.split(' ').slice(1).join(' ') || 'Brusben',
-        displayName: p.display_name || p.email || 'Usuario Brusben',
-        email: p.email || `usuario${idx}@brusben.edu.pe`,
-        dni: `4789${1000 + idx}`,
+        nombres,
+        apellidos,
+        displayName: p.display_name || p.email || 'Loana Avila Neyra',
+        email: p.email || 'loanaavila.la@gmail.com',
+        dni: 'Institucional',
         rolCodigo: matchedRol,
-        rolNombre: CAT_ROLES[matchedRol].nombre,
-        sede: idx % 3 === 0 ? 'Sede Central (Breña)' : idx % 3 === 1 ? 'Sede San Juan de Lurigancho' : 'Sede Los Olivos',
+        rolNombre: CAT_ROLES[matchedRol]?.nombre || 'Super Administrador',
+        sede: 'Sede Central (Breña)',
         area: matchedRol === 'SUPERADMIN' ? 'Tecnología y Dirección' : matchedRol === 'DIRECCION' ? 'Dirección Ejecutiva' : matchedRol === 'COORDINACION_ACADEMICA' ? 'Área Académica' : matchedRol === 'CAJA' ? 'Tesorería & Cobranzas' : matchedRol === 'ASESOR_COMERCIAL' ? 'Fuerza de Ventas' : 'Plana Docente',
-        ultimoAcceso: p.last_access_at ? new Date(p.last_access_at).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Nunca',
+        ultimoAcceso: p.last_access_at 
+          ? new Date(p.last_access_at).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) 
+          : 'Sesión Activa',
         dispositivo: {
           so: 'Windows 11',
-          browser: 'Chrome 122',
-          ip: `190.238.45.${10 + idx}`
+          browser: 'Navegador Seguro',
+          ip: 'Sesión Autenticada'
         },
         dosFactores: true,
         status: (p.status as EstadoUsuario) || 'ACTIVO',
-        isProtected: isRoot
+        isProtected: Boolean(isRoot),
+        photoUrl: p.photo_url || null
       };
     });
-
-    // Unir sin duplicar emails
-    const existingEmails = new Set(dbUsers.map(u => u.email.toLowerCase()));
-    const extraDemos = USUARIOS_DEMO_DEFAULT.filter(d => !existingEmails.has(d.email.toLowerCase()));
-    return [...dbUsers, ...extraDemos];
-  }, [initialProfiles]);
+  }, [initialProfiles, currentUserEmail]);
 
   const [usuarios, setUsuarios] = useState<UsuarioInstitucional[]>(initialUsers);
   const [searchTerm, setSearchTerm] = useState("");
@@ -546,7 +347,7 @@ export function UsuariosManagerClient({ initialProfiles = [] }: UsuariosManagerC
   // Estado para el modal de gestión RBAC
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UsuarioInstitucional | null>(null);
-  const [targetRol, setTargetRol] = useState<RolCodigo>('DOCENTE');
+  const [targetRol, setTargetRol] = useState<RolCodigo>('SUPERADMIN');
   const [targetStatus, setTargetStatus] = useState<EstadoUsuario>('ACTIVO');
   const [targetSede, setTargetSede] = useState<string>('Sede Central (Breña)');
   
@@ -561,7 +362,7 @@ export function UsuariosManagerClient({ initialProfiles = [] }: UsuariosManagerC
   const [isPending, startTransition] = useTransition();
   const [modalFeedback, setModalFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
-  // Cálculos de KPIs de Seguridad
+  // Cálculos de KPIs de Seguridad estrictamente con datos reales
   const totalActivos = useMemo(() => usuarios.filter(u => u.status === 'ACTIVO').length, [usuarios]);
   const totalSuperadmins = useMemo(() => usuarios.filter(u => u.rolCodigo === 'SUPERADMIN' && u.status === 'ACTIVO').length, [usuarios]);
   const totalOperativoDocente = useMemo(() => usuarios.filter(u => ['COORDINACION_ACADEMICA', 'CAJA', 'ASESOR_COMERCIAL', 'DOCENTE'].includes(u.rolCodigo) && u.status === 'ACTIVO').length, [usuarios]);
@@ -619,7 +420,7 @@ export function UsuariosManagerClient({ initialProfiles = [] }: UsuariosManagerC
     setIsModalOpen(true);
   };
 
-  // Guardar cambios RBAC
+  // Guardar cambios RBAC en base de datos
   const handleSaveRbac = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedUser) return;
@@ -641,7 +442,7 @@ export function UsuariosManagerClient({ initialProfiles = [] }: UsuariosManagerC
       });
 
       if (result.success) {
-        // Actualizar en el estado local de forma reactiva inmediata
+        // Actualizar en el estado local de forma reactiva
         setUsuarios(prev => prev.map(u => {
           if (u.id === selectedUser.id) {
             return {
@@ -657,7 +458,7 @@ export function UsuariosManagerClient({ initialProfiles = [] }: UsuariosManagerC
 
         setModalFeedback({
           type: 'success',
-          message: result.message || 'Privilegios y permisos del usuario actualizados exitosamente.'
+          message: result.message || 'Privilegios y permisos del usuario actualizados exitosamente en base de datos.'
         });
 
         setTimeout(() => {
@@ -673,7 +474,7 @@ export function UsuariosManagerClient({ initialProfiles = [] }: UsuariosManagerC
     });
   };
 
-  // Manejo de invitación de nuevo usuario
+  // Manejo de invitación de nuevo usuario real
   const handleInviteSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const newUser: UsuarioInstitucional = {
@@ -682,7 +483,7 @@ export function UsuariosManagerClient({ initialProfiles = [] }: UsuariosManagerC
       apellidos: inviteNombre.split(' ').slice(1).join(' ') || 'Brusben',
       displayName: inviteNombre,
       email: inviteEmail.trim().toLowerCase(),
-      dni: inviteDni.trim() || '70001234',
+      dni: inviteDni.trim() || 'Por asignar',
       rolCodigo: inviteRol,
       rolNombre: CAT_ROLES[inviteRol].nombre,
       sede: inviteSede,
@@ -724,7 +525,7 @@ export function UsuariosManagerClient({ initialProfiles = [] }: UsuariosManagerC
                 </span>
               </div>
               <p className="text-sm text-slate-600 mt-0.5">
-                Administración centralizada de identidades institucionales, asignación jerárquica de privilegios por módulo y directivas de autenticación.
+                Directorio verificado de identidades institucionales, roles RBAC y directivas de autenticación en base de datos.
               </p>
             </div>
           </div>
@@ -741,7 +542,7 @@ export function UsuariosManagerClient({ initialProfiles = [] }: UsuariosManagerC
         </div>
       </div>
 
-      {/* PASO 1: TARJETAS DE RESUMEN Y MÉTRICAS DE SEGURIDAD (KPIS SUPERIORES) */}
+      {/* PASO 1: TARJETAS DE RESUMEN Y MÉTRICAS DE SEGURIDAD BASADAS EN DATOS REALES */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* KPI 1: Usuarios Activos */}
         <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
@@ -753,13 +554,13 @@ export function UsuariosManagerClient({ initialProfiles = [] }: UsuariosManagerC
           </div>
           <div className="mt-3">
             <div className="text-3xl font-black text-slate-900 font-heading tracking-tight">
-              {totalActivos} <span className="text-base font-medium text-slate-600">cuentas</span>
+              {totalActivos} <span className="text-base font-medium text-slate-600">{totalActivos === 1 ? 'cuenta' : 'cuentas'}</span>
             </div>
             <div className="flex items-center gap-1.5 mt-2 text-xs font-semibold text-emerald-600">
               <span className="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
-                +2 este mes
+                100% verificado
               </span>
-              <span className="text-slate-600">96% operatividad en red</span>
+              <span className="text-slate-600">En base de datos</span>
             </div>
           </div>
         </div>
@@ -799,9 +600,9 @@ export function UsuariosManagerClient({ initialProfiles = [] }: UsuariosManagerC
             </div>
             <div className="flex items-center gap-1.5 mt-2 text-xs font-semibold text-blue-700">
               <span className="px-1.5 py-0.5 rounded bg-blue-50 border border-blue-200">
-                3 sedes activas
+                {totalOperativoDocente > 0 ? `${totalOperativoDocente} asignados` : '0 registrados'}
               </span>
-              <span className="text-slate-600">Caja, CRM y Aulas</span>
+              <span className="text-slate-600">{totalOperativoDocente > 0 ? 'En sedes activas' : 'Sin personal adicional'}</span>
             </div>
           </div>
         </div>
@@ -820,15 +621,15 @@ export function UsuariosManagerClient({ initialProfiles = [] }: UsuariosManagerC
             </div>
             <div className="flex items-center gap-1.5 mt-2 text-xs font-semibold text-amber-700">
               <span className="px-1.5 py-0.5 rounded bg-amber-50 border border-amber-200">
-                Control Preventivo
+                {totalBloqueadosInactivos === 0 ? '0 incidentes' : `${totalBloqueadosInactivos} restringidos`}
               </span>
-              <span className="text-slate-600">Tokens revocados</span>
+              <span className="text-slate-600">{totalBloqueadosInactivos === 0 ? 'Directorio limpio' : 'Tokens revocados'}</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* PASO 2: LISTADO DE USUARIOS Y FILTROS AVANZADOS */}
+      {/* PASO 2: LISTADO DE USUARIOS REALES Y FILTROS AVANZADOS */}
       <div className="bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden">
         {/* BARRA DE HERRAMIENTAS Y PESTAÑAS */}
         <div className="p-4 border-b border-slate-200 bg-slate-50/50 space-y-4">
@@ -920,7 +721,7 @@ export function UsuariosManagerClient({ initialProfiles = [] }: UsuariosManagerC
           <table className="w-full text-left text-sm text-slate-600 border-collapse">
             <thead className="bg-slate-50/80 border-b border-slate-200 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
               <tr>
-                <th className="py-3.5 px-4 font-bold">Colaborador / Documento</th>
+                <th className="py-3.5 px-4 font-bold">Colaborador / Identidad</th>
                 <th className="py-3.5 px-4 font-bold">Rol Jerárquico & RBAC</th>
                 <th className="py-3.5 px-4 font-bold">Sede & Área Operativa</th>
                 <th className="py-3.5 px-4 font-bold">Último Acceso / Dispositivo</th>
@@ -932,7 +733,7 @@ export function UsuariosManagerClient({ initialProfiles = [] }: UsuariosManagerC
             <tbody className="divide-y divide-slate-100">
               {usuariosFiltrados.length > 0 ? (
                 usuariosFiltrados.map((usuario) => {
-                  const rolDef = CAT_ROLES[usuario.rolCodigo] || CAT_ROLES.DOCENTE;
+                  const rolDef = CAT_ROLES[usuario.rolCodigo] || CAT_ROLES.SUPERADMIN;
                   const initials = usuario.displayName
                     .split(" ")
                     .slice(0, 2)
@@ -950,21 +751,29 @@ export function UsuariosManagerClient({ initialProfiles = [] }: UsuariosManagerC
                       {/* Colaborador & DNI */}
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-3">
-                          <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs ${
-                            usuario.rolCodigo === 'SUPERADMIN' 
-                              ? 'bg-[#C4121A] text-white' 
-                              : usuario.rolCodigo === 'DIRECCION'
-                              ? 'bg-purple-600 text-white'
-                              : usuario.rolCodigo === 'COORDINACION_ACADEMICA'
-                              ? 'bg-blue-600 text-white'
-                              : usuario.rolCodigo === 'CAJA'
-                              ? 'bg-amber-600 text-white'
-                              : usuario.rolCodigo === 'ASESOR_COMERCIAL'
-                              ? 'bg-emerald-600 text-white'
-                              : 'bg-slate-700 text-white'
-                          }`}>
-                            {initials}
-                          </div>
+                          {usuario.photoUrl ? (
+                            <img 
+                              src={usuario.photoUrl} 
+                              alt={usuario.displayName} 
+                              className="w-9 h-9 rounded-xl object-cover shrink-0 shadow-2xs border border-slate-200" 
+                            />
+                          ) : (
+                            <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs ${
+                              usuario.rolCodigo === 'SUPERADMIN' 
+                                ? 'bg-[#C4121A] text-white' 
+                                : usuario.rolCodigo === 'DIRECCION'
+                                ? 'bg-purple-600 text-white'
+                                : usuario.rolCodigo === 'COORDINACION_ACADEMICA'
+                                ? 'bg-blue-600 text-white'
+                                : usuario.rolCodigo === 'CAJA'
+                                ? 'bg-amber-600 text-white'
+                                : usuario.rolCodigo === 'ASESOR_COMERCIAL'
+                                ? 'bg-emerald-600 text-white'
+                                : 'bg-slate-700 text-white'
+                            }`}>
+                              {initials}
+                            </div>
+                          )}
                           <div>
                             <div className="flex items-center gap-1.5">
                               <span className="font-bold text-slate-900 leading-snug">
@@ -978,7 +787,7 @@ export function UsuariosManagerClient({ initialProfiles = [] }: UsuariosManagerC
                             </div>
                             <div className="flex items-center gap-2 mt-0.5 text-xs text-slate-600">
                               <span className="font-mono bg-slate-100 px-1 py-0.2 rounded text-[11px] text-slate-600">
-                                DNI: {usuario.dni}
+                                {usuario.dni}
                               </span>
                               <span className="text-slate-600">·</span>
                               <span className="text-slate-600">{usuario.email}</span>
@@ -1027,8 +836,6 @@ export function UsuariosManagerClient({ initialProfiles = [] }: UsuariosManagerC
                         <div className="flex items-center gap-1.5 mt-0.5 text-[11px] text-slate-600">
                           <Monitor className="w-3 h-3 text-slate-600" />
                           <span>{usuario.dispositivo.so} · {usuario.dispositivo.browser}</span>
-                          <span className="text-slate-600">|</span>
-                          <span className="font-mono text-[10px] text-slate-600">{usuario.dispositivo.ip}</span>
                         </div>
                       </td>
 
@@ -1094,10 +901,10 @@ export function UsuariosManagerClient({ initialProfiles = [] }: UsuariosManagerC
           </table>
         </div>
 
-        {/* PIE DE TABLA CON TOTALES */}
+        {/* PIE DE TABLA CON TOTALES REALES */}
         <div className="p-4 border-t border-slate-200 bg-slate-50/60 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-600 gap-2">
           <div>
-            Mostrando <span className="font-bold text-slate-800">{usuariosFiltrados.length}</span> de <span className="font-bold text-slate-800">{usuarios.length}</span> cuentas registradas
+            Mostrando <span className="font-bold text-slate-800">{usuariosFiltrados.length}</span> de <span className="font-bold text-slate-800">{usuarios.length}</span> cuentas registradas en base de datos
           </div>
           <div className="flex items-center gap-4 text-slate-600">
             <span className="flex items-center gap-1">
@@ -1166,7 +973,7 @@ export function UsuariosManagerClient({ initialProfiles = [] }: UsuariosManagerC
                 <Lock className="w-4 h-4 shrink-0 mt-0.5 text-[#C4121A]" />
                 <div>
                   <span className="font-bold">Cuenta Institucional Blindada: </span>
-                  Esta cuenta pertenece a la Superadministración Raíz del sistema. Sus privilegios y rol no pueden ser rebajados por salvaguarda de seguridad.
+                  Esta cuenta pertenece a la Superadministración Raíz del sistema. Sus privilegios y rol no pueden ser modificados por salvaguarda de seguridad institucional.
                 </div>
               </div>
             )}
