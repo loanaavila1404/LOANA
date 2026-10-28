@@ -133,6 +133,13 @@ export function MobileDrawer({ isOpen, onClose, user, appVersion = '1.0.0' }: { 
             </svg>
             <span>Matrículas</span>
           </Link>
+
+          <Link className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${isActive("/horarios") ? "bg-[#c4121a] text-white shadow-sm font-semibold" : "text-slate-300 hover:bg-slate-800/80 hover:text-white"}`} href="/horarios">
+            <svg className="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
+            </svg>
+            <span>Horarios</span>
+          </Link>
           
           {/* Item: Reportes */}
           {canViewReportes && (

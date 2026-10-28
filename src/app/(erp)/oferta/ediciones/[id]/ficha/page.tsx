@@ -19,7 +19,6 @@ const COLUMNAS_DIAS = [
   { key: 'JUEVES', label: 'JUEVES', short: 'JUE' },
   { key: 'VIERNES', label: 'VIERNES', short: 'VIE' },
   { key: 'SABADO', label: 'SÁBADO', short: 'SÁB' },
-  { key: 'DOMINGO', label: 'DOMINGO', short: 'DOM' },
 ] as const;
 
 const ORDEN_DIAS: Record<string, number> = {
@@ -29,7 +28,31 @@ const ORDEN_DIAS: Record<string, number> = {
   JUEVES: 4,
   VIERNES: 5,
   SABADO: 6,
-  DOMINGO: 7,
+};
+
+// 15 Bloques Horarios de 1 hora: desde 07:00 hasta 22:00
+const BLOQUES_HORARIOS = [
+  { start: 7, label: '07:00 - 08:00', inicio: '07:00', fin: '08:00' },
+  { start: 8, label: '08:00 - 09:00', inicio: '08:00', fin: '09:00' },
+  { start: 9, label: '09:00 - 10:00', inicio: '09:00', fin: '10:00' },
+  { start: 10, label: '10:00 - 11:00', inicio: '10:00', fin: '11:00' },
+  { start: 11, label: '11:00 - 12:00', inicio: '11:00', fin: '12:00' },
+  { start: 12, label: '12:00 - 13:00', inicio: '12:00', fin: '13:00' },
+  { start: 13, label: '13:00 - 14:00', inicio: '13:00', fin: '14:00' },
+  { start: 14, label: '14:00 - 15:00', inicio: '14:00', fin: '15:00' },
+  { start: 15, label: '15:00 - 16:00', inicio: '15:00', fin: '16:00' },
+  { start: 16, label: '16:00 - 17:00', inicio: '16:00', fin: '17:00' },
+  { start: 17, label: '17:00 - 18:00', inicio: '17:00', fin: '18:00' },
+  { start: 18, label: '18:00 - 19:00', inicio: '18:00', fin: '19:00' },
+  { start: 19, label: '19:00 - 20:00', inicio: '19:00', fin: '20:00' },
+  { start: 20, label: '20:00 - 21:00', inicio: '20:00', fin: '21:00' },
+  { start: 21, label: '21:00 - 22:00', inicio: '21:00', fin: '22:00' },
+];
+
+const parseHour = (timeStr?: string | null): number => {
+  if (!timeStr) return 0;
+  const parts = timeStr.split(':');
+  return parseInt(parts[0], 10) || 0;
 };
 
 export default async function FichaEdicionPage({
@@ -110,27 +133,26 @@ export default async function FichaEdicionPage({
     return (a.hora_inicio || '').localeCompare(b.hora_inicio || '');
   });
 
-  // 3. Construir filas de bloques horarios únicos ordenados cronológicamente
-  const bloquesMap = new Map<string, { key: string; inicio: string; fin: string }>();
+  // 3. Mapear sesiones a la matriz horaria completa (07:00 a 22:00)
+  const cellMap: Record<string, { sesion: typeof horarios[0]; duration: number } | null> = {};
+  const coveredMap: Record<string, boolean> = {};
+
   for (const h of horarios) {
-    const ini = (h.hora_inicio || '08:00').slice(0, 5);
-    const fin = (h.hora_fin || '10:00').slice(0, 5);
-    const key = `${ini}-${fin}`;
-    if (!bloquesMap.has(key)) {
-      bloquesMap.set(key, { key, inicio: ini, fin });
+    const dia = (h.dia_semana || '').toUpperCase().trim();
+    const startHour = parseHour(h.hora_inicio);
+    const endHour = parseHour(h.hora_fin);
+
+    if (startHour >= 7 && startHour < 22) {
+      const duration = Math.max(1, endHour - startHour);
+      const startKey = `${dia}_${startHour}`;
+      cellMap[startKey] = { sesion: h, duration };
+
+      // Marcar las horas cubiertas subsecuentes para no renderizar td duplicado
+      for (let nextHour = startHour + 1; nextHour < Math.min(22, startHour + duration); nextHour++) {
+        coveredMap[`${dia}_${nextHour}`] = true;
+      }
     }
   }
-
-  // Si aún no hay sesiones registradas, mostrar bloques de referencia para la cuadrícula
-  const bloquesHorarios =
-    bloquesMap.size > 0
-      ? Array.from(bloquesMap.values()).sort((a, b) => a.key.localeCompare(b.key))
-      : [
-          { key: '08:00-10:00', inicio: '08:00', fin: '10:00' },
-          { key: '10:00-12:00', inicio: '10:00', fin: '12:00' },
-          { key: '15:00-17:00', inicio: '15:00', fin: '17:00' },
-          { key: '19:00-21:00', inicio: '19:00', fin: '21:00' },
-        ];
 
   return (
     <div
@@ -187,6 +209,7 @@ export default async function FichaEdicionPage({
           statusBadge={edicion.status || 'ACTIVO'}
           statusColor={(edicion.status || 'ACTIVO') === 'ACTIVO' ? 'green' : 'slate'}
           issuedAt={format(new Date(), 'dd/MM/yyyy HH:mm')}
+          sede="Sede Central - Tumbes • RUC 20409499849"
         />
 
         {/* Franja Resumen de Datos Académicos y Operativos del Grupo */}
@@ -278,65 +301,72 @@ export default async function FichaEdicionPage({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-300">
-                {bloquesHorarios.map((bloque, idx) => (
+                {BLOQUES_HORARIOS.map((bloque, idx) => (
                   <tr
-                    key={bloque.key}
+                    key={bloque.label}
                     className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/60'}
                   >
                     {/* Columna 1: Bloque Horario */}
-                    <td className="py-3 px-2 text-center font-mono font-extrabold text-slate-900 bg-slate-100 border-r border-slate-300 align-middle">
-                      <div className="text-xs text-[#AD0000]">{bloque.inicio}</div>
-                      <div className="text-[10px] text-slate-400 font-sans">a</div>
-                      <div className="text-xs text-slate-800">{bloque.fin}</div>
+                    <td className="py-2.5 px-2 text-center font-mono font-extrabold text-slate-900 bg-slate-100 border-r border-slate-300 align-middle w-[110px]">
+                      <div className="text-[11px] text-[#AD0000] font-black">{bloque.inicio}</div>
+                      <div className="text-[9px] text-slate-400 font-sans">a</div>
+                      <div className="text-[11px] text-slate-800 font-black">{bloque.fin}</div>
                     </td>
 
-                    {/* Columnas de Lunes a Domingo */}
+                    {/* Columnas de Lunes a Sábado */}
                     {COLUMNAS_DIAS.map(dia => {
-                      const sesionesCelda = horarios.filter(h => {
-                        const ini = (h.hora_inicio || '').slice(0, 5);
-                        const fin = (h.hora_fin || '').slice(0, 5);
-                        return h.dia_semana === dia.key && `${ini}-${fin}` === bloque.key;
-                      });
+                      const cellKey = `${dia.key}_${bloque.start}`;
+
+                      // Si está cubierto por un bloque que inició antes, omitimos renderizado de td
+                      if (coveredMap[cellKey]) {
+                        return null;
+                      }
+
+                      const cellData = cellMap[cellKey];
+
+                      if (cellData) {
+                        const ses = cellData.sesion;
+                        const cursoObj = Array.isArray(ses.cursos)
+                          ? ses.cursos[0]
+                          : ses.cursos;
+
+                        return (
+                          <td
+                            key={dia.key}
+                            rowSpan={cellData.duration}
+                            className="p-2 border-r last:border-r-0 border-slate-300 align-top bg-red-50/90 border-l-4 border-l-[#AD0000] shadow-2xs"
+                          >
+                            <div className="space-y-1">
+                              <div className="flex items-center justify-between gap-1 flex-wrap">
+                                {cursoObj?.codigo && (
+                                  <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-[#AD0000] text-white">
+                                    {cursoObj.codigo}
+                                  </span>
+                                )}
+                                <span className="text-[9px] font-bold text-[#AD0000] font-mono">
+                                  {(ses.hora_inicio || '').slice(0, 5)} - {(ses.hora_fin || '').slice(0, 5)}
+                                </span>
+                              </div>
+                              <p className="font-extrabold text-slate-900 text-xs leading-snug">
+                                {cursoObj?.nombre || 'Asignatura'}
+                              </p>
+                              <div className="text-[10px] text-slate-700 font-semibold leading-tight">
+                                Docente: <span className="font-normal">{ses.docente || 'Por asignar'}</span>
+                              </div>
+                              <div className="text-[10px] text-slate-600 font-semibold leading-tight">
+                                Aula / Sede: <span className="font-normal">{ses.ubicacion || 'Sede Central - Tumbes'}</span>
+                              </div>
+                            </div>
+                          </td>
+                        );
+                      }
 
                       return (
                         <td
                           key={dia.key}
-                          className="p-1.5 border-r last:border-r-0 border-slate-200 align-top min-h-[72px]"
+                          className="p-1 border-r last:border-r-0 border-slate-200 align-middle text-center h-10"
                         >
-                          {sesionesCelda.length === 0 ? (
-                            <div className="h-full min-h-[56px] flex items-center justify-center text-[10px] text-slate-300 font-medium select-none">
-                              —
-                            </div>
-                          ) : (
-                            <div className="space-y-1.5">
-                              {sesionesCelda.map(ses => {
-                                const cursoObj = Array.isArray(ses.cursos)
-                                  ? ses.cursos[0]
-                                  : ses.cursos;
-                                return (
-                                  <div
-                                    key={ses.id}
-                                    className="p-2 rounded-md border border-red-200 border-l-4 border-l-[#AD0000] bg-red-50/70 text-left space-y-1 shadow-2xs"
-                                  >
-                                    {cursoObj?.codigo && (
-                                      <span className="inline-block px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-[#AD0000] text-white">
-                                        {cursoObj.codigo}
-                                      </span>
-                                    )}
-                                    <p className="font-extrabold text-slate-900 text-[11px] leading-snug">
-                                      {cursoObj?.nombre || 'Asignatura'}
-                                    </p>
-                                    <div className="text-[10px] text-slate-700 font-semibold leading-tight">
-                                      Docente: <span className="font-normal">{ses.docente || 'Por asignar'}</span>
-                                    </div>
-                                    <div className="text-[10px] text-slate-600 font-semibold leading-tight">
-                                      Aula: <span className="font-normal">{ses.ubicacion || 'Sede Central'}</span>
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          )}
+                          <span className="text-[10px] text-slate-300 select-none font-medium">—</span>
                         </td>
                       );
                     })}

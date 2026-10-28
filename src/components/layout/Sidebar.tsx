@@ -73,6 +73,14 @@ export function Sidebar({ appVersion = '1.0.0', user }: { appVersion?: string, u
           <span className="truncate">Matrículas</span>
         </Link>
 
+        {/* Item: Horarios */}
+        <Link className={`flex items-center gap-3 px-3 py-2.5 rounded-md group transition-colors ${isActive("/horarios") ? "bg-[#c4121a] text-white shadow-sm font-semibold" : "text-slate-300 hover:bg-white/5 hover:text-white"}`} href="/horarios">
+          <svg className="w-4 h-4 text-slate-400 group-hover:text-slate-200 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
+          </svg>
+          <span className="truncate">Horarios</span>
+        </Link>
+
         {/* Item: Reportes */}
         {canViewReportes && (
           <Link className={`flex items-center gap-3 px-3 py-2.5 rounded-md group transition-colors ${isActive("/reportes") ? "bg-[#c4121a] text-white shadow-sm font-semibold" : "text-slate-300 hover:bg-white/5 hover:text-white"}`} href="/reportes">
