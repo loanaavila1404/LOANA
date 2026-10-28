@@ -23,8 +23,14 @@ import {
   Database,
   Lock,
   Building,
-  Terminal,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Calendar,
+  User,
+  MapPin,
+  CheckCircle2,
+  AlertTriangle,
+  Info,
+  ArrowRightLeft
 } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
@@ -58,16 +64,114 @@ interface AuditoriaManagerClientProps {
   initialLogs?: AuditoriaEvent[];
 }
 
+export const ACCIONES_AMIGABLES: Record<string, { titulo: string; colorBadge: string }> = {
+  LOGIN: { titulo: "Inicio de Sesión Seguro", colorBadge: "bg-teal-50 text-teal-800 border-teal-200" },
+  LOGOUT: { titulo: "Cierre de Sesión", colorBadge: "bg-slate-100 text-slate-700 border-slate-200" },
+  RBAC_UPDATE: { titulo: "Actualización de Roles y Permisos", colorBadge: "bg-purple-50 text-purple-700 border-purple-200" },
+  INSERT: { titulo: "Nueva Matrícula Registrada", colorBadge: "bg-emerald-50 text-emerald-800 border-emerald-200" },
+  UPDATE: { titulo: "Actualización de Registro", colorBadge: "bg-blue-50 text-blue-800 border-blue-200" },
+  DELETE: { titulo: "Eliminación de Registro", colorBadge: "bg-red-50 text-[#990000] border-red-200" },
+  PAGO_REGISTRO: { titulo: "Emisión de Recibo de Pago", colorBadge: "bg-amber-50 text-amber-800 border-amber-200" },
+  ANULACION_PAGO: { titulo: "Modificación Bloqueada / Auditoría", colorBadge: "bg-red-50 text-[#990000] border-red-200" },
+  SECURITY_CHECK: { titulo: "Verificación de Seguridad y Token", colorBadge: "bg-indigo-50 text-indigo-700 border-indigo-200" },
+};
+
+const DICCIONARIO_CAMPOS: Record<string, string> = {
+  sede_default: "Sede predeterminada",
+  root_protection: "Protección de cuenta raíz (Superadministrador)",
+  modified_by: "Modificado por",
+  codigo_matricula: "Código oficial de matrícula",
+  estudiante_dni: "DNI del estudiante",
+  programa: "Programa académico",
+  periodo: "Periodo académico",
+  sede: "Sede institucional",
+  monto_total: "Costo total del programa",
+  numero_recibo: "Número correlativo de recibo",
+  matricula_id: "Código de matrícula asociada",
+  monto_cobrado: "Monto cobrado",
+  metodo_pago: "Método de pago",
+  concepto: "Concepto de la cuota",
+  total_cuotas: "Total de cuotas del cronograma",
+  monto_pension: "Monto de cuota mensual",
+  primer_vencimiento: "Fecha de primer vencimiento",
+  token_prefijo: "Prefijo de token de activación",
+  modo: "Modo de simulación",
+  modulos: "Cantidad de módulos curriculares",
+  horas_totales: "Horas formativas totales",
+  locked: "Bloqueo directo de fila contable",
+  estado: "Estado del registro",
+  security_rule: "Regla de seguridad aplicada",
+  logged_in_audit: "Registrado en bitácora inmutable",
+  auth_provider: "Proveedor de autenticación",
+  email: "Correo institucional",
+  role: "Rol institucional asignado",
+  status: "Estado de cuenta",
+};
+
+function formatearNombreCampo(clave: string): string {
+  if (DICCIONARIO_CAMPOS[clave]) return DICCIONARIO_CAMPOS[clave];
+  return clave
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, l => l.toUpperCase());
+}
+
+function formatearValor(clave: string, valor: unknown): string {
+  if (valor === null || valor === undefined) return "Sin registro previo";
+  if (typeof valor === 'boolean') return valor ? "Activado / Sí" : "Desactivado / No";
+  if (typeof valor === 'number') {
+    const claveLower = clave.toLowerCase();
+    if (
+      (claveLower.includes('monto') || claveLower.includes('cobrado') || claveLower.includes('total')) &&
+      !claveLower.includes('cuotas') &&
+      !claveLower.includes('horas')
+    ) {
+      return `S/ ${valor.toFixed(2)}`;
+    }
+    return valor.toString();
+  }
+  return String(valor);
+}
+
+interface CampoComparado {
+  campo: string;
+  valorAnterior: string;
+  valorNuevo: string;
+  cambioReal: boolean;
+}
+
+function obtenerCambiosComparativos(
+  dataBefore?: Record<string, unknown> | null,
+  dataAfter?: Record<string, unknown> | null
+): CampoComparado[] {
+  const before = dataBefore || {};
+  const after = dataAfter || {};
+
+  const allKeys = Array.from(new Set([...Object.keys(before), ...Object.keys(after)]));
+  
+  if (allKeys.length === 0) return [];
+
+  return allKeys.map(key => {
+    const valBefore = before[key];
+    const valAfter = after[key];
+    
+    return {
+      campo: formatearNombreCampo(key),
+      valorAnterior: valBefore !== undefined ? formatearValor(key, valBefore) : "Sin registro previo",
+      valorNuevo: valAfter !== undefined ? formatearValor(key, valAfter) : "Sin mutación posterior",
+      cambioReal: JSON.stringify(valBefore) !== JSON.stringify(valAfter)
+    };
+  });
+}
+
 export function AuditoriaManagerClient({ initialLogs = [] }: AuditoriaManagerClientProps) {
-  const [logs, setLogs] = useState<AuditoriaEvent[]>(initialLogs);
+  const [logs] = useState<AuditoriaEvent[]>(initialLogs);
   const [activeTab, setActiveTab] = useState<CategoriaTab>('TODOS');
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedModule, setSelectedModule] = useState<string>("TODOS");
   const [selectedSeverity, setSelectedSeverity] = useState<string>("TODAS");
   
-  // Estado para el modal de inspección técnica
+  // Estado para el modal de inspección en lenguaje humano
   const [inspectedEvent, setInspectedEvent] = useState<AuditoriaEvent | null>(null);
-  const [copiedJson, setCopiedJson] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
 
   // Cálculos de KPIs Superiores
@@ -128,23 +232,20 @@ export function AuditoriaManagerClient({ initialLogs = [] }: AuditoriaManagerCli
 
       // Filtro por Categoría Tab
       if (activeTab === 'MODIFICACIONES') {
-        const isMod = ['INSERT', 'UPDATE', 'DELETE', 'RBAC_UPDATE', 'CAMBIO_ESTADO'].some(a => event.action.includes(a));
-        return isMod;
+        return ['INSERT', 'UPDATE', 'DELETE', 'RBAC_UPDATE', 'CAMBIO_ESTADO'].some(a => event.action.includes(a));
       }
       if (activeTab === 'ACCESOS') {
-        const isAccess = ['LOGIN', 'LOGOUT', 'AUTH', 'SESSION', 'SECURITY_CHECK'].some(a => event.action.includes(a)) || event.module === 'SEGURIDAD';
-        return isAccess;
+        return ['LOGIN', 'LOGOUT', 'AUTH', 'SESSION', 'SECURITY_CHECK'].some(a => event.action.includes(a)) || event.module === 'SEGURIDAD';
       }
       if (activeTab === 'FINANZAS') {
-        const isFinance = event.module === 'FINANZAS' || ['PAGO', 'RECIBO', 'ANULACION', 'CUOTA'].some(a => event.action.includes(a));
-        return isFinance;
+        return event.module === 'FINANZAS' || ['PAGO', 'RECIBO', 'ANULACION', 'CUOTA'].some(a => event.action.includes(a));
       }
 
       return true;
     });
   }, [logs, searchTerm, selectedModule, selectedSeverity, activeTab]);
 
-  // Función para exportar logs en formato JSON
+  // Exportar logs en formato JSON
   const handleExportJson = () => {
     setIsExporting(true);
     try {
@@ -159,6 +260,12 @@ export function AuditoriaManagerClient({ initialLogs = [] }: AuditoriaManagerCli
       setTimeout(() => setIsExporting(false), 800);
     }
   };
+
+  // Comparación de campos para el evento actualmente inspeccionado
+  const camposComparados = useMemo(() => {
+    if (!inspectedEvent) return [];
+    return obtenerCambiosComparativos(inspectedEvent.dataBefore, inspectedEvent.dataAfter);
+  }, [inspectedEvent]);
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
@@ -180,7 +287,7 @@ export function AuditoriaManagerClient({ initialLogs = [] }: AuditoriaManagerCli
                 </span>
               </div>
               <p className="text-sm text-slate-600 mt-0.5">
-                Bitácora forense de operaciones, mutaciones de base de datos, movimientos financieros y directivas de acceso en Sede Central - Tumbes.
+                Bitácora de operaciones, modificaciones de datos, movimientos financieros y directivas de acceso en Sede Central - Tumbes.
               </p>
             </div>
           </div>
@@ -201,7 +308,7 @@ export function AuditoriaManagerClient({ initialLogs = [] }: AuditoriaManagerCli
 
       {/* PASO 1: TARJETAS KPI SUPERIORES DE AUDITORÍA */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* KPI 1: Eventos Registrados */}
+        {/* KPI 1: Eventos Auditados */}
         <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold tracking-wider uppercase text-slate-600">Eventos Auditados</span>
@@ -259,7 +366,7 @@ export function AuditoriaManagerClient({ initialLogs = [] }: AuditoriaManagerCli
               <span className="px-1.5 py-0.5 rounded bg-red-50 text-[#990000] border border-red-200 font-bold">
                 Alto Impacto
               </span>
-              <span className="text-slate-600">Con diffs de BD</span>
+              <span className="text-slate-600">Verificado en español</span>
             </div>
           </div>
         </div>
@@ -294,7 +401,7 @@ export function AuditoriaManagerClient({ initialLogs = [] }: AuditoriaManagerCli
           <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
             {[
               { id: 'TODOS' as CategoriaTab, label: 'Todos los logs', count: logs.length },
-              { id: 'MODIFICACIONES' as CategoriaTab, label: 'Modificaciones de datos (INSERT/UPDATE)', count: logs.filter(l => ['INSERT', 'UPDATE', 'DELETE', 'RBAC_UPDATE', 'CAMBIO_ESTADO'].some(a => l.action.includes(a))).length },
+              { id: 'MODIFICACIONES' as CategoriaTab, label: 'Modificaciones de datos (Alta/Edición)', count: logs.filter(l => ['INSERT', 'UPDATE', 'DELETE', 'RBAC_UPDATE', 'CAMBIO_ESTADO'].some(a => l.action.includes(a))).length },
               { id: 'ACCESOS' as CategoriaTab, label: 'Accesos y seguridad (Auth/Sesión)', count: totalAccesos },
               { id: 'FINANZAS' as CategoriaTab, label: 'Operaciones financieras (Pagos/Recibos)', count: totalFinancieros },
             ].map(tab => {
@@ -329,7 +436,7 @@ export function AuditoriaManagerClient({ initialLogs = [] }: AuditoriaManagerCli
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Buscar por usuario, acción (UPDATE), recurso (MAT-2026), IP o detalle..."
+                placeholder="Buscar por usuario, acción, recurso (MAT-2026), IP o detalle..."
                 className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#C4121A]/30 focus:border-[#C4121A] text-slate-900 transition-all shadow-xs"
               />
               {searchTerm && (
@@ -387,7 +494,7 @@ export function AuditoriaManagerClient({ initialLogs = [] }: AuditoriaManagerCli
                 <th className="py-3.5 px-4 font-bold">Módulo & Recurso</th>
                 <th className="py-3.5 px-4 font-bold">Detalle Operativo</th>
                 <th className="py-3.5 px-4 font-bold text-center">Resultado</th>
-                <th className="py-3.5 px-4 font-bold text-right">Forense</th>
+                <th className="py-3.5 px-4 font-bold text-right">Detalle</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -407,24 +514,10 @@ export function AuditoriaManagerClient({ initialLogs = [] }: AuditoriaManagerCli
                       ? 'bg-amber-50 text-amber-700 border-amber-200'
                       : 'bg-slate-100 text-slate-700 border-slate-200';
 
-                  // Colores de Acción
-                  const isInsert = log.action.includes('INSERT') || log.action.includes('CREACION');
-                  const isUpdate = log.action.includes('UPDATE') || log.action.includes('MODIFICACION') || log.action.includes('RBAC');
-                  const isDelete = log.action.includes('DELETE') || log.action.includes('ANULACION');
-                  const isLogin = log.action.includes('LOGIN') || log.action.includes('AUTH');
-                  const isPay = log.action.includes('PAGO') || log.action.includes('RECIBO');
-
-                  const actionBadge = isInsert
-                    ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                    : isUpdate
-                    ? 'bg-blue-50 text-blue-800 border-blue-200'
-                    : isDelete
-                    ? 'bg-red-50 text-[#990000] border-red-200'
-                    : isPay
-                    ? 'bg-amber-50 text-amber-800 border-amber-200'
-                    : isLogin
-                    ? 'bg-teal-50 text-teal-800 border-teal-200'
-                    : 'bg-slate-100 text-slate-700 border-slate-200';
+                  const accionInfo = ACCIONES_AMIGABLES[log.action] || {
+                    titulo: log.action.replace(/_/g, ' '),
+                    colorBadge: 'bg-slate-100 text-slate-700 border-slate-200'
+                  };
 
                   return (
                     <tr key={log.id} className="hover:bg-slate-50/70 transition-colors">
@@ -461,10 +554,10 @@ export function AuditoriaManagerClient({ initialLogs = [] }: AuditoriaManagerCli
                         </div>
                       </td>
 
-                      {/* Acción Realizada */}
+                      {/* Acción Realizada (Lenguaje Claro) */}
                       <td className="py-3.5 px-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border text-xs font-bold font-mono shadow-2xs ${actionBadge}`}>
-                          {log.action}
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-lg border text-xs font-semibold shadow-2xs ${accionInfo.colorBadge}`}>
+                          {accionInfo.titulo}
                         </span>
                       </td>
 
@@ -500,15 +593,14 @@ export function AuditoriaManagerClient({ initialLogs = [] }: AuditoriaManagerCli
                         </span>
                       </td>
 
-                      {/* Acción Forense */}
+                      {/* Acción */}
                       <td className="py-3.5 px-4 text-right whitespace-nowrap">
                         <button
                           onClick={() => setInspectedEvent(log)}
-                          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 font-semibold text-xs shadow-2xs transition-all hover:border-slate-300"
-                          title="Inspeccionar payload JSON antes y después"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 font-semibold text-xs shadow-2xs transition-all hover:border-slate-300"
                         >
                           <Eye className="w-3.5 h-3.5 text-slate-600" />
-                          <span>Detalle</span>
+                          <span>Ver Resumen</span>
                         </button>
                       </td>
                     </tr>
@@ -557,152 +649,150 @@ export function AuditoriaManagerClient({ initialLogs = [] }: AuditoriaManagerCli
         </div>
       </div>
 
-      {/* MODAL DE INSPECCIÓN TÉCNICA Y FORENSE */}
+      {/* PASO 1: MODAL DE DETALLE EN LENGUAJE HUMANO (SIN JSON CRUDO NI CORRELATION_ID) */}
       <Modal
         isOpen={Boolean(inspectedEvent)}
         onClose={() => setInspectedEvent(null)}
-        title="Inspección Técnica de Evento de Auditoría"
-        className="max-w-3xl"
+        title="Detalle de la Operación"
+        className="max-w-2xl"
       >
         {inspectedEvent && (
           <div className="space-y-4">
-            {/* Cabecera del Evento */}
-            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2 text-xs">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-sm text-slate-900 font-mono">
-                    {inspectedEvent.action}
-                  </span>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-200 text-slate-800 font-mono">
-                    {inspectedEvent.entityId}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-slate-600 font-mono text-[11px]">
-                    {new Date(inspectedEvent.timestamp).toLocaleString('es-PE')}
-                  </span>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    {inspectedEvent.result}
-                  </span>
+            {/* Cabecera Amigable */}
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200/80 pb-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-base text-slate-900">
+                      {ACCIONES_AMIGABLES[inspectedEvent.action]?.titulo || inspectedEvent.action}
+                    </span>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold border uppercase tracking-wider ${
+                      inspectedEvent.result === 'EXITOSO'
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                        : 'bg-purple-50 text-purple-700 border-purple-200'
+                    }`}>
+                      {inspectedEvent.result}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-600 mt-0.5">
+                    Módulo: <strong className="text-slate-800">{inspectedEvent.module}</strong> · Recurso: <span className="font-mono bg-slate-200 px-1 py-0.2 rounded font-semibold text-slate-800">{inspectedEvent.entityId}</span>
+                  </p>
                 </div>
               </div>
-              <p className="text-slate-700 font-medium pt-1">
-                {inspectedEvent.detail}
-              </p>
+
+              {/* Resumen Quién y Cuándo */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div className="flex items-start gap-2.5">
+                  <div className="p-2 bg-white rounded-lg border border-slate-200 text-slate-600 shrink-0">
+                    <User className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-slate-600 block">Responsable</span>
+                    <span className="font-bold text-slate-900 text-xs block leading-tight">{inspectedEvent.userName}</span>
+                    <span className="text-[11px] text-slate-600">{inspectedEvent.userRole}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2.5">
+                  <div className="p-2 bg-white rounded-lg border border-slate-200 text-slate-600 shrink-0">
+                    <Calendar className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-slate-600 block">Fecha y Hora</span>
+                    <span className="font-semibold text-slate-800 text-xs block leading-tight">
+                      {new Date(inspectedEvent.timestamp).toLocaleDateString('es-PE', { day: '2-digit', month: 'long', year: 'numeric' })}
+                    </span>
+                    <span className="text-[11px] text-slate-600 font-mono">
+                      {new Date(inspectedEvent.timestamp).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Sede y Dirección IP */}
+              <div className="pt-2 border-t border-slate-200/80 flex items-center justify-between text-xs text-slate-600">
+                <span className="flex items-center gap-1 font-medium text-slate-700">
+                  <MapPin className="w-3.5 h-3.5 text-[#C4121A]" />
+                  Sede Central - Tumbes
+                </span>
+                <span className="font-mono text-[11px] text-slate-600 bg-white px-2 py-0.5 rounded border border-slate-200">
+                  IP: {inspectedEvent.ipAddress}
+                </span>
+              </div>
             </div>
 
-            {/* Metadatos de Contexto */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-              <div className="p-3 bg-white border border-slate-200 rounded-xl">
-                <span className="text-[10px] font-bold text-slate-600 uppercase block">Usuario</span>
-                <span className="font-semibold text-slate-800 mt-0.5 block truncate" title={inspectedEvent.userName}>
-                  {inspectedEvent.userName}
-                </span>
-                <span className="text-[10px] text-slate-600 block">{inspectedEvent.userRole}</span>
-              </div>
-              <div className="p-3 bg-white border border-slate-200 rounded-xl">
-                <span className="text-[10px] font-bold text-slate-600 uppercase block">Módulo / Entidad</span>
-                <span className="font-semibold text-slate-800 mt-0.5 block">{inspectedEvent.module}</span>
-                <span className="text-[10px] text-slate-600 font-mono block">{inspectedEvent.entity}</span>
-              </div>
-              <div className="p-3 bg-white border border-slate-200 rounded-xl">
-                <span className="text-[10px] font-bold text-slate-600 uppercase block">Dirección IP</span>
-                <span className="font-semibold font-mono text-slate-800 mt-0.5 block">{inspectedEvent.ipAddress}</span>
-                <span className="text-[10px] text-slate-600 block">Sede Central - Tumbes</span>
-              </div>
-              <div className="p-3 bg-white border border-slate-200 rounded-xl">
-                <span className="text-[10px] font-bold text-slate-600 uppercase block">Correlation ID</span>
-                <span className="font-mono text-[10px] text-slate-700 mt-0.5 block truncate" title={inspectedEvent.correlationId}>
-                  {inspectedEvent.correlationId}
-                </span>
-                <span className="text-[10px] text-emerald-600 font-bold block">Firma Cripto OK</span>
+            {/* Explicación en Lenguaje Natural */}
+            <div className="p-3.5 bg-blue-50/70 border border-blue-200 rounded-xl text-xs text-blue-900 flex items-start gap-2.5">
+              <Info className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+              <div className="space-y-0.5">
+                <span className="font-bold text-blue-950 block">Descripción del Movimiento:</span>
+                <p className="text-blue-900 font-medium leading-relaxed">
+                  {inspectedEvent.detail}
+                </p>
               </div>
             </div>
 
-            {/* Payload JSON de Datos */}
+            {/* DETALLE DEL CAMBIO (LISTA / TABLA COMPARATIVA EN LENGUAJE HUMANO) */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                  <Terminal className="w-3.5 h-3.5 text-slate-600" />
-                  Payload de Datos (Diff Auditoría)
+                  <ArrowRightLeft className="w-3.5 h-3.5 text-[#C4121A]" />
+                  Detalle del Cambio (Valores Comparados)
                 </label>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const fullPayload = JSON.stringify({
-                      antes: inspectedEvent.dataBefore || null,
-                      despues: inspectedEvent.dataAfter || null,
-                      metadata: {
-                        evento_id: inspectedEvent.id,
-                        timestamp: inspectedEvent.timestamp,
-                        usuario: inspectedEvent.userEmail,
-                        ip: inspectedEvent.ipAddress,
-                        userAgent: inspectedEvent.userAgent
-                      }
-                    }, null, 2);
-                    navigator.clipboard.writeText(fullPayload);
-                    setCopiedJson(true);
-                    setTimeout(() => setCopiedJson(false), 2000);
-                  }}
-                  className="inline-flex items-center gap-1 text-xs font-bold text-slate-700 hover:text-slate-900"
-                >
-                  {copiedJson ? (
-                    <>
-                      <Check className="w-3 h-3 text-emerald-600" />
-                      <span className="text-emerald-700">¡JSON Copiado!</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-3 h-3" />
-                      <span>Copiar JSON</span>
-                    </>
-                  )}
-                </button>
+                <span className="text-[11px] text-slate-600 font-medium">
+                  {camposComparados.length} {camposComparados.length === 1 ? 'campo registrado' : 'campos registrados'}
+                </span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {/* Datos Antes */}
-                <div className="border border-slate-200 rounded-xl overflow-hidden bg-slate-900 text-slate-100">
-                  <div className="px-3 py-1.5 bg-slate-800 border-b border-slate-700 text-[11px] font-mono text-slate-300 flex items-center justify-between">
-                    <span>data_before (Estado Previo)</span>
-                    <span className="text-[10px] text-slate-600 font-sans">Snapshot</span>
-                  </div>
-                  <pre className="p-3 text-[11px] font-mono overflow-x-auto max-h-56 leading-relaxed text-slate-300 custom-scrollbar">
-                    {inspectedEvent.dataBefore 
-                      ? JSON.stringify(inspectedEvent.dataBefore, null, 2)
-                      : '// Sin datos previos (Registro Inicial / INSERT)'}
-                  </pre>
+              {camposComparados.length > 0 ? (
+                <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-2xs">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 text-[10px] font-bold uppercase tracking-wider">
+                      <tr>
+                        <th className="py-2.5 px-3">Campo Modificado</th>
+                        <th className="py-2.5 px-3">Valor Anterior</th>
+                        <th className="py-2.5 px-3">Valor Nuevo</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-slate-700">
+                      {camposComparados.map((item, idx) => (
+                        <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
+                          <td className="py-2.5 px-3 font-bold text-slate-900">
+                            {item.campo}
+                          </td>
+                          <td className="py-2.5 px-3">
+                            <span className="inline-block px-2 py-0.5 rounded text-[11px] bg-slate-100 text-slate-600 font-medium">
+                              {item.valorAnterior}
+                            </span>
+                          </td>
+                          <td className="py-2.5 px-3">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold">
+                              <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
+                              {item.valorNuevo}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-
-                {/* Datos Después */}
-                <div className="border border-slate-200 rounded-xl overflow-hidden bg-slate-900 text-slate-100">
-                  <div className="px-3 py-1.5 bg-slate-800 border-b border-slate-700 text-[11px] font-mono text-emerald-400 flex items-center justify-between">
-                    <span>data_after (Estado Mutado)</span>
-                    <span className="text-[10px] text-slate-600 font-sans">Persistido</span>
-                  </div>
-                  <pre className="p-3 text-[11px] font-mono overflow-x-auto max-h-56 leading-relaxed text-emerald-300 custom-scrollbar">
-                    {inspectedEvent.dataAfter 
-                      ? JSON.stringify(inspectedEvent.dataAfter, null, 2)
-                      : '// Sin mutación posterior'}
-                  </pre>
+              ) : (
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-center text-xs text-slate-600">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600 mx-auto mb-1.5" />
+                  <p className="font-semibold text-slate-800">No se detectaron mutaciones de campos en este evento</p>
+                  <p className="text-slate-600 mt-0.5">Operación de consulta o inicio de sesión autenticado correctamente.</p>
                 </div>
-              </div>
+              )}
             </div>
 
-            {/* User Agent */}
-            <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-600 font-mono truncate" title={inspectedEvent.userAgent}>
-              <span className="font-bold text-slate-700 font-sans">User-Agent: </span>
-              {inspectedEvent.userAgent}
-            </div>
-
-            {/* Botón Cerrar */}
-            <div className="flex justify-end pt-2 border-t border-slate-200">
+            {/* BOTÓN DE CIERRE AMIGABLE */}
+            <div className="flex justify-end pt-3 border-t border-slate-200">
               <Button
                 type="button"
                 onClick={() => setInspectedEvent(null)}
-                className="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2 rounded-xl text-xs font-bold"
+                className="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2 rounded-xl text-xs font-bold shadow-xs"
               >
-                Cerrar Inspección
+                Entendido / Cerrar Detalle
               </Button>
             </div>
           </div>
