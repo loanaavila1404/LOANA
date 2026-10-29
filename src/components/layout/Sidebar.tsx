@@ -1,147 +1,335 @@
 'use client'
-import { SessionUser } from '@/lib/types'
 
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { SessionUser, SedeContextType } from '@/lib/types';
+import {
+  LayoutDashboard,
+  Target,
+  Users,
+  BookOpen,
+  ClipboardList,
+  Calendar,
+  Award,
+  BarChart3,
+  ShieldCheck,
+  History,
+  ChevronRight,
+} from 'lucide-react';
 
-
-
-export function Sidebar({ appVersion = '1.0.0', user }: { appVersion?: string, user?: SessionUser }) {
-  
-  const perms = user?.permissions || [];
-  
-  const canViewReportes = perms.includes('SISTEMA.ADMINISTRAR');
-  const canViewAuditoria = perms.includes('AUDITORIA.VER');
-  const canViewUsuarios = perms.includes('USUARIOS.VER');
+export function Sidebar({
+  appVersion = '1.0.0',
+  user,
+  sedeContext,
+}: {
+  appVersion?: string;
+  user?: SessionUser;
+  sedeContext?: SedeContextType;
+}) {
   const pathname = usePathname();
 
+  const perms = user?.permissions || [];
+  const isSuperadmin =
+    user?.roleCode === 'SUPERADMIN' ||
+    user?.role?.toLowerCase().includes('superadmin') ||
+    perms.includes('SISTEMA.ADMINISTRAR');
+
+  const canViewReportes = isSuperadmin || perms.includes('SISTEMA.ADMINISTRAR');
+  const canViewAuditoria = isSuperadmin || perms.includes('AUDITORIA.VER');
+  const canViewUsuarios = isSuperadmin || perms.includes('USUARIOS.VER');
+
   const isActive = (path: string) => {
-    if (path === '/dashboard' && pathname === '/dashboard') return true;
+    if (path === '/dashboard' && (pathname === '/dashboard' || pathname === '/')) return true;
     if (path !== '/dashboard' && pathname.startsWith(path)) return true;
     return false;
   };
 
+  const userName = user?.name || 'Loana Avila Neyra';
+  const userRole = user?.role || 'Superadministrador';
+  const userInitials =
+    userName
+      .split(' ')
+      .filter(Boolean)
+      .map((n) => n[0])
+      .join('')
+      .substring(0, 2)
+      .toUpperCase() || 'LA';
+
   return (
-    <aside className="w-64 h-full bg-[#181A1F] text-slate-300 flex flex-col flex-shrink-0 z-30 select-none transition-all duration-200 print:hidden no-print">
-      {/* Brand & Logo Container */}
-      <div className="h-16 px-4 bg-black/25 flex items-center justify-between border-b border-white/5">
-        <div className="flex items-center w-full h-full overflow-hidden justify-center py-2">
-          <>{/* eslint-disable-next-line @next/next/no-img-element */} <img src="/logo.jpg" alt="Logo Brusben" className="h-full w-auto max-w-full object-contain" /></>
+    <aside className="w-64 h-full bg-[#181A1F] text-slate-300 flex flex-col flex-shrink-0 z-30 select-none transition-all duration-200 print:hidden no-print border-r border-white/5">
+      {/* ============================================================== */}
+      {/* PASO 1: CABECERA DEL SIDEBAR (LOGO PROMINENTE Y SEDE)           */}
+      {/* ============================================================== */}
+      <div className="p-3.5 border-b border-white/5 bg-[#141519] space-y-2.5">
+        {/* Contenedor del Logo: Mayor espacio y fondo blanco nítido */}
+        <Link
+          href="/dashboard"
+          className="bg-white rounded-xl px-3 py-2 shadow-xs flex items-center justify-center border border-white/10 group transition-all hover:shadow-md block"
+          title="Centro de Capacitaciones Brusben"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/logo-brusben.png"
+            alt="Centro de Capacitaciones Brusben"
+            className="h-10 w-auto max-w-full object-contain group-hover:scale-[1.02] transition-transform duration-200"
+          />
+        </Link>
+
+        {/* Badge Indicador / Selector de Sede Central - Tumbes */}
+        <div className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-white/[0.04] border border-white/10 text-xs">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="relative flex h-2 w-2 shrink-0">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span className="font-semibold text-slate-200 text-[11px] truncate">
+              Sede Central • Tumbes
+            </span>
+          </div>
+          <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 shrink-0">
+            Activa
+          </span>
         </div>
       </div>
-      
-      {/* Navigation Items List */}
-      <nav className="flex-1 px-2.5 py-4 space-y-1 overflow-y-auto text-xs font-medium custom-scrollbar">
-        {/* Item: Inicio (Active) */}
-        <Link className={`flex items-center gap-3 px-3 py-2.5 rounded-md shadow-sm font-semibold group transition-colors ${isActive("/dashboard") ? "bg-[#c4121a] text-white" : "text-slate-300 hover:bg-white/5 hover:text-white"}`} href="/dashboard">
-          <svg className="w-4 h-4 flex-shrink-0 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
-          </svg>
-          <span className="truncate">Inicio</span>
-        </Link>
-        
-        {/* Item: CRM Comercial */}
-        <Link className={`flex items-center gap-3 px-3 py-2.5 rounded-md group transition-colors ${isActive("/crm") ? "bg-[#c4121a] text-white shadow-sm font-semibold" : "text-slate-300 hover:bg-white/5 hover:text-white"}`} href="/crm">
-          <svg className="w-4 h-4 text-slate-400 group-hover:text-slate-200 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
-          </svg>
-          <span className="truncate">CRM Comercial</span>
-        </Link>
-        
-        {/* Item: Personas y estudiantes */}
-        <Link className={`flex items-center gap-3 px-3 py-2.5 rounded-md group transition-colors ${isActive("/personas") ? "bg-[#c4121a] text-white shadow-sm font-semibold" : "text-slate-300 hover:bg-white/5 hover:text-white"}`} href="/personas">
-          <svg className="w-4 h-4 text-slate-400 group-hover:text-slate-200 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
-          </svg>
-          <span className="truncate">Personas y estudiantes</span>
-        </Link>
-        
-        {/* Item: Oferta académica */}
-        <Link className={`flex items-center gap-3 px-3 py-2.5 rounded-md group transition-colors ${isActive("/oferta") ? "bg-[#c4121a] text-white shadow-sm font-semibold" : "text-slate-300 hover:bg-white/5 hover:text-white"}`} href="/oferta">
-          <svg className="w-4 h-4 text-slate-400 group-hover:text-slate-200 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
-          </svg>
-          <span className="truncate">Oferta académica</span>
-        </Link>
-        
-        {/* Item: Matrículas */}
-        <Link className={`flex items-center gap-3 px-3 py-2.5 rounded-md group transition-colors ${isActive("/matriculas") ? "bg-[#c4121a] text-white shadow-sm font-semibold" : "text-slate-300 hover:bg-white/5 hover:text-white"}`} href="/matriculas">
-          <svg className="w-4 h-4 text-slate-400 group-hover:text-slate-200 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
-          </svg>
-          <span className="truncate">Matrículas</span>
-        </Link>
 
-        {/* Item: Horarios */}
-        <Link className={`flex items-center gap-3 px-3 py-2.5 rounded-md group transition-colors ${isActive("/horarios") ? "bg-[#c4121a] text-white shadow-sm font-semibold" : "text-slate-300 hover:bg-white/5 hover:text-white"}`} href="/horarios">
-          <svg className="w-4 h-4 text-slate-400 group-hover:text-slate-200 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
-          </svg>
-          <span className="truncate">Horarios</span>
-        </Link>
+      {/* ============================================================== */}
+      {/* PASO 2: CATEGORIZACIÓN DE ENLACES OPERATIVOS                   */}
+      {/* ============================================================== */}
+      <nav className="flex-1 px-2.5 py-3 overflow-y-auto text-xs space-y-3.5 custom-scrollbar">
+        {/* SECCIÓN 1: PRINCIPAL & VENTAS */}
+        <div className="space-y-0.5">
+          <div className="px-2.5 pb-1 text-[10px] font-black uppercase tracking-wider text-slate-400">
+            Principal & Ventas
+          </div>
 
-        {/* Item: Notas */}
-        <Link className={`flex items-center gap-3 px-3 py-2.5 rounded-md group transition-colors ${isActive("/notas") ? "bg-[#c4121a] text-white shadow-sm font-semibold" : "text-slate-300 hover:bg-white/5 hover:text-white"}`} href="/notas">
-          <svg className="w-4 h-4 text-slate-400 group-hover:text-slate-200 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
-          </svg>
-          <span className="truncate">Notas</span>
-        </Link>
+          {/* Inicio */}
+          <Link
+            href="/dashboard"
+            className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
+              isActive('/dashboard')
+                ? 'bg-[#c4121a] text-white shadow-sm font-bold'
+                : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
+            }`}
+          >
+            <LayoutDashboard className={`w-4 h-4 shrink-0 ${isActive('/dashboard') ? 'text-white' : 'text-slate-400'}`} />
+            <span className="truncate">Inicio</span>
+          </Link>
 
-        {/* Item: Reportes */}
-        {canViewReportes && (
-          <Link className={`flex items-center gap-3 px-3 py-2.5 rounded-md group transition-colors ${isActive("/reportes") ? "bg-[#c4121a] text-white shadow-sm font-semibold" : "text-slate-300 hover:bg-white/5 hover:text-white"}`} href="/reportes">
-            <svg className="w-4 h-4 text-slate-400 group-hover:text-slate-200 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
-            </svg>
-            <span className="truncate">Reportes</span>
+          {/* CRM Comercial */}
+          <Link
+            href="/crm"
+            className={`flex items-center justify-between px-2.5 py-2 rounded-lg font-medium transition-all group ${
+              isActive('/crm')
+                ? 'bg-[#c4121a] text-white shadow-sm font-bold'
+                : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
+            }`}
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <Target className={`w-4 h-4 shrink-0 ${isActive('/crm') ? 'text-white' : 'text-slate-400 group-hover:text-slate-200'}`} />
+              <span className="truncate">CRM Comercial</span>
+            </div>
+            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0 ${
+              isActive('/crm')
+                ? 'bg-white/20 text-white'
+                : 'bg-red-500/15 text-red-400 border border-red-500/20'
+            }`}>
+              Prospectos
+            </span>
           </Link>
-        )}
-        
-        {/* Item: Usuarios y accesos */}
-        {canViewUsuarios && (
-          <Link className={`flex items-center gap-3 px-3 py-2.5 rounded-md group transition-colors ${isActive("/usuarios") ? "bg-[#c4121a] text-white shadow-sm font-semibold" : "text-slate-300 hover:bg-white/5 hover:text-white"}`} href="/usuarios">
-            <svg className="w-4 h-4 text-slate-400 group-hover:text-slate-200 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
-            </svg>
-            <span className="truncate">Usuarios y accesos</span>
+        </div>
+
+        {/* SECCIÓN 2: GESTIÓN ACADÉMICA */}
+        <div className="space-y-0.5">
+          <div className="px-2.5 pb-1 text-[10px] font-black uppercase tracking-wider text-slate-400">
+            Gestión Académica
+          </div>
+
+          {/* Personas y estudiantes */}
+          <Link
+            href="/personas"
+            className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
+              isActive('/personas')
+                ? 'bg-[#c4121a] text-white shadow-sm font-bold'
+                : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
+            }`}
+          >
+            <Users className={`w-4 h-4 shrink-0 ${isActive('/personas') ? 'text-white' : 'text-slate-400'}`} />
+            <span className="truncate">Personas y estudiantes</span>
           </Link>
-        )}
-        
-        {/* Item: Auditoría */}
-        {canViewAuditoria && (
-          <Link className={`flex items-center gap-3 px-3 py-2.5 rounded-md group transition-colors ${isActive("/auditoria") ? "bg-[#c4121a] text-white shadow-sm font-semibold" : "text-slate-300 hover:bg-white/5 hover:text-white"}`} href="/auditoria">
-            <svg className="w-4 h-4 text-slate-400 group-hover:text-slate-200 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
-            </svg>
-            <span className="truncate">Auditoría</span>
+
+          {/* Oferta académica */}
+          <Link
+            href="/oferta"
+            className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
+              isActive('/oferta')
+                ? 'bg-[#c4121a] text-white shadow-sm font-bold'
+                : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
+            }`}
+          >
+            <BookOpen className={`w-4 h-4 shrink-0 ${isActive('/oferta') ? 'text-white' : 'text-slate-400'}`} />
+            <span className="truncate">Oferta académica</span>
           </Link>
-        )}
-        
-        {/* Item: Mi perfil */}
-        <Link className={`flex items-center gap-3 px-3 py-2.5 rounded-md group transition-colors ${isActive("/perfil") ? "bg-[#c4121a] text-white shadow-sm font-semibold" : "text-slate-300 hover:bg-white/5 hover:text-white"}`} href="/perfil">
-          <svg className="w-4 h-4 text-slate-400 group-hover:text-slate-200 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
-          </svg>
-          <span className="truncate">Mi perfil</span>
-        </Link>
+
+          {/* Matrículas */}
+          <Link
+            href="/matriculas"
+            className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
+              isActive('/matriculas')
+                ? 'bg-[#c4121a] text-white shadow-sm font-bold'
+                : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
+            }`}
+          >
+            <ClipboardList className={`w-4 h-4 shrink-0 ${isActive('/matriculas') ? 'text-white' : 'text-slate-400'}`} />
+            <span className="truncate">Matrículas</span>
+          </Link>
+
+          {/* Horarios */}
+          <Link
+            href="/horarios"
+            className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
+              isActive('/horarios')
+                ? 'bg-[#c4121a] text-white shadow-sm font-bold'
+                : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
+            }`}
+          >
+            <Calendar className={`w-4 h-4 shrink-0 ${isActive('/horarios') ? 'text-white' : 'text-slate-400'}`} />
+            <span className="truncate">Horarios</span>
+          </Link>
+        </div>
+
+        {/* SECCIÓN 3: EVALUACIÓN & MÉTRICAS */}
+        <div className="space-y-0.5">
+          <div className="px-2.5 pb-1 text-[10px] font-black uppercase tracking-wider text-slate-400">
+            Evaluación & Métricas
+          </div>
+
+          {/* Notas y actas */}
+          <Link
+            href="/notas"
+            className={`flex items-center justify-between px-2.5 py-2 rounded-lg font-medium transition-all group ${
+              isActive('/notas')
+                ? 'bg-[#c4121a] text-white shadow-sm font-bold'
+                : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
+            }`}
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <Award className={`w-4 h-4 shrink-0 ${isActive('/notas') ? 'text-white' : 'text-slate-400 group-hover:text-slate-200'}`} />
+              <span className="truncate">Notas y actas</span>
+            </div>
+            <span className={`text-[9.5px] font-bold px-1.5 py-0.5 rounded shrink-0 ${
+              isActive('/notas')
+                ? 'bg-white/20 text-white'
+                : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+            }`}>
+              0-20
+            </span>
+          </Link>
+
+          {/* Reportes y analítica */}
+          {canViewReportes && (
+            <Link
+              href="/reportes"
+              className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
+                isActive('/reportes')
+                  ? 'bg-[#c4121a] text-white shadow-sm font-bold'
+                  : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
+              }`}
+            >
+              <BarChart3 className={`w-4 h-4 shrink-0 ${isActive('/reportes') ? 'text-white' : 'text-slate-400'}`} />
+              <span className="truncate">Reportes y analítica</span>
+            </Link>
+          )}
+        </div>
+
+        {/* SECCIÓN 4: CONTROL INSTITUCIONAL */}
+        <div className="space-y-0.5">
+          <div className="px-2.5 pb-1 text-[10px] font-black uppercase tracking-wider text-slate-400">
+            Control Institucional
+          </div>
+
+          {/* Usuarios y accesos (RBAC) */}
+          {canViewUsuarios && (
+            <Link
+              href="/usuarios"
+              className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
+                isActive('/usuarios')
+                  ? 'bg-[#c4121a] text-white shadow-sm font-bold'
+                  : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
+              }`}
+            >
+              <ShieldCheck className={`w-4 h-4 shrink-0 ${isActive('/usuarios') ? 'text-white' : 'text-slate-400'}`} />
+              <span className="truncate">Usuarios y accesos (RBAC)</span>
+            </Link>
+          )}
+
+          {/* Auditoría y trazabilidad */}
+          {canViewAuditoria && (
+            <Link
+              href="/auditoria"
+              className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
+                isActive('/auditoria')
+                  ? 'bg-[#c4121a] text-white shadow-sm font-bold'
+                  : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
+              }`}
+            >
+              <History className={`w-4 h-4 shrink-0 ${isActive('/auditoria') ? 'text-white' : 'text-slate-400'}`} />
+              <span className="truncate">Auditoría y trazabilidad</span>
+            </Link>
+          )}
+        </div>
       </nav>
-      
-      {/* Sidebar Footer: System Status */}
-      <div className="p-3 border-t border-white/5 bg-black/20 text-xs mt-auto">
-        <div className="flex items-center justify-center">
-          <span className="text-slate-500 font-medium text-[11px]">ERP Brusben v{appVersion}</span>
+
+      {/* ============================================================== */}
+      {/* PASO 3: PIE OPERATIVO (MI PERFIL Y VERSIÓN)                    */}
+      {/* ============================================================== */}
+      <div className="p-3 border-t border-white/5 bg-[#141519] space-y-2 mt-auto">
+        <Link
+          href="/perfil"
+          className={`flex items-center gap-2.5 p-2 rounded-xl transition-all group ${
+            isActive('/perfil')
+              ? 'bg-white/10 text-white border border-white/15'
+              : 'hover:bg-white/[0.06] text-slate-300 hover:text-white border border-transparent'
+          }`}
+          title="Ver mi perfil"
+        >
+          <div className="relative w-8 h-8 rounded-full bg-gradient-to-tr from-[#c4121a] to-rose-600 flex items-center justify-center text-xs font-black text-white shrink-0 shadow-xs border border-white/20 overflow-hidden">
+            {user?.photoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={user.photoUrl} alt={userName} className="w-full h-full object-cover" />
+            ) : (
+              <span>{userInitials}</span>
+            )}
+            <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-500 border border-[#181A1F]"></span>
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <div className="text-xs font-bold text-white truncate group-hover:text-red-400 transition-colors">
+              {userName}
+            </div>
+            <div className="text-[10px] text-emerald-400 font-semibold truncate flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0"></span>
+              <span className="truncate">{userRole}</span>
+            </div>
+          </div>
+
+          <ChevronRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-white transition-colors shrink-0" />
+        </Link>
+
+        {/* Versión del Sistema */}
+        <div className="flex items-center justify-between px-2 pt-1 text-[10px] text-slate-500 border-t border-white/[0.04]">
+          <span className="font-semibold text-slate-400">ERP Brusben</span>
+          <span className="font-mono text-slate-400">v{appVersion}</span>
         </div>
       </div>
-      
+
       <style>{`
         .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
-          height: 6px;
+          width: 5px;
+          height: 5px;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
-          background: rgba(255, 255, 255, 0.05);
+          background: rgba(255, 255, 255, 0.02);
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
           background: rgba(255, 255, 255, 0.1);
@@ -152,7 +340,5 @@ export function Sidebar({ appVersion = '1.0.0', user }: { appVersion?: string, u
         }
       `}</style>
     </aside>
-  )
+  );
 }
-
-

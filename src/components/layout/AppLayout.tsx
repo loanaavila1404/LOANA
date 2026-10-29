@@ -26,7 +26,7 @@ export function AppLayout({
     <div className="flex h-screen overflow-hidden bg-canvas print:block print:h-auto print:min-h-0 print:overflow-visible print:bg-white">
       {/* Desktop Sidebar */}
       <div className="hidden md:flex md:w-64 md:flex-col md:flex-shrink-0 z-30 print:hidden no-print">
-        <Sidebar appVersion={appVersion} user={user} />
+        <Sidebar appVersion={appVersion} user={user} sedeContext={sedeContext} />
       </div>
 
       <MobileDrawer 
