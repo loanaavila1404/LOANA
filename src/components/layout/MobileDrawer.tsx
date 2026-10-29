@@ -247,19 +247,6 @@ export function MobileDrawer({
             <Link
               onClick={onClose}
               className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
-                isActive('/matriculas')
-                  ? 'bg-[#c4121a] text-white shadow-sm font-bold'
-                  : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
-              }`}
-              href="/matriculas"
-            >
-              <ClipboardList className="w-4 h-4 shrink-0" />
-              <span>Matrículas</span>
-            </Link>
-
-            <Link
-              onClick={onClose}
-              className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
                 isActive('/horarios')
                   ? 'bg-[#c4121a] text-white shadow-sm font-bold'
                   : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
@@ -268,6 +255,19 @@ export function MobileDrawer({
             >
               <Calendar className="w-4 h-4 shrink-0" />
               <span>Horarios</span>
+            </Link>
+
+            <Link
+              onClick={onClose}
+              className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
+                isActive('/matriculas')
+                  ? 'bg-[#c4121a] text-white shadow-sm font-bold'
+                  : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
+              }`}
+              href="/matriculas"
+            >
+              <ClipboardList className="w-4 h-4 shrink-0" />
+              <span>Matrículas</span>
             </Link>
           </div>
 
@@ -278,20 +278,15 @@ export function MobileDrawer({
             </div>
             <Link
               onClick={onClose}
-              className={`flex items-center justify-between px-2.5 py-2 rounded-lg font-medium transition-all ${
+              className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
                 isActive('/notas')
                   ? 'bg-[#c4121a] text-white shadow-sm font-bold'
                   : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
               }`}
               href="/notas"
             >
-              <div className="flex items-center gap-2.5">
-                <Award className="w-4 h-4 shrink-0" />
-                <span>Notas y actas</span>
-              </div>
-              <span className="text-[9.5px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                0-20
-              </span>
+              <Award className="w-4 h-4 shrink-0" />
+              <span>Notas y actas</span>
             </Link>
 
             {canViewReportes && (

@@ -171,19 +171,6 @@ export function Sidebar({
             <span className="truncate">Oferta académica</span>
           </Link>
 
-          {/* Matrículas */}
-          <Link
-            href="/matriculas"
-            className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
-              isActive('/matriculas')
-                ? 'bg-[#c4121a] text-white shadow-sm font-bold'
-                : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
-            }`}
-          >
-            <ClipboardList className={`w-4 h-4 shrink-0 ${isActive('/matriculas') ? 'text-white' : 'text-slate-400'}`} />
-            <span className="truncate">Matrículas</span>
-          </Link>
-
           {/* Horarios */}
           <Link
             href="/horarios"
@@ -196,6 +183,19 @@ export function Sidebar({
             <Calendar className={`w-4 h-4 shrink-0 ${isActive('/horarios') ? 'text-white' : 'text-slate-400'}`} />
             <span className="truncate">Horarios</span>
           </Link>
+
+          {/* Matrículas */}
+          <Link
+            href="/matriculas"
+            className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
+              isActive('/matriculas')
+                ? 'bg-[#c4121a] text-white shadow-sm font-bold'
+                : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
+            }`}
+          >
+            <ClipboardList className={`w-4 h-4 shrink-0 ${isActive('/matriculas') ? 'text-white' : 'text-slate-400'}`} />
+            <span className="truncate">Matrículas</span>
+          </Link>
         </div>
 
         {/* SECCIÓN 3: EVALUACIÓN & MÉTRICAS */}
@@ -207,23 +207,14 @@ export function Sidebar({
           {/* Notas y actas */}
           <Link
             href="/notas"
-            className={`flex items-center justify-between px-2.5 py-2 rounded-lg font-medium transition-all group ${
+            className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
               isActive('/notas')
                 ? 'bg-[#c4121a] text-white shadow-sm font-bold'
                 : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
             }`}
           >
-            <div className="flex items-center gap-2.5 min-w-0">
-              <Award className={`w-4 h-4 shrink-0 ${isActive('/notas') ? 'text-white' : 'text-slate-400 group-hover:text-slate-200'}`} />
-              <span className="truncate">Notas y actas</span>
-            </div>
-            <span className={`text-[9.5px] font-bold px-1.5 py-0.5 rounded shrink-0 ${
-              isActive('/notas')
-                ? 'bg-white/20 text-white'
-                : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-            }`}>
-              0-20
-            </span>
+            <Award className={`w-4 h-4 shrink-0 ${isActive('/notas') ? 'text-white' : 'text-slate-400'}`} />
+            <span className="truncate">Notas y actas</span>
           </Link>
 
           {/* Reportes y analítica */}
