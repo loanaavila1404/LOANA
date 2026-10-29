@@ -7,16 +7,30 @@ import { horarioSchema } from '@/lib/validators/oferta';
 
 export async function createHorarioAction(formData: FormData) {
   const permissions = await getUserPermissions();
-  if (!permissions.includes('PROGRAMAS.EDITAR') && !permissions.includes('SISTEMA.ADMINISTRAR')) {
-    return { error: 'No tienes permiso para crear horarios' };
+  if (!permissions.includes('PROGRAMAS.EDITAR') && !permissions.includes('SISTEMA.ADMINISTRAR') && !permissions.includes('ACADEMICO.GESTIONAR')) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: profile } = await supabase.from('profiles').select('roles(code)').eq('id', user.id).maybeSingle();
+      const code = (profile?.roles as unknown as { code: string })?.code?.toUpperCase();
+      if (!['SUPERADMIN', 'SUPER_ADMINISTRADOR', 'ADMINISTRACION', 'ADMINISTRADOR', 'DIRECCION'].includes(code || '')) {
+        return { error: 'No tienes permiso para crear horarios' };
+      }
+    }
   }
+
+  let horaInicio = (formData.get('hora_inicio') as string) || '';
+  let horaFin = (formData.get('hora_fin') as string) || '';
+
+  if (horaInicio && horaInicio.length === 5) horaInicio += ':00';
+  if (horaFin && horaFin.length === 5) horaFin += ':00';
 
   const payload = {
     edicion_id: formData.get('edicion_id'),
     curso_id: formData.get('curso_id'),
     dia_semana: formData.get('dia_semana'),
-    hora_inicio: formData.get('hora_inicio'),
-    hora_fin: formData.get('hora_fin'),
+    hora_inicio: (formData.get('hora_inicio') as string) || '',
+    hora_fin: (formData.get('hora_fin') as string) || '',
     ubicacion: formData.get('ubicacion') || null,
     docente: formData.get('docente') || null,
     observaciones: formData.get('observaciones') || null,
@@ -27,12 +41,31 @@ export async function createHorarioAction(formData: FormData) {
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
   const supabase = await createClient();
+  const { data: userData } = await supabase.auth.getUser();
+
   const { data, error } = await supabase.from('horarios').insert({
     ...parsed.data,
-    created_by: (await supabase.auth.getUser()).data.user?.id
-  }).select().single();
+    hora_inicio: horaInicio || parsed.data.hora_inicio,
+    hora_fin: horaFin || parsed.data.hora_fin,
+    created_by: userData?.user?.id || null
+  }).select(`
+    id,
+    edicion_id,
+    curso_id,
+    dia_semana,
+    hora_inicio,
+    hora_fin,
+    ubicacion,
+    docente,
+    observaciones,
+    status,
+    cursos (id, codigo, nombre, creditos, horas_semanales)
+  `).single();
   
-  if (error) return { error: 'Ocurrió un error al crear el horario' };
+  if (error) {
+    console.error('Error al crear horario:', error);
+    return { error: `Ocurrió un error al crear el horario: ${error.message}` };
+  }
 
   revalidatePath(`/oferta/ediciones/${parsed.data.edicion_id}`);
   revalidatePath(`/oferta/ediciones/${parsed.data.edicion_id}/ficha`);
@@ -75,4 +108,33 @@ export async function updateHorarioAction(id: string, formData: FormData) {
   revalidatePath('/oferta/programas');
   revalidatePath('/horarios');
   return { success: true, data };
+}
+
+export async function deleteHorarioAction(id: string, edicionId: string) {
+  const permissions = await getUserPermissions();
+  if (!permissions.includes('PROGRAMAS.EDITAR') && !permissions.includes('SISTEMA.ADMINISTRAR') && !permissions.includes('ACADEMICO.GESTIONAR')) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: profile } = await supabase.from('profiles').select('roles(code)').eq('id', user.id).maybeSingle();
+      const code = (profile?.roles as unknown as { code: string })?.code?.toUpperCase();
+      if (!['SUPERADMIN', 'SUPER_ADMINISTRADOR', 'ADMINISTRACION', 'ADMINISTRADOR', 'DIRECCION'].includes(code || '')) {
+        return { error: 'No tienes permiso para eliminar horarios' };
+      }
+    }
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.from('horarios').delete().eq('id', id);
+  if (error) {
+    return { error: `Error al eliminar horario: ${error.message}` };
+  }
+
+  if (edicionId) {
+    revalidatePath(`/oferta/ediciones/${edicionId}`);
+    revalidatePath(`/oferta/ediciones/${edicionId}/ficha`);
+  }
+  revalidatePath('/oferta/programas');
+  revalidatePath('/horarios');
+  return { success: true };
 }

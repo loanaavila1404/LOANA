@@ -2,7 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { 
   HorariosManagerClient, 
   EdicionHorarioData, 
-  EstudianteHorarioData 
+  EstudianteHorarioData,
+  CursoHorarioData 
 } from "@/components/features/horarios/HorariosManagerClient";
 
 export const metadata = {
@@ -28,6 +29,8 @@ export default async function HorariosPage(props: {
       vacantes,
       fecha_inicio,
       fecha_fin,
+      plan_id,
+      ciclo_id,
       programas (codigo, nombre, tipo_programa),
       periodos (codigo, nombre),
       ciclos (nombre, numero_orden),
@@ -47,7 +50,13 @@ export default async function HorariosPage(props: {
     `)
     .order("codigo");
 
-  // 2. Obtener lista de estudiantes con matrícula para selector personalizado
+  // 2. Obtener lista de cursos disponibles de la oferta académica
+  const { data: cursosRaw } = await supabase
+    .from("cursos")
+    .select("id, codigo, nombre, creditos, horas_semanales, plan_id, ciclo_id, status")
+    .order("codigo");
+
+  // 3. Obtener lista de estudiantes con matrícula para selector personalizado
   const { data: matriculasRaw } = await supabase
     .from("matriculas")
     .select(`
@@ -66,7 +75,7 @@ export default async function HorariosPage(props: {
         )
       )
     `)
-    .limit(30);
+    .limit(50);
 
   // Mapear ediciones al tipo esperado
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -98,6 +107,8 @@ export default async function HorariosPage(props: {
       vacantes: ed.vacantes,
       fecha_inicio: ed.fecha_inicio,
       fecha_fin: ed.fecha_fin,
+      plan_id: ed.plan_id,
+      ciclo_id: ed.ciclo_id,
       programa: prog,
       periodo: per,
       ciclo: cic,
@@ -105,28 +116,42 @@ export default async function HorariosPage(props: {
     };
   });
 
-  // Mapear estudiantes
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const estudiantesDemo: EstudianteHorarioData[] = (matriculasRaw || [])
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .map((m: any) => {
-      const est = Array.isArray(m.estudiantes) ? m.estudiantes[0] : m.estudiantes;
-      const per = Array.isArray(est?.personas) ? est.personas[0] : est?.personas;
-      if (!per) return null;
-      return {
+  // Mapear cursos disponibles
+  const cursosDisponibles: CursoHorarioData[] = (cursosRaw || []).map((c: any) => ({
+    id: c.id,
+    codigo: c.codigo,
+    nombre: c.nombre,
+    creditos: c.creditos,
+    horas_semanales: c.horas_semanales,
+    plan_id: c.plan_id,
+    ciclo_id: c.ciclo_id,
+    status: c.status,
+  }));
+
+  // Mapear y deduplicar estudiantes
+  const estudianteVistos = new Set<string>();
+  const estudiantesDemo: EstudianteHorarioData[] = [];
+
+  for (const m of (matriculasRaw || [])) {
+    const est = Array.isArray(m.estudiantes) ? m.estudiantes[0] : m.estudiantes;
+    const per = Array.isArray(est?.personas) ? est.personas[0] : est?.personas;
+    if (est?.id && per && !estudianteVistos.has(est.id)) {
+      estudianteVistos.add(est.id);
+      estudiantesDemo.push({
         id: est.id,
         codigoEstudiante: est.codigo_estudiante || "BRU-EST",
         nombreCompleto: `${per.nombres || ""} ${per.apellido_paterno || ""} ${per.apellido_materno || ""}`.trim(),
         tipoDocumento: per.tipo_documento || "DNI",
         numeroDocumento: per.numero_documento || "",
         edicionId: m.edicion_id,
-      };
-    })
-    .filter(Boolean) as EstudianteHorarioData[];
+      });
+    }
+  }
 
   return (
     <HorariosManagerClient
       ediciones={ediciones}
+      cursosDisponibles={cursosDisponibles}
       estudiantesDemo={estudiantesDemo}
       initialEdicionId={selectedEdicionId}
     />
