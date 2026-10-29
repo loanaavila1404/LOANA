@@ -31,48 +31,17 @@ import {
   CursoFormModalClient,
   PlanFormModalClient,
 } from "@/app/(erp)/oferta/programas/[id]/PlanesForms";
-import { HorarioFormModalClient } from "@/app/(erp)/oferta/ediciones/[id]/HorarioFormModalClient";
 import { updateProgramaAction } from "@/app/actions/oferta/programas";
 
 interface ProgramaDetailClientProps {
   programa: any;
   planes: any[];
   ediciones: any[];
-  horarios: any[];
+  horarios?: any[];
   auditLogs: any[];
   matriculasCountByEdicion: Record<string, number>;
   periodoActivoNombre: string;
 }
-
-const ORDEN_DIAS: Record<string, number> = {
-  LUNES: 1,
-  MARTES: 2,
-  MIERCOLES: 3,
-  JUEVES: 4,
-  VIERNES: 5,
-  SABADO: 6,
-  DOMINGO: 7,
-};
-
-const ETIQUETA_DIAS: Record<string, string> = {
-  LUNES: "Lunes",
-  MARTES: "Martes",
-  MIERCOLES: "Miércoles",
-  JUEVES: "Jueves",
-  VIERNES: "Viernes",
-  SABADO: "Sábado",
-  DOMINGO: "Domingo",
-};
-
-const COLUMNAS_DIAS = [
-  { key: "LUNES", label: "LUNES" },
-  { key: "MARTES", label: "MARTES" },
-  { key: "MIERCOLES", label: "MIÉRCOLES" },
-  { key: "JUEVES", label: "JUEVES" },
-  { key: "VIERNES", label: "VIERNES" },
-  { key: "SABADO", label: "SÁBADO" },
-  { key: "DOMINGO", label: "DOMINGO" },
-] as const;
 
 export function ProgramaDetailClient({
   programa,
@@ -84,7 +53,7 @@ export function ProgramaDetailClient({
   periodoActivoNombre,
 }: ProgramaDetailClientProps) {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"curricular" | "ediciones" | "horarios">(
+  const [activeTab, setActiveTab] = useState<"curricular" | "ediciones">(
     "curricular"
   );
   const [showHistorialModal, setShowHistorialModal] = useState(false);
@@ -131,11 +100,6 @@ export function ProgramaDetailClient({
     type: "ok" | "err";
     text: string;
   } | null>(null);
-
-  // Filtro de edición seleccionada en la pestaña directa de Horarios
-  const [selectedEdicionIdForHorario, setSelectedEdicionIdForHorario] = useState<string>(
-    ediciones[0]?.id || ""
-  );
 
   const handleCancelEditFicha = () => {
     setNombre(programa.nombre || "");
@@ -228,35 +192,11 @@ export function ProgramaDetailClient({
 
   // Mapa de docentes por curso a partir de horarios
   const docenteByCursoId: Record<string, string> = {};
-  for (const h of horarios) {
+  for (const h of horarios || []) {
     if (h.curso_id && h.docente) {
       docenteByCursoId[h.curso_id] = h.docente;
     }
   }
-
-  // Horarios filtrados por la edición seleccionada en la pestaña Horarios
-  const edicionActivaHorarioId = selectedEdicionIdForHorario || ediciones[0]?.id || "";
-  const horariosFiltrados = horarios
-    .filter(h => !edicionActivaHorarioId || h.edicion_id === edicionActivaHorarioId)
-    .sort((a, b) => {
-      const diaA = ORDEN_DIAS[a.dia_semana || ""] || 99;
-      const diaB = ORDEN_DIAS[b.dia_semana || ""] || 99;
-      if (diaA !== diaB) return diaA - diaB;
-      return (a.hora_inicio || "").localeCompare(b.hora_inicio || "");
-    });
-
-  const bloquesMap = new Map<string, { key: string; inicio: string; fin: string }>();
-  for (const h of horariosFiltrados) {
-    const ini = (h.hora_inicio || "08:00").slice(0, 5);
-    const fin = (h.hora_fin || "10:00").slice(0, 5);
-    const key = `${ini}-${fin}`;
-    if (!bloquesMap.has(key)) {
-      bloquesMap.set(key, { key, inicio: ini, fin });
-    }
-  }
-  const bloquesHorarios = Array.from(bloquesMap.values()).sort((a, b) =>
-    a.key.localeCompare(b.key)
-  );
 
   return (
     <div className="space-y-6">
@@ -399,22 +339,6 @@ export function ProgramaDetailClient({
               <span>Ediciones y Grupos Activos (Control de Aforo)</span>
               <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-100 text-slate-700">
                 {ediciones.length} grupos
-              </span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveTab("horarios")}
-              className={`inline-flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition ${
-                activeTab === "horarios"
-                  ? "border-[#C4121A] text-[#C4121A] bg-white rounded-t-lg"
-                  : "border-transparent text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              <Clock className="w-4 h-4" />
-              <span>Horarios de Clases</span>
-              <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-red-50 text-[#C4121A] font-extrabold">
-                {horarios.length} sesiones
               </span>
             </button>
           </div>
@@ -972,17 +896,17 @@ export function ProgramaDetailClient({
                         </div>
                         <div className="flex items-center gap-2">
                           <Link
-                            href={`/oferta/ediciones/${ed.id}/ficha`}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold"
+                            href={`/oferta/ediciones/${ed.id}`}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold text-xs"
                           >
-                            <FileText className="w-3.5 h-3.5 text-[#C4121A]" />
-                            <span>Horario PDF</span>
+                            <span>Detalle Grupo</span>
                           </Link>
                           <Link
-                            href={`/oferta/ediciones/${ed.id}`}
-                            className="px-3 py-1 rounded bg-slate-900 hover:bg-[#C4121A] text-white font-bold transition"
+                            href={`/horarios?edicionId=${ed.id}`}
+                            className="px-3 py-1 rounded bg-slate-900 hover:bg-[#C4121A] text-white font-bold transition inline-flex items-center gap-1.5 text-xs"
                           >
-                            Ver Grupo y Horarios
+                            <Clock className="w-3.5 h-3.5" />
+                            <span>Horarios</span>
                           </Link>
                         </div>
                       </div>
@@ -990,214 +914,6 @@ export function ProgramaDetailClient({
                   );
                 })}
               </div>
-            )}
-          </div>
-        )}
-
-        {/* PESTAÑA 3: HORARIOS DE CLASES DIRECTOS */}
-        {activeTab === "horarios" && (
-          <div className="p-6 space-y-6">
-            {ediciones.length === 0 ? (
-              <div className="p-10 text-center border border-dashed border-slate-200 rounded-xl text-slate-500 text-xs">
-                Para programar horarios de clases, primero crea o activa una Edición / Grupo para este programa.
-              </div>
-            ) : (
-              <>
-                {/* Barra de selección de grupo y acciones directas de horario */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <label className="text-xs font-bold text-slate-700">
-                      Edición / Grupo:
-                    </label>
-                    <select
-                      value={edicionActivaHorarioId}
-                      onChange={e => setSelectedEdicionIdForHorario(e.target.value)}
-                      className="border border-slate-300 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-[#C4121A]/20"
-                    >
-                      {ediciones.map((ed: any) => (
-                        <option key={ed.id} value={ed.id}>
-                          {ed.codigo} — {ed.nombre || "Grupo Regular"} ({ed.modalidad || "PRESENCIAL"} / {ed.turno || "REGULAR"})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-2">
-                    {edicionActivaHorarioId && (
-                      <>
-                        <Link
-                          href={`/oferta/ediciones/${edicionActivaHorarioId}/ficha`}
-                          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-slate-300 bg-white hover:bg-red-50 hover:text-[#C4121A] text-slate-800 text-xs font-bold transition"
-                        >
-                          <LayoutGrid className="w-3.5 h-3.5 text-[#C4121A]" />
-                          <span>Descargar Horario PDF (Cuadrícula Horizontal)</span>
-                        </Link>
-                        <HorarioFormModalClient
-                          edicionId={edicionActivaHorarioId}
-                          cursos={todosCursosMalla}
-                          triggerText="+ Agregar Sesión de Horario"
-                        />
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                {/* Cuadrícula Horizontal de Horario Semanal */}
-                {bloquesHorarios.length > 0 && (
-                  <div className="space-y-2.5">
-                    <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-700 flex items-center gap-2">
-                      <LayoutGrid className="w-4 h-4 text-[#C4121A]" />
-                      <span>Cuadrícula Horizontal de Horario Semanal</span>
-                    </h4>
-                    <div className="overflow-x-auto border border-slate-200 rounded-xl bg-white">
-                      <table className="w-full border-collapse table-fixed text-xs">
-                        <thead>
-                          <tr className="bg-slate-900 text-white">
-                            <th className="w-[115px] py-2.5 px-2 text-center font-bold uppercase text-[10px] bg-[#C4121A]">
-                              Bloque Horario
-                            </th>
-                            {COLUMNAS_DIAS.map(dia => (
-                              <th
-                                key={dia.key}
-                                className="py-2.5 px-2 text-center font-bold uppercase text-[10px] border-l border-slate-700"
-                              >
-                                {dia.label}
-                              </th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-200">
-                          {bloquesHorarios.map(bloque => (
-                            <tr key={bloque.key}>
-                              <td className="py-2.5 px-2 text-center font-mono font-bold text-slate-800 bg-slate-50 border-r border-slate-200">
-                                {bloque.inicio} - {bloque.fin}
-                              </td>
-                              {COLUMNAS_DIAS.map(dia => {
-                                const sesiones = horariosFiltrados.filter(h => {
-                                  const ini = (h.hora_inicio || "").slice(0, 5);
-                                  const fin = (h.hora_fin || "").slice(0, 5);
-                                  return h.dia_semana === dia.key && `${ini}-${fin}` === bloque.key;
-                                });
-
-                                return (
-                                  <td
-                                    key={dia.key}
-                                    className="p-1.5 border-r last:border-r-0 border-slate-100 align-top"
-                                  >
-                                    {sesiones.length === 0 ? (
-                                      <div className="text-center text-slate-300 text-[10px] py-2">
-                                        —
-                                      </div>
-                                    ) : (
-                                      <div className="space-y-1">
-                                        {sesiones.map(ses => {
-                                          const cursoObj = Array.isArray(ses.cursos)
-                                            ? ses.cursos[0]
-                                            : ses.cursos;
-                                          const nombreCurso =
-                                            cursoObj?.nombre ||
-                                            todosCursosMalla.find(c => c.id === ses.curso_id)?.nombre ||
-                                            "Asignatura";
-                                          return (
-                                            <div
-                                              key={ses.id}
-                                              className="p-1.5 rounded bg-red-50/70 border border-red-200 border-l-3 border-l-[#C4121A]"
-                                            >
-                                              <p className="font-bold text-slate-900 text-[11px] leading-tight">
-                                                {nombreCurso}
-                                              </p>
-                                              <p className="text-[10px] text-slate-600 mt-0.5">
-                                                {ses.docente || "Por asignar"} • {ses.ubicacion || "Sede Central"}
-                                              </p>
-                                            </div>
-                                          );
-                                        })}
-                                      </div>
-                                    )}
-                                  </td>
-                                );
-                              })}
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                )}
-
-                {/* Tabla Detallada de Sesiones de Horario */}
-                <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
-                  <table className="w-full text-left text-xs">
-                    <thead className="bg-slate-50 border-b border-slate-200 text-[10px] uppercase font-bold text-slate-600">
-                      <tr>
-                        <th className="py-3 px-4">Día de Semana</th>
-                        <th className="py-3 px-3">Bloque Horario</th>
-                        <th className="py-3 px-3">Curso / Asignatura</th>
-                        <th className="py-3 px-3">Docente</th>
-                        <th className="py-3 px-3">Aula / Ambiente</th>
-                        <th className="py-3 px-4 text-right">Acciones</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {horariosFiltrados.length === 0 ? (
-                        <tr>
-                          <td colSpan={6} className="py-8 text-center text-slate-500">
-                            No hay horarios registrados para este grupo. Haz clic en{" "}
-                            <strong className="text-slate-700">+ Agregar Sesión de Horario</strong>.
-                          </td>
-                        </tr>
-                      ) : (
-                        horariosFiltrados.map(h => {
-                          const cursoObj = Array.isArray(h.cursos) ? h.cursos[0] : h.cursos;
-                          const nombreCurso =
-                            cursoObj?.nombre ||
-                            todosCursosMalla.find(c => c.id === h.curso_id)?.nombre ||
-                            "Asignatura del Programa";
-                          return (
-                            <tr key={h.id} className="hover:bg-slate-50/80">
-                              <td className="py-3 px-4">
-                                <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-extrabold bg-slate-900 text-white">
-                                  {ETIQUETA_DIAS[h.dia_semana || ""] || h.dia_semana || "-"}
-                                </span>
-                              </td>
-                              <td className="py-3 px-3 font-mono font-bold text-slate-800">
-                                {h.hora_inicio?.slice(0, 5)} — {h.hora_fin?.slice(0, 5)}
-                              </td>
-                              <td className="py-3 px-3 font-bold text-slate-900">
-                                <span className="inline-flex items-center gap-1.5">
-                                  <BookOpen className="w-3.5 h-3.5 text-[#C4121A]" />
-                                  {nombreCurso}
-                                </span>
-                              </td>
-                              <td className="py-3 px-3 text-slate-700">
-                                <span className="inline-flex items-center gap-1">
-                                  <UserCheck className="w-3.5 h-3.5 text-emerald-600" />
-                                  {h.docente || "Plana Docente Brusben"}
-                                </span>
-                              </td>
-                              <td className="py-3 px-3 text-slate-700">
-                                <span className="inline-flex items-center gap-1">
-                                  <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                                  {h.ubicacion || "Sede Central - Tumbes"}
-                                </span>
-                              </td>
-                              <td className="py-3 px-4 text-right">
-                                <HorarioFormModalClient
-                                  edicionId={h.edicion_id}
-                                  horario={h}
-                                  cursos={todosCursosMalla}
-                                  triggerText="Editar"
-                                  variant="outline"
-                                />
-                              </td>
-                            </tr>
-                          );
-                        })
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </>
             )}
           </div>
         )}

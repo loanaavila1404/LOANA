@@ -37,6 +37,7 @@ export async function createHorarioAction(formData: FormData) {
   revalidatePath(`/oferta/ediciones/${parsed.data.edicion_id}`);
   revalidatePath(`/oferta/ediciones/${parsed.data.edicion_id}/ficha`);
   revalidatePath('/oferta/programas');
+  revalidatePath('/horarios');
   return { success: true, data };
 }
 
@@ -72,5 +73,6 @@ export async function updateHorarioAction(id: string, formData: FormData) {
   revalidatePath(`/oferta/ediciones/${parsed.data.edicion_id}`);
   revalidatePath(`/oferta/ediciones/${parsed.data.edicion_id}/ficha`);
   revalidatePath('/oferta/programas');
+  revalidatePath('/horarios');
   return { success: true, data };
 }

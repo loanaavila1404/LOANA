@@ -16,7 +16,7 @@ export default async function OfertaLayout({ children }: { children: ReactNode }
           Oferta Académica Institucional
         </h1>
         <p className="text-sm text-slate-600 mt-1">
-          Administración integral de programas formativos, mallas curriculares por ciclos, ediciones activas, vacantes y horarios de clases.
+          Administración integral de programas formativos, mallas curriculares por ciclos, planes de estudio y ediciones activas.
         </p>
       </div>
 

@@ -8,7 +8,7 @@ import { EdicionFormModalClient } from './EdicionFormModalClient';
 import { ArrowLeft, Clock, FileText } from 'lucide-react';
 
 export const metadata = {
-  title: 'Ediciones y Horarios - ERP Brusben'
+  title: 'Ediciones y Grupos Activos - ERP Brusben'
 };
 
 export default async function EdicionesPage({
@@ -58,10 +58,10 @@ export default async function EdicionesPage({
             <span>Volver al Panel de Oferta Académica</span>
           </Link>
           <h2 className="text-xl font-extrabold text-slate-900">
-            Ediciones, Grupos Activos y Gestión de Horarios
+            Ediciones y Grupos Activos
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Selecciona una edición o grupo para programar sus sesiones de horarios semanales, docentes y aulas.
+            Administración de grupos académicos, fechas de vigencia y aforo de vacantes. La programación de clases se centraliza en el módulo oficial de Horarios.
           </p>
         </div>
 
@@ -108,7 +108,7 @@ export default async function EdicionesPage({
               <TableHead className="font-bold text-slate-700">Fechas</TableHead>
               <TableHead className="font-bold text-slate-700">Vacantes</TableHead>
               <TableHead className="font-bold text-slate-700">Estado</TableHead>
-              <TableHead className="text-right font-bold text-slate-700">Horarios y Acciones</TableHead>
+              <TableHead className="text-right font-bold text-slate-700">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -160,15 +160,13 @@ export default async function EdicionesPage({
                   <TableCell className="text-right">
                     <div className="inline-flex items-center gap-1.5">
                       <Link
-                        href={`/oferta/ediciones/${edicion.id}/ficha`}
-                        title="Descargar Horario PDF"
-                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-200 text-slate-700 hover:bg-red-50 hover:text-[#C4121A] text-xs font-semibold transition"
+                        href={`/oferta/ediciones/${edicion.id}`}
+                        className="px-2.5 py-1.5 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-semibold transition"
                       >
-                        <FileText className="w-3.5 h-3.5" />
-                        <span>PDF</span>
+                        Detalle
                       </Link>
                       <Link
-                        href={`/oferta/ediciones/${edicion.id}`}
+                        href={`/horarios?edicionId=${edicion.id}`}
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-[#C4121A] text-white text-xs font-bold transition"
                       >
                         <Clock className="w-3.5 h-3.5" />

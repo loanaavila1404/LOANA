@@ -84,17 +84,11 @@ export default async function ProgramaDetailPage({
   let horarios: any[] = [];
 
   if (edicionIds.length > 0) {
-    const [{ data: matData }, { data: horData }] = await Promise.all([
-      supabase
-        .from("matriculas")
-        .select("id, edicion_id")
-        .in("edicion_id", edicionIds)
-        .in("status", ["ACTIVA", "RESERVADA", "PREMATRICULA", "FINALIZADA"]),
-      supabase
-        .from("horarios")
-        .select("*, cursos(id, nombre, codigo, creditos, horas_semanales)")
-        .in("edicion_id", edicionIds),
-    ]);
+    const { data: matData } = await supabase
+      .from("matriculas")
+      .select("id, edicion_id")
+      .in("edicion_id", edicionIds)
+      .in("status", ["ACTIVA", "RESERVADA", "PREMATRICULA", "FINALIZADA"]);
 
     for (const m of matData || []) {
       if (m.edicion_id) {
@@ -102,7 +96,6 @@ export default async function ProgramaDetailPage({
           (matriculasCountByEdicion[m.edicion_id] || 0) + 1;
       }
     }
-    horarios = horData || [];
   }
 
   const periodoActivoNombre =
@@ -113,7 +106,6 @@ export default async function ProgramaDetailPage({
       programa={programa}
       planes={planes}
       ediciones={ediciones}
-      horarios={horarios}
       auditLogs={auditLogs}
       matriculasCountByEdicion={matriculasCountByEdicion}
       periodoActivoNombre={periodoActivoNombre}

@@ -24,37 +24,6 @@ import {
 import { ProgramaFormModalClient } from "@/app/(erp)/oferta/programas/ProgramaFormModalClient";
 import { EdicionFormModalClient } from "@/app/(erp)/oferta/ediciones/EdicionFormModalClient";
 import { CursoNuevoModalClient } from "@/app/(erp)/oferta/programas/CursoNuevoModalClient";
-import { HorarioFormModalClient } from "@/app/(erp)/oferta/ediciones/[id]/HorarioFormModalClient";
-
-const ORDEN_DIAS: Record<string, number> = {
-  LUNES: 1,
-  MARTES: 2,
-  MIERCOLES: 3,
-  JUEVES: 4,
-  VIERNES: 5,
-  SABADO: 6,
-  DOMINGO: 7,
-};
-
-const ETIQUETA_DIAS: Record<string, string> = {
-  LUNES: "Lunes",
-  MARTES: "Martes",
-  MIERCOLES: "Miércoles",
-  JUEVES: "Jueves",
-  VIERNES: "Viernes",
-  SABADO: "Sábado",
-  DOMINGO: "Domingo",
-};
-
-const COLUMNAS_DIAS = [
-  { key: "LUNES", label: "LUNES" },
-  { key: "MARTES", label: "MARTES" },
-  { key: "MIERCOLES", label: "MIÉRCOLES" },
-  { key: "JUEVES", label: "JUEVES" },
-  { key: "VIERNES", label: "VIERNES" },
-  { key: "SABADO", label: "SÁBADO" },
-  { key: "DOMINGO", label: "DOMINGO" },
-] as const;
 
 interface OfertaProgramasClientProps {
   programas: any[];
@@ -75,15 +44,13 @@ export function OfertaProgramasClient({
   planes,
   periodos,
   ciclos,
-  horarios = [],
   matriculasCountByEdicion,
   initialTab = "programas",
 }: OfertaProgramasClientProps) {
   const [activeTab, setActiveTab] = useState<
-    "programas" | "ediciones" | "horarios" | "cursos" | "mallas"
+    "programas" | "ediciones" | "cursos" | "mallas"
   >(
     initialTab === "ediciones" ||
-      initialTab === "horarios" ||
       initialTab === "cursos" ||
       initialTab === "mallas"
       ? initialTab
@@ -92,9 +59,6 @@ export function OfertaProgramasClient({
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("TODOS");
   const [tipoFilter, setTipoFilter] = useState("TODOS");
-  const [selectedHorarioEdicionId, setSelectedHorarioEdicionId] = useState<string>(
-    ediciones[0]?.id || ""
-  );
 
   // Enriquecer cada programa con métricas financieras, créditos, cursos y ediciones
   const enrichedProgramas = useMemo(() => {
@@ -235,12 +199,6 @@ export function OfertaProgramasClient({
       label: "Ediciones y Grupos Activos",
       count: ediciones.length,
       icon: Users,
-    },
-    {
-      id: "horarios" as const,
-      label: "Horarios de Clases",
-      count: horarios.length,
-      icon: Clock,
     },
     {
       id: "cursos" as const,
@@ -661,17 +619,17 @@ export function OfertaProgramasClient({
                               variant="outline"
                             />
                             <Link
-                              href={`/oferta/ediciones/${ed.id}/ficha`}
-                              title="Horario en Cuadrícula PDF"
-                              className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-[#C4121A] hover:bg-red-50 transition"
+                              href={`/oferta/ediciones/${ed.id}`}
+                              className="px-2.5 py-1.5 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-semibold transition"
                             >
-                              <FileText className="w-3.5 h-3.5" />
+                              Detalle
                             </Link>
                             <Link
-                              href={`/oferta/ediciones/${ed.id}`}
-                              className="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-[#C4121A] text-white text-xs font-bold transition"
+                              href={`/horarios?edicionId=${ed.id}`}
+                              className="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-[#C4121A] text-white text-xs font-bold transition inline-flex items-center gap-1.5"
                             >
-                              Horarios
+                              <Clock className="w-3.5 h-3.5" />
+                              <span>Horarios</span>
                             </Link>
                           </div>
                         </td>
@@ -806,252 +764,6 @@ export function OfertaProgramasClient({
           })}
         </div>
       )}
-
-      {/* VISTA 5: HORARIOS DE CLASES (ACCESO DIRECTO Y VISIBLE EN EL PANEL DE OFERTA) */}
-      {activeTab === "horarios" && (() => {
-        const currentEdId = selectedHorarioEdicionId || ediciones[0]?.id || "";
-        const selectedEd = ediciones.find(e => e.id === currentEdId) || ediciones[0] || null;
-        const cursosParaEdicion = selectedEd
-          ? cursos.filter(c => {
-              if (selectedEd.ciclo_id && c.ciclo_id === selectedEd.ciclo_id) return true;
-              if (selectedEd.plan_id && c.plan_id === selectedEd.plan_id) return true;
-              return false;
-            })
-          : [];
-        const listaCursosModal = (cursosParaEdicion.length > 0 ? cursosParaEdicion : cursos).map(
-          c => ({
-            id: c.id,
-            nombre: c.nombre,
-            codigo: c.codigo,
-          })
-        );
-
-        const horariosEdicion = horarios
-          .filter(h => !currentEdId || h.edicion_id === currentEdId)
-          .sort((a, b) => {
-            const diaA = ORDEN_DIAS[a.dia_semana || ""] || 99;
-            const diaB = ORDEN_DIAS[b.dia_semana || ""] || 99;
-            if (diaA !== diaB) return diaA - diaB;
-            return (a.hora_inicio || "").localeCompare(b.hora_inicio || "");
-          });
-
-        const bloquesMap = new Map<string, { key: string; inicio: string; fin: string }>();
-        for (const h of horariosEdicion) {
-          const ini = (h.hora_inicio || "08:00").slice(0, 5);
-          const fin = (h.hora_fin || "10:00").slice(0, 5);
-          const key = `${ini}-${fin}`;
-          if (!bloquesMap.has(key)) {
-            bloquesMap.set(key, { key, inicio: ini, fin });
-          }
-        }
-        const bloquesHorarios = Array.from(bloquesMap.values()).sort((a, b) =>
-          a.key.localeCompare(b.key)
-        );
-
-        return (
-          <div className="space-y-5">
-            {/* Barra de Control Directa de Horarios por Grupo */}
-            <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#C4121A] block">
-                    Gestión Directa de Horarios Académicos
-                  </span>
-                  <h3 className="text-base font-extrabold text-slate-900">
-                    Seleccionar Grupo / Edición Activa
-                  </h3>
-                </div>
-                <select
-                  value={currentEdId}
-                  onChange={e => setSelectedHorarioEdicionId(e.target.value)}
-                  className="border border-slate-300 rounded-lg px-3.5 py-2 text-xs font-bold text-slate-900 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#C4121A]/20"
-                >
-                  {ediciones.map(ed => (
-                    <option key={ed.id} value={ed.id}>
-                      {ed.codigo} — {ed.programas?.nombre || ed.nombre || "Grupo Académico"} ({ed.modalidad || "PRESENCIAL"} / {ed.turno || "REGULAR"})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {selectedEd && (
-                <div className="flex flex-wrap items-center gap-2">
-                  <Link
-                    href={`/oferta/ediciones/${selectedEd.id}/ficha`}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-slate-300 bg-white hover:bg-red-50 hover:text-[#C4121A] text-slate-800 text-xs font-bold transition shadow-2xs"
-                  >
-                    <LayoutGrid className="w-3.5 h-3.5 text-[#C4121A]" />
-                    <span>Descargar Horario PDF (Cuadrícula Horizontal)</span>
-                  </Link>
-                  <HorarioFormModalClient
-                    edicionId={selectedEd.id}
-                    cursos={listaCursosModal}
-                    triggerText="+ Registrar Sesión de Horario"
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Cuadrícula Horizontal Semanal */}
-            {bloquesHorarios.length > 0 && (
-              <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs space-y-3">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-800 flex items-center gap-2">
-                    <LayoutGrid className="w-4 h-4 text-[#C4121A]" />
-                    <span>
-                      Cuadrícula Horizontal de Horario — {selectedEd?.codigo} ({selectedEd?.programas?.nombre || selectedEd?.nombre})
-                    </span>
-                  </h4>
-                  <span className="text-[11px] font-semibold text-slate-500">
-                    {horariosEdicion.length} sesión/es programadas
-                  </span>
-                </div>
-
-                <div className="overflow-x-auto border border-slate-200 rounded-xl">
-                  <table className="w-full border-collapse table-fixed text-xs">
-                    <thead>
-                      <tr className="bg-slate-900 text-white">
-                        <th className="w-[115px] py-2.5 px-2 text-center font-bold uppercase text-[10px] bg-[#C4121A]">
-                          Bloque Horario
-                        </th>
-                        {COLUMNAS_DIAS.map(dia => (
-                          <th
-                            key={dia.key}
-                            className="py-2.5 px-2 text-center font-bold uppercase text-[10px] border-l border-slate-700"
-                          >
-                            {dia.label}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-200">
-                      {bloquesHorarios.map(bloque => (
-                        <tr key={bloque.key}>
-                          <td className="py-2.5 px-2 text-center font-mono font-bold text-slate-800 bg-slate-50 border-r border-slate-200">
-                            {bloque.inicio} - {bloque.fin}
-                          </td>
-                          {COLUMNAS_DIAS.map(dia => {
-                            const sesiones = horariosEdicion.filter(h => {
-                              const ini = (h.hora_inicio || "").slice(0, 5);
-                              const fin = (h.hora_fin || "").slice(0, 5);
-                              return h.dia_semana === dia.key && `${ini}-${fin}` === bloque.key;
-                            });
-
-                            return (
-                              <td
-                                key={dia.key}
-                                className="p-1.5 border-r last:border-r-0 border-slate-100 align-top"
-                              >
-                                {sesiones.length === 0 ? (
-                                  <div className="text-center text-slate-300 text-[10px] py-2">
-                                    —
-                                  </div>
-                                ) : (
-                                  <div className="space-y-1">
-                                    {sesiones.map(ses => {
-                                      const cursoObj = Array.isArray(ses.cursos)
-                                        ? ses.cursos[0]
-                                        : ses.cursos;
-                                      return (
-                                        <div
-                                          key={ses.id}
-                                          className="p-1.5 rounded bg-red-50/70 border border-red-200 border-l-3 border-l-[#C4121A]"
-                                        >
-                                          <p className="font-bold text-slate-900 text-[11px] leading-tight">
-                                            {cursoObj?.nombre || "Asignatura"}
-                                          </p>
-                                          <p className="text-[10px] text-slate-600 mt-0.5">
-                                            {ses.docente || "Por asignar"} • {ses.ubicacion || "Sede Central"}
-                                          </p>
-                                        </div>
-                                      );
-                                    })}
-                                  </div>
-                                )}
-                              </td>
-                            );
-                          })}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-
-            {/* Tabla de Sesiones Programadas */}
-            <div className="bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase text-[10px] font-bold tracking-wider">
-                    <tr>
-                      <th className="py-3.5 px-4">Día de Semana</th>
-                      <th className="py-3.5 px-3">Bloque Horario</th>
-                      <th className="py-3.5 px-3">Curso / Asignatura</th>
-                      <th className="py-3.5 px-3">Docente Asignado</th>
-                      <th className="py-3.5 px-3">Aula / Ambiente</th>
-                      <th className="py-3.5 px-4 text-right">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 text-slate-700">
-                    {horariosEdicion.length === 0 ? (
-                      <tr>
-                        <td colSpan={6} className="py-10 text-center text-slate-500">
-                          No hay horarios registrados para este grupo. Haz clic en{" "}
-                          <strong className="text-slate-700">+ Registrar Sesión de Horario</strong> para programar clases.
-                        </td>
-                      </tr>
-                    ) : (
-                      horariosEdicion.map(h => {
-                        const cursoObj = Array.isArray(h.cursos) ? h.cursos[0] : h.cursos;
-                        return (
-                          <tr key={h.id} className="hover:bg-slate-50/80">
-                            <td className="py-3 px-4">
-                              <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-extrabold bg-slate-900 text-white">
-                                {ETIQUETA_DIAS[h.dia_semana || ""] || h.dia_semana || "-"}
-                              </span>
-                            </td>
-                            <td className="py-3 px-3 font-mono font-bold text-slate-800">
-                              {h.hora_inicio?.slice(0, 5)} — {h.hora_fin?.slice(0, 5)}
-                            </td>
-                            <td className="py-3 px-3 font-bold text-slate-900">
-                              <span className="inline-flex items-center gap-1.5">
-                                <BookOpen className="w-3.5 h-3.5 text-[#C4121A]" />
-                                {cursoObj?.nombre || "Asignatura del Programa"}
-                              </span>
-                            </td>
-                            <td className="py-3 px-3 text-slate-700">
-                              <span className="inline-flex items-center gap-1">
-                                <UserCheck className="w-3.5 h-3.5 text-emerald-600" />
-                                {h.docente || "Plana Docente Brusben"}
-                              </span>
-                            </td>
-                            <td className="py-3 px-3 text-slate-700">
-                              <span className="inline-flex items-center gap-1">
-                                <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                                {h.ubicacion || "Sede Central - Tumbes"}
-                              </span>
-                            </td>
-                            <td className="py-3 px-4 text-right">
-                              <HorarioFormModalClient
-                                edicionId={h.edicion_id}
-                                horario={h}
-                                cursos={listaCursosModal}
-                                triggerText="Editar"
-                                variant="outline"
-                              />
-                            </td>
-                          </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        );
-      })()}
     </div>
   );
 }
