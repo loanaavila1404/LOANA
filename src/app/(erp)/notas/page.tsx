@@ -84,12 +84,27 @@ export default async function NotasPage() {
     tipo_programa: p.tipo_programa,
   }));
 
-  // Mapear ciclos
-  const ciclos: CicloData[] = (ciclosRaw || []).map((c: any) => ({
-    id: c.id,
-    nombre: c.nombre,
-    numero_orden: c.numero_orden,
-  }));
+  // Mapear y deduplicar ciclos académicos por nombre y número de orden
+  const ciclosMap = new Map<string, { id: string; nombre: string; numero_orden: number; matchingIds: string[] }>();
+
+  for (const c of (ciclosRaw || [])) {
+    const key = `${(c.nombre || "").trim().toUpperCase()}_${c.numero_orden ?? 0}`;
+    if (!ciclosMap.has(key)) {
+      ciclosMap.set(key, {
+        id: c.id,
+        nombre: c.nombre || "Ciclo",
+        numero_orden: c.numero_orden ?? 1,
+        matchingIds: [c.id],
+      });
+    } else {
+      const entry = ciclosMap.get(key);
+      if (entry && !entry.matchingIds.includes(c.id)) {
+        entry.matchingIds.push(c.id);
+      }
+    }
+  }
+
+  const ciclos: CicloData[] = Array.from(ciclosMap.values());
 
   // Mapear cursos
   const cursos: CursoData[] = (cursosRaw || []).map((c: any) => ({

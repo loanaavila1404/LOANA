@@ -44,6 +44,7 @@ export interface CicloData {
   id: string;
   nombre: string;
   numero_orden: number;
+  matchingIds?: string[];
 }
 
 export interface CursoData {
@@ -257,6 +258,34 @@ export function NotasManagerClient({
     }
   }, [edicionesFiltradas, selectedEdicionId]);
 
+  // Deduplicación reactiva de ciclos académicos para el selector
+  const ciclosUnicos = useMemo(() => {
+    const map = new Map<string, CicloData>();
+    for (const c of ciclos) {
+      const key = `${(c.nombre || "").trim().toUpperCase()}_${c.numero_orden ?? 0}`;
+      if (!map.has(key)) {
+        map.set(key, {
+          ...c,
+          matchingIds: c.matchingIds ? [...c.matchingIds] : [c.id],
+        });
+      } else {
+        const existing = map.get(key)!;
+        if (!existing.matchingIds) existing.matchingIds = [existing.id];
+        if (!existing.matchingIds.includes(c.id)) {
+          existing.matchingIds.push(c.id);
+        }
+      }
+    }
+    return Array.from(map.values());
+  }, [ciclos]);
+
+  // Sincronizar Ciclo seleccionado si el actual no está en la lista única
+  useEffect(() => {
+    if (ciclosUnicos.length > 0 && !ciclosUnicos.some(c => c.id === selectedCicloId)) {
+      setSelectedCicloId(ciclosUnicos[0].id);
+    }
+  }, [ciclosUnicos, selectedCicloId]);
+
   // Cursos filtrados para la edición y ciclo seleccionado
   const cursosFiltrados = useMemo(() => {
     let filtrados = cursos;
@@ -265,11 +294,13 @@ export function NotasManagerClient({
       if (porPlan.length > 0) filtrados = porPlan;
     }
     if (selectedCicloId) {
-      const porCiclo = filtrados.filter(c => c.ciclo_id === selectedCicloId);
+      const cicloActivo = ciclosUnicos.find(c => c.id === selectedCicloId);
+      const idsValidos = cicloActivo?.matchingIds || [selectedCicloId];
+      const porCiclo = filtrados.filter(c => c.ciclo_id && idsValidos.includes(c.ciclo_id));
       if (porCiclo.length > 0) return porCiclo;
     }
     return filtrados.length > 0 ? filtrados : cursos;
-  }, [cursos, activeEdicion, selectedCicloId]);
+  }, [cursos, activeEdicion, selectedCicloId, ciclosUnicos]);
 
   // Curso activo
   const activeCurso = useMemo(() => {
@@ -334,7 +365,7 @@ export function NotasManagerClient({
         const pf = Math.round(
           seed.ec1 * 0.2 + seed.ec2 * 0.2 + seed.ep * 0.3 + seed.ef * 0.3
         );
-        const estado = pf >= 13 ? "APROBADO" : "DESAPROBADO";
+        const estado = pf >= 11 ? "APROBADO" : "DESAPROBADO";
 
         initialMap[est.estudianteId] = {
           estudianteId: est.estudianteId,
@@ -402,7 +433,7 @@ export function NotasManagerClient({
         const ponderado = ec1 * 0.2 + ec2 * 0.2 + ep * 0.3 + ef * 0.3;
         const pfRedondeado = Math.round(ponderado);
         updated.promedioFinal = pfRedondeado;
-        updated.estado = pfRedondeado >= 13 ? "APROBADO" : "DESAPROBADO";
+        updated.estado = pfRedondeado >= 11 ? "APROBADO" : "DESAPROBADO";
       } else {
         // Si falta alguna nota, podemos calcular promedio parcial indicativo
         const notasPresentes = [ec1, ec2, ep, ef].filter((n): n is number => n !== null);
@@ -496,7 +527,7 @@ export function NotasManagerClient({
         ep: seed.ep,
         ef: seed.ef,
         promedioFinal: pf,
-        estado: pf >= 13 ? "APROBADO" : "DESAPROBADO",
+        estado: pf >= 11 ? "APROBADO" : "DESAPROBADO",
         observaciones: "Evaluación regular",
       };
     });
@@ -563,7 +594,7 @@ export function NotasManagerClient({
         ep: Math.max(10, p - 1),
         ef: p,
         promedio: p,
-        estado: (p >= 13 ? "APROBADO" : "DESAPROBADO") as "APROBADO" | "DESAPROBADO",
+        estado: (p >= 11 ? "APROBADO" : "DESAPROBADO") as "APROBADO" | "DESAPROBADO",
       };
     });
   }, [cursosFiltrados, activeCurso, estudianteBoleta, calificacionesMap]);
@@ -687,7 +718,7 @@ export function NotasManagerClient({
               onChange={(e) => setSelectedCicloId(e.target.value)}
               className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-[#c4121a] focus:ring-1 focus:ring-[#c4121a] text-slate-800 font-medium"
             >
-              {ciclos.map((c) => (
+              {ciclosUnicos.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.nombre} (Orden {c.numero_orden})
                 </option>
@@ -752,13 +783,13 @@ export function NotasManagerClient({
           <div className="p-3 bg-emerald-50/70 rounded-xl border border-emerald-100">
             <span className="text-[10px] uppercase font-bold text-emerald-700">Tasa de Aprobación</span>
             <div className="text-lg font-black text-emerald-800 mt-0.5">{metricas.tasaAprobacion}%</div>
-            <div className="text-[10px] text-emerald-600">{metricas.aprobados} aprobados (Nota ≥ 13)</div>
+            <div className="text-[10px] text-emerald-600">{metricas.aprobados} aprobados (Nota ≥ 11)</div>
           </div>
 
           <div className="p-3 bg-rose-50/70 rounded-xl border border-rose-100">
             <span className="text-[10px] uppercase font-bold text-rose-700">En Riesgo Académico</span>
             <div className="text-lg font-black text-rose-800 mt-0.5">{metricas.desaprobados} alumnos</div>
-            <div className="text-[10px] text-rose-600">Desaprobados (Nota &lt; 13)</div>
+            <div className="text-[10px] text-rose-600">Desaprobados (Nota ≤ 10)</div>
           </div>
         </div>
 
@@ -834,16 +865,16 @@ export function NotasManagerClient({
                 </span>
               </h2>
               <p className="text-xs text-slate-500">
-                Ponderación oficial: Continua 1 (20%), Continua 2 (20%), Parcial (30%), Final (30%). Nota aprobatoria mínima: <strong>13</strong>.
+                Ponderación oficial: Continua 1 (20%), Continua 2 (20%), Parcial (30%), Final (30%). Nota aprobatoria mínima: <strong>11</strong>.
               </p>
             </div>
 
             <div className="flex items-center gap-3 text-xs">
               <span className="inline-flex items-center gap-1.5 text-emerald-700 bg-emerald-50 px-2 py-1 rounded-md border border-emerald-200 font-semibold">
-                <span className="w-2 h-2 rounded-full bg-emerald-500" /> Aprobado: 13 a 20
+                <span className="w-2 h-2 rounded-full bg-emerald-500" /> Aprobado: 11 a 20
               </span>
               <span className="inline-flex items-center gap-1.5 text-rose-700 bg-rose-50 px-2 py-1 rounded-md border border-rose-200 font-semibold">
-                <span className="w-2 h-2 rounded-full bg-rose-500" /> Desaprobado: 0 a 12
+                <span className="w-2 h-2 rounded-full bg-rose-500" /> Desaprobado: 00 a 10
               </span>
             </div>
           </div>
@@ -894,8 +925,8 @@ export function NotasManagerClient({
                     estado: "PENDIENTE",
                   };
 
-                  const isAprobado = row.promedioFinal !== null && row.promedioFinal >= 13;
-                  const isDesaprobado = row.promedioFinal !== null && row.promedioFinal < 13;
+                  const isAprobado = row.promedioFinal !== null && row.promedioFinal >= 11;
+                  const isDesaprobado = row.promedioFinal !== null && row.promedioFinal <= 10;
 
                   return (
                     <tr key={est.estudianteId} className="hover:bg-slate-50/80 transition-colors">
@@ -923,8 +954,10 @@ export function NotasManagerClient({
                           onChange={(e) => handleNotaChange(est.estudianteId, "ec1", e.target.value)}
                           placeholder="—"
                           className={`w-16 mx-auto px-2 py-1.5 text-center text-xs font-mono font-bold rounded-lg border focus:ring-1 focus:ring-[#c4121a] focus:bg-white transition ${
-                            row.ec1 !== null && row.ec1 < 13
-                              ? "bg-red-50/80 text-rose-700 border-red-200"
+                            row.ec1 !== null && row.ec1 <= 10
+                              ? "bg-red-50 text-rose-700 border-red-200"
+                              : row.ec1 !== null && row.ec1 >= 11
+                              ? "bg-emerald-50/60 text-emerald-800 border-emerald-200"
                               : "bg-white text-slate-800 border-slate-200"
                           }`}
                         />
@@ -941,8 +974,10 @@ export function NotasManagerClient({
                           onChange={(e) => handleNotaChange(est.estudianteId, "ec2", e.target.value)}
                           placeholder="—"
                           className={`w-16 mx-auto px-2 py-1.5 text-center text-xs font-mono font-bold rounded-lg border focus:ring-1 focus:ring-[#c4121a] focus:bg-white transition ${
-                            row.ec2 !== null && row.ec2 < 13
-                              ? "bg-red-50/80 text-rose-700 border-red-200"
+                            row.ec2 !== null && row.ec2 <= 10
+                              ? "bg-red-50 text-rose-700 border-red-200"
+                              : row.ec2 !== null && row.ec2 >= 11
+                              ? "bg-emerald-50/60 text-emerald-800 border-emerald-200"
                               : "bg-white text-slate-800 border-slate-200"
                           }`}
                         />
@@ -959,8 +994,10 @@ export function NotasManagerClient({
                           onChange={(e) => handleNotaChange(est.estudianteId, "ep", e.target.value)}
                           placeholder="—"
                           className={`w-16 mx-auto px-2 py-1.5 text-center text-xs font-mono font-bold rounded-lg border focus:ring-1 focus:ring-[#c4121a] focus:bg-white transition ${
-                            row.ep !== null && row.ep < 13
-                              ? "bg-red-50/80 text-rose-700 border-red-200"
+                            row.ep !== null && row.ep <= 10
+                              ? "bg-red-50 text-rose-700 border-red-200"
+                              : row.ep !== null && row.ep >= 11
+                              ? "bg-emerald-50/60 text-emerald-800 border-emerald-200"
                               : "bg-white text-slate-800 border-slate-200"
                           }`}
                         />
@@ -977,8 +1014,10 @@ export function NotasManagerClient({
                           onChange={(e) => handleNotaChange(est.estudianteId, "ef", e.target.value)}
                           placeholder="—"
                           className={`w-16 mx-auto px-2 py-1.5 text-center text-xs font-mono font-bold rounded-lg border focus:ring-1 focus:ring-[#c4121a] focus:bg-white transition ${
-                            row.ef !== null && row.ef < 13
-                              ? "bg-red-50/80 text-rose-700 border-red-200"
+                            row.ef !== null && row.ef <= 10
+                              ? "bg-red-50 text-rose-700 border-red-200"
+                              : row.ef !== null && row.ef >= 11
+                              ? "bg-emerald-50/60 text-emerald-800 border-emerald-200"
                               : "bg-white text-slate-800 border-slate-200"
                           }`}
                         />
@@ -1041,7 +1080,7 @@ export function NotasManagerClient({
               <span>•</span>
               <span>Cálculo: <strong>Vigesimal (00 - 20)</strong></span>
               <span>•</span>
-              <span>Resolución institucional: <strong>Aprobado con nota ≥ 13</strong></span>
+              <span>Resolución institucional: <strong>Aprobado con nota ≥ 11 / Desaprobado ≤ 10</strong></span>
             </div>
 
             <button
@@ -1244,7 +1283,7 @@ export function NotasManagerClient({
                 </thead>
                 <tbody className="divide-y divide-slate-200">
                   {cursosBoletaEstudiante.map((item, idx) => {
-                    const esAprobado = item.promedio >= 13;
+                    const esAprobado = item.promedio >= 11;
                     return (
                       <tr key={item.curso.id} className="hover:bg-slate-50/50">
                         <td className="py-2 px-2 text-center text-slate-400 font-mono text-[10px] border-r border-slate-200">
@@ -1481,7 +1520,7 @@ export function NotasManagerClient({
                 {estudiantesDelAula.map((est, idx) => {
                   const row = calificacionesMap[est.estudianteId];
                   const pf = row?.promedioFinal ?? null;
-                  const esAprobado = pf !== null && pf >= 13;
+                  const esAprobado = pf !== null && pf >= 11;
                   return (
                     <tr key={est.estudianteId}>
                       <td className="py-1.5 px-2 text-center font-mono text-[10px] border-r border-slate-200">{idx + 1}</td>
