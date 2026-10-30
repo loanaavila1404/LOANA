@@ -1,25 +1,26 @@
 import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+import { NextResponse } from 'next/server'
+import { getAbsoluteUrl } from '@/lib/utils/url'
 
 export async function POST(request: Request) {
   const supabase = await createClient()
-  const { origin } = new URL(request.url)
+  const callbackUrl = getAbsoluteUrl('/auth/callback', request)
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${origin}/auth/callback`,
+      redirectTo: callbackUrl,
     },
   })
 
   if (error) {
     console.error('Error in Google OAuth:', error.message)
-    return redirect('/login?error=OauthFailed')
+    return NextResponse.redirect(getAbsoluteUrl('/login?error=OauthFailed', request))
   }
 
-  if (data.url) {
-    redirect(data.url)
+  if (data?.url) {
+    return NextResponse.redirect(data.url)
   }
 
-  return redirect('/login')
+  return NextResponse.redirect(getAbsoluteUrl('/login', request))
 }

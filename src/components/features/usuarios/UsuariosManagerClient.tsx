@@ -33,6 +33,7 @@ import {
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { updateUser, inviteUser } from "@/app/actions/usuarios";
+import { getAbsoluteUrl } from "@/lib/utils/url";
 
 export type RolCodigo = 
   | 'SUPERADMIN' 
@@ -484,8 +485,7 @@ export function UsuariosManagerClient({
     e.preventDefault();
 
     const token = `act_loc_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
-    const activationUrl = `${origin}/auth/activar?token=${token}&email=${encodeURIComponent(inviteEmail.trim().toLowerCase())}`;
+    const activationUrl = getAbsoluteUrl(`/auth/activar?token=${token}&email=${encodeURIComponent(inviteEmail.trim().toLowerCase())}`);
 
     const newUser: UsuarioInstitucional = {
       id: `usr-${Date.now()}`,
@@ -1299,7 +1299,7 @@ export function UsuariosManagerClient({
 
           <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-600 flex items-start gap-2">
             <Info className="w-4 h-4 text-slate-600 shrink-0 mt-0.5" />
-            <span>Al confirmar, se generará una credencial y token simulado con el enlace directo para verificar la cuenta de inmediato en localhost.</span>
+            <span>Al confirmar, se generará una credencial y token simulado con el enlace directo para verificar la cuenta de inmediato en el ERP.</span>
           </div>
 
           <div className="flex justify-end gap-3 pt-3 border-t border-slate-200">
