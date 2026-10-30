@@ -2,13 +2,16 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { DatabaseWithSedes } from '@/types/sedes.pending.types';
 import { Sede } from '@/lib/types';
+import { getSupabaseUrl, getSupabaseAnonKey } from '@/lib/supabase/env';
 
 async function createSedesClient() {
   const cookieStore = await cookies();
+  const supabaseUrl = getSupabaseUrl();
+  const supabaseAnonKey = getSupabaseAnonKey();
 
   return createServerClient<DatabaseWithSedes>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    supabaseUrl || 'https://placeholder.supabase.co',
+    supabaseAnonKey || 'placeholder-anon-key',
     {
       cookies: {
         get(name: string) {

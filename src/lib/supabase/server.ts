@@ -1,13 +1,22 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import type { Database } from '@/types/database.types'
+import { getSupabaseUrl, getSupabaseAnonKey } from './env'
 
 export async function createClient() {
   const cookieStore = await cookies()
+  const supabaseUrl = getSupabaseUrl()
+  const supabaseAnonKey = getSupabaseAnonKey()
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.warn(
+      '[Supabase Server] Variables de entorno ausentes. Asegúrate de configurar NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY en Vercel.'
+    )
+  }
 
   return createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    supabaseUrl || 'https://placeholder.supabase.co',
+    supabaseAnonKey || 'placeholder-anon-key',
     {
       cookies: {
         get(name: string) {
