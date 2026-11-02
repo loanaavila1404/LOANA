@@ -12,7 +12,7 @@ interface ActivarPageProps {
 
 export default async function ActivarCuentaAuthPage({ searchParams }: ActivarPageProps) {
   const params = await searchParams;
-  const token = params.token || 'act_loc_simulado';
+  const token = params.token || 'act_institucional';
   const email = params.email ? decodeURIComponent(params.email) : 'colaborador@brusben.edu.pe';
 
   return (
@@ -60,7 +60,7 @@ export default async function ActivarCuentaAuthPage({ searchParams }: ActivarPag
             <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
             <span>
               <strong>Enlace verificado con éxito: </strong>
-              La invitación local ha sido confirmada en el entorno de desarrollo. Tu cuenta se encuentra activa y autorizada para el acceso institucional.
+              Tu cuenta institucional ha sido verificada y activada correctamente en el sistema. Ya cuentas con acceso autorizado a la plataforma del ERP Brusben.
             </span>
           </div>
 

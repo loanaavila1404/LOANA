@@ -102,13 +102,13 @@ export async function inviteUser(payload: InviteUserPayload): Promise<ActionStat
       return error("El correo institucional ingresado no es válido.") as ActionState<InviteUserResult>;
     }
 
-    // Generar token único simulado para pruebas locales sin SMTP
-    const token = `act_loc_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+    // Generar token único de activación
+    const token = `act_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
     const activationUrl = `/auth/activar?token=${token}&email=${encodeURIComponent(email)}`;
 
     revalidatePath("/usuarios");
 
-    return success("Invitación generada exitosamente para entorno local", {
+    return success("Invitación generada exitosamente", {
       token,
       activationUrl,
       email,

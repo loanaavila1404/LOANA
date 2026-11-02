@@ -12,13 +12,33 @@
  */
 
 export function getSiteUrl(request?: Request): string {
-  // 1. Variable de entorno explícita configurada en Vercel o .env
+  // 1. Entorno de navegador (Client Components): window.location.origin es la fuente de verdad en vivo
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    const origin = window.location.origin;
+    const isWindowLocal = origin.includes('localhost') || origin.includes('127.0.0.1');
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL;
+
+    // Si el usuario está navegando en producción (Vercel, dominio institucional, etc.),
+    // su origen en tiempo real siempre prevalece sobre configuraciones estáticas locales.
+    if (!isWindowLocal) {
+      return origin.replace(/\/+$/, '');
+    }
+
+    // Si está en localhost pero se configuró manualmente una URL remota de producción
+    if (siteUrl && siteUrl.trim() !== '' && !siteUrl.includes('localhost') && !siteUrl.includes('127.0.0.1')) {
+      return siteUrl.trim().replace(/\/+$/, '');
+    }
+
+    return origin.replace(/\/+$/, '');
+  }
+
+  // 2. Variable de entorno explícita configurada en Vercel o .env (en servidor)
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL;
   if (siteUrl && siteUrl.trim() !== '') {
     return siteUrl.trim().replace(/\/+$/, '');
   }
 
-  // 2. Si se proporciona el objeto Request en un Route Handler o Middleware
+  // 3. Si se proporciona el objeto Request en un Route Handler o Middleware
   if (request) {
     const forwardedHost = request.headers.get('x-forwarded-host');
     const forwardedProto = request.headers.get('x-forwarded-proto');
@@ -40,11 +60,6 @@ export function getSiteUrl(request?: Request): string {
     } catch {
       // Ignorar error de parsing
     }
-  }
-
-  // 3. Entorno de navegador (Client Components)
-  if (typeof window !== 'undefined' && window.location?.origin) {
-    return window.location.origin;
   }
 
   // 4. Variables de entorno inyectadas automáticamente por Vercel en build/servidor

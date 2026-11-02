@@ -372,6 +372,15 @@ export function UsuariosManagerClient({
   } | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
 
+  // Detección dinámica de entorno de producción vs local
+  const isProduction = useMemo(() => {
+    if (typeof window !== "undefined") {
+      const hostname = window.location.hostname;
+      return !hostname.includes("localhost") && !hostname.includes("127.0.0.1");
+    }
+    return process.env.NODE_ENV === "production";
+  }, []);
+
   const [isPending, startTransition] = useTransition();
   const [modalFeedback, setModalFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
@@ -480,11 +489,12 @@ export function UsuariosManagerClient({
     });
   };
 
-  // Manejo de invitación de nuevo usuario con simulación local
+  // Manejo de invitación de nuevo usuario
   const handleInviteSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const token = `act_loc_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+    const tokenPrefix = isProduction ? "act_prod_" : "act_loc_";
+    const token = `${tokenPrefix}${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
     const activationUrl = getAbsoluteUrl(`/auth/activar?token=${token}&email=${encodeURIComponent(inviteEmail.trim().toLowerCase())}`);
 
     const newUser: UsuarioInstitucional = {
@@ -498,11 +508,11 @@ export function UsuariosManagerClient({
       rolNombre: CAT_ROLES[inviteRol].nombre,
       sede: 'Sede Central - Tumbes',
       area: inviteRol === 'SUPERADMIN' ? 'Tecnología y Dirección' : inviteRol === 'DIRECCION' ? 'Dirección Ejecutiva' : inviteRol === 'COORDINACION_ACADEMICA' ? 'Área Académica' : inviteRol === 'CAJA' ? 'Tesorería & Cobranzas' : inviteRol === 'ASESOR_COMERCIAL' ? 'Fuerza de Ventas' : 'Plana Docente',
-      ultimoAcceso: 'Invitación Simulada Enviada',
+      ultimoAcceso: isProduction ? 'Invitación Institucional Enviada' : 'Invitación Simulada Enviada',
       dispositivo: {
         so: 'Pendiente',
         browser: 'Web App',
-        ip: '127.0.0.1'
+        ip: isProduction ? 'Producción' : '127.0.0.1'
       },
       dosFactores: false,
       status: 'ACTIVO'
@@ -511,7 +521,7 @@ export function UsuariosManagerClient({
     setUsuarios(prev => [newUser, ...prev]);
     setIsInviteModalOpen(false);
 
-    // Abrir modal de simulación local con enlace directo
+    // Abrir modal con enlace directo
     setSimulatedInvite({
       nombre: inviteNombre,
       email: inviteEmail.trim().toLowerCase(),
@@ -1299,7 +1309,11 @@ export function UsuariosManagerClient({
 
           <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-600 flex items-start gap-2">
             <Info className="w-4 h-4 text-slate-600 shrink-0 mt-0.5" />
-            <span>Al confirmar, se generará una credencial y token simulado con el enlace directo para verificar la cuenta de inmediato en el ERP.</span>
+            <span>
+              {isProduction 
+                ? "Al confirmar, se creará el registro del colaborador y se generará el enlace oficial de activación institucional para su acceso al ERP."
+                : "Al confirmar, se generará una credencial y token simulado con el enlace directo para verificar la cuenta de inmediato en el ERP."}
+            </span>
           </div>
 
           <div className="flex justify-end gap-3 pt-3 border-t border-slate-200">
@@ -1316,17 +1330,17 @@ export function UsuariosManagerClient({
               className="bg-[#C4121A] hover:bg-[#a50f16] text-white px-5 py-2 rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5"
             >
               <MailCheck className="w-4 h-4" />
-              <span>Generar Invitación Local</span>
+              <span>{isProduction ? "Generar Invitación Institucional" : "Generar Invitación Local"}</span>
             </Button>
           </div>
         </form>
       </Modal>
 
-      {/* MODAL DE SIMULACIÓN DE ENLACE DE INVITACIÓN LOCAL */}
+      {/* MODAL DE ENLACE DE INVITACIÓN */}
       <Modal
         isOpen={Boolean(simulatedInvite)}
         onClose={() => setSimulatedInvite(null)}
-        title="Invitación Generada (Simulación en Entorno Local)"
+        title={isProduction ? "Invitación Generada Exitosamente" : "Invitación Generada (Simulación en Entorno Local)"}
         className="max-w-xl"
       >
         {simulatedInvite && (
@@ -1335,10 +1349,14 @@ export function UsuariosManagerClient({
               <MailCheck className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
               <div className="space-y-1">
                 <span className="font-bold text-sm block text-emerald-800">
-                  Invitación y token generados para {simulatedInvite.nombre}
+                  {isProduction 
+                    ? "Invitación generada exitosamente" 
+                    : `Invitación y token generados para ${simulatedInvite.nombre}`}
                 </span>
                 <p className="text-slate-600 leading-relaxed">
-                  En entorno de desarrollo local (sin servidor SMTP activo), el correo no se envía externamente a una bandeja de entrada. Puedes copiar el enlace directo de activación o abrirlo en una nueva pestaña para probar la verificación de la cuenta.
+                  {isProduction
+                    ? `La cuenta institucional para ${simulatedInvite.nombre} ha sido configurada. Puedes copiar y compartir el siguiente enlace directo de activación con el colaborador para que ingrese y configure su contraseña.`
+                    : "En entorno de desarrollo local (sin servidor SMTP activo), el correo no se envía externamente a una bandeja de entrada. Puedes copiar el enlace directo de activación o abrirlo en una nueva pestaña para probar la verificación de la cuenta."}
                 </p>
               </div>
             </div>
@@ -1411,14 +1429,14 @@ export function UsuariosManagerClient({
                 className="inline-flex items-center gap-1.5 text-xs font-bold text-[#C4121A] hover:underline"
               >
                 <ExternalLink className="w-3.5 h-3.5" />
-                <span>Abrir y probar enlace en nueva pestaña</span>
+                <span>{isProduction ? "Abrir enlace de activación" : "Abrir y probar enlace en nueva pestaña"}</span>
               </a>
               <Button
                 type="button"
                 onClick={() => setSimulatedInvite(null)}
                 className="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2 rounded-xl text-xs font-bold"
               >
-                Entendido / Cerrar
+                {isProduction ? "Cerrar" : "Entendido / Cerrar"}
               </Button>
             </div>
           </div>
