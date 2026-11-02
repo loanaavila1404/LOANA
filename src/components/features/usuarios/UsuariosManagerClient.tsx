@@ -362,15 +362,19 @@ export function UsuariosManagerClient({
   const [inviteDni, setInviteDni] = useState("");
   const [inviteRol, setInviteRol] = useState<RolCodigo>('ASESOR_COMERCIAL');
 
-  // Estado para el modal de simulación de invitación local
+  // Estado para el modal de invitación
   const [simulatedInvite, setSimulatedInvite] = useState<{
     nombre: string;
     email: string;
     rol: string;
     token: string;
     url: string;
+    tempPassword?: string;
   } | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [copiedPass, setCopiedPass] = useState(false);
+  const [isInviting, setIsInviting] = useState(false);
+  const [inviteError, setInviteError] = useState<string | null>(null);
 
   // Detección dinámica de entorno de producción vs local
   const isProduction = useMemo(() => {
@@ -489,50 +493,75 @@ export function UsuariosManagerClient({
     });
   };
 
-  // Manejo de invitación de nuevo usuario
+  // Manejo de invitación de nuevo usuario en Supabase Auth
   const handleInviteSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setInviteError(null);
+    setIsInviting(true);
 
-    const tokenPrefix = isProduction ? "act_prod_" : "act_loc_";
-    const token = `${tokenPrefix}${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-    const activationUrl = getAbsoluteUrl(`/auth/activar?token=${token}&email=${encodeURIComponent(inviteEmail.trim().toLowerCase())}`);
+    try {
+      const email = inviteEmail.trim().toLowerCase();
+      const nombre = inviteNombre.trim();
+      const dni = inviteDni.trim();
 
-    const newUser: UsuarioInstitucional = {
-      id: `usr-${Date.now()}`,
-      nombres: inviteNombre.split(' ')[0] || inviteNombre,
-      apellidos: inviteNombre.split(' ').slice(1).join(' ') || 'Brusben',
-      displayName: inviteNombre,
-      email: inviteEmail.trim().toLowerCase(),
-      dni: inviteDni.trim() || 'Por asignar',
-      rolCodigo: inviteRol,
-      rolNombre: CAT_ROLES[inviteRol].nombre,
-      sede: 'Sede Central - Tumbes',
-      area: inviteRol === 'SUPERADMIN' ? 'Tecnología y Dirección' : inviteRol === 'DIRECCION' ? 'Dirección Ejecutiva' : inviteRol === 'COORDINACION_ACADEMICA' ? 'Área Académica' : inviteRol === 'CAJA' ? 'Tesorería & Cobranzas' : inviteRol === 'ASESOR_COMERCIAL' ? 'Fuerza de Ventas' : 'Plana Docente',
-      ultimoAcceso: isProduction ? 'Invitación Institucional Enviada' : 'Invitación Simulada Enviada',
-      dispositivo: {
-        so: 'Pendiente',
-        browser: 'Web App',
-        ip: isProduction ? 'Producción' : '127.0.0.1'
-      },
-      dosFactores: false,
-      status: 'ACTIVO'
-    };
+      const result = await inviteUser({
+        nombre,
+        email,
+        dni,
+        rolCodigo: inviteRol,
+        sede: 'Sede Central - Tumbes',
+      });
 
-    setUsuarios(prev => [newUser, ...prev]);
-    setIsInviteModalOpen(false);
+      if (!result.success || !result.data) {
+        setInviteError(result.message || 'No se pudo crear el usuario en Supabase Auth.');
+        setIsInviting(false);
+        return;
+      }
 
-    // Abrir modal con enlace directo
-    setSimulatedInvite({
-      nombre: inviteNombre,
-      email: inviteEmail.trim().toLowerCase(),
-      rol: CAT_ROLES[inviteRol].nombre,
-      token,
-      url: activationUrl,
-    });
+      const { authUserId, token, activationUrl, tempPassword, rolNombre } = result.data;
 
-    setInviteEmail("");
-    setInviteNombre("");
-    setInviteDni("");
+      const newUser: UsuarioInstitucional = {
+        id: authUserId,
+        nombres: nombre.split(' ')[0] || nombre,
+        apellidos: nombre.split(' ').slice(1).join(' ') || 'Brusben',
+        displayName: nombre,
+        email,
+        dni: dni || 'Institucional',
+        rolCodigo: inviteRol,
+        rolNombre: rolNombre || CAT_ROLES[inviteRol].nombre,
+        sede: 'Sede Central - Tumbes',
+        area: inviteRol === 'SUPERADMIN' ? 'Tecnología y Dirección' : inviteRol === 'DIRECCION' ? 'Dirección Ejecutiva' : inviteRol === 'COORDINACION_ACADEMICA' ? 'Área Académica' : inviteRol === 'CAJA' ? 'Tesorería & Cobranzas' : inviteRol === 'ASESOR_COMERCIAL' ? 'Fuerza de Ventas' : 'Plana Docente',
+        ultimoAcceso: 'Creado en Supabase Auth',
+        dispositivo: {
+          so: 'Pendiente',
+          browser: 'Web App',
+          ip: isProduction ? 'Producción' : '127.0.0.1',
+        },
+        dosFactores: false,
+        status: 'ACTIVO',
+      };
+
+      setUsuarios(prev => [newUser, ...prev.filter(u => u.email.toLowerCase() !== email)]);
+      setIsInviteModalOpen(false);
+
+      setSimulatedInvite({
+        nombre,
+        email,
+        rol: rolNombre || CAT_ROLES[inviteRol].nombre,
+        token,
+        url: activationUrl,
+        tempPassword,
+      });
+
+      setInviteEmail("");
+      setInviteNombre("");
+      setInviteDni("");
+    } catch (err: unknown) {
+      console.error("[Usuarios] Error al registrar usuario:", err);
+      setInviteError((err as Error).message || 'Error inesperado al crear usuario en Supabase.');
+    } finally {
+      setIsInviting(false);
+    }
   };
 
   return (
@@ -1307,12 +1336,19 @@ export function UsuariosManagerClient({
             </div>
           </div>
 
+          {inviteError && (
+            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 shrink-0 text-rose-600" />
+              <span>{inviteError}</span>
+            </div>
+          )}
+
           <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-600 flex items-start gap-2">
             <Info className="w-4 h-4 text-slate-600 shrink-0 mt-0.5" />
             <span>
               {isProduction 
-                ? "Al confirmar, se creará el registro del colaborador y se generará el enlace oficial de activación institucional para su acceso al ERP."
-                : "Al confirmar, se generará una credencial y token simulado con el enlace directo para verificar la cuenta de inmediato en el ERP."}
+                ? "Al confirmar, se creará automáticamente el usuario en Supabase Auth con Service Role, asignando su rol y credencial para inicio de sesión inmediato."
+                : "Al confirmar, se creará el usuario en Supabase Auth y se generará su enlace oficial y credencial temporal de acceso."}
             </span>
           </div>
 
@@ -1320,17 +1356,31 @@ export function UsuariosManagerClient({
             <Button
               type="button"
               variant="outline"
-              onClick={() => setIsInviteModalOpen(false)}
-              className="px-4 py-2 rounded-xl text-xs font-semibold"
+              disabled={isInviting}
+              onClick={() => {
+                setInviteError(null);
+                setIsInviteModalOpen(false);
+              }}
+              className="px-4 py-2 rounded-xl text-xs font-semibold cursor-pointer"
             >
               Cancelar
             </Button>
             <Button
               type="submit"
-              className="bg-[#C4121A] hover:bg-[#a50f16] text-white px-5 py-2 rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5"
+              disabled={isInviting}
+              className="bg-[#C4121A] hover:bg-[#a50f16] disabled:opacity-60 text-white px-5 py-2 rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer"
             >
-              <MailCheck className="w-4 h-4" />
-              <span>{isProduction ? "Generar Invitación Institucional" : "Generar Invitación Local"}</span>
+              {isInviting ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <span>Creando en Supabase Auth...</span>
+                </>
+              ) : (
+                <>
+                  <MailCheck className="w-4 h-4" />
+                  <span>Registrar e Invitar Usuario</span>
+                </>
+              )}
             </Button>
           </div>
         </form>
@@ -1340,7 +1390,7 @@ export function UsuariosManagerClient({
       <Modal
         isOpen={Boolean(simulatedInvite)}
         onClose={() => setSimulatedInvite(null)}
-        title={isProduction ? "Invitación Generada Exitosamente" : "Invitación Generada (Simulación en Entorno Local)"}
+        title={isProduction ? "Usuario Creado e Invitación Generada" : "Invitación Generada (Simulación en Entorno Local)"}
         className="max-w-xl"
       >
         {simulatedInvite && (
@@ -1349,14 +1399,10 @@ export function UsuariosManagerClient({
               <MailCheck className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
               <div className="space-y-1">
                 <span className="font-bold text-sm block text-emerald-800">
-                  {isProduction 
-                    ? "Invitación generada exitosamente" 
-                    : `Invitación y token generados para ${simulatedInvite.nombre}`}
+                  Usuario registrado y activo en Supabase Auth
                 </span>
                 <p className="text-slate-600 leading-relaxed">
-                  {isProduction
-                    ? `La cuenta institucional para ${simulatedInvite.nombre} ha sido configurada. Puedes copiar y compartir el siguiente enlace directo de activación con el colaborador para que ingrese y configure su contraseña.`
-                    : "En entorno de desarrollo local (sin servidor SMTP activo), el correo no se envía externamente a una bandeja de entrada. Puedes copiar el enlace directo de activación o abrirlo en una nueva pestaña para probar la verificación de la cuenta."}
+                  La cuenta para <strong>{simulatedInvite.nombre}</strong> ha sido creada exitosamente en Supabase Auth y vinculada a la base de datos institucional. El colaborador puede iniciar sesión inmediatamente con su cuenta de <strong>Google Workspace</strong> o utilizando su correo y la contraseña temporal asignada.
                 </p>
               </div>
             </div>
@@ -1378,8 +1424,34 @@ export function UsuariosManagerClient({
                 <span>Sede Institucional:</span>
                 <span className="font-semibold text-slate-800">Sede Central - Tumbes</span>
               </div>
-              <div className="flex justify-between items-center text-slate-600">
-                <span>Token de Activación:</span>
+              {simulatedInvite.tempPassword && (
+                <div className="flex justify-between items-center text-slate-600 pt-2 border-t border-slate-200/80">
+                  <span className="font-semibold text-slate-700">Contraseña Temporal:</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-mono font-bold text-xs bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded select-all">
+                      {simulatedInvite.tempPassword}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(simulatedInvite.tempPassword || '');
+                        setCopiedPass(true);
+                        setTimeout(() => setCopiedPass(false), 2000);
+                      }}
+                      title="Copiar contraseña temporal"
+                      className="p-1 hover:bg-slate-200 rounded text-slate-600 transition cursor-pointer"
+                    >
+                      {copiedPass ? (
+                        <Check className="w-3.5 h-3.5 text-emerald-600" />
+                      ) : (
+                        <Copy className="w-3.5 h-3.5" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
+              <div className="flex justify-between items-center text-slate-600 pt-1 border-t border-slate-200/50">
+                <span>Token de Seguimiento:</span>
                 <span className="font-mono text-[11px] text-slate-700 bg-slate-200 px-1.5 py-0.5 rounded">
                   {simulatedInvite.token}
                 </span>
@@ -1404,7 +1476,7 @@ export function UsuariosManagerClient({
                     setCopiedLink(true);
                     setTimeout(() => setCopiedLink(false), 2000);
                   }}
-                  className="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold shrink-0 flex items-center gap-1.5 transition-all shadow-xs"
+                  className="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold shrink-0 flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
                 >
                   {copiedLink ? (
                     <>
@@ -1429,14 +1501,14 @@ export function UsuariosManagerClient({
                 className="inline-flex items-center gap-1.5 text-xs font-bold text-[#C4121A] hover:underline"
               >
                 <ExternalLink className="w-3.5 h-3.5" />
-                <span>{isProduction ? "Abrir enlace de activación" : "Abrir y probar enlace en nueva pestaña"}</span>
+                <span>Abrir enlace de activación</span>
               </a>
               <Button
                 type="button"
                 onClick={() => setSimulatedInvite(null)}
-                className="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2 rounded-xl text-xs font-bold"
+                className="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2 rounded-xl text-xs font-bold cursor-pointer"
               >
-                {isProduction ? "Cerrar" : "Entendido / Cerrar"}
+                Entendido / Cerrar
               </Button>
             </div>
           </div>
