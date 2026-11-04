@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
-import { requirePermission } from '@/lib/auth/permissions';
+import { requirePermission, isCurrentUserAdvisor } from '@/lib/auth/permissions';
+import { redirect } from 'next/navigation';
 import { MatriculaWizardClient, EstudianteOption, ProspectoOption, EdicionOption } from '@/components/features/matriculas/MatriculaWizardClient';
 import Link from 'next/link';
 import { ArrowLeft, GraduationCap, ShieldCheck } from 'lucide-react';
@@ -13,6 +14,11 @@ export default async function NuevaMatriculaPage({
 }: {
   searchParams: Promise<{ estudiante_id?: string; persona_id?: string }>;
 }) {
+  const isAdvisor = await isCurrentUserAdvisor();
+  if (isAdvisor) {
+    redirect('/matriculas?error=readonly');
+  }
+
   await requirePermission(['MATRICULAS.GESTIONAR', 'SISTEMA.ADMINISTRAR']);
   const supabase = await createClient();
   const resolvedSearch = await searchParams;

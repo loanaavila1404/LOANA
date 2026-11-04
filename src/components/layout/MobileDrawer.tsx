@@ -33,14 +33,34 @@ export function MobileDrawer({
   appVersion?: string
 }) {
   const perms = user?.permissions || []
+  const roleCode = (user?.roleCode || '').toUpperCase().trim()
   const isSuperadmin =
-    user?.roleCode === 'SUPERADMIN' ||
+    roleCode === 'SUPERADMIN' ||
+    roleCode === 'SUPER_ADMINISTRADOR' ||
     user?.role?.toLowerCase().includes('superadmin') ||
     perms.includes('SISTEMA.ADMINISTRAR')
 
-  const canViewReportes = isSuperadmin || perms.includes('SISTEMA.ADMINISTRAR')
-  const canViewAuditoria = isSuperadmin || perms.includes('AUDITORIA.VER')
-  const canViewUsuarios = isSuperadmin || perms.includes('USUARIOS.VER')
+  const isAsesorComercial =
+    roleCode === 'ASESOR_COMERCIAL' ||
+    roleCode === 'ASESOR' ||
+    user?.role?.toLowerCase().includes('asesor')
+
+  // Permisos granulares de navegación
+  const canViewCrm = isSuperadmin || isAsesorComercial || perms.includes('CRM.VER') || perms.includes('CRM.GESTIONAR')
+  const canViewMatriculas = isSuperadmin || isAsesorComercial || perms.includes('MATRICULAS.VER') || perms.includes('MATRICULAS.GESTIONAR')
+
+  // Restricciones estrictas para Asesor Comercial: NO debe ver módulos no comerciales
+  const canViewPersonas = !isAsesorComercial && (isSuperadmin || perms.includes('ESTUDIANTES.VER'))
+  const canViewOferta = !isAsesorComercial && (isSuperadmin || perms.includes('PROGRAMAS.VER') || perms.includes('PROGRAMAS.EDITAR'))
+  const canViewHorarios = !isAsesorComercial && (isSuperadmin || perms.includes('ACADEMICO.VER'))
+  const canViewNotas = !isAsesorComercial && (isSuperadmin || perms.includes('NOTAS.REGISTRAR') || perms.includes('ACADEMICO.VER'))
+  const canViewReportes = !isAsesorComercial && (isSuperadmin || perms.includes('REPORTES.VER') || perms.includes('SISTEMA.ADMINISTRAR'))
+  const canViewUsuarios = !isAsesorComercial && (isSuperadmin || perms.includes('USUARIOS.VER'))
+  const canViewAuditoria = !isAsesorComercial && (isSuperadmin || perms.includes('AUDITORIA.VER'))
+
+  const showGestionAcademica = canViewPersonas || canViewOferta || canViewHorarios || canViewMatriculas
+  const showEvaluacion = canViewNotas || canViewReportes
+  const showControlInstitucional = canViewUsuarios || canViewAuditoria
 
   const pathname = usePathname()
   const router = useRouter()
@@ -194,165 +214,183 @@ export function MobileDrawer({
               <span>Inicio</span>
             </Link>
 
-            <Link
-              onClick={onClose}
-              className={`flex items-center justify-between px-2.5 py-2 rounded-lg font-medium transition-all ${
-                isActive('/crm')
-                  ? 'bg-[#c4121a] text-white shadow-sm font-bold'
-                  : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
-              }`}
-              href="/crm"
-            >
-              <div className="flex items-center gap-2.5">
-                <Target className="w-4 h-4 shrink-0" />
-                <span>CRM Comercial</span>
-              </div>
-              <span className="bg-[#c4121a] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-                Prospectos
-              </span>
-            </Link>
+            {canViewCrm && (
+              <Link
+                onClick={onClose}
+                className={`flex items-center justify-between px-2.5 py-2 rounded-lg font-medium transition-all ${
+                  isActive('/crm')
+                    ? 'bg-[#c4121a] text-white shadow-sm font-bold'
+                    : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
+                }`}
+                href="/crm"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Target className="w-4 h-4 shrink-0" />
+                  <span>CRM Comercial</span>
+                </div>
+                <span className="bg-[#c4121a] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                  Prospectos
+                </span>
+              </Link>
+            )}
           </div>
 
           {/* SECCIÓN 2: GESTIÓN ACADÉMICA */}
-          <div className="space-y-0.5">
-            <div className="px-2.5 pb-1 text-[10px] font-black uppercase tracking-wider text-slate-400">
-              Gestión Académica
+          {showGestionAcademica && (
+            <div className="space-y-0.5">
+              <div className="px-2.5 pb-1 text-[10px] font-black uppercase tracking-wider text-slate-400">
+                Gestión Académica
+              </div>
+              {canViewPersonas && (
+                <Link
+                  onClick={onClose}
+                  className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
+                    isActive('/personas')
+                      ? 'bg-[#c4121a] text-white shadow-sm font-bold'
+                      : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
+                  }`}
+                  href="/personas"
+                >
+                  <Users className="w-4 h-4 shrink-0" />
+                  <span>Personas y estudiantes</span>
+                </Link>
+              )}
+
+              {canViewOferta && (
+                <Link
+                  onClick={onClose}
+                  className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
+                    isActive('/oferta')
+                      ? 'bg-[#c4121a] text-white shadow-sm font-bold'
+                      : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
+                  }`}
+                  href="/oferta"
+                >
+                  <BookOpen className="w-4 h-4 shrink-0" />
+                  <span>Oferta académica</span>
+                </Link>
+              )}
+
+              {canViewHorarios && (
+                <Link
+                  onClick={onClose}
+                  className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
+                    isActive('/horarios')
+                      ? 'bg-[#c4121a] text-white shadow-sm font-bold'
+                      : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
+                  }`}
+                  href="/horarios"
+                >
+                  <Calendar className="w-4 h-4 shrink-0" />
+                  <span>Horarios</span>
+                </Link>
+              )}
+
+              {canViewMatriculas && (
+                <Link
+                  onClick={onClose}
+                  className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
+                    isActive('/matriculas')
+                      ? 'bg-[#c4121a] text-white shadow-sm font-bold'
+                      : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
+                  }`}
+                  href="/matriculas"
+                >
+                  <ClipboardList className="w-4 h-4 shrink-0" />
+                  <span>Matrículas</span>
+                </Link>
+              )}
             </div>
-            <Link
-              onClick={onClose}
-              className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
-                isActive('/personas')
-                  ? 'bg-[#c4121a] text-white shadow-sm font-bold'
-                  : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
-              }`}
-              href="/personas"
-            >
-              <Users className="w-4 h-4 shrink-0" />
-              <span>Personas y estudiantes</span>
-            </Link>
-
-            <Link
-              onClick={onClose}
-              className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
-                isActive('/oferta')
-                  ? 'bg-[#c4121a] text-white shadow-sm font-bold'
-                  : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
-              }`}
-              href="/oferta"
-            >
-              <BookOpen className="w-4 h-4 shrink-0" />
-              <span>Oferta académica</span>
-            </Link>
-
-            <Link
-              onClick={onClose}
-              className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
-                isActive('/horarios')
-                  ? 'bg-[#c4121a] text-white shadow-sm font-bold'
-                  : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
-              }`}
-              href="/horarios"
-            >
-              <Calendar className="w-4 h-4 shrink-0" />
-              <span>Horarios</span>
-            </Link>
-
-            <Link
-              onClick={onClose}
-              className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
-                isActive('/matriculas')
-                  ? 'bg-[#c4121a] text-white shadow-sm font-bold'
-                  : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
-              }`}
-              href="/matriculas"
-            >
-              <ClipboardList className="w-4 h-4 shrink-0" />
-              <span>Matrículas</span>
-            </Link>
-          </div>
+          )}
 
           {/* SECCIÓN 3: EVALUACIÓN & MÉTRICAS */}
-          <div className="space-y-0.5">
-            <div className="px-2.5 pb-1 text-[10px] font-black uppercase tracking-wider text-slate-400">
-              Evaluación & Métricas
-            </div>
-            <Link
-              onClick={onClose}
-              className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
-                isActive('/notas')
-                  ? 'bg-[#c4121a] text-white shadow-sm font-bold'
-                  : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
-              }`}
-              href="/notas"
-            >
-              <Award className="w-4 h-4 shrink-0" />
-              <span>Notas y actas</span>
-            </Link>
+          {showEvaluacion && (
+            <div className="space-y-0.5">
+              <div className="px-2.5 pb-1 text-[10px] font-black uppercase tracking-wider text-slate-400">
+                Evaluación & Métricas
+              </div>
+              {canViewNotas && (
+                <Link
+                  onClick={onClose}
+                  className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
+                    isActive('/notas')
+                      ? 'bg-[#c4121a] text-white shadow-sm font-bold'
+                      : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
+                  }`}
+                  href="/notas"
+                >
+                  <Award className="w-4 h-4 shrink-0" />
+                  <span>Notas y actas</span>
+                </Link>
+              )}
 
-            {canViewReportes && (
-              <Link
-                onClick={onClose}
-                className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
-                  isActive('/reportes')
-                    ? 'bg-[#c4121a] text-white shadow-sm font-bold'
-                    : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
-                }`}
-                href="/reportes"
-              >
-                <BarChart3 className="w-4 h-4 shrink-0" />
-                <span>Reportes y analítica</span>
-              </Link>
-            )}
-          </div>
+              {canViewReportes && (
+                <Link
+                  onClick={onClose}
+                  className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
+                    isActive('/reportes')
+                      ? 'bg-[#c4121a] text-white shadow-sm font-bold'
+                      : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
+                  }`}
+                  href="/reportes"
+                >
+                  <BarChart3 className="w-4 h-4 shrink-0" />
+                  <span>Reportes y analítica</span>
+                </Link>
+              )}
+            </div>
+          )}
 
           {/* SECCIÓN 4: CONTROL INSTITUCIONAL */}
-          <div className="space-y-0.5">
-            <div className="px-2.5 pb-1 text-[10px] font-black uppercase tracking-wider text-slate-400">
-              Control Institucional
+          {showControlInstitucional && (
+            <div className="space-y-0.5">
+              <div className="px-2.5 pb-1 text-[10px] font-black uppercase tracking-wider text-slate-400">
+                Control Institucional
+              </div>
+              {canViewUsuarios && (
+                <Link
+                  onClick={onClose}
+                  className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
+                    isActive('/usuarios')
+                      ? 'bg-[#c4121a] text-white shadow-sm font-bold'
+                      : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
+                  }`}
+                  href="/usuarios"
+                >
+                  <ShieldCheck className="w-4 h-4 shrink-0" />
+                  <span>Usuarios y accesos (RBAC)</span>
+                </Link>
+              )}
+
+              {canViewAuditoria && (
+                <Link
+                  onClick={onClose}
+                  className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
+                    isActive('/auditoria')
+                      ? 'bg-[#c4121a] text-white shadow-sm font-bold'
+                      : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
+                  }`}
+                  href="/auditoria"
+                >
+                  <History className="w-4 h-4 shrink-0" />
+                  <span>Auditoría y trazabilidad</span>
+                </Link>
+              )}
+
+              <Link
+                onClick={onClose}
+                className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
+                  isActive('/perfil')
+                    ? 'bg-[#c4121a] text-white shadow-sm font-bold'
+                    : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
+                }`}
+                href="/perfil"
+              >
+                <User className="w-4 h-4 shrink-0" />
+                <span>Mi perfil</span>
+              </Link>
             </div>
-            {canViewUsuarios && (
-              <Link
-                onClick={onClose}
-                className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
-                  isActive('/usuarios')
-                    ? 'bg-[#c4121a] text-white shadow-sm font-bold'
-                    : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
-                }`}
-                href="/usuarios"
-              >
-                <ShieldCheck className="w-4 h-4 shrink-0" />
-                <span>Usuarios y accesos (RBAC)</span>
-              </Link>
-            )}
-
-            {canViewAuditoria && (
-              <Link
-                onClick={onClose}
-                className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
-                  isActive('/auditoria')
-                    ? 'bg-[#c4121a] text-white shadow-sm font-bold'
-                    : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
-                }`}
-                href="/auditoria"
-              >
-                <History className="w-4 h-4 shrink-0" />
-                <span>Auditoría y trazabilidad</span>
-              </Link>
-            )}
-
-            <Link
-              onClick={onClose}
-              className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
-                isActive('/perfil')
-                  ? 'bg-[#c4121a] text-white shadow-sm font-bold'
-                  : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
-              }`}
-              href="/perfil"
-            >
-              <User className="w-4 h-4 shrink-0" />
-              <span>Mi perfil</span>
-            </Link>
-          </div>
+          )}
         </nav>
 
         {/* Drawer Footer */}

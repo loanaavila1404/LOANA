@@ -46,6 +46,7 @@ interface DashboardRecentTabsProps {
   totalMatriculasCount: number
   totalEstudiantesCount: number
   totalCuotasPendientesCount: number
+  isAdvisor?: boolean
 }
 
 type TabKey = 'matriculas' | 'estudiantes' | 'cuotas'
@@ -57,6 +58,7 @@ export function DashboardRecentTabs({
   totalMatriculasCount,
   totalEstudiantesCount,
   totalCuotasPendientesCount,
+  isAdvisor = false,
 }: DashboardRecentTabsProps) {
   const [activeTab, setActiveTab] = useState<TabKey>('matriculas')
 
@@ -87,7 +89,9 @@ export function DashboardRecentTabs({
       ? { href: '/matriculas', label: `Ver matrículas (${totalMatriculasCount})` }
       : activeTab === 'estudiantes'
         ? { href: '/personas', label: `Ver padrón (${totalEstudiantesCount})` }
-        : { href: '/reportes/financiero', label: `Ver cobranza (${totalCuotasPendientesCount})` }
+        : isAdvisor
+          ? { href: '/matriculas', label: `Ver cuotas pendientes (${totalCuotasPendientesCount})` }
+          : { href: '/reportes/financiero', label: `Ver cobranza (${totalCuotasPendientesCount})` }
 
   return (
     <div className="lg:col-span-8 bg-white rounded-xl border border-slate-200 shadow-2xs sm:shadow-sm overflow-hidden flex flex-col">
@@ -128,17 +132,19 @@ export function DashboardRecentTabs({
         >
           Matrículas ({totalMatriculasCount})
         </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab('estudiantes')}
-          className={`shrink-0 px-3 py-1.5 rounded-md text-[11px] sm:text-xs transition ${
-            activeTab === 'estudiantes'
-              ? 'font-bold bg-red-50 sm:bg-white text-brand-700 border border-red-200/70 sm:border-slate-200 shadow-xs'
-              : 'font-medium bg-slate-50 sm:bg-transparent text-slate-600 hover:bg-slate-100 sm:hover:bg-white/80'
-          }`}
-        >
-          Estudiantes ({totalEstudiantesCount})
-        </button>
+        {!isAdvisor && (
+          <button
+            type="button"
+            onClick={() => setActiveTab('estudiantes')}
+            className={`shrink-0 px-3 py-1.5 rounded-md text-[11px] sm:text-xs transition ${
+              activeTab === 'estudiantes'
+                ? 'font-bold bg-red-50 sm:bg-white text-brand-700 border border-red-200/70 sm:border-slate-200 shadow-xs'
+                : 'font-medium bg-slate-50 sm:bg-transparent text-slate-600 hover:bg-slate-100 sm:hover:bg-white/80'
+            }`}
+          >
+            Estudiantes ({totalEstudiantesCount})
+          </button>
+        )}
         <button
           type="button"
           onClick={() => setActiveTab('cuotas')}

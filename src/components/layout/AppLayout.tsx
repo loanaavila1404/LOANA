@@ -50,7 +50,7 @@ export function AppLayout({
       </div>
 
       {/* Mobile Bottom Nav */}
-      <MobileNav onOpenSidebar={() => setIsMobileSidebarOpen(true)} />
+      <MobileNav onOpenSidebar={() => setIsMobileSidebarOpen(true)} user={user} />
     </div>
   )
 }

@@ -1,7 +1,9 @@
 import { createClient } from '@/lib/supabase/server';
 import { UsuariosManagerClient } from "@/components/features/usuarios/UsuariosManagerClient";
+import { requirePermission } from '@/lib/auth/permissions';
 
 export default async function UsuariosPage() {
+  await requirePermission(['USUARIOS.VER', 'SISTEMA.ADMINISTRAR']);
   const supabase = await createClient();
 
   // Consultar usuarios y roles asociados en Supabase

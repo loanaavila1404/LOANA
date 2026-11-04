@@ -5,8 +5,31 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils/cn'
 
-export function MobileNav({ onOpenSidebar }: { onOpenSidebar: () => void }) {
+import { SessionUser } from '@/lib/types'
+
+export function MobileNav({
+  onOpenSidebar,
+  user,
+}: {
+  onOpenSidebar: () => void;
+  user?: SessionUser;
+}) {
   const pathname = usePathname();
+
+  const roleCode = (user?.roleCode || '').toUpperCase().trim();
+  const perms = user?.permissions || [];
+  const isSuperadmin =
+    roleCode === 'SUPERADMIN' ||
+    roleCode === 'SUPER_ADMINISTRADOR' ||
+    user?.role?.toLowerCase().includes('superadmin') ||
+    perms.includes('SISTEMA.ADMINISTRAR');
+
+  const isAsesorComercial =
+    roleCode === 'ASESOR_COMERCIAL' ||
+    roleCode === 'ASESOR' ||
+    user?.role?.toLowerCase().includes('asesor');
+
+  const canViewPersonas = !isAsesorComercial && (isSuperadmin || perms.includes('ESTUDIANTES.VER'));
 
   const isActive = (path: string) => {
     if (path === '/dashboard' && pathname === '/dashboard') return true;
@@ -43,13 +66,15 @@ export function MobileNav({ onOpenSidebar }: { onOpenSidebar: () => void }) {
         <span className="text-[10px]">Matrículas</span>
       </Link>
 
-      {/* Tab 4: Estudiantes */}
-      <Link className={cn("flex flex-col items-center gap-0.5", isActive('/personas') ? "text-[#c4121a] font-bold" : "text-slate-500 font-medium hover:text-slate-800")} href="/personas">
-        <svg className="w-5 h-5" fill={isActive('/personas') ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
-          <path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
-        </svg>
-        <span className="text-[10px]">Alumnos</span>
-      </Link>
+      {/* Tab 4: Estudiantes (Oculto para Asesor Comercial) */}
+      {canViewPersonas && (
+        <Link className={cn("flex flex-col items-center gap-0.5", isActive('/personas') ? "text-[#c4121a] font-bold" : "text-slate-500 font-medium hover:text-slate-800")} href="/personas">
+          <svg className="w-5 h-5" fill={isActive('/personas') ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
+            <path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
+          </svg>
+          <span className="text-[10px]">Alumnos</span>
+        </Link>
+      )}
 
       {/* Tab 5: Menu Toggle */}
       <button onClick={onOpenSidebar} className="flex flex-col items-center gap-0.5 text-slate-500 hover:text-slate-800 font-medium" type="button">
@@ -59,5 +84,5 @@ export function MobileNav({ onOpenSidebar }: { onOpenSidebar: () => void }) {
         <span className="text-[10px]">Menú</span>
       </button>
     </footer>
-  )
+  );
 }

@@ -30,14 +30,34 @@ export function Sidebar({
   const pathname = usePathname();
 
   const perms = user?.permissions || [];
+  const roleCode = (user?.roleCode || '').toUpperCase().trim();
   const isSuperadmin =
-    user?.roleCode === 'SUPERADMIN' ||
+    roleCode === 'SUPERADMIN' ||
+    roleCode === 'SUPER_ADMINISTRADOR' ||
     user?.role?.toLowerCase().includes('superadmin') ||
     perms.includes('SISTEMA.ADMINISTRAR');
 
-  const canViewReportes = isSuperadmin || perms.includes('SISTEMA.ADMINISTRAR');
-  const canViewAuditoria = isSuperadmin || perms.includes('AUDITORIA.VER');
-  const canViewUsuarios = isSuperadmin || perms.includes('USUARIOS.VER');
+  const isAsesorComercial =
+    roleCode === 'ASESOR_COMERCIAL' ||
+    roleCode === 'ASESOR' ||
+    user?.role?.toLowerCase().includes('asesor');
+
+  // Permisos granulares de navegación
+  const canViewCrm = isSuperadmin || isAsesorComercial || perms.includes('CRM.VER') || perms.includes('CRM.GESTIONAR');
+  const canViewMatriculas = isSuperadmin || isAsesorComercial || perms.includes('MATRICULAS.VER') || perms.includes('MATRICULAS.GESTIONAR');
+
+  // Restricciones estrictas para Asesor Comercial: NO debe ver módulos no comerciales
+  const canViewPersonas = !isAsesorComercial && (isSuperadmin || perms.includes('ESTUDIANTES.VER'));
+  const canViewOferta = !isAsesorComercial && (isSuperadmin || perms.includes('PROGRAMAS.VER') || perms.includes('PROGRAMAS.EDITAR'));
+  const canViewHorarios = !isAsesorComercial && (isSuperadmin || perms.includes('ACADEMICO.VER'));
+  const canViewNotas = !isAsesorComercial && (isSuperadmin || perms.includes('NOTAS.REGISTRAR') || perms.includes('ACADEMICO.VER'));
+  const canViewReportes = !isAsesorComercial && (isSuperadmin || perms.includes('REPORTES.VER') || perms.includes('SISTEMA.ADMINISTRAR'));
+  const canViewUsuarios = !isAsesorComercial && (isSuperadmin || perms.includes('USUARIOS.VER'));
+  const canViewAuditoria = !isAsesorComercial && (isSuperadmin || perms.includes('AUDITORIA.VER'));
+
+  const showGestionAcademica = canViewPersonas || canViewOferta || canViewHorarios || canViewMatriculas;
+  const showEvaluacion = canViewNotas || canViewReportes;
+  const showControlInstitucional = canViewUsuarios || canViewAuditoria;
 
   const isActive = (path: string) => {
     if (path === '/dashboard' && (pathname === '/dashboard' || pathname === '/')) return true;
@@ -117,158 +137,176 @@ export function Sidebar({
           </Link>
 
           {/* CRM Comercial */}
-          <Link
-            href="/crm"
-            className={`flex items-center justify-between px-2.5 py-2 rounded-lg font-medium transition-all group ${
-              isActive('/crm')
-                ? 'bg-[#c4121a] text-white shadow-sm font-bold'
-                : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
-            }`}
-          >
-            <div className="flex items-center gap-2.5 min-w-0">
-              <Target className={`w-4 h-4 shrink-0 ${isActive('/crm') ? 'text-white' : 'text-slate-400 group-hover:text-slate-200'}`} />
-              <span className="truncate">CRM Comercial</span>
-            </div>
-            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0 ${
-              isActive('/crm')
-                ? 'bg-white/20 text-white'
-                : 'bg-red-500/15 text-red-400 border border-red-500/20'
-            }`}>
-              Prospectos
-            </span>
-          </Link>
+          {canViewCrm && (
+            <Link
+              href="/crm"
+              className={`flex items-center justify-between px-2.5 py-2 rounded-lg font-medium transition-all group ${
+                isActive('/crm')
+                  ? 'bg-[#c4121a] text-white shadow-sm font-bold'
+                  : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
+              }`}
+            >
+              <div className="flex items-center gap-2.5 min-w-0">
+                <Target className={`w-4 h-4 shrink-0 ${isActive('/crm') ? 'text-white' : 'text-slate-400 group-hover:text-slate-200'}`} />
+                <span className="truncate">CRM Comercial</span>
+              </div>
+              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0 ${
+                isActive('/crm')
+                  ? 'bg-white/20 text-white'
+                  : 'bg-red-500/15 text-red-400 border border-red-500/20'
+              }`}>
+                Prospectos
+              </span>
+            </Link>
+          )}
         </div>
 
         {/* SECCIÓN 2: GESTIÓN ACADÉMICA */}
-        <div className="space-y-0.5">
-          <div className="px-2.5 pb-1 text-[10px] font-black uppercase tracking-wider text-slate-400">
-            Gestión Académica
+        {showGestionAcademica && (
+          <div className="space-y-0.5">
+            <div className="px-2.5 pb-1 text-[10px] font-black uppercase tracking-wider text-slate-400">
+              Gestión Académica
+            </div>
+
+            {/* Personas y estudiantes */}
+            {canViewPersonas && (
+              <Link
+                href="/personas"
+                className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
+                  isActive('/personas')
+                    ? 'bg-[#c4121a] text-white shadow-sm font-bold'
+                    : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
+                }`}
+              >
+                <Users className={`w-4 h-4 shrink-0 ${isActive('/personas') ? 'text-white' : 'text-slate-400'}`} />
+                <span className="truncate">Personas y estudiantes</span>
+              </Link>
+            )}
+
+            {/* Oferta académica */}
+            {canViewOferta && (
+              <Link
+                href="/oferta"
+                className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
+                  isActive('/oferta')
+                    ? 'bg-[#c4121a] text-white shadow-sm font-bold'
+                    : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
+                }`}
+              >
+                <BookOpen className={`w-4 h-4 shrink-0 ${isActive('/oferta') ? 'text-white' : 'text-slate-400'}`} />
+                <span className="truncate">Oferta académica</span>
+              </Link>
+            )}
+
+            {/* Horarios */}
+            {canViewHorarios && (
+              <Link
+                href="/horarios"
+                className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
+                  isActive('/horarios')
+                    ? 'bg-[#c4121a] text-white shadow-sm font-bold'
+                    : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
+                }`}
+              >
+                <Calendar className={`w-4 h-4 shrink-0 ${isActive('/horarios') ? 'text-white' : 'text-slate-400'}`} />
+                <span className="truncate">Horarios</span>
+              </Link>
+            )}
+
+            {/* Matrículas */}
+            {canViewMatriculas && (
+              <Link
+                href="/matriculas"
+                className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
+                  isActive('/matriculas')
+                    ? 'bg-[#c4121a] text-white shadow-sm font-bold'
+                    : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
+                }`}
+              >
+                <ClipboardList className={`w-4 h-4 shrink-0 ${isActive('/matriculas') ? 'text-white' : 'text-slate-400'}`} />
+                <span className="truncate">Matrículas</span>
+              </Link>
+            )}
           </div>
-
-          {/* Personas y estudiantes */}
-          <Link
-            href="/personas"
-            className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
-              isActive('/personas')
-                ? 'bg-[#c4121a] text-white shadow-sm font-bold'
-                : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
-            }`}
-          >
-            <Users className={`w-4 h-4 shrink-0 ${isActive('/personas') ? 'text-white' : 'text-slate-400'}`} />
-            <span className="truncate">Personas y estudiantes</span>
-          </Link>
-
-          {/* Oferta académica */}
-          <Link
-            href="/oferta"
-            className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
-              isActive('/oferta')
-                ? 'bg-[#c4121a] text-white shadow-sm font-bold'
-                : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
-            }`}
-          >
-            <BookOpen className={`w-4 h-4 shrink-0 ${isActive('/oferta') ? 'text-white' : 'text-slate-400'}`} />
-            <span className="truncate">Oferta académica</span>
-          </Link>
-
-          {/* Horarios */}
-          <Link
-            href="/horarios"
-            className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
-              isActive('/horarios')
-                ? 'bg-[#c4121a] text-white shadow-sm font-bold'
-                : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
-            }`}
-          >
-            <Calendar className={`w-4 h-4 shrink-0 ${isActive('/horarios') ? 'text-white' : 'text-slate-400'}`} />
-            <span className="truncate">Horarios</span>
-          </Link>
-
-          {/* Matrículas */}
-          <Link
-            href="/matriculas"
-            className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
-              isActive('/matriculas')
-                ? 'bg-[#c4121a] text-white shadow-sm font-bold'
-                : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
-            }`}
-          >
-            <ClipboardList className={`w-4 h-4 shrink-0 ${isActive('/matriculas') ? 'text-white' : 'text-slate-400'}`} />
-            <span className="truncate">Matrículas</span>
-          </Link>
-        </div>
+        )}
 
         {/* SECCIÓN 3: EVALUACIÓN & MÉTRICAS */}
-        <div className="space-y-0.5">
-          <div className="px-2.5 pb-1 text-[10px] font-black uppercase tracking-wider text-slate-400">
-            Evaluación & Métricas
+        {showEvaluacion && (
+          <div className="space-y-0.5">
+            <div className="px-2.5 pb-1 text-[10px] font-black uppercase tracking-wider text-slate-400">
+              Evaluación & Métricas
+            </div>
+
+            {/* Notas y actas */}
+            {canViewNotas && (
+              <Link
+                href="/notas"
+                className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
+                  isActive('/notas')
+                    ? 'bg-[#c4121a] text-white shadow-sm font-bold'
+                    : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
+                }`}
+              >
+                <Award className={`w-4 h-4 shrink-0 ${isActive('/notas') ? 'text-white' : 'text-slate-400'}`} />
+                <span className="truncate">Notas y actas</span>
+              </Link>
+            )}
+
+            {/* Reportes y analítica */}
+            {canViewReportes && (
+              <Link
+                href="/reportes"
+                className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
+                  isActive('/reportes')
+                    ? 'bg-[#c4121a] text-white shadow-sm font-bold'
+                    : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
+                }`}
+              >
+                <BarChart3 className={`w-4 h-4 shrink-0 ${isActive('/reportes') ? 'text-white' : 'text-slate-400'}`} />
+                <span className="truncate">Reportes y analítica</span>
+              </Link>
+            )}
           </div>
-
-          {/* Notas y actas */}
-          <Link
-            href="/notas"
-            className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
-              isActive('/notas')
-                ? 'bg-[#c4121a] text-white shadow-sm font-bold'
-                : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
-            }`}
-          >
-            <Award className={`w-4 h-4 shrink-0 ${isActive('/notas') ? 'text-white' : 'text-slate-400'}`} />
-            <span className="truncate">Notas y actas</span>
-          </Link>
-
-          {/* Reportes y analítica */}
-          {canViewReportes && (
-            <Link
-              href="/reportes"
-              className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
-                isActive('/reportes')
-                  ? 'bg-[#c4121a] text-white shadow-sm font-bold'
-                  : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
-              }`}
-            >
-              <BarChart3 className={`w-4 h-4 shrink-0 ${isActive('/reportes') ? 'text-white' : 'text-slate-400'}`} />
-              <span className="truncate">Reportes y analítica</span>
-            </Link>
-          )}
-        </div>
+        )}
 
         {/* SECCIÓN 4: CONTROL INSTITUCIONAL */}
-        <div className="space-y-0.5">
-          <div className="px-2.5 pb-1 text-[10px] font-black uppercase tracking-wider text-slate-400">
-            Control Institucional
+        {showControlInstitucional && (
+          <div className="space-y-0.5">
+            <div className="px-2.5 pb-1 text-[10px] font-black uppercase tracking-wider text-slate-400">
+              Control Institucional
+            </div>
+
+            {/* Usuarios y accesos (RBAC) */}
+            {canViewUsuarios && (
+              <Link
+                href="/usuarios"
+                className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
+                  isActive('/usuarios')
+                    ? 'bg-[#c4121a] text-white shadow-sm font-bold'
+                    : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
+                }`}
+              >
+                <ShieldCheck className={`w-4 h-4 shrink-0 ${isActive('/usuarios') ? 'text-white' : 'text-slate-400'}`} />
+                <span className="truncate">Usuarios y accesos (RBAC)</span>
+              </Link>
+            )}
+
+            {/* Auditoría y trazabilidad */}
+            {canViewAuditoria && (
+              <Link
+                href="/auditoria"
+                className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
+                  isActive('/auditoria')
+                    ? 'bg-[#c4121a] text-white shadow-sm font-bold'
+                    : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
+                }`}
+              >
+                <History className={`w-4 h-4 shrink-0 ${isActive('/auditoria') ? 'text-white' : 'text-slate-400'}`} />
+                <span className="truncate">Auditoría y trazabilidad</span>
+              </Link>
+            )}
           </div>
-
-          {/* Usuarios y accesos (RBAC) */}
-          {canViewUsuarios && (
-            <Link
-              href="/usuarios"
-              className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
-                isActive('/usuarios')
-                  ? 'bg-[#c4121a] text-white shadow-sm font-bold'
-                  : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
-              }`}
-            >
-              <ShieldCheck className={`w-4 h-4 shrink-0 ${isActive('/usuarios') ? 'text-white' : 'text-slate-400'}`} />
-              <span className="truncate">Usuarios y accesos (RBAC)</span>
-            </Link>
-          )}
-
-          {/* Auditoría y trazabilidad */}
-          {canViewAuditoria && (
-            <Link
-              href="/auditoria"
-              className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
-                isActive('/auditoria')
-                  ? 'bg-[#c4121a] text-white shadow-sm font-bold'
-                  : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
-              }`}
-            >
-              <History className={`w-4 h-4 shrink-0 ${isActive('/auditoria') ? 'text-white' : 'text-slate-400'}`} />
-              <span className="truncate">Auditoría y trazabilidad</span>
-            </Link>
-          )}
-        </div>
+        )}
       </nav>
 
       {/* ============================================================== */}

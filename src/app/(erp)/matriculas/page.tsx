@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
-import { requirePermission } from '@/lib/auth/permissions';
+import { requirePermission, isCurrentUserAdvisor } from '@/lib/auth/permissions';
 import { MatriculasMetrics, MatriculasMetricsData } from '@/components/features/matriculas/MatriculasMetrics';
 import { MatriculasTableWithDrawer, MatriculaRow, CuotaItem } from '@/components/features/matriculas/MatriculasTableWithDrawer';
 import { Receipt, Plus, ShieldCheck } from 'lucide-react';
@@ -232,6 +232,8 @@ export default async function MatriculasPage(props: {
     tasaCumplimiento,
   };
 
+  const isAdvisor = await isCurrentUserAdvisor();
+
   return (
     <div className="space-y-6 max-w-[1440px] mx-auto pb-10">
       {/* Encabezado Institucional */}
@@ -249,21 +251,23 @@ export default async function MatriculasPage(props: {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5 w-full sm:w-auto">
-          <Link href="/matriculas/nueva">
-            <Button className="bg-[#C4121A] hover:bg-red-700 text-white font-semibold flex items-center gap-2">
-              <Plus className="w-4 h-4" />
-              <span>Nueva Matrícula</span>
-            </Button>
-          </Link>
-        </div>
+        {!isAdvisor && (
+          <div className="flex items-center gap-2.5 w-full sm:w-auto">
+            <Link href="/matriculas/nueva">
+              <Button className="bg-[#C4121A] hover:bg-red-700 text-white font-semibold flex items-center gap-2">
+                <Plus className="w-4 h-4" />
+                <span>Nueva Matrícula</span>
+              </Button>
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* 1. Tarjetas de KPIs Financieros Superiores y Franja de Cobranza del Día */}
       <MatriculasMetrics metrics={metricsData} />
 
       {/* 2. Pestañas de Filtrado Rápido, Tabla y Panel Lateral (Drawer) */}
-      <MatriculasTableWithDrawer initialMatriculas={matriculas} />
+      <MatriculasTableWithDrawer initialMatriculas={matriculas} readOnly={isAdvisor} />
     </div>
   );
 }

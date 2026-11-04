@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { requirePermission } from "@/lib/auth/permissions";
 import { 
   NotasManagerClient, 
   ProgramaData, 
@@ -14,6 +15,7 @@ export const metadata = {
 };
 
 export default async function NotasPage() {
+  await requirePermission(['NOTAS.REGISTRAR', 'ACADEMICO.VER', 'SISTEMA.ADMINISTRAR']);
   const supabase = await createClient();
 
   // 1. Obtener programas académicos

@@ -25,6 +25,7 @@ import {
   ArrowRight,
   ArrowLeft,
   ExternalLink,
+  ShieldCheck,
 } from 'lucide-react';
 
 export type CuotaDetailItem = {
@@ -75,6 +76,7 @@ interface Props {
   cuotas: CuotaDetailItem[];
   pagos: PagoDetailItem[];
   matriculaStatus: string;
+  readOnly?: boolean;
 }
 
 export function MatriculaFinanceViewClient({
@@ -82,6 +84,7 @@ export function MatriculaFinanceViewClient({
   cuotas,
   pagos,
   matriculaStatus,
+  readOnly = false,
 }: Props) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -118,6 +121,7 @@ export function MatriculaFinanceViewClient({
 
   // Abrir modal de pago general
   const handleOpenGeneralPago = () => {
+    if (readOnly) return;
     setIdempotencyKey(window.crypto.randomUUID());
     setError(null);
     setIsConfirming(false);
@@ -136,6 +140,7 @@ export function MatriculaFinanceViewClient({
 
   // Abrir modal de pago para una cuota específica
   const handleOpenCuotaPago = (cuota: CuotaDetailItem) => {
+    if (readOnly) return;
     setIdempotencyKey(window.crypto.randomUUID());
     setError(null);
     setIsConfirming(false);
@@ -247,6 +252,16 @@ export function MatriculaFinanceViewClient({
 
   return (
     <div className="space-y-6">
+      {/* Banner de Modo Consulta / Solo Lectura */}
+      {readOnly && (
+        <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-2.5 text-xs text-amber-900 shadow-2xs">
+          <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0" />
+          <span>
+            <strong>Modo de Consulta (Solo Lectura):</strong> Tu perfil de usuario tiene acceso de consulta a este expediente. Las operaciones de registro de pagos o modificaciones están reservadas al personal de Caja y Administración.
+          </span>
+        </div>
+      )}
+
       {/* ============================================================== */}
       {/* 1. CRONOGRAMA DE PAGOS Y CUOTAS (INTERACTIVO) */}
       {/* ============================================================== */}
@@ -264,7 +279,7 @@ export function MatriculaFinanceViewClient({
             </p>
           </div>
 
-          {(matriculaStatus === 'ACTIVA' || matriculaStatus === 'FINALIZADA') && cuotasPendientes.length > 0 && (
+          {!readOnly && (matriculaStatus === 'ACTIVA' || matriculaStatus === 'FINALIZADA') && cuotasPendientes.length > 0 && (
             <Button
               type="button"
               onClick={handleOpenGeneralPago}
@@ -285,7 +300,7 @@ export function MatriculaFinanceViewClient({
                 <th className="py-3 px-4 text-right">Importe Pactado</th>
                 <th className="py-3 px-4 text-right">Saldo Restante</th>
                 <th className="py-3 px-4 text-center">Estado</th>
-                <th className="py-3 px-4 text-center">Acción</th>
+                <th className="py-3 px-4 text-center">{readOnly ? 'Condición' : 'Acción'}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -383,7 +398,16 @@ export function MatriculaFinanceViewClient({
 
                       {/* Acción Rápida por Cuota */}
                       <td className="py-3 px-4 text-center">
-                        {saldo > 0 ? (
+                        {readOnly ? (
+                          saldo > 0 ? (
+                            <span className="text-[11px] font-medium text-slate-500">Pendiente</span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                              <span>Al día</span>
+                            </span>
+                          )
+                        ) : saldo > 0 ? (
                           <button
                             type="button"
                             onClick={() => handleOpenCuotaPago(c)}
@@ -551,7 +575,7 @@ export function MatriculaFinanceViewClient({
       {/* ============================================================== */}
       {/* MODAL DE REGISTRO DE PAGO INTEGRADO */}
       {/* ============================================================== */}
-      {isModalOpen && (
+      {!readOnly && isModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
           <Card className="w-full max-w-md p-6 bg-white shadow-2xl relative max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200 border-slate-200">
             <button

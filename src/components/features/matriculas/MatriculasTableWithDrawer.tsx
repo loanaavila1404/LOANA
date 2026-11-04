@@ -94,9 +94,10 @@ export type MatriculaRow = {
 
 interface Props {
   initialMatriculas: MatriculaRow[];
+  readOnly?: boolean;
 }
 
-export function MatriculasTableWithDrawer({ initialMatriculas }: Props) {
+export function MatriculasTableWithDrawer({ initialMatriculas, readOnly = false }: Props) {
   const [activeTab, setActiveTab] = useState<'TODAS' | 'AL_DIA' | 'VOUCHERS' | 'POR_VENCER' | 'CON_DEUDA'>('TODAS');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('TODOS');
@@ -281,11 +282,13 @@ export function MatriculasTableWithDrawer({ initialMatriculas }: Props) {
             <option value="VENCIDA">Vencida</option>
           </select>
 
-          <Link href="/matriculas/nueva">
-            <Button className="h-8 px-3 text-xs bg-[#C4121A] hover:bg-red-700 text-white font-semibold">
-              + Nueva Matrícula
-            </Button>
-          </Link>
+          {!readOnly && (
+            <Link href="/matriculas/nueva">
+              <Button className="h-8 px-3 text-xs bg-[#C4121A] hover:bg-red-700 text-white font-semibold">
+                + Nueva Matrícula
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
 
@@ -502,6 +505,11 @@ export function MatriculasTableWithDrawer({ initialMatriculas }: Props) {
                     >
                       {selectedMatricula.status}
                     </Badge>
+                    {readOnly && (
+                      <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                        Solo Lectura
+                      </span>
+                    )}
                   </div>
                   <h2 className="text-lg font-bold text-slate-900 font-mono mt-0.5">
                     {selectedMatricula.codigo_matricula}
@@ -756,8 +764,17 @@ export function MatriculasTableWithDrawer({ initialMatriculas }: Props) {
                   href={`/matriculas/${selectedMatricula.id}`}
                   className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg bg-[#C4121A] text-white text-xs font-bold hover:bg-red-700 transition shadow-2xs"
                 >
-                  <span>Gestión Completa</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
+                  {readOnly ? (
+                    <>
+                      <Eye className="w-3.5 h-3.5" />
+                      <span>Ver Expediente</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Gestión Completa</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </>
+                  )}
                 </Link>
               </div>
 

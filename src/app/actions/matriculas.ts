@@ -2,10 +2,16 @@
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
-import { getUserPermissions } from '@/lib/auth/permissions';
+import { getUserPermissions, isCurrentUserAdvisor } from '@/lib/auth/permissions';
 import { confirmarMatriculaSchema, registrarPagoSchema } from '@/lib/validators/matriculas';
 
 export async function confirmarMatriculaAction(payload: unknown) {
+  // Validación estricta por rol: Asesor Comercial está bloqueado de crear/confirmar matrículas
+  const isAdvisor = await isCurrentUserAdvisor();
+  if (isAdvisor) {
+    return { error: 'Acceso denegado: El rol Asesor Comercial tiene permisos estrictamente de solo lectura en el módulo de matrículas.' };
+  }
+
   const permissions = await getUserPermissions();
   if (!permissions.includes('MATRICULAS.GESTIONAR') && !permissions.includes('SISTEMA.ADMINISTRAR')) {
     return { error: 'No tienes permiso para gestionar matrículas.' };
@@ -41,6 +47,12 @@ export async function confirmarMatriculaAction(payload: unknown) {
 }
 
 export async function registrarPagoAction(payload: unknown) {
+  // Validación estricta por rol: Asesor Comercial no puede registrar pagos
+  const isAdvisor = await isCurrentUserAdvisor();
+  if (isAdvisor) {
+    return { error: 'Acceso denegado: El rol Asesor Comercial no tiene autorización para registrar pagos o abonos.' };
+  }
+
   const permissions = await getUserPermissions();
   if (
     !permissions.includes('PAGOS.REGISTRAR') &&
@@ -77,6 +89,12 @@ export async function registrarPagoAction(payload: unknown) {
 }
 
 export async function anularPagoAction(pagoId: string, motivo: string) {
+  // Validación estricta por rol: Asesor Comercial no puede anular pagos
+  const isAdvisor = await isCurrentUserAdvisor();
+  if (isAdvisor) {
+    return { error: 'Acceso denegado: El rol Asesor Comercial no tiene autorización para anular pagos.' };
+  }
+
   const permissions = await getUserPermissions();
   if (!permissions.includes('PAGOS.ANULAR') && !permissions.includes('SISTEMA.ADMINISTRAR')) {
     return { error: 'No tienes permiso para anular pagos.' };

@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/Button";
 import { getPersonaById } from "@/app/actions/personas";
-import { hasPermission } from "@/lib/auth/permissions";
+import { hasPermission, requirePermission } from "@/lib/auth/permissions";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { getInitials } from "@/lib/utils";
@@ -17,6 +17,7 @@ export default async function PersonaDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requirePermission(["ESTUDIANTES.VER", "SISTEMA.ADMINISTRAR"]);
   const { id } = await params;
 
   const canEdit = await hasPermission(["ESTUDIANTES.EDITAR", "SISTEMA.ADMINISTRAR"]);

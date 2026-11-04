@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
-import { requirePermission } from '@/lib/auth/permissions';
+import { requirePermission, isCurrentUserAdvisor } from '@/lib/auth/permissions';
 import { notFound } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -201,6 +201,8 @@ export default async function MatriculaDetailPage({
     ? `${persona.nombres || ''} ${persona.apellido_paterno || ''} ${persona.apellido_materno || ''}`.trim()
     : 'Estudiante Titular';
 
+  const isAdvisor = await isCurrentUserAdvisor();
+
   return (
     <div className="space-y-6 max-w-[1440px] mx-auto pb-12">
       {/* ============================================================== */}
@@ -223,6 +225,11 @@ export default async function MatriculaDetailPage({
                   <ShieldCheck className="w-3.5 h-3.5" />
                   Expediente de Matrícula
                 </span>
+                {isAdvisor && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200 uppercase tracking-wider">
+                    Modo Consulta (Solo Lectura)
+                  </span>
+                )}
                 <Badge
                   variant={
                     matricula.status === 'ACTIVA'
@@ -621,6 +628,7 @@ export default async function MatriculaDetailPage({
             cuotas={cuotas}
             pagos={pagos}
             matriculaStatus={matricula.status || 'ACTIVA'}
+            readOnly={isAdvisor}
           />
         </div>
 

@@ -21,8 +21,10 @@ import {
   DashboardEstudianteRow,
   DashboardCuotaPendienteRow,
 } from '@/components/features/dashboard/DashboardRecentTabs'
+import { isCurrentUserAdvisor } from '@/lib/auth/permissions'
 
 export default async function DashboardPage() {
+  const isAdvisor = await isCurrentUserAdvisor()
   const supabase = await createClient()
 
   const [
@@ -214,21 +216,33 @@ export default async function DashboardPage() {
         </div>
 
         <div className="flex sm:flex-row items-center gap-2 sm:gap-2.5">
-          <Link
-            href="/reportes"
-            className="inline-flex items-center px-3.5 py-2 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 hover:border-slate-400 shadow-sm transition"
-          >
-            <Download className="w-3.5 h-3.5 mr-1.5 text-slate-500" />
-            Reportes PDF
-          </Link>
+          {!isAdvisor && (
+            <Link
+              href="/reportes"
+              className="inline-flex items-center px-3.5 py-2 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 hover:border-slate-400 shadow-sm transition"
+            >
+              <Download className="w-3.5 h-3.5 mr-1.5 text-slate-500" />
+              Reportes PDF
+            </Link>
+          )}
 
-          <Link
-            href="/personas"
-            className="flex-1 sm:flex-none inline-flex items-center justify-center sm:justify-start px-4 py-2.5 sm:py-2 text-xs font-semibold text-white bg-brusben-red sm:bg-brand-700 hover:bg-brusben-redHover sm:hover:bg-brand-800 rounded-lg shadow-sm hover:shadow transition gap-1.5"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Nuevo estudiante</span>
-          </Link>
+          {isAdvisor ? (
+            <Link
+              href="/crm"
+              className="flex-1 sm:flex-none inline-flex items-center justify-center sm:justify-start px-4 py-2.5 sm:py-2 text-xs font-semibold text-white bg-brusben-red sm:bg-brand-700 hover:bg-brusben-redHover sm:hover:bg-brand-800 rounded-lg shadow-sm hover:shadow transition gap-1.5"
+            >
+              <Users className="w-4 h-4" />
+              <span>Gestionar CRM</span>
+            </Link>
+          ) : (
+            <Link
+              href="/personas"
+              className="flex-1 sm:flex-none inline-flex items-center justify-center sm:justify-start px-4 py-2.5 sm:py-2 text-xs font-semibold text-white bg-brusben-red sm:bg-brand-700 hover:bg-brusben-redHover sm:hover:bg-brand-800 rounded-lg shadow-sm hover:shadow transition gap-1.5"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Nuevo estudiante</span>
+            </Link>
+          )}
         </div>
       </div>
 
@@ -389,6 +403,7 @@ export default async function DashboardPage() {
           totalMatriculasCount={matriculasList.length}
           totalEstudiantesCount={estudiantesList.length}
           totalCuotasPendientesCount={cuotasPendientesList.length}
+          isAdvisor={isAdvisor}
         />
 
         {/* Columna Derecha: Módulos Institucionales + Obligaciones de Cobranza Reales */}
@@ -426,25 +441,27 @@ export default async function DashboardPage() {
                 <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-brand-700 group-hover:translate-x-0.5 transition" />
               </Link>
 
-              <Link
-                href="/oferta/programas"
-                className="bg-white sm:bg-transparent p-3 sm:p-3.5 rounded-xl sm:rounded-lg border border-slate-200 shadow-2xs sm:shadow-none flex items-center justify-between hover:border-brand-700/50 sm:hover:bg-slate-50/80 transition group"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 sm:w-auto sm:h-auto sm:p-2 rounded-lg sm:rounded bg-slate-100 text-slate-700 group-hover:bg-slate-800 group-hover:text-white flex items-center justify-center shrink-0 transition">
-                    <BookOpen className="w-5 h-5 sm:w-4 sm:h-4" />
+              {!isAdvisor && (
+                <Link
+                  href="/oferta/programas"
+                  className="bg-white sm:bg-transparent p-3 sm:p-3.5 rounded-xl sm:rounded-lg border border-slate-200 shadow-2xs sm:shadow-none flex items-center justify-between hover:border-brand-700/50 sm:hover:bg-slate-50/80 transition group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 sm:w-auto sm:h-auto sm:p-2 rounded-lg sm:rounded bg-slate-100 text-slate-700 group-hover:bg-slate-800 group-hover:text-white flex items-center justify-center shrink-0 transition">
+                      <BookOpen className="w-5 h-5 sm:w-4 sm:h-4" />
+                    </div>
+                    <div>
+                      <h3 className="text-xs font-bold text-slate-800 sm:text-slate-900 group-hover:text-brand-700 transition">
+                        Oferta académica
+                      </h3>
+                      <p className="text-[10.5px] sm:text-[11px] text-slate-500 leading-tight mt-0.5">
+                        Programas, planes, periodos y ediciones
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-xs font-bold text-slate-800 sm:text-slate-900 group-hover:text-brand-700 transition">
-                      Oferta académica
-                    </h3>
-                    <p className="text-[10.5px] sm:text-[11px] text-slate-500 leading-tight mt-0.5">
-                      Programas, planes, periodos y ediciones
-                    </p>
-                  </div>
-                </div>
-                <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-brand-700 group-hover:translate-x-0.5 transition" />
-              </Link>
+                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-brand-700 group-hover:translate-x-0.5 transition" />
+                </Link>
+              )}
 
               <Link
                 href="/matriculas"
@@ -456,35 +473,37 @@ export default async function DashboardPage() {
                   </div>
                   <div>
                     <h3 className="text-xs font-bold text-slate-800 sm:text-slate-900 group-hover:text-brand-700 transition">
-                      Matrículas &amp; Pagos
+                      Matrículas {isAdvisor ? '(Consulta)' : '& Pagos'}
                     </h3>
                     <p className="text-[10.5px] sm:text-[11px] text-slate-500 leading-tight mt-0.5">
-                      Contratos, cronograma de cuotas y cobranza
+                      {isAdvisor ? 'Consulta de padrón y estado de matrícula' : 'Contratos, cronograma de cuotas y cobranza'}
                     </p>
                   </div>
                 </div>
                 <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-brand-700 group-hover:translate-x-0.5 transition" />
               </Link>
 
-              <Link
-                href="/personas"
-                className="bg-white sm:bg-transparent p-3 sm:p-3.5 rounded-xl sm:rounded-lg border border-slate-200 shadow-2xs sm:shadow-none flex items-center justify-between hover:border-brand-700/50 sm:hover:bg-slate-50/80 transition group"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 sm:w-auto sm:h-auto sm:p-2 rounded-lg sm:rounded bg-blue-50 text-blue-700 sm:bg-slate-100 sm:text-slate-700 group-hover:bg-slate-800 group-hover:text-white flex items-center justify-center shrink-0 transition">
-                    <GraduationCap className="w-5 h-5 sm:w-4 sm:h-4" />
+              {!isAdvisor && (
+                <Link
+                  href="/personas"
+                  className="bg-white sm:bg-transparent p-3 sm:p-3.5 rounded-xl sm:rounded-lg border border-slate-200 shadow-2xs sm:shadow-none flex items-center justify-between hover:border-brand-700/50 sm:hover:bg-slate-50/80 transition group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 sm:w-auto sm:h-auto sm:p-2 rounded-lg sm:rounded bg-blue-50 text-blue-700 sm:bg-slate-100 sm:text-slate-700 group-hover:bg-slate-800 group-hover:text-white flex items-center justify-center shrink-0 transition">
+                      <GraduationCap className="w-5 h-5 sm:w-4 sm:h-4" />
+                    </div>
+                    <div>
+                      <h3 className="text-xs font-bold text-slate-800 sm:text-slate-900 group-hover:text-brand-700 transition">
+                        Personas y estudiantes
+                      </h3>
+                      <p className="text-[10.5px] sm:text-[11px] text-slate-500 leading-tight mt-0.5">
+                        Padrón general y expedientes estudiantiles
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-xs font-bold text-slate-800 sm:text-slate-900 group-hover:text-brand-700 transition">
-                      Personas y estudiantes
-                    </h3>
-                    <p className="text-[10.5px] sm:text-[11px] text-slate-500 leading-tight mt-0.5">
-                      Padrón general y expedientes estudiantiles
-                    </p>
-                  </div>
-                </div>
-                <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-brand-700 group-hover:translate-x-0.5 transition" />
-              </Link>
+                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-brand-700 group-hover:translate-x-0.5 transition" />
+                </Link>
+              )}
             </div>
           </div>
 
@@ -528,17 +547,21 @@ export default async function DashboardPage() {
             )}
 
             <div className="pt-1 flex items-center justify-between text-[11px]">
-              <Link
-                href="/reportes/financiero"
-                className="font-bold text-brand-700 hover:underline inline-flex items-center gap-1"
-              >
-                Ver reporte financiero →
-              </Link>
+              {!isAdvisor ? (
+                <Link
+                  href="/reportes/financiero"
+                  className="font-bold text-brand-700 hover:underline inline-flex items-center gap-1"
+                >
+                  Ver reporte financiero →
+                </Link>
+              ) : (
+                <span className="text-slate-400 font-medium">Modo consulta</span>
+              )}
               <Link
                 href="/matriculas"
                 className="font-semibold text-amber-900 hover:underline"
               >
-                Gestionar matrículas
+                {isAdvisor ? 'Consultar matrículas →' : 'Gestionar matrículas'}
               </Link>
             </div>
           </div>

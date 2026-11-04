@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { requirePermission } from "@/lib/auth/permissions";
 import { 
   HorariosManagerClient, 
   EdicionHorarioData, 
@@ -13,6 +14,7 @@ export const metadata = {
 export default async function HorariosPage(props: {
   searchParams?: Promise<{ edicionId?: string }>;
 }) {
+  await requirePermission(['ACADEMICO.VER', 'PROGRAMAS.EDITAR', 'SISTEMA.ADMINISTRAR']);
   const supabase = await createClient();
   const searchParams = props.searchParams ? await props.searchParams : {};
   const selectedEdicionId = searchParams?.edicionId;

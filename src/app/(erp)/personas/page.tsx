@@ -17,7 +17,7 @@ import {
   FileText,
 } from "lucide-react";
 import { getPersonas, getPersonasMetrics, PersonaSearchParams } from "@/app/actions/personas";
-import { hasPermission } from "@/lib/auth/permissions";
+import { hasPermission, requirePermission } from "@/lib/auth/permissions";
 import { PersonaFormModal } from "@/components/features/personas/PersonaFormModal";
 import { checkPersonaIntegrity } from "@/lib/utils/personaUtils";
 import Link from "next/link";
@@ -32,6 +32,7 @@ export default async function PersonasPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
+  await requirePermission(["ESTUDIANTES.VER", "SISTEMA.ADMINISTRAR"]);
   const resolvedParams = await searchParams;
 
   const canEdit = await hasPermission(["ESTUDIANTES.EDITAR", "SISTEMA.ADMINISTRAR"]);
