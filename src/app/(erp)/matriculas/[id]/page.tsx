@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient, getSafeDbClient } from '@/lib/supabase/server';
 import { requirePermission, isCurrentUserAdvisor } from '@/lib/auth/permissions';
 import { notFound } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/Card';
@@ -41,6 +41,7 @@ export default async function MatriculaDetailPage({
 }) {
   await requirePermission(['MATRICULAS.VER', 'COBRANZA.VER', 'SISTEMA.ADMINISTRAR']);
   const supabase = await createClient();
+  const db = await getSafeDbClient();
   const resolvedParams = await params;
   const rawId = decodeURIComponent(resolvedParams.id || '').trim();
 
@@ -50,8 +51,8 @@ export default async function MatriculaDetailPage({
 
   const isUuid = UUID_REGEX.test(rawId);
 
-  // Consultar matrícula completa
-  const matriculaQuery = supabase.from('matriculas').select(`
+  // Consultar matrícula completa mediante cliente seguro
+  const matriculaQuery = db.from('matriculas').select(`
     *,
     estudiantes (
       id,
@@ -138,8 +139,8 @@ export default async function MatriculaDetailPage({
   const ciclo = Array.isArray(ed?.ciclos) ? ed?.ciclos[0] : ed?.ciclos;
   const periodo = Array.isArray(ed?.periodos) ? ed?.periodos[0] : ed?.periodos;
 
-  // Cargar Cuotas
-  const { data: cuotasRaw } = await supabase
+  // Cargar Cuotas mediante cliente seguro
+  const { data: cuotasRaw } = await db
     .from('cuotas')
     .select('*')
     .eq('matricula_id', matricula.id)
@@ -147,8 +148,8 @@ export default async function MatriculaDetailPage({
 
   const cuotas = (cuotasRaw || []) as CuotaDetailItem[];
 
-  // Cargar Pagos con aplicaciones de cuotas
-  const { data: pagosRaw } = await supabase
+  // Cargar Pagos con aplicaciones de cuotas mediante cliente seguro
+  const { data: pagosRaw } = await db
     .from('pagos')
     .select(`
       *,

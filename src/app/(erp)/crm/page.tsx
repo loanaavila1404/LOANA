@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient, getSafeDbClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/auth/permissions';
 import Link from 'next/link';
 import {
@@ -27,6 +27,7 @@ export default async function CRMPage({
 }) {
   await requirePermission(['CRM.VER', 'SISTEMA.ADMINISTRAR']);
   const supabase = await createClient();
+  const db = await getSafeDbClient();
   const sp = await searchParams;
 
   const {
@@ -44,7 +45,7 @@ export default async function CRMPage({
     tareasRes,
     matriculasRes,
   ] = await Promise.all([
-    supabase
+    db
       .from('prospectos')
       .select(`
         *,
@@ -53,30 +54,46 @@ export default async function CRMPage({
         profiles!prospectos_asesor_id_fkey (id, display_name, email, photo_url)
       `)
       .order('created_at', { ascending: false }),
-    supabase.from('programas').select('id, nombre, codigo').eq('status', 'ACTIVO').order('nombre'),
-    supabase.from('planes_estudio').select('id, nombre, programa_id').eq('status', 'ACTIVO'),
-    supabase.from('ediciones').select('id, codigo, programa_id').eq('status', 'ACTIVO'),
-    supabase.from('catalogos_comerciales').select('*').eq('active', true),
-    supabase
+    db
+      .from('programas')
+      .select('id, nombre, codigo, status')
+      .or('status.eq.ACTIVO,status.is.null')
+      .order('nombre'),
+    db
+      .from('planes_estudio')
+      .select('id, nombre, programa_id, status')
+      .or('status.eq.ACTIVO,status.is.null'),
+    db
+      .from('ediciones')
+      .select('id, codigo, programa_id, status')
+      .or('status.eq.ACTIVO,status.is.null'),
+    db.from('catalogos_comerciales').select('*').eq('active', true),
+    db
       .from('profiles')
       .select('id, display_name, email, status, role_id, roles(name, code)')
       .order('display_name'),
-    supabase
+    db
       .from('seguimientos')
       .select('id, prospecto_id, tipo_actividad, fecha_hora, resultado')
       .order('fecha_hora', { ascending: false }),
-    supabase
+    db
       .from('tareas_comerciales')
       .select('id, prospecto_id, tipo_tarea, fecha_programada, status')
       .eq('status', 'PENDIENTE'),
-    supabase
+    db
       .from('matriculas')
       .select('id, status')
       .in('status', ['PREMATRICULA', 'RESERVADA', 'ACTIVA']),
   ]);
 
   const prospectos = (prospectosRes.data || []) as unknown as EnrichedProspecto[];
-  const programas = programasRes.data || [];
+  let programas = programasRes.data || [];
+  if (programas.length === 0) {
+    const { data: allProgs } = await db.from('programas').select('id, nombre, codigo, status').order('nombre');
+    if (allProgs && allProgs.length > 0) {
+      programas = allProgs;
+    }
+  }
   const planes = planesRes.data || [];
   const ediciones = edicionesRes.data || [];
   const catalogos = catalogosRes.data || [];

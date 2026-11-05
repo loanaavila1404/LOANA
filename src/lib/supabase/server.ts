@@ -1,7 +1,8 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import type { Database } from '@/types/database.types'
-import { getSupabaseUrl, getSupabaseAnonKey } from './env'
+import { getSupabaseUrl, getSupabaseAnonKey, getSupabaseServiceRoleKey } from './env'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 
 export async function createClient() {
   const cookieStore = await cookies()
@@ -40,3 +41,26 @@ export async function createClient() {
     }
   )
 }
+
+/**
+ * Cliente de acceso a base de datos para Server Components autenticados.
+ * Utiliza credenciales de service role en servidor para evitar bloqueos
+ * de RLS indebidos en lecturas institucionales (catálogos, matrículas y cuotas en modo consulta),
+ * siempre tras haber validado la identidad y permisos con requirePermission().
+ */
+export async function getSafeDbClient() {
+  const serviceKey = getSupabaseServiceRoleKey()
+  const supabaseUrl = getSupabaseUrl()
+
+  if (serviceKey && supabaseUrl) {
+    return createSupabaseClient<Database>(supabaseUrl, serviceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    })
+  }
+
+  return await createClient()
+}
+

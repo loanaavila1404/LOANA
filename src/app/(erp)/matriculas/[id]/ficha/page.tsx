@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient, getSafeDbClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/auth/permissions';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
@@ -22,14 +22,15 @@ export default async function FichaMatriculaPage(props: { params: Promise<{ id: 
   }
 
   const supabase = await createClient();
+  const db = await getSafeDbClient();
 
   // Validate basic access right to MATRICULAS module
   await requirePermission(['MATRICULAS.VER', 'MATRICULAS.GESTIONAR', 'COBRANZA.VER', 'SISTEMA.ADMINISTRAR']);
 
   const isUuid = UUID_REGEX.test(rawId);
 
-  // 1. Obtener matrícula por UUID o por codigo_matricula (evita error PostgreSQL 22P02)
-  const matriculaQuery = supabase.from('matriculas').select('*');
+  // 1. Obtener matrícula por UUID o por codigo_matricula (mediante cliente seguro)
+  const matriculaQuery = db.from('matriculas').select('*');
   const { data: matricula, error: matriculaError } = await (
     isUuid
       ? matriculaQuery.eq('id', rawId)
@@ -48,8 +49,8 @@ export default async function FichaMatriculaPage(props: { params: Promise<{ id: 
 
   const warnings: string[] = [];
 
-  // 2. Obtener estudiante y persona
-  const { data: estudiante, error: estError } = await supabase
+  // 2. Obtener estudiante y persona mediante cliente seguro
+  const { data: estudiante, error: estError } = await db
     .from('estudiantes')
     .select('codigo_estudiante, personas(nombres, apellido_paterno, apellido_materno, tipo_documento, numero_documento, email, telefono)')
     .eq('id', matricula.estudiante_id)
@@ -57,18 +58,18 @@ export default async function FichaMatriculaPage(props: { params: Promise<{ id: 
 
   if (estError) {
     console.error('[Ficha] Error al obtener estudiante:', estError);
-    warnings.push(`No se pudieron cargar los datos del estudiante (${estError.message}). Verifique el permiso ESTUDIANTES.VER (RLS).`);
+    warnings.push(`No se pudieron cargar los datos del estudiante (${estError.message}).`);
   } else if (!estudiante && matricula.estudiante_id) {
-    warnings.push('No se encontraron los datos del estudiante asociado. Es posible que su rol no cuente con el permiso ESTUDIANTES.VER (restricción RLS).');
+    warnings.push('No se encontraron los datos del estudiante asociado.');
   }
 
   const persona = Array.isArray(estudiante?.personas) ? estudiante?.personas[0] : estudiante?.personas;
   if (estudiante && !persona) {
-    warnings.push('No se pudieron leer los datos personales del estudiante. Verifique el permiso ESTUDIANTES.VER sobre la tabla personas (RLS).');
+    warnings.push('No se pudieron leer los datos personales del estudiante.');
   }
 
-  // 3. Obtener edición y relacionadas (incluyendo planes_estudio)
-  const { data: edicion, error: edError } = await supabase
+  // 3. Obtener edición y relacionadas mediante cliente seguro
+  const { data: edicion, error: edError } = await db
     .from('ediciones')
     .select('codigo, nombre, modalidad, turno, fecha_inicio, fecha_fin, programas(nombre, codigo, tipo_programa), planes_estudio(nombre, codigo), ciclos(nombre, numero_orden), periodos(nombre, codigo)')
     .eq('id', matricula.edicion_id)
@@ -76,9 +77,9 @@ export default async function FichaMatriculaPage(props: { params: Promise<{ id: 
 
   if (edError) {
     console.error('[Ficha] Error al obtener edición:', edError);
-    warnings.push(`No se pudo cargar la información de la edición académica (${edError.message}). Verifique el permiso PROGRAMAS.VER (RLS).`);
+    warnings.push(`No se pudo cargar la información de la edición académica (${edError.message}).`);
   } else if (!edicion && matricula.edicion_id) {
-    warnings.push('No se pudo acceder a la edición y programa académico. Es posible que su rol no cuente con el permiso PROGRAMAS.VER (restricción RLS).');
+    warnings.push('No se pudo acceder a la edición y programa académico.');
   }
 
   const programa = Array.isArray(edicion?.programas) ? edicion?.programas[0] : edicion?.programas;
@@ -86,8 +87,8 @@ export default async function FichaMatriculaPage(props: { params: Promise<{ id: 
   const ciclo = Array.isArray(edicion?.ciclos) ? edicion?.ciclos[0] : edicion?.ciclos;
   const periodo = Array.isArray(edicion?.periodos) ? edicion?.periodos[0] : edicion?.periodos;
 
-  // 4. Obtener cuotas
-  const { data: cuotasRaw, error: cuotasError } = await supabase
+  // 4. Obtener cuotas mediante cliente seguro
+  const { data: cuotasRaw, error: cuotasError } = await db
     .from('cuotas')
     .select('id, tipo_cuota, numero_cuota, concepto, importe_original, descuento, importe_neto, fecha_vencimiento, status')
     .eq('matricula_id', matricula.id)

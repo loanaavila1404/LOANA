@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, getSafeDbClient } from '@/lib/supabase/server';
 import { getUserPermissions } from '@/lib/auth/permissions';
 import { prospectoSchema, transferenciaSchema } from '@/lib/validators/crm';
 
@@ -220,9 +220,10 @@ export async function convertirAEstudianteAction(prospectoId: string) {
   }
 
   const supabase = await createClient();
+  const db = await getSafeDbClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const { data: p, error: pError } = await supabase.from('prospectos').select('*').eq('id', prospectoId).single();
+  const { data: p, error: pError } = await db.from('prospectos').select('*').eq('id', prospectoId).single();
   if (pError || !p) return { error: 'Prospecto no encontrado.' };
 
   // Idempotency: if already has both IDs, it is already converted
@@ -238,7 +239,7 @@ export async function convertirAEstudianteAction(prospectoId: string) {
   // 1. Check or Create Persona
   let personaId = p.persona_id;
   if (!personaId) {
-    const { data: existingPersona, error: exPError } = await supabase
+    const { data: existingPersona, error: exPError } = await db
       .from('personas')
       .select('id')
       .eq('tipo_documento', p.tipo_documento)
@@ -251,7 +252,7 @@ export async function convertirAEstudianteAction(prospectoId: string) {
       return { error: 'Error al buscar persona existente.' };
     } else {
       // Create Persona
-      const { data: newPersona, error: insPError } = await supabase.from('personas').insert({
+      const { data: newPersona, error: insPError } = await db.from('personas').insert({
         tipo_documento: p.tipo_documento,
         numero_documento: p.numero_documento,
         nombres: p.nombres,
@@ -260,7 +261,7 @@ export async function convertirAEstudianteAction(prospectoId: string) {
         telefono: p.telefono
       }).select('id').single();
 
-      if (insPError || !newPersona) return { error: 'Error al crear el registro de persona.' };
+      if (insPError || !newPersona) return { error: 'Error al crear el registro de persona: ' + (insPError?.message || '') };
       personaId = newPersona.id;
     }
   }
@@ -268,7 +269,7 @@ export async function convertirAEstudianteAction(prospectoId: string) {
   // 2. Check or Create Estudiante
   let estudianteId = p.estudiante_id;
   if (!estudianteId) {
-    const { data: existingEstudiante, error: exEError } = await supabase
+    const { data: existingEstudiante, error: exEError } = await db
       .from('estudiantes')
       .select('id')
       .eq('persona_id', personaId)
@@ -280,19 +281,19 @@ export async function convertirAEstudianteAction(prospectoId: string) {
       return { error: 'Error al buscar estudiante existente.' };
     } else {
       // Create Estudiante
-      const { data: newEstudiante, error: insEError } = await supabase.from('estudiantes').insert({
+      const { data: newEstudiante, error: insEError } = await db.from('estudiantes').insert({
         persona_id: personaId,
         status: 'ACTIVO',
         created_by: user?.id
       }).select('id').single();
 
-      if (insEError || !newEstudiante) return { error: 'Error al crear el registro de estudiante.' };
+      if (insEError || !newEstudiante) return { error: 'Error al crear el registro de estudiante: ' + (insEError?.message || '') };
       estudianteId = newEstudiante.id;
     }
   }
 
   // 3. Update Prospecto with both IDs and MATRICULADO status
-  const { error: updError } = await supabase.from('prospectos').update({
+  const { error: updError } = await db.from('prospectos').update({
     status: 'MATRICULADO',
     persona_id: personaId,
     estudiante_id: estudianteId,
@@ -301,7 +302,7 @@ export async function convertirAEstudianteAction(prospectoId: string) {
     updated_by: user?.id
   }).eq('id', prospectoId);
 
-  if (updError) return { error: 'Error al actualizar el estado del prospecto.' };
+  if (updError) return { error: 'Error al actualizar el estado del prospecto: ' + updError.message };
 
   revalidatePath('/crm/prospectos/' + prospectoId);
   revalidatePath('/crm');

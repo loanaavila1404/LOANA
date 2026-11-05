@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient, getSafeDbClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/auth/permissions';
 import { notFound } from 'next/navigation';
 import { Card } from '@/components/ui/Card';
@@ -21,9 +21,10 @@ export default async function ProspectoDetailPage({
 }) {
   await requirePermission(['CRM.VER', 'SISTEMA.ADMINISTRAR']);
   const supabase = await createClient();
+  const db = await getSafeDbClient();
   const resolvedParams = await params;
 
-  const { data: prospecto } = await supabase
+  const { data: prospecto } = await db
     .from('prospectos')
     .select(`
       *,
@@ -39,19 +40,19 @@ export default async function ProspectoDetailPage({
     notFound();
   }
 
-  const { data: seguimientos } = await supabase
+  const { data: seguimientos } = await db
     .from('seguimientos')
     .select(`*, profiles!seguimientos_asesor_id_fkey (display_name)`)
     .eq('prospecto_id', prospecto.id)
     .order('fecha_hora', { ascending: false });
 
-  const { data: tareas } = await supabase
+  const { data: tareas } = await db
     .from('tareas_comerciales')
     .select(`*, profiles!tareas_comerciales_asesor_id_fkey (display_name)`)
     .eq('prospecto_id', prospecto.id)
     .order('fecha_programada', { ascending: true });
 
-  const { data: asesores } = await supabase.from('profiles').select('id, display_name, role_id').order('display_name');
+  const { data: asesores } = await db.from('profiles').select('id, display_name, role_id').order('display_name');
 
   return (
     <div className="space-y-6">

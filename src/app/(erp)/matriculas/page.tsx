@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient, getSafeDbClient } from '@/lib/supabase/server';
 import { requirePermission, isCurrentUserAdvisor } from '@/lib/auth/permissions';
 import { MatriculasMetrics, MatriculasMetricsData } from '@/components/features/matriculas/MatriculasMetrics';
 import { MatriculasTableWithDrawer, MatriculaRow, CuotaItem } from '@/components/features/matriculas/MatriculasTableWithDrawer';
@@ -14,12 +14,13 @@ export default async function MatriculasPage(props: {
   searchParams?: Promise<{ desde?: string; hasta?: string }>;
 }) {
   await requirePermission(['MATRICULAS.VER', 'SISTEMA.ADMINISTRAR']);
-  const supabase = await createClient();
+  const isAdvisor = await isCurrentUserAdvisor();
+  const db = await getSafeDbClient();
   const searchParams = props.searchParams ? await props.searchParams : {};
 
-  // Consultar matrículas con estudiantes y ediciones
+  // Consultar matrículas con estudiantes y ediciones mediante cliente seguro
   const [{ data: matriculasRaw }, { data: cuotasRaw }, { data: pagosRaw }] = await Promise.all([
-    supabase
+    db
       .from('matriculas')
       .select(`
         *,
@@ -52,11 +53,11 @@ export default async function MatriculasPage(props: {
         )
       `)
       .order('created_at', { ascending: false }),
-    supabase
+    db
       .from('cuotas')
       .select('*')
       .order('numero_cuota', { ascending: true }),
-    supabase
+    db
       .from('pagos')
       .select('*')
       .eq('status', 'REGISTRADO')
@@ -231,8 +232,6 @@ export default async function MatriculasPage(props: {
     cobranzaHoy,
     tasaCumplimiento,
   };
-
-  const isAdvisor = await isCurrentUserAdvisor();
 
   return (
     <div className="space-y-6 max-w-[1440px] mx-auto pb-10">
