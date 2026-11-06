@@ -1,8 +1,8 @@
 'use server'
 
 import { revalidatePath } from 'next/cache';
-import { createClient } from '@/lib/supabase/server';
-import { getUserPermissions } from '@/lib/auth/permissions';
+import { createClient, getSafeDbClient } from '@/lib/supabase/server';
+import { getUserPermissions, isCurrentUserAdvisor } from '@/lib/auth/permissions';
 import { seguimientoSchema, tareaSchema } from '@/lib/validators/crm';
 
 export async function createSeguimientoAction(formData: FormData) {
@@ -24,13 +24,21 @@ export async function createSeguimientoAction(formData: FormData) {
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
   const supabase = await createClient();
+  const db = await getSafeDbClient();
   const user = (await supabase.auth.getUser()).data.user;
+  const isAdvisor = await isCurrentUserAdvisor();
 
-  // Get current status
-  const { data: prospecto } = await supabase.from('prospectos').select('status, asesor_id').eq('id', parsed.data.prospecto_id).single();
+  // Get current status & check ownership
+  const { data: prospecto } = await db.from('prospectos').select('status, asesor_id').eq('id', parsed.data.prospecto_id).single();
+  if (!prospecto) return { error: 'Prospecto no encontrado' };
+
+  if (isAdvisor && user?.id && prospecto.asesor_id !== user.id) {
+    return { error: 'No tienes permiso para registrar actividades en prospectos de otros asesores.' };
+  }
+
   const estado_anterior = prospecto?.status;
 
-  const { error } = await supabase.from('seguimientos').insert({
+  const { error } = await db.from('seguimientos').insert({
     ...parsed.data,
     asesor_id: prospecto?.asesor_id || user?.id,
     fecha_hora: new Date().toISOString(),
@@ -48,7 +56,7 @@ export async function createSeguimientoAction(formData: FormData) {
   if (parsed.data.proximo_seguimiento) {
     updates.proximo_seguimiento_en = parsed.data.proximo_seguimiento;
   }
-  const { error: updError } = await supabase.from('prospectos').update(updates).eq('id', parsed.data.prospecto_id);
+  const { error: updError } = await db.from('prospectos').update(updates).eq('id', parsed.data.prospecto_id);
   if (updError) return { error: 'Error al actualizar prospecto' };
 
   revalidatePath(`/crm/prospectos/${parsed.data.prospecto_id}`);
@@ -74,11 +82,18 @@ export async function createTareaAction(formData: FormData) {
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
   const supabase = await createClient();
+  const db = await getSafeDbClient();
   const user = (await supabase.auth.getUser()).data.user;
+  const isAdvisor = await isCurrentUserAdvisor();
 
-  const { data: prospecto } = await supabase.from('prospectos').select('asesor_id').eq('id', parsed.data.prospecto_id).single();
+  const { data: prospecto } = await db.from('prospectos').select('asesor_id').eq('id', parsed.data.prospecto_id).single();
+  if (!prospecto) return { error: 'Prospecto no encontrado' };
 
-  const { error } = await supabase.from('tareas_comerciales').insert({
+  if (isAdvisor && user?.id && prospecto.asesor_id !== user.id) {
+    return { error: 'No tienes permiso para programar tareas en prospectos de otros asesores.' };
+  }
+
+  const { error } = await db.from('tareas_comerciales').insert({
     ...parsed.data,
     asesor_id: prospecto?.asesor_id || user?.id,
     created_by: user?.id
@@ -97,9 +112,18 @@ export async function completeTareaAction(id: string, prospecto_id: string, resu
   }
 
   const supabase = await createClient();
+  const db = await getSafeDbClient();
   const user = (await supabase.auth.getUser()).data.user;
+  const isAdvisor = await isCurrentUserAdvisor();
 
-  const { error } = await supabase.from('tareas_comerciales').update({
+  if (isAdvisor && user?.id) {
+    const { data: tarea } = await db.from('tareas_comerciales').select('asesor_id').eq('id', id).single();
+    if (tarea && tarea.asesor_id && tarea.asesor_id !== user.id) {
+      return { error: 'No tienes permiso para completar tareas asignadas a otros asesores.' };
+    }
+  }
+
+  const { error } = await db.from('tareas_comerciales').update({
     status: 'COMPLETADA',
     fecha_realizada: new Date().toISOString(),
     resultado,

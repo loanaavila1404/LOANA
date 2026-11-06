@@ -1,6 +1,7 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getSafeDbClient } from '@/lib/supabase/server'
+import { isCurrentUserAdvisor } from '@/lib/auth/permissions'
 
 export interface GlobalSearchResultItem {
   id: string
@@ -29,8 +30,23 @@ export async function globalSearch(rawQuery: string): Promise<GlobalSearchResult
   }
 
   const supabase = await createClient()
+  const db = await getSafeDbClient()
+  const isAdvisor = await isCurrentUserAdvisor()
+  const { data: { user } } = await supabase.auth.getUser()
   const safeTerm = query.replace(/[%_]/g, '')
   const pattern = `%${safeTerm}%`
+
+  let prospectosQuery = db
+    .from('prospectos')
+    .select('id, codigo, nombres, apellidos, numero_documento, telefono, status')
+    .or(
+      `nombres.ilike.${pattern},apellidos.ilike.${pattern},numero_documento.ilike.${pattern},telefono.ilike.${pattern},codigo.ilike.${pattern}`
+    )
+    .limit(5)
+
+  if (isAdvisor && user?.id) {
+    prospectosQuery = prospectosQuery.eq('asesor_id', user.id)
+  }
 
   const [personasRes, matriculasRes, programasRes, prospectosRes] = await Promise.all([
     supabase
@@ -52,13 +68,7 @@ export async function globalSearch(rawQuery: string): Promise<GlobalSearchResult
       .select('id, codigo, nombre, tipo_programa, status')
       .or(`nombre.ilike.${pattern},codigo.ilike.${pattern}`)
       .limit(5),
-    supabase
-      .from('prospectos')
-      .select('id, codigo, nombres, apellidos, numero_documento, telefono, status')
-      .or(
-        `nombres.ilike.${pattern},apellidos.ilike.${pattern},numero_documento.ilike.${pattern},telefono.ilike.${pattern},codigo.ilike.${pattern}`
-      )
-      .limit(5),
+    prospectosQuery,
   ])
 
   const results: GlobalSearchResultItem[] = []
@@ -126,6 +136,19 @@ export async function globalSearch(rawQuery: string): Promise<GlobalSearchResult
 
 export async function getOperationalNotifications(): Promise<OperationalNotificationItem[]> {
   const supabase = await createClient()
+  const isAdvisor = await isCurrentUserAdvisor()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  let tareasQuery = supabase
+    .from('tareas_comerciales')
+    .select('id, prospecto_id, tipo_tarea, titulo, descripcion, fecha_programada, status, prospectos(nombres, apellidos, codigo)')
+    .eq('status', 'PENDIENTE')
+    .order('fecha_programada', { ascending: true })
+    .limit(5)
+
+  if (isAdvisor && user?.id) {
+    tareasQuery = tareasQuery.eq('asesor_id', user.id)
+  }
 
   const [cuotasRes, prematriculasRes, tareasRes] = await Promise.all([
     supabase
@@ -144,12 +167,7 @@ export async function getOperationalNotifications(): Promise<OperationalNotifica
       .in('status', ['PREMATRICULA', 'RESERVADA'])
       .order('created_at', { ascending: false })
       .limit(5),
-    supabase
-      .from('tareas_comerciales')
-      .select('id, prospecto_id, tipo_tarea, titulo, descripcion, fecha_programada, status, prospectos(nombres, apellidos, codigo)')
-      .eq('status', 'PENDIENTE')
-      .order('fecha_programada', { ascending: true })
-      .limit(5),
+    tareasQuery,
   ])
 
   const notifications: OperationalNotificationItem[] = []

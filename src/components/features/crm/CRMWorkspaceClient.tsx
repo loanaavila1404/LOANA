@@ -34,6 +34,7 @@ interface CRMWorkspaceClientProps {
   catalogos: { codigo: string; nombre: string; tipo_catalogo: string }[];
   asesores: AsesorOption[];
   currentUserId?: string;
+  isAdvisor?: boolean;
   initialQuery?: string;
   initialStatus?: string;
 }
@@ -46,6 +47,7 @@ export function CRMWorkspaceClient({
   catalogos,
   asesores,
   currentUserId,
+  isAdvisor = false,
   initialQuery = "",
   initialStatus = "TODOS",
 }: CRMWorkspaceClientProps) {
@@ -156,7 +158,9 @@ export function CRMWorkspaceClient({
       }
 
       // 5. Filtro por Asesor Asignado
-      if (asesorFilter !== "TODOS") {
+      if (isAdvisor && currentUserId) {
+        if (p.asesor_id && p.asesor_id !== currentUserId) return false;
+      } else if (asesorFilter !== "TODOS") {
         if (asesorFilter === "SIN_ASIGNAR") {
           if (p.asesor_id) return false;
         } else if (p.asesor_id !== asesorFilter) {
@@ -185,6 +189,8 @@ export function CRMWorkspaceClient({
     asesorFilter,
     startDate,
     endDate,
+    isAdvisor,
+    currentUserId,
   ]);
 
   const handleStageUpdate = (id: string, newStage: string) => {
@@ -329,6 +335,7 @@ export function CRMWorkspaceClient({
               catalogos={catalogos}
               asesores={asesores}
               currentUserId={currentUserId}
+              isAdvisor={isAdvisor}
               triggerText="Nuevo prospecto"
             />
           </div>
@@ -399,19 +406,29 @@ export function CRMWorkspaceClient({
 
           {/* 5. Filtro por Asesor Asignado */}
           <div>
-            <select
-              value={asesorFilter}
-              onChange={e => setAsesorFilter(e.target.value)}
-              className="w-full py-1.5 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#C4121A]/20 focus:border-[#C4121A] text-slate-700 font-medium"
-            >
-              <option value="TODOS">Todos los Asesores</option>
-              {asesores.map(a => (
-                <option key={a.id} value={a.id}>
-                  Asesor: {a.display_name || a.email || "Activo"}
-                </option>
-              ))}
-              <option value="SIN_ASIGNAR">Sin asesor asignado</option>
-            </select>
+            {isAdvisor ? (
+              <div
+                title="Visualizando exclusivamente tus prospectos asignados"
+                className="w-full py-1.5 px-2.5 text-xs bg-slate-100 border border-slate-200 rounded-lg text-slate-700 font-semibold flex items-center gap-1.5 shadow-2xs"
+              >
+                <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                <span className="truncate">Mis prospectos</span>
+              </div>
+            ) : (
+              <select
+                value={asesorFilter}
+                onChange={e => setAsesorFilter(e.target.value)}
+                className="w-full py-1.5 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#C4121A]/20 focus:border-[#C4121A] text-slate-700 font-medium"
+              >
+                <option value="TODOS">Todos los Asesores</option>
+                {asesores.map(a => (
+                  <option key={a.id} value={a.id}>
+                    Asesor: {a.display_name || a.email || "Activo"}
+                  </option>
+                ))}
+                <option value="SIN_ASIGNAR">Sin asesor asignado</option>
+              </select>
+            )}
           </div>
 
           {/* 6. Atajo rápido de Rango de Fechas */}
@@ -621,6 +638,7 @@ export function CRMWorkspaceClient({
                               catalogos={catalogos}
                               asesores={asesores}
                               currentUserId={currentUserId}
+                              isAdvisor={isAdvisor}
                               triggerText="Editar"
                               variant="outline"
                             />

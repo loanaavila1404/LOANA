@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { createClient, getSafeDbClient } from '@/lib/supabase/server';
-import { getUserPermissions } from '@/lib/auth/permissions';
+import { getUserPermissions, isCurrentUserAdvisor } from '@/lib/auth/permissions';
 import { prospectoSchema, transferenciaSchema } from '@/lib/validators/crm';
 
 export async function createProspectoAction(formData: FormData) {
@@ -12,16 +12,21 @@ export async function createProspectoAction(formData: FormData) {
   }
 
   const supabase = await createClient();
+  const db = await getSafeDbClient();
   const user = (await supabase.auth.getUser()).data.user;
+  const isAdvisor = await isCurrentUserAdvisor();
 
   // Generate codigo
-  const count = await supabase.from('prospectos').select('id', { count: 'exact' });
+  const count = await db.from('prospectos').select('id', { count: 'exact' });
   const num = (count.count || 0) + 1;
   const codigo = `PRO-${new Date().getFullYear()}-${num.toString().padStart(5, '0')}`;
 
   let asesorId = (formData.get('asesor_id') as string | null)?.trim() || user?.id || null;
-  if (!asesorId) {
-    const { data: firstAdvisor } = await supabase
+  // Seguridad por rol: Si es asesor comercial, forzar la asignación a su propio ID
+  if (isAdvisor && user?.id) {
+    asesorId = user.id;
+  } else if (!asesorId) {
+    const { data: firstAdvisor } = await db
       .from('profiles')
       .select('id')
       .eq('status', 'ACTIVO')
@@ -58,7 +63,7 @@ export async function createProspectoAction(formData: FormData) {
   const parsed = prospectoSchema.safeParse(payload);
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
-  const { data, error } = await supabase.from('prospectos').insert({
+  const { data, error } = await db.from('prospectos').insert({
     ...parsed.data,
     codigo,
     created_by: user?.id
@@ -78,7 +83,23 @@ export async function updateProspectoAction(id: string, formData: FormData) {
   }
 
   const supabase = await createClient();
+  const db = await getSafeDbClient();
   const user = (await supabase.auth.getUser()).data.user;
+  const isAdvisor = await isCurrentUserAdvisor();
+
+  // Validación de seguridad para Asesor Comercial: Solo puede editar sus propios prospectos asignados
+  if (isAdvisor && user?.id) {
+    const { data: existing } = await db.from('prospectos').select('asesor_id').eq('id', id).single();
+    if (!existing || existing.asesor_id !== user.id) {
+      return { error: 'No tienes permiso para modificar prospectos asignados a otros asesores.' };
+    }
+  }
+
+  let asesorId = (formData.get('asesor_id') as string | null)?.trim() || user?.id || null;
+  // Un asesor nunca puede reasignar el prospecto a otro asesor
+  if (isAdvisor && user?.id) {
+    asesorId = user.id;
+  }
 
   const payload = {
     tipo_documento: formData.get('tipo_documento') || null,
@@ -98,7 +119,7 @@ export async function updateProspectoAction(id: string, formData: FormData) {
     turno: formData.get('turno') || null,
     canal_captacion: formData.get('canal_captacion') || null,
     campana: formData.get('campana') || null,
-    asesor_id: (formData.get('asesor_id') as string | null)?.trim() || user?.id || null,
+    asesor_id: asesorId,
     status: formData.get('status') || 'NUEVO',
     nivel_interes: formData.get('nivel_interes') || null,
     consentimiento_contacto: formData.get('consentimiento_contacto') === 'true',
@@ -108,7 +129,7 @@ export async function updateProspectoAction(id: string, formData: FormData) {
   const parsed = prospectoSchema.safeParse(payload);
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
-  const { data, error } = await supabase.from('prospectos').update({
+  const { data, error } = await db.from('prospectos').update({
     ...parsed.data,
     updated_by: user?.id
   }).eq('id', id).select().single();
@@ -127,7 +148,17 @@ export async function updateProspectoStatusAction(id: string, status: string, mo
   }
 
   const supabase = await createClient();
+  const db = await getSafeDbClient();
   const user = (await supabase.auth.getUser()).data.user;
+  const isAdvisor = await isCurrentUserAdvisor();
+
+  // Validación de seguridad para Asesor Comercial: Solo puede cambiar el estado de sus propios prospectos
+  if (isAdvisor && user?.id) {
+    const { data: existing } = await db.from('prospectos').select('asesor_id').eq('id', id).single();
+    if (!existing || existing.asesor_id !== user.id) {
+      return { error: 'No tienes permiso para modificar el estado de este prospecto.' };
+    }
+  }
 
   const updateFields: {
     status: string;
@@ -146,7 +177,7 @@ export async function updateProspectoStatusAction(id: string, status: string, mo
     updateFields.ultimo_contacto_en = new Date().toISOString();
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('prospectos')
     .update(updateFields)
     .eq('id', id)
@@ -167,6 +198,11 @@ export async function transferProspectoAction(formData: FormData) {
     return { error: 'No tienes permiso para reasignar prospectos' };
   }
 
+  const isAdvisor = await isCurrentUserAdvisor();
+  if (isAdvisor) {
+    return { error: 'Solo los supervisores y administradores tienen permiso para reasignar prospectos.' };
+  }
+
   const payload = {
     prospecto_id: formData.get('prospecto_id'),
     asesor_nuevo_id: formData.get('asesor_nuevo_id'),
@@ -177,10 +213,11 @@ export async function transferProspectoAction(formData: FormData) {
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
   const supabase = await createClient();
+  const db = await getSafeDbClient();
   const user = (await supabase.auth.getUser()).data.user;
 
   // Get current asesor
-  const { data: prospecto } = await supabase.from('prospectos').select('asesor_id').eq('id', parsed.data.prospecto_id).single();
+  const { data: prospecto } = await db.from('prospectos').select('asesor_id').eq('id', parsed.data.prospecto_id).single();
   if (!prospecto) return { error: 'Prospecto no encontrado' };
 
   if (prospecto.asesor_id === parsed.data.asesor_nuevo_id) {
@@ -188,7 +225,7 @@ export async function transferProspectoAction(formData: FormData) {
   }
 
   // Insert transferencia
-  const { error: trError } = await supabase.from('transferencias_prospectos').insert({
+  const { error: trError } = await db.from('transferencias_prospectos').insert({
     prospecto_id: parsed.data.prospecto_id,
     asesor_anterior_id: prospecto.asesor_id,
     asesor_nuevo_id: parsed.data.asesor_nuevo_id,
@@ -200,7 +237,7 @@ export async function transferProspectoAction(formData: FormData) {
   if (trError) return { error: 'Error al registrar la transferencia' };
 
   // Update prospecto
-  const { error: updError } = await supabase.from('prospectos').update({
+  const { error: updError } = await db.from('prospectos').update({
     asesor_id: parsed.data.asesor_nuevo_id,
     updated_by: user?.id
   }).eq('id', parsed.data.prospecto_id);
@@ -221,10 +258,16 @@ export async function convertirAEstudianteAction(prospectoId: string) {
 
   const supabase = await createClient();
   const db = await getSafeDbClient();
+  const isAdvisor = await isCurrentUserAdvisor();
   const { data: { user } } = await supabase.auth.getUser();
 
   const { data: p, error: pError } = await db.from('prospectos').select('*').eq('id', prospectoId).single();
   if (pError || !p) return { error: 'Prospecto no encontrado.' };
+
+  // Seguridad: Asesor Comercial solo puede convertir sus propios prospectos asignados
+  if (isAdvisor && user?.id && p.asesor_id !== user.id) {
+    return { error: 'No tienes permiso para convertir prospectos de otros asesores.' };
+  }
 
   // Idempotency: if already has both IDs, it is already converted
   if (p.persona_id && p.estudiante_id) {

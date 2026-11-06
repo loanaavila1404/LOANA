@@ -26,6 +26,24 @@ import { isCurrentUserAdvisor } from '@/lib/auth/permissions'
 export default async function DashboardPage() {
   const isAdvisor = await isCurrentUserAdvisor()
   const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  let prospectosQuery = supabase
+    .from('prospectos')
+    .select('id, codigo, nombres, apellidos, status, created_at')
+    .order('created_at', { ascending: false })
+
+  let tareasQuery = supabase
+    .from('tareas_comerciales')
+    .select('id, status')
+    .eq('status', 'PENDIENTE')
+
+  if (isAdvisor && user?.id) {
+    prospectosQuery = prospectosQuery.eq('asesor_id', user.id)
+    tareasQuery = tareasQuery.eq('asesor_id', user.id)
+  }
 
   const [
     prospectosRes,
@@ -36,10 +54,7 @@ export default async function DashboardPage() {
     pagosRes,
     tareasRes,
   ] = await Promise.all([
-    supabase
-      .from('prospectos')
-      .select('id, codigo, nombres, apellidos, status, created_at')
-      .order('created_at', { ascending: false }),
+    prospectosQuery,
     supabase
       .from('estudiantes')
       .select(
@@ -64,10 +79,7 @@ export default async function DashboardPage() {
       .from('pagos')
       .select('id, fecha_pago, importe, status')
       .in('status', ['REGISTRADO', 'ACTIVO']),
-    supabase
-      .from('tareas_comerciales')
-      .select('id, status')
-      .eq('status', 'PENDIENTE'),
+    tareasQuery,
   ])
 
   const prospectosList = prospectosRes.data || []

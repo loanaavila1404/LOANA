@@ -35,6 +35,7 @@ export function ProspectoFormModalClient({
   catalogos,
   asesores = [],
   currentUserId,
+  isAdvisor = false,
   triggerText = '+ Nuevo prospecto',
   variant = 'primary',
 }: {
@@ -45,6 +46,7 @@ export function ProspectoFormModalClient({
   catalogos: { codigo: string; nombre: string; tipo_catalogo: string }[];
   asesores?: AsesorOption[];
   currentUserId?: string;
+  isAdvisor?: boolean;
   triggerText?: string;
   variant?: 'primary' | 'outline' | 'ghost';
 }) {
@@ -113,31 +115,52 @@ export function ProspectoFormModalClient({
           <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
             <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
               <UserCheck className="w-4 h-4 text-[#C4121A]" />
-              <span>Asesor Comercial Asignado *</span>
+              <span>Asesor Comercial Responsable *</span>
             </label>
-            <select
-              name="asesor_id"
-              defaultValue={defaultAsesorId}
-              required={asesores.length > 0}
-              className="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#C4121A]/20 focus:border-[#C4121A] bg-white"
-            >
-              {asesores.length === 0 ? (
-                <option value="">Asignar automáticamente a mi usuario</option>
-              ) : (
-                <>
-                  <option value="">Seleccione un asesor responsable...</option>
-                  {asesores.map(a => (
-                    <option key={a.id} value={a.id}>
-                      {a.display_name || a.email || 'Asesor Activo'}
-                      {a.role_name ? ` — (${a.role_name})` : ''}
-                    </option>
-                  ))}
-                </>
-              )}
-            </select>
-            <p className="text-[11px] text-slate-500">
-              El asesor seleccionado será responsable del seguimiento y conversión de este prospecto.
-            </p>
+            {isAdvisor ? (
+              <>
+                <input type="hidden" name="asesor_id" value={currentUserId || ''} />
+                <div className="w-full border border-slate-200 bg-white rounded-lg px-3 py-2 text-xs font-semibold text-slate-700 flex items-center justify-between">
+                  <span>
+                    {asesores.find(a => a.id === currentUserId)?.display_name ||
+                      asesores.find(a => a.id === currentUserId)?.email ||
+                      'Mi Usuario (Asesor Comercial)'}
+                  </span>
+                  <span className="text-[10px] uppercase font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                    Asignación Directa
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-500">
+                  Este prospecto quedará asignado bajo tu cartera personal de seguimiento y conversión.
+                </p>
+              </>
+            ) : (
+              <>
+                <select
+                  name="asesor_id"
+                  defaultValue={defaultAsesorId}
+                  required={asesores.length > 0}
+                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#C4121A]/20 focus:border-[#C4121A] bg-white"
+                >
+                  {asesores.length === 0 ? (
+                    <option value="">Asignar automáticamente a mi usuario</option>
+                  ) : (
+                    <>
+                      <option value="">Seleccione un asesor responsable...</option>
+                      {asesores.map(a => (
+                        <option key={a.id} value={a.id}>
+                          {a.display_name || a.email || 'Asesor Activo'}
+                          {a.role_name ? ` — (${a.role_name})` : ''}
+                        </option>
+                      ))}
+                    </>
+                  )}
+                </select>
+                <p className="text-[11px] text-slate-500">
+                  El asesor seleccionado será responsable del seguimiento y conversión de este prospecto.
+                </p>
+              </>
+            )}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">

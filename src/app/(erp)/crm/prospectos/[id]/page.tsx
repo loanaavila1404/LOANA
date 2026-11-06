@@ -1,5 +1,5 @@
 import { createClient, getSafeDbClient } from '@/lib/supabase/server';
-import { requirePermission } from '@/lib/auth/permissions';
+import { requirePermission, getUserAuthContext } from '@/lib/auth/permissions';
 import { notFound } from 'next/navigation';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -22,6 +22,9 @@ export default async function ProspectoDetailPage({
   await requirePermission(['CRM.VER', 'SISTEMA.ADMINISTRAR']);
   const supabase = await createClient();
   const db = await getSafeDbClient();
+  const authCtx = await getUserAuthContext();
+  const isAdvisor = Boolean(authCtx?.isAsesor);
+  const currentUserId = authCtx?.userId;
   const resolvedParams = await params;
 
   const { data: prospecto } = await db
@@ -37,6 +40,12 @@ export default async function ProspectoDetailPage({
     .single();
 
   if (!prospecto) {
+    notFound();
+  }
+
+  // REGLA DE SEGURIDAD POR ROL:
+  // Si el usuario es Asesor Comercial, solo puede ver la ficha de sus propios prospectos asignados
+  if (isAdvisor && currentUserId && prospecto.asesor_id !== currentUserId) {
     notFound();
   }
 
@@ -85,7 +94,9 @@ export default async function ProspectoDetailPage({
               <ConvertirButtonClient prospectoId={prospecto.id} />
             </>
           )}
-          <TransferenciaModalClient prospectoId={prospecto.id} asesores={asesores || []} asesorActualId={prospecto.asesor_id} />
+          {!isAdvisor && (
+            <TransferenciaModalClient prospectoId={prospecto.id} asesores={asesores || []} asesorActualId={prospecto.asesor_id} />
+          )}
         </div>
       </div>
 

@@ -1,5 +1,5 @@
 import { createClient, getSafeDbClient } from '@/lib/supabase/server';
-import { requirePermission } from '@/lib/auth/permissions';
+import { requirePermission, getUserAuthContext } from '@/lib/auth/permissions';
 import Link from 'next/link';
 import {
   Users,
@@ -28,11 +28,51 @@ export default async function CRMPage({
   await requirePermission(['CRM.VER', 'SISTEMA.ADMINISTRAR']);
   const supabase = await createClient();
   const db = await getSafeDbClient();
+  const authCtx = await getUserAuthContext();
+  const isAdvisor = Boolean(authCtx?.isAsesor);
   const sp = await searchParams;
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  const currentUserId = user?.id || authCtx?.userId;
+
+  // Consultas base del módulo CRM
+  let prospectosQuery = db
+    .from('prospectos')
+    .select(`
+      *,
+      programas (id, nombre, codigo),
+      ediciones (id, codigo),
+      profiles!prospectos_asesor_id_fkey (id, display_name, email, photo_url)
+    `)
+    .order('created_at', { ascending: false });
+
+  let seguimientosQuery = db
+    .from('seguimientos')
+    .select('id, prospecto_id, tipo_actividad, fecha_hora, resultado')
+    .order('fecha_hora', { ascending: false });
+
+  let tareasQuery = db
+    .from('tareas_comerciales')
+    .select('id, prospecto_id, tipo_tarea, fecha_programada, status')
+    .eq('status', 'PENDIENTE');
+
+  let matriculasQuery = db
+    .from('matriculas')
+    .select('id, status, asesor_comercial_id')
+    .in('status', ['PREMATRICULA', 'RESERVADA', 'ACTIVA']);
+
+  // FILTRADO DE SEGURIDAD POR ROL:
+  // Si el usuario conectado tiene el rol de Asesor Comercial, solo devolver los prospectos
+  // y actividades asignados a su ID de usuario. Los roles administrativos ven la lista completa.
+  if (isAdvisor && currentUserId) {
+    prospectosQuery = prospectosQuery.eq('asesor_id', currentUserId);
+    seguimientosQuery = seguimientosQuery.eq('asesor_id', currentUserId);
+    tareasQuery = tareasQuery.eq('asesor_id', currentUserId);
+    matriculasQuery = matriculasQuery.eq('asesor_comercial_id', currentUserId);
+  }
 
   const [
     prospectosRes,
@@ -45,15 +85,7 @@ export default async function CRMPage({
     tareasRes,
     matriculasRes,
   ] = await Promise.all([
-    db
-      .from('prospectos')
-      .select(`
-        *,
-        programas (id, nombre, codigo),
-        ediciones (id, codigo),
-        profiles!prospectos_asesor_id_fkey (id, display_name, email, photo_url)
-      `)
-      .order('created_at', { ascending: false }),
+    prospectosQuery,
     db
       .from('programas')
       .select('id, nombre, codigo, status')
@@ -72,18 +104,9 @@ export default async function CRMPage({
       .from('profiles')
       .select('id, display_name, email, status, role_id, roles(name, code)')
       .order('display_name'),
-    db
-      .from('seguimientos')
-      .select('id, prospecto_id, tipo_actividad, fecha_hora, resultado')
-      .order('fecha_hora', { ascending: false }),
-    db
-      .from('tareas_comerciales')
-      .select('id, prospecto_id, tipo_tarea, fecha_programada, status')
-      .eq('status', 'PENDIENTE'),
-    db
-      .from('matriculas')
-      .select('id, status')
-      .in('status', ['PREMATRICULA', 'RESERVADA', 'ACTIVA']),
+    seguimientosQuery,
+    tareasQuery,
+    matriculasQuery,
   ]);
 
   const prospectos = (prospectosRes.data || []) as unknown as EnrichedProspecto[];
@@ -356,10 +379,12 @@ export default async function CRMPage({
         <div className="flex items-center justify-between lg:px-4">
           <div className="flex items-center gap-2">
             <UserCheck className="w-3.5 h-3.5 text-emerald-600" />
-            <span className="text-xs text-slate-500 font-medium">Asesores activos</span>
+            <span className="text-xs text-slate-500 font-medium">
+              {isAdvisor ? 'Cartera Asignada' : 'Asesores activos'}
+            </span>
           </div>
           <span className="text-xs font-extrabold text-emerald-700">
-            {asesores.length} en línea
+            {isAdvisor ? `${prospectos.length} prospectos` : `${asesores.length} en línea`}
           </span>
         </div>
 
@@ -382,7 +407,8 @@ export default async function CRMPage({
         ediciones={ediciones}
         catalogos={catalogos}
         asesores={asesores}
-        currentUserId={user?.id}
+        currentUserId={currentUserId}
+        isAdvisor={isAdvisor}
         initialQuery={sp?.q || ''}
         initialStatus={sp?.status || 'TODOS'}
       />
