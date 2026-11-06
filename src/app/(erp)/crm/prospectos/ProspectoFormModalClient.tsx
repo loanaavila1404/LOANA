@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -38,6 +38,8 @@ export function ProspectoFormModalClient({
   isAdvisor = false,
   triggerText = '+ Nuevo prospecto',
   variant = 'primary',
+  isOpen: controlledIsOpen,
+  onClose: controlledOnClose,
 }: {
   prospecto?: Prospecto;
   programas: { id: string; nombre: string; codigo?: string }[];
@@ -49,12 +51,30 @@ export function ProspectoFormModalClient({
   isAdvisor?: boolean;
   triggerText?: string;
   variant?: 'primary' | 'outline' | 'ghost';
+  isOpen?: boolean;
+  onClose?: () => void;
 }) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
+  const isControlled = controlledIsOpen !== undefined;
+  const modalOpen = isControlled ? controlledIsOpen : internalIsOpen;
+
+  const handleClose = () => {
+    if (isControlled) {
+      controlledOnClose?.();
+    } else {
+      setInternalIsOpen(false);
+    }
+  };
+
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
   const [selectedPrograma, setSelectedPrograma] = useState(prospecto?.programa_id || '');
+  
+  useEffect(() => {
+    setSelectedPrograma(prospecto?.programa_id || '');
+  }, [prospecto?.programa_id]);
+
   const filteredPlanes = planes.filter(p => p.programa_id === selectedPrograma);
 
   const canalesFromDb = catalogos.filter(c => c.tipo_catalogo === 'CANAL');
@@ -79,29 +99,31 @@ export function ProspectoFormModalClient({
       if (result.error) {
         setError(result.error);
       } else {
-        setIsOpen(false);
+        handleClose();
       }
     });
   };
 
   return (
     <>
-      <Button
-        variant={variant}
-        onClick={() => setIsOpen(true)}
-        className={
-          variant === 'primary'
-            ? 'bg-[#C4121A] hover:bg-[#A30D14] text-white font-bold text-xs px-4 py-2 rounded-lg shadow-sm inline-flex items-center gap-1.5'
-            : ''
-        }
-      >
-        {!prospecto && <Plus className="w-4 h-4" />}
-        <span>{triggerText}</span>
-      </Button>
+      {!isControlled && (
+        <Button
+          variant={variant}
+          onClick={() => setInternalIsOpen(true)}
+          className={
+            variant === 'primary'
+              ? 'bg-[#C4121A] hover:bg-[#A30D14] text-white font-bold text-xs px-4 py-2 rounded-lg shadow-sm inline-flex items-center gap-1.5'
+              : ''
+          }
+        >
+          {!prospecto && <Plus className="w-4 h-4" />}
+          <span>{triggerText}</span>
+        </Button>
+      )}
 
       <Modal
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
+        isOpen={modalOpen}
+        onClose={handleClose}
         title={prospecto ? 'Editar Prospecto Comercial' : 'Registrar Nuevo Prospecto'}
       >
         <form onSubmit={handleSubmit} className="space-y-4 pt-3 max-h-[75vh] overflow-y-auto px-1">
@@ -309,7 +331,7 @@ export function ProspectoFormModalClient({
           </div>
 
           <div className="flex justify-end pt-3 space-x-2 border-t border-slate-100 mt-4">
-            <Button type="button" variant="ghost" onClick={() => setIsOpen(false)} disabled={isPending}>
+            <Button type="button" variant="ghost" onClick={handleClose} disabled={isPending}>
               Cancelar
             </Button>
             <Button type="submit" disabled={isPending} className="bg-[#C4121A] hover:bg-[#A30D14] text-white">
