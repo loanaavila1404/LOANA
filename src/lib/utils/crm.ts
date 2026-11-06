@@ -121,3 +121,21 @@ export interface CRMConversationItem {
     | null;
 }
 
+export interface CRMTaskItem {
+  id: string;
+  prospecto_id: string | null;
+  asesor_id?: string | null;
+  tipo_tarea: string | null;
+  titulo: string | null;
+  descripcion?: string | null;
+  fecha_programada: string | null;
+  fecha_realizada?: string | null;
+  status: string | null;
+  resultado?: string | null;
+  created_at?: string | null;
+  profiles?:
+    | { id?: string; display_name: string | null; email?: string | null }
+    | { id?: string; display_name: string | null; email?: string | null }[]
+    | null;
+}
+

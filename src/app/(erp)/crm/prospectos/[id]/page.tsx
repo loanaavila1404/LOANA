@@ -5,9 +5,8 @@ import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import Link from 'next/link';
 import { MessageCircle } from 'lucide-react';
-import { buildWhatsAppUrl } from '@/lib/utils/crm';
-import { SeguimientoFormModalClient } from './SeguimientoFormModalClient';
-import { TareaFormModalClient, CompleteTareaButtonClient } from './TareaFormModalClient';
+import { buildWhatsAppUrl, CRMConversationItem, CRMTaskItem } from '@/lib/utils/crm';
+import { ProspectoBitacoraTimeline } from '@/components/features/crm/ProspectoBitacoraTimeline';
 import { TransferenciaModalClient } from './TransferenciaModalClient';
 import { MarcarPerdidoButtonClient } from './MarcarPerdidoButtonClient';
 import { ConvertirButtonClient } from './ConvertirButtonClient';
@@ -127,10 +126,17 @@ export default async function ProspectoDetailPage({
               <span>Contactar WhatsApp</span>
             </a>
           )}
-          {prospecto.status !== 'MATRICULADO' && prospecto.status !== 'PERDIDO' && (
+          {prospecto.status !== 'PERDIDO' && (
             <>
-              <MarcarPerdidoButtonClient prospectoId={prospecto.id} />
-              <ConvertirButtonClient prospectoId={prospecto.id} />
+              {prospecto.status !== 'MATRICULADO' && (
+                <MarcarPerdidoButtonClient prospectoId={prospecto.id} />
+              )}
+              <ConvertirButtonClient
+                prospectoId={prospecto.id}
+                status={prospecto.status || 'NUEVO'}
+                matriculaId={prospecto.matricula_id}
+                prospectoName={fullName}
+              />
             </>
           )}
           {!isAdvisor && (
@@ -187,105 +193,56 @@ export default async function ProspectoDetailPage({
                 </div>
               )}
             </div>
-            <button className="w-full mt-2 text-sm text-red-600 font-medium border border-red-200 rounded py-1.5 hover:bg-red-50">
-              Editar Datos
-            </button>
+            <Link
+              href="/crm"
+              className="w-full mt-2 text-center block text-xs text-slate-600 font-semibold border border-slate-200 rounded py-1.5 hover:bg-slate-50"
+            >
+              Volver al Listado CRM
+            </Link>
           </Card>
 
           <Card className="p-4 space-y-4">
-            <h2 className="font-bold text-slate-800 border-b border-slate-100 pb-2">Embudo Comercial</h2>
+            <h2 className="font-bold text-slate-800 border-b border-slate-100 pb-2">Etapa en el Embudo Comercial</h2>
             <div className="relative">
               <div className="absolute top-0 bottom-0 left-4 w-px bg-slate-200"></div>
-              <ul className="space-y-4 relative">
-                <li className="flex items-center gap-3">
-                  <div className={`w-3 h-3 rounded-full z-10 ${prospecto.status === 'NUEVO' || prospecto.status === 'SEGUIMIENTO' || prospecto.status === 'ENTREVISTA' || prospecto.status === 'MATRICULADO' ? 'bg-green-500' : 'bg-slate-300'}`}></div>
-                  <span className={`text-sm ${prospecto.status === 'NUEVO' ? 'font-bold text-slate-800' : 'text-slate-500'}`}>Nuevo</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <div className={`w-3 h-3 rounded-full z-10 ${prospecto.status === 'SEGUIMIENTO' || prospecto.status === 'ENTREVISTA' || prospecto.status === 'MATRICULADO' ? 'bg-green-500' : 'bg-slate-300'}`}></div>
-                  <span className={`text-sm ${prospecto.status === 'SEGUIMIENTO' ? 'font-bold text-slate-800' : 'text-slate-500'}`}>En Seguimiento</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <div className={`w-3 h-3 rounded-full z-10 ${prospecto.status === 'ENTREVISTA' || prospecto.status === 'MATRICULADO' ? 'bg-green-500' : 'bg-slate-300'}`}></div>
-                  <span className={`text-sm ${prospecto.status === 'ENTREVISTA' ? 'font-bold text-slate-800' : 'text-slate-500'}`}>Entrevista Programada</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <div className={`w-3 h-3 rounded-full z-10 ${prospecto.status === 'MATRICULADO' ? 'bg-green-500' : 'bg-slate-300'}`}></div>
-                  <span className={`text-sm ${prospecto.status === 'MATRICULADO' ? 'font-bold text-slate-800' : 'text-slate-500'}`}>Cerrado / Matriculado</span>
-                </li>
+              <ul className="space-y-3.5 relative">
+                {[
+                  { key: 'NUEVO', label: 'Nuevo Registro' },
+                  { key: 'CONTACTADO', label: 'Contactado' },
+                  { key: 'EN SEGUIMIENTO', label: 'En Seguimiento' },
+                  { key: 'INTERESADO', label: 'Interesado' },
+                  { key: 'PREMATRICULA', label: 'Prematrícula (Derivado a Caja)' },
+                  { key: 'MATRICULADO', label: 'Matriculado Oficial (Pago Validado)' },
+                ].map((step) => {
+                  const currentNorm = (prospecto.status || 'NUEVO').toUpperCase();
+                  const isCurrent = currentNorm === step.key || (currentNorm === 'SEGUIMIENTO' && step.key === 'EN SEGUIMIENTO');
+                  return (
+                    <li key={step.key} className="flex items-center gap-3">
+                      <div className={`w-3.5 h-3.5 rounded-full z-10 border-2 transition ${
+                        isCurrent
+                          ? 'bg-[#C4121A] border-red-300 ring-4 ring-red-100'
+                          : 'bg-white border-slate-300'
+                      }`} />
+                      <span className={`text-xs ${isCurrent ? 'font-bold text-slate-900' : 'text-slate-500'}`}>
+                        {step.label}
+                      </span>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           </Card>
         </div>
 
-        {/* COLUMNA DERECHA - TAREAS Y SEGUIMIENTOS */}
+        {/* COLUMNA DERECHA - BITÁCORA UNIFICADA (TAREAS Y NOTAS CON HISTORIAL PERMANENTE) */}
         <div className="lg:col-span-2 space-y-6">
-          {/* TAREAS PENDIENTES */}
-          <Card className="p-4 space-y-4 border-orange-200 bg-orange-50/30">
-            <div className="flex items-center justify-between border-b border-orange-100 pb-2">
-              <h2 className="font-bold text-slate-800">Tareas Pendientes</h2>
-              <TareaFormModalClient prospectoId={prospecto.id} triggerText="+ Programar Tarea" variant="outline" />
-            </div>
-            {(!tareas || tareas.filter(t => t.status === 'PENDIENTE').length === 0) ? (
-              <p className="text-sm text-slate-500 italic">No hay tareas pendientes.</p>
-            ) : (
-              <ul className="space-y-2">
-                {tareas.filter(t => t.status === 'PENDIENTE').map(t => (
-                  <li key={t.id} className="bg-white border border-orange-100 rounded p-3 flex justify-between items-center shadow-sm">
-                    <div>
-                      <h4 className="font-medium text-sm text-slate-800">{t.titulo}</h4>
-                      <p className="text-xs text-slate-500">
-                        Programada para: {new Date(t.fecha_programada || '').toLocaleString('es-PE')} 
-                        • Tipo: {t.tipo_tarea}
-                      </p>
-                    </div>
-                    <CompleteTareaButtonClient tareaId={t.id} prospectoId={prospecto.id} />
-                  </li>
-                ))}
-              </ul>
-            )}
-          </Card>
-
-          {/* SEGUIMIENTOS (HISTORIAL) */}
-          <Card className="p-4 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-              <h2 className="font-bold text-slate-800">Historial de Seguimientos</h2>
-              <SeguimientoFormModalClient prospectoId={prospecto.id} currentStatus={prospecto.status || 'NUEVO'} triggerText="+ Registrar Actividad" />
-            </div>
-            
-            {(!seguimientos || seguimientos.length === 0) ? (
-              <p className="text-sm text-center text-slate-500 py-8">No hay actividades registradas.</p>
-            ) : (
-              <div className="relative pl-4 space-y-6">
-                <div className="absolute top-2 bottom-0 left-[11px] w-px bg-slate-200"></div>
-                {seguimientos.map((seg) => (
-                  <div key={seg.id} className="relative">
-                    <div className="absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-red-100 border-2 border-red-500"></div>
-                    <div className="bg-slate-50 border border-slate-100 rounded-lg p-3 text-sm">
-                      <div className="flex justify-between items-start mb-1">
-                        <span className="font-bold text-slate-700">{seg.tipo_actividad}</span>
-                        <span className="text-xs text-slate-500">{new Date(seg.fecha_hora || '').toLocaleString('es-PE')}</span>
-                      </div>
-                      <p className="text-slate-800 mb-2">{seg.nota}</p>
-                      
-                      <div className="flex flex-wrap gap-2 text-xs">
-                        {seg.resultado && <span className="bg-slate-200 text-slate-700 px-2 py-0.5 rounded">Result: {seg.resultado}</span>}
-                        {seg.estado_nuevo && seg.estado_nuevo !== seg.estado_anterior && (
-                          <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded">Estado → {seg.estado_nuevo}</span>
-                        )}
-                        <span className="text-slate-500 ml-auto">
-                          Por: {(seg as unknown as { profiles: { display_name: string } })?.profiles 
-                          ? (seg as unknown as { profiles: { display_name: string } }).profiles.display_name
-                          : 'Sistema'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </Card>
-
+          <ProspectoBitacoraTimeline
+            prospectoId={prospecto.id}
+            currentStatus={prospecto.status || 'NUEVO'}
+            seguimientos={(seguimientos || []) as unknown as CRMConversationItem[]}
+            tareas={(tareas || []) as unknown as CRMTaskItem[]}
+            isAdvisor={isAdvisor}
+          />
         </div>
       </div>
     </div>

@@ -13,7 +13,7 @@ import {
   Download,
 } from 'lucide-react';
 import { CRMWorkspaceClient } from '@/components/features/crm/CRMWorkspaceClient';
-import { EnrichedProspecto, normalizeProspectoStage, CRMConversationItem } from '@/lib/utils/crm';
+import { EnrichedProspecto, normalizeProspectoStage, CRMConversationItem, CRMTaskItem } from '@/lib/utils/crm';
 import { AsesorOption } from './prospectos/ProspectoFormModalClient';
 
 export const metadata = {
@@ -68,8 +68,21 @@ export default async function CRMPage({
 
   let tareasQuery = db
     .from('tareas_comerciales')
-    .select('id, prospecto_id, tipo_tarea, fecha_programada, status')
-    .eq('status', 'PENDIENTE');
+    .select(`
+      id,
+      prospecto_id,
+      asesor_id,
+      tipo_tarea,
+      titulo,
+      descripcion,
+      fecha_programada,
+      fecha_realizada,
+      status,
+      resultado,
+      created_at,
+      profiles!tareas_comerciales_asesor_id_fkey (id, display_name, email)
+    `)
+    .order('fecha_programada', { ascending: false });
 
   let matriculasQuery = db
     .from('matriculas')
@@ -133,7 +146,8 @@ export default async function CRMPage({
   const ediciones = edicionesRes.data || [];
   const catalogos = catalogosRes.data || [];
   const seguimientos = seguimientosRes.data || [];
-  const tareasPendientes = tareasRes.data || [];
+  const tareas = (tareasRes.data || []) as unknown as CRMTaskItem[];
+  const tareasPendientes = tareas.filter(t => t.status === 'PENDIENTE');
   const matriculas = matriculasRes.data || [];
 
   // Filtrar asesores activos con roles comerciales o administrativos
@@ -415,6 +429,7 @@ export default async function CRMPage({
       <CRMWorkspaceClient
         initialProspectos={prospectos}
         initialSeguimientos={seguimientos as unknown as CRMConversationItem[]}
+        initialTareas={tareas}
         programas={programas}
         planes={planes}
         ediciones={ediciones}

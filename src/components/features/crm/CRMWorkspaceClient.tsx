@@ -11,6 +11,7 @@ import {
   formatCanalLabel,
   buildWhatsAppUrl,
   CRMConversationItem,
+  CRMTaskItem,
 } from "@/lib/utils/crm";
 import {
   ProspectoFormModalClient,
@@ -31,11 +32,13 @@ import {
   MessageSquare,
   MoreVertical,
   Pencil,
+  CalendarClock,
 } from "lucide-react";
 
 interface CRMWorkspaceClientProps {
   initialProspectos: EnrichedProspecto[];
   initialSeguimientos?: CRMConversationItem[];
+  initialTareas?: CRMTaskItem[];
   programas: { id: string; nombre: string; codigo?: string }[];
   planes: { id: string; nombre: string; programa_id: string | null }[];
   ediciones: { id: string; codigo: string; programa_id?: string | null }[];
@@ -50,6 +53,7 @@ interface CRMWorkspaceClientProps {
 export function CRMWorkspaceClient({
   initialProspectos,
   initialSeguimientos = [],
+  initialTareas = [],
   programas,
   planes,
   ediciones,
@@ -63,7 +67,9 @@ export function CRMWorkspaceClient({
   const [viewMode, setViewMode] = useState<"table" | "kanban">("table");
   const [prospectos, setProspectos] = useState<EnrichedProspecto[]>(initialProspectos);
   const [conversaciones, setConversaciones] = useState<CRMConversationItem[]>(initialSeguimientos);
+  const [tareas, setTareas] = useState<CRMTaskItem[]>(initialTareas);
   const [drawerProspecto, setDrawerProspecto] = useState<EnrichedProspecto | null>(null);
+  const [drawerMode, setDrawerMode] = useState<"NOTA" | "TAREA">("NOTA");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   const [editingProspecto, setEditingProspecto] = useState<EnrichedProspecto | null>(null);
@@ -115,13 +121,34 @@ export function CRMWorkspaceClient({
     }
   }, [initialSeguimientos]);
 
+  React.useEffect(() => {
+    if (initialTareas) {
+      setTareas(initialTareas);
+    }
+  }, [initialTareas]);
+
   const handleOpenNotes = (p: EnrichedProspecto) => {
     setDrawerProspecto(p);
+    setDrawerMode("NOTA");
+    setIsDrawerOpen(true);
+  };
+
+  const handleOpenTask = (p: EnrichedProspecto) => {
+    setDrawerProspecto(p);
+    setDrawerMode("TAREA");
     setIsDrawerOpen(true);
   };
 
   const handleNoteAdded = (newNote: CRMConversationItem) => {
     setConversaciones(prev => [newNote, ...prev]);
+  };
+
+  const handleTaskAdded = (newTask: CRMTaskItem) => {
+    setTareas(prev => [newTask, ...prev]);
+  };
+
+  const handleTaskCompleted = (completedTask: CRMTaskItem) => {
+    setTareas(prev => prev.map(t => (t.id === completedTask.id ? completedTask : t)));
   };
 
   const canalesUnicos = useMemo(() => {
@@ -606,6 +633,9 @@ export function CRMWorkspaceClient({
                       programaName: progObj?.nombre,
                     });
                     const noteCount = conversaciones.filter(c => c.prospecto_id === p.id).length;
+                    const pendingTasksCount = tareas.filter(
+                      t => t.prospecto_id === p.id && t.status === "PENDIENTE"
+                    ).length;
 
                     return (
                       <tr key={p.id} className="hover:bg-slate-50/80 transition">
@@ -728,7 +758,7 @@ export function CRMWorkspaceClient({
                                 title="Más opciones del prospecto"
                               >
                                 <MoreVertical className="w-4 h-4" />
-                                {noteCount > 0 && (
+                                {(noteCount > 0 || pendingTasksCount > 0) && (
                                   <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#C4121A] ring-2 ring-white" />
                                 )}
                               </button>
@@ -752,11 +782,30 @@ export function CRMWorkspaceClient({
                                     >
                                       <span className="flex items-center gap-2">
                                         <MessageSquare className="w-3.5 h-3.5 text-slate-400" />
-                                        <span>Notas de seguimiento</span>
+                                        <span>Notas e historial</span>
                                       </span>
                                       {noteCount > 0 && (
                                         <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-[#C4121A]">
                                           {noteCount}
+                                        </span>
+                                      )}
+                                    </button>
+
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setOpenDropdownId(null);
+                                        handleOpenTask(p);
+                                      }}
+                                      className="w-full flex items-center justify-between px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-amber-700 transition text-left"
+                                    >
+                                      <span className="flex items-center gap-2">
+                                        <CalendarClock className="w-3.5 h-3.5 text-amber-500" />
+                                        <span>Programar tarea</span>
+                                      </span>
+                                      {pendingTasksCount > 0 && (
+                                        <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
+                                          {pendingTasksCount}
                                         </span>
                                       )}
                                     </button>
@@ -831,13 +880,17 @@ export function CRMWorkspaceClient({
         />
       )}
 
-      {/* Drawer lateral de notas de seguimiento y conversaciones */}
+      {/* Drawer lateral de bitácora, notas y tareas permanentes */}
       <ProspectoNotesDrawer
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
         prospecto={drawerProspecto}
         conversaciones={conversaciones}
+        tareas={tareas}
+        initialMode={drawerMode}
         onNoteAdded={handleNoteAdded}
+        onTaskAdded={handleTaskAdded}
+        onTaskCompleted={handleTaskCompleted}
         onStageChanged={handleStageUpdate}
       />
 

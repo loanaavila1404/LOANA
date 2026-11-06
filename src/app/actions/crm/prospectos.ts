@@ -266,20 +266,25 @@ export async function convertirAEstudianteAction(prospectoId: string) {
 
   // Seguridad: Asesor Comercial solo puede convertir sus propios prospectos asignados
   if (isAdvisor && user?.id && p.asesor_id !== user.id) {
-    return { error: 'No tienes permiso para convertir prospectos de otros asesores.' };
+    return { error: 'No tienes permiso para derivar prospectos de otros asesores.' };
   }
 
-  // Idempotency: if already has both IDs, it is already converted
-  if (p.persona_id && p.estudiante_id) {
-    return { success: true };
+  // Idempotency: si ya tiene prematrícula generada
+  if (p.status === 'PREMATRICULA' && p.persona_id && p.estudiante_id && p.matricula_id) {
+    return { success: true, matricula_id: p.matricula_id, status: 'PREMATRICULA' };
   }
 
-  // Requirement: block if no document
+  // Si ya está matriculado formalmente con pago
+  if (p.status === 'MATRICULADO' && p.estudiante_id) {
+    return { success: true, status: 'MATRICULADO' };
+  }
+
+  // Requisito: Bloquear si no tiene documento de identidad
   if (!p.tipo_documento || !p.numero_documento) {
-    return { error: 'El prospecto no cuenta con documento de identidad completo. Por favor, edita sus datos antes de convertirlo.' };
+    return { error: 'El prospecto no cuenta con documento de identidad completo. Por favor, edita sus datos antes de generar su prematrícula.' };
   }
 
-  // 1. Check or Create Persona
+  // 1. Buscar o Crear Persona (sin duplicados por tipo y número de documento)
   let personaId = p.persona_id;
   if (!personaId) {
     const { data: existingPersona, error: exPError } = await db
@@ -294,14 +299,15 @@ export async function convertirAEstudianteAction(prospectoId: string) {
     } else if (exPError && exPError.code !== 'PGRST116') {
       return { error: 'Error al buscar persona existente.' };
     } else {
-      // Create Persona
+      // Crear Persona
       const { data: newPersona, error: insPError } = await db.from('personas').insert({
         tipo_documento: p.tipo_documento,
         numero_documento: p.numero_documento,
         nombres: p.nombres,
         apellido_paterno: p.apellidos,
         email: p.email,
-        telefono: p.telefono
+        telefono: p.telefono,
+        status: 'ACTIVO'
       }).select('id').single();
 
       if (insPError || !newPersona) return { error: 'Error al crear el registro de persona: ' + (insPError?.message || '') };
@@ -309,12 +315,12 @@ export async function convertirAEstudianteAction(prospectoId: string) {
     }
   }
 
-  // 2. Check or Create Estudiante
+  // 2. Buscar o Crear Estudiante en estado INACTIVO (no activo hasta validación de pago en Caja)
   let estudianteId = p.estudiante_id;
   if (!estudianteId) {
     const { data: existingEstudiante, error: exEError } = await db
       .from('estudiantes')
-      .select('id')
+      .select('id, status')
       .eq('persona_id', personaId)
       .single();
 
@@ -323,10 +329,11 @@ export async function convertirAEstudianteAction(prospectoId: string) {
     } else if (exEError && exEError.code !== 'PGRST116') {
       return { error: 'Error al buscar estudiante existente.' };
     } else {
-      // Create Estudiante
+      // Crear Estudiante con status 'INACTIVO' para NO saltarse Caja ni inflar el padrón de alumnos activos
       const { data: newEstudiante, error: insEError } = await db.from('estudiantes').insert({
         persona_id: personaId,
-        status: 'ACTIVO',
+        status: 'INACTIVO',
+        observaciones: 'Prospecto en proceso de admisión/prematrícula. Requiere validación de pago en Caja para activación formal.',
         created_by: user?.id
       }).select('id').single();
 
@@ -335,11 +342,79 @@ export async function convertirAEstudianteAction(prospectoId: string) {
     }
   }
 
-  // 3. Update Prospecto with both IDs and MATRICULADO status
+  // 3. Obtener Edición Académica vinculada o vigente del programa
+  let edicionId = p.edicion_id;
+  let edicionObj: { id: string; precio_matricula?: number | null; precio_pension?: number | null; numero_pensiones?: number | null; frecuencia_meses?: number | null; primer_vencimiento?: string | null } | null = null;
+
+  if (edicionId) {
+    const { data: ed } = await db.from('ediciones').select('id, precio_matricula, precio_pension, numero_pensiones, frecuencia_meses, primer_vencimiento').eq('id', edicionId).single();
+    if (ed) edicionObj = ed;
+  }
+
+  if (!edicionObj && p.programa_id) {
+    const { data: edProg } = await db
+      .from('ediciones')
+      .select('id, precio_matricula, precio_pension, numero_pensiones, frecuencia_meses, primer_vencimiento')
+      .eq('programa_id', p.programa_id)
+      .eq('status', 'ACTIVO')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (edProg) {
+      edicionObj = edProg;
+      edicionId = edProg.id;
+    }
+  }
+
+  // 4. Crear o enlazar registro de PREMATRICULA
+  let matriculaId = p.matricula_id;
+  if (!matriculaId && edicionId) {
+    // Verificar si ya existe matrícula para este estudiante y edición
+    const { data: existingMat } = await db
+      .from('matriculas')
+      .select('id, status')
+      .eq('estudiante_id', estudianteId)
+      .eq('edicion_id', edicionId)
+      .maybeSingle();
+
+    if (existingMat) {
+      matriculaId = existingMat.id;
+    } else {
+      const docSuffix = p.numero_documento ? p.numero_documento.slice(-5) : Math.floor(10000 + Math.random() * 90000);
+      const codigoMat = `PRE-${docSuffix}`;
+
+      const { data: newMat, error: insMError } = await db.from('matriculas').insert({
+        codigo_matricula: codigoMat,
+        estudiante_id: estudianteId,
+        edicion_id: edicionId,
+        prospecto_id: prospectoId,
+        asesor_comercial_id: p.asesor_id || user?.id,
+        status: 'PREMATRICULA',
+        fecha_prematricula: new Date().toISOString(),
+        importe_matricula: edicionObj?.precio_matricula || 0,
+        importe_pension: edicionObj?.precio_pension || 0,
+        numero_pensiones: edicionObj?.numero_pensiones || 1,
+        frecuencia_meses: edicionObj?.frecuencia_meses || 1,
+        primer_vencimiento: edicionObj?.primer_vencimiento || null,
+        observaciones: 'Prematrícula generada desde CRM Comercial. Pendiente de pago inicial y validación en Caja.',
+        created_by: user?.id
+      }).select('id').single();
+
+      if (!insMError && newMat) {
+        matriculaId = newMat.id;
+      }
+    }
+  }
+
+  // 5. Actualizar Prospecto a etapa PREMATRICULA (sin saltarse Caja)
+  const estadoAnterior = p.status;
   const { error: updError } = await db.from('prospectos').update({
-    status: 'MATRICULADO',
+    status: 'PREMATRICULA',
     persona_id: personaId,
     estudiante_id: estudianteId,
+    edicion_id: edicionId || p.edicion_id,
+    matricula_id: matriculaId || p.matricula_id,
     fecha_conversion: new Date().toISOString(),
     asesor_conversion_id: p.asesor_id || user?.id,
     updated_by: user?.id
@@ -347,7 +422,21 @@ export async function convertirAEstudianteAction(prospectoId: string) {
 
   if (updError) return { error: 'Error al actualizar el estado del prospecto: ' + updError.message };
 
+  // 6. Auditoría y Bitácora permanente en seguimientos
+  await db.from('seguimientos').insert({
+    prospecto_id: prospectoId,
+    tipo_actividad: 'NOTA_INTERNA',
+    resultado: 'Prematrícula Generada',
+    nota: 'Prospecto derivado a Matrículas con estado PREMATRÍCULA. Requiere validación financiera obligatoria y registro de pago en Caja para su admisión formal.',
+    fecha_hora: new Date().toISOString(),
+    estado_anterior: estadoAnterior,
+    estado_nuevo: 'PREMATRICULA',
+    asesor_id: user?.id,
+    created_by: user?.id
+  });
+
   revalidatePath('/crm/prospectos/' + prospectoId);
   revalidatePath('/crm');
-  return { success: true };
+  revalidatePath('/matriculas');
+  return { success: true, matricula_id: matriculaId, status: 'PREMATRICULA' };
 }

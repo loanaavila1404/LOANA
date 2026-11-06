@@ -110,16 +110,34 @@ export async function createTareaAction(formData: FormData) {
     return { error: 'No tienes permiso para programar tareas en prospectos de otros asesores.' };
   }
 
-  const { error } = await db.from('tareas_comerciales').insert({
-    ...parsed.data,
-    asesor_id: prospecto?.asesor_id || user?.id,
-    created_by: user?.id
-  });
+  const { data: newTarea, error } = await db
+    .from('tareas_comerciales')
+    .insert({
+      ...parsed.data,
+      asesor_id: prospecto?.asesor_id || user?.id,
+      created_by: user?.id
+    })
+    .select(`
+      id,
+      prospecto_id,
+      asesor_id,
+      tipo_tarea,
+      titulo,
+      descripcion,
+      fecha_programada,
+      fecha_realizada,
+      status,
+      resultado,
+      created_at,
+      profiles!tareas_comerciales_asesor_id_fkey (id, display_name, email)
+    `)
+    .single();
 
-  if (error) return { error: 'Error al programar la tarea' };
+  if (error) return { error: 'Error al programar la tarea: ' + error.message };
 
   revalidatePath(`/crm/prospectos/${parsed.data.prospecto_id}`);
-  return { success: true };
+  revalidatePath('/crm');
+  return { success: true, data: newTarea };
 }
 
 export async function completeTareaAction(id: string, prospecto_id: string, resultado: string) {
@@ -140,15 +158,45 @@ export async function completeTareaAction(id: string, prospecto_id: string, resu
     }
   }
 
-  const { error } = await db.from('tareas_comerciales').update({
-    status: 'COMPLETADA',
-    fecha_realizada: new Date().toISOString(),
-    resultado,
-    updated_by: user?.id
-  }).eq('id', id);
+  const { data: updatedTarea, error } = await db
+    .from('tareas_comerciales')
+    .update({
+      status: 'COMPLETADA',
+      fecha_realizada: new Date().toISOString(),
+      resultado,
+      updated_by: user?.id
+    })
+    .eq('id', id)
+    .select(`
+      id,
+      prospecto_id,
+      asesor_id,
+      tipo_tarea,
+      titulo,
+      descripcion,
+      fecha_programada,
+      fecha_realizada,
+      status,
+      resultado,
+      created_at,
+      profiles!tareas_comerciales_asesor_id_fkey (id, display_name, email)
+    `)
+    .single();
 
-  if (error) return { error: 'Error al completar la tarea' };
+  if (error) return { error: 'Error al completar la tarea: ' + error.message };
+
+  // Registrar también en seguimientos para bitácora permanente correlacionada
+  await db.from('seguimientos').insert({
+    prospecto_id,
+    tipo_actividad: updatedTarea?.tipo_tarea || 'TAREA',
+    resultado: `Tarea completada: ${resultado}`,
+    nota: `Cumplimiento de tarea programada: "${updatedTarea?.titulo || 'Seguimiento'}".`,
+    fecha_hora: new Date().toISOString(),
+    asesor_id: user?.id,
+    created_by: user?.id
+  });
 
   revalidatePath(`/crm/prospectos/${prospecto_id}`);
-  return { success: true };
+  revalidatePath('/crm');
+  return { success: true, data: updatedTarea };
 }
