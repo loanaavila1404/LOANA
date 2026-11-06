@@ -38,15 +38,31 @@ export async function createSeguimientoAction(formData: FormData) {
 
   const estado_anterior = prospecto?.status;
 
-  const { error } = await db.from('seguimientos').insert({
-    ...parsed.data,
-    asesor_id: prospecto?.asesor_id || user?.id,
-    fecha_hora: new Date().toISOString(),
-    estado_anterior,
-    created_by: user?.id
-  });
+  const { data: newSeg, error } = await db
+    .from('seguimientos')
+    .insert({
+      ...parsed.data,
+      asesor_id: prospecto?.asesor_id || user?.id,
+      fecha_hora: new Date().toISOString(),
+      estado_anterior,
+      created_by: user?.id
+    })
+    .select(`
+      id,
+      prospecto_id,
+      tipo_actividad,
+      fecha_hora,
+      resultado,
+      nota,
+      estado_anterior,
+      estado_nuevo,
+      proximo_seguimiento,
+      asesor_id,
+      profiles!seguimientos_asesor_id_fkey (id, display_name, email)
+    `)
+    .single();
 
-  if (error) return { error: 'Error al registrar seguimiento' };
+  if (error) return { error: 'Error al registrar seguimiento: ' + error.message };
 
   // Update prospecto if status changed or proximo_seguimiento updated
   const updates: any = { ultimo_contacto_en: new Date().toISOString(), updated_by: user?.id };
@@ -60,7 +76,8 @@ export async function createSeguimientoAction(formData: FormData) {
   if (updError) return { error: 'Error al actualizar prospecto' };
 
   revalidatePath(`/crm/prospectos/${parsed.data.prospecto_id}`);
-  return { success: true };
+  revalidatePath('/crm');
+  return { success: true, data: newSeg };
 }
 
 export async function createTareaAction(formData: FormData) {

@@ -3,11 +3,14 @@
 import React, { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { KanbanBoard } from "./KanbanBoard";
+import { ProspectoNotesDrawer } from "./ProspectoNotesDrawer";
 import {
   EnrichedProspecto,
   KANBAN_STAGES,
   normalizeProspectoStage,
   formatCanalLabel,
+  buildWhatsAppUrl,
+  CRMConversationItem,
 } from "@/lib/utils/crm";
 import {
   ProspectoFormModalClient,
@@ -24,10 +27,13 @@ import {
   Mail,
   ExternalLink,
   Calendar,
+  MessageCircle,
+  MessageSquare,
 } from "lucide-react";
 
 interface CRMWorkspaceClientProps {
   initialProspectos: EnrichedProspecto[];
+  initialSeguimientos?: CRMConversationItem[];
   programas: { id: string; nombre: string; codigo?: string }[];
   planes: { id: string; nombre: string; programa_id: string | null }[];
   ediciones: { id: string; codigo: string; programa_id?: string | null }[];
@@ -41,6 +47,7 @@ interface CRMWorkspaceClientProps {
 
 export function CRMWorkspaceClient({
   initialProspectos,
+  initialSeguimientos = [],
   programas,
   planes,
   ediciones,
@@ -53,6 +60,9 @@ export function CRMWorkspaceClient({
 }: CRMWorkspaceClientProps) {
   const [viewMode, setViewMode] = useState<"table" | "kanban">("table");
   const [prospectos, setProspectos] = useState<EnrichedProspecto[]>(initialProspectos);
+  const [conversaciones, setConversaciones] = useState<CRMConversationItem[]>(initialSeguimientos);
+  const [drawerProspecto, setDrawerProspecto] = useState<EnrichedProspecto | null>(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   // Filtros en cascada en tiempo real
@@ -71,6 +81,21 @@ export function CRMWorkspaceClient({
   React.useEffect(() => {
     setProspectos(initialProspectos);
   }, [initialProspectos]);
+
+  React.useEffect(() => {
+    if (initialSeguimientos) {
+      setConversaciones(initialSeguimientos);
+    }
+  }, [initialSeguimientos]);
+
+  const handleOpenNotes = (p: EnrichedProspecto) => {
+    setDrawerProspecto(p);
+    setIsDrawerOpen(true);
+  };
+
+  const handleNoteAdded = (newNote: CRMConversationItem) => {
+    setConversaciones(prev => [newNote, ...prev]);
+  };
 
   const canalesUnicos = useMemo(() => {
     const map = new Map<string, string>();
@@ -548,6 +573,12 @@ export function CRMWorkspaceClient({
                           year: "numeric",
                         })
                       : "-";
+                    const whatsAppUrl = buildWhatsAppUrl({
+                      phone: p.telefono,
+                      prospectoName: fullName,
+                      programaName: progObj?.nombre,
+                    });
+                    const noteCount = conversaciones.filter(c => c.prospecto_id === p.id).length;
 
                     return (
                       <tr key={p.id} className="hover:bg-slate-50/80 transition">
@@ -575,9 +606,24 @@ export function CRMWorkspaceClient({
                         </td>
 
                         <td className="py-3 px-3">
-                          <div className="font-medium text-slate-800 flex items-center gap-1">
-                            <Phone className="w-3 h-3 text-slate-400" />
-                            <span>{p.telefono || "-"}</span>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <div className="font-medium text-slate-800 flex items-center gap-1">
+                              <Phone className="w-3 h-3 text-slate-400" />
+                              <span>{p.telefono || "-"}</span>
+                            </div>
+                            {whatsAppUrl && (
+                              <a
+                                href={whatsAppUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="Abrir chat de WhatsApp con mensaje precargado"
+                                onClick={e => e.stopPropagation()}
+                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition shadow-2xs shrink-0"
+                              >
+                                <MessageCircle className="w-3 h-3 text-emerald-600 fill-emerald-600/20" />
+                                <span>WhatsApp</span>
+                              </a>
+                            )}
                           </div>
                           {p.email && (
                             <div className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5">
@@ -630,6 +676,20 @@ export function CRMWorkspaceClient({
 
                         <td className="py-3 px-4 text-right">
                           <div className="inline-flex items-center justify-end gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => handleOpenNotes(p)}
+                              title="Abrir bandeja de notas de seguimiento y conversaciones"
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 transition shadow-2xs"
+                            >
+                              <MessageSquare className="w-3.5 h-3.5 text-slate-500" />
+                              <span>Notas</span>
+                              {noteCount > 0 && (
+                                <span className="w-4 h-4 rounded-full bg-[#C4121A] text-white text-[9.5px] font-bold flex items-center justify-center">
+                                  {noteCount}
+                                </span>
+                              )}
+                            </button>
                             <ProspectoFormModalClient
                               prospecto={p}
                               programas={programas}
@@ -673,9 +733,21 @@ export function CRMWorkspaceClient({
         /* VISTA 2: EMBUDO COMERCIAL KANBAN DE 7 ETAPAS */
         <KanbanBoard
           prospectos={filteredProspectos}
+          conversaciones={conversaciones}
+          onOpenNotes={handleOpenNotes}
           onStageUpdated={handleStageUpdate}
         />
       )}
+
+      {/* Drawer lateral de notas de seguimiento y conversaciones */}
+      <ProspectoNotesDrawer
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        prospecto={drawerProspecto}
+        conversaciones={conversaciones}
+        onNoteAdded={handleNoteAdded}
+        onStageChanged={handleStageUpdate}
+      />
     </div>
   );
 }

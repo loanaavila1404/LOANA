@@ -13,7 +13,7 @@ import {
   Download,
 } from 'lucide-react';
 import { CRMWorkspaceClient } from '@/components/features/crm/CRMWorkspaceClient';
-import { EnrichedProspecto, normalizeProspectoStage } from '@/lib/utils/crm';
+import { EnrichedProspecto, normalizeProspectoStage, CRMConversationItem } from '@/lib/utils/crm';
 import { AsesorOption } from './prospectos/ProspectoFormModalClient';
 
 export const metadata = {
@@ -51,7 +51,19 @@ export default async function CRMPage({
 
   let seguimientosQuery = db
     .from('seguimientos')
-    .select('id, prospecto_id, tipo_actividad, fecha_hora, resultado')
+    .select(`
+      id,
+      prospecto_id,
+      tipo_actividad,
+      fecha_hora,
+      resultado,
+      nota,
+      estado_anterior,
+      estado_nuevo,
+      proximo_seguimiento,
+      asesor_id,
+      profiles!seguimientos_asesor_id_fkey (id, display_name, email)
+    `)
     .order('fecha_hora', { ascending: false });
 
   let tareasQuery = db
@@ -402,6 +414,7 @@ export default async function CRMPage({
       {/* PASO 3: Workspace Interactivo (Listado Avanzado + Embudo Kanban de 7 Etapas + Filtros en Cascada) */}
       <CRMWorkspaceClient
         initialProspectos={prospectos}
+        initialSeguimientos={seguimientos as unknown as CRMConversationItem[]}
         programas={programas}
         planes={planes}
         ediciones={ediciones}

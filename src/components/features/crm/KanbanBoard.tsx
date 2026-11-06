@@ -4,20 +4,29 @@ import React, { useTransition, useState } from "react";
 import Link from "next/link";
 import { updateProspectoStatusAction } from "@/app/actions/crm/prospectos";
 import { cn } from "@/lib/utils/cn";
-import { Phone, BookOpen, ArrowRight, ExternalLink, FileCheck } from "lucide-react";
+import { Phone, BookOpen, ArrowRight, ExternalLink, FileCheck, MessageSquare, MessageCircle } from "lucide-react";
 import {
   EnrichedProspecto,
   KANBAN_STAGES,
   normalizeProspectoStage,
   formatCanalLabel,
+  buildWhatsAppUrl,
+  CRMConversationItem,
 } from "@/lib/utils/crm";
 
 interface KanbanBoardProps {
   prospectos: EnrichedProspecto[];
+  conversaciones?: CRMConversationItem[];
+  onOpenNotes?: (prospecto: EnrichedProspecto) => void;
   onStageUpdated?: (id: string, newStage: string) => void;
 }
 
-export function KanbanBoard({ prospectos, onStageUpdated }: KanbanBoardProps) {
+export function KanbanBoard({
+  prospectos,
+  conversaciones = [],
+  onOpenNotes,
+  onStageUpdated,
+}: KanbanBoardProps) {
   const [isPending, startTransition] = useTransition();
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dragOverCol, setDragOverCol] = useState<string | null>(null);
@@ -200,6 +209,12 @@ export function KanbanBoard({ prospectos, onStageUpdated }: KanbanBoardProps) {
                   const advisorObj = Array.isArray(p.profiles) ? p.profiles[0] : p.profiles;
                   const advisorName = advisorObj?.display_name || advisorObj?.email || "Asesor Asignado";
                   const fullName = `${p.nombres || ""} ${p.apellidos || ""}`.trim() || p.codigo;
+                  const whatsAppUrl = buildWhatsAppUrl({
+                    phone: p.telefono,
+                    prospectoName: fullName,
+                    programaName: progObj?.nombre,
+                  });
+                  const cardNoteCount = conversaciones.filter(c => c.prospecto_id === p.id).length;
 
                   return (
                     <div
@@ -229,7 +244,7 @@ export function KanbanBoard({ prospectos, onStageUpdated }: KanbanBoardProps) {
                           {fullName}
                         </Link>
 
-                        {/* Fila 3: DNI y Teléfono */}
+                        {/* Fila 3: DNI y Teléfono + WhatsApp */}
                         <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10.5px] text-slate-500">
                           <span className="font-medium text-slate-600">
                             {p.tipo_documento || "DNI"}: {p.numero_documento || "S/D"}
@@ -239,6 +254,19 @@ export function KanbanBoard({ prospectos, onStageUpdated }: KanbanBoardProps) {
                             <Phone className="w-3 h-3 text-slate-400" />
                             {p.telefono || "-"}
                           </span>
+                          {whatsAppUrl && (
+                            <a
+                              href={whatsAppUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title="Abrir chat en WhatsApp con mensaje precargado"
+                              onClick={e => e.stopPropagation()}
+                              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition shrink-0"
+                            >
+                              <MessageCircle className="w-3 h-3 text-emerald-600 fill-emerald-600/20" />
+                              <span>WA</span>
+                            </a>
+                          )}
                         </div>
 
                         {/* Fila 4: Programa de Interés */}
@@ -263,18 +291,56 @@ export function KanbanBoard({ prospectos, onStageUpdated }: KanbanBoardProps) {
                         </div>
                       </div>
 
-                      {/* Pie de Tarjeta: Asesor con Avatar + Avance rápido de Etapa */}
-                      <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-1.5">
-                        <div className="flex items-center gap-1.5 min-w-0">
-                          <div className="w-6 h-6 rounded-full bg-red-50 border border-red-200 text-[#C4121A] font-extrabold text-[10px] flex items-center justify-center shrink-0">
+                      {/* Pie de Tarjeta: Asesor + Notas + Selector rápido de etapa */}
+                      <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-1">
+                        <div className="flex items-center gap-1.5 min-w-0 max-w-[85px]">
+                          <div className="w-5 h-5 rounded-full bg-red-50 border border-red-200 text-[#C4121A] font-extrabold text-[9px] flex items-center justify-center shrink-0">
                             {getInitials(advisorName)}
                           </div>
-                          <span className="text-[10.5px] font-medium text-slate-600 truncate">
+                          <span className="text-[10px] font-medium text-slate-600 truncate">
                             {advisorName}
                           </span>
                         </div>
 
                         <div className="flex items-center gap-1 shrink-0">
+                          {onOpenNotes && (
+                            <button
+                              type="button"
+                              onClick={e => {
+                                e.stopPropagation();
+                                onOpenNotes(p);
+                              }}
+                              title="Bandeja de notas de seguimiento y conversaciones"
+                              className="relative p-1 rounded text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition"
+                            >
+                              <MessageSquare className="w-3.5 h-3.5" />
+                              {cardNoteCount > 0 && (
+                                <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-[#C4121A] text-white text-[8.5px] font-bold flex items-center justify-center">
+                                  {cardNoteCount}
+                                </span>
+                              )}
+                            </button>
+                          )}
+
+                          {/* Selector rápido de etapa comercial */}
+                          <select
+                            value={normalizeProspectoStage(p.status)}
+                            disabled={isPending}
+                            onClick={e => e.stopPropagation()}
+                            onChange={e => {
+                              e.stopPropagation();
+                              changeProspectoStage(p.id, e.target.value);
+                            }}
+                            className="text-[9.5px] font-bold py-0.5 px-1 rounded bg-slate-50 border border-slate-200 text-slate-700 hover:bg-white focus:outline-none focus:ring-1 focus:ring-[#C4121A] cursor-pointer"
+                            title="Cambiar etapa comercial inmediatamente"
+                          >
+                            {KANBAN_STAGES.map(st => (
+                              <option key={st.key} value={st.key}>
+                                {st.shortLabel}
+                              </option>
+                            ))}
+                          </select>
+
                           {nextStage && (
                             <button
                               type="button"
@@ -283,7 +349,7 @@ export function KanbanBoard({ prospectos, onStageUpdated }: KanbanBoardProps) {
                                 changeProspectoStage(p.id, nextStage);
                               }}
                               title={`Avanzar a ${nextStage}`}
-                              className="p-1 rounded-md text-slate-500 hover:text-[#C4121A] hover:bg-red-50 border border-transparent hover:border-red-200 transition"
+                              className="p-1 rounded text-slate-500 hover:text-[#C4121A] hover:bg-red-50 border border-transparent hover:border-red-200 transition"
                             >
                               <ArrowRight className="w-3.5 h-3.5" />
                             </button>
@@ -291,7 +357,7 @@ export function KanbanBoard({ prospectos, onStageUpdated }: KanbanBoardProps) {
                           <Link
                             href={`/crm/prospectos/${p.id}`}
                             title="Abrir ficha del prospecto"
-                            className="p-1 rounded-md text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition"
+                            className="p-1 rounded text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition"
                           >
                             <ExternalLink className="w-3.5 h-3.5" />
                           </Link>

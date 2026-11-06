@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import Link from 'next/link';
+import { MessageCircle } from 'lucide-react';
+import { buildWhatsAppUrl } from '@/lib/utils/crm';
 import { SeguimientoFormModalClient } from './SeguimientoFormModalClient';
 import { TareaFormModalClient, CompleteTareaButtonClient } from './TareaFormModalClient';
 import { TransferenciaModalClient } from './TransferenciaModalClient';
@@ -63,10 +65,18 @@ export default async function ProspectoDetailPage({
 
   const { data: asesores } = await db.from('profiles').select('id, display_name, role_id').order('display_name');
 
+  const progName = (prospecto as unknown as { programas: { nombre: string } })?.programas?.nombre;
+  const fullName = `${prospecto.nombres || ''} ${prospecto.apellidos || ''}`.trim() || prospecto.codigo;
+  const whatsAppUrl = buildWhatsAppUrl({
+    phone: prospecto.telefono,
+    prospectoName: fullName,
+    programaName: progName,
+  });
+
   return (
     <div className="space-y-6">
       {/* HEADER */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <Link href="/crm" className="text-slate-500 hover:text-slate-800">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -84,10 +94,39 @@ export default async function ProspectoDetailPage({
                 {prospecto.status}
               </Badge>
             </div>
-            <p className="text-sm text-slate-500">{prospecto.codigo} • {prospecto.telefono} • {prospecto.email || 'Sin email'}</p>
+            <div className="flex items-center gap-2 text-sm text-slate-500 mt-1 flex-wrap">
+              <span className="font-mono text-slate-600 font-semibold">{prospecto.codigo}</span>
+              <span>•</span>
+              <span className="font-medium text-slate-700">{prospecto.telefono || 'Sin teléfono'}</span>
+              {whatsAppUrl && (
+                <a
+                  href={whatsAppUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Abrir chat en WhatsApp con mensaje precargado"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition shadow-2xs"
+                >
+                  <MessageCircle className="w-3.5 h-3.5 text-emerald-600 fill-emerald-600/20" />
+                  <span>WhatsApp</span>
+                </a>
+              )}
+              <span>•</span>
+              <span>{prospecto.email || 'Sin email'}</span>
+            </div>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {whatsAppUrl && (
+            <a
+              href={whatsAppUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition shadow-2xs"
+            >
+              <MessageCircle className="w-3.5 h-3.5 text-emerald-600 fill-emerald-600/20" />
+              <span>Contactar WhatsApp</span>
+            </a>
+          )}
           {prospecto.status !== 'MATRICULADO' && prospecto.status !== 'PERDIDO' && (
             <>
               <MarcarPerdidoButtonClient prospectoId={prospecto.id} />
