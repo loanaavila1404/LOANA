@@ -47,6 +47,8 @@ export default async function CRMPage({
       ediciones (id, codigo),
       profiles!prospectos_asesor_id_fkey (id, display_name, email, photo_url)
     `)
+    .neq('status', 'ELIMINADO')
+    .neq('status_registro', 'INACTIVO')
     .order('created_at', { ascending: false });
 
   let seguimientosQuery = db

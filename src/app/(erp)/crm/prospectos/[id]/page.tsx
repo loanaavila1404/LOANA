@@ -10,6 +10,7 @@ import { ProspectoBitacoraTimeline } from '@/components/features/crm/ProspectoBi
 import { TransferenciaModalClient } from './TransferenciaModalClient';
 import { MarcarPerdidoButtonClient } from './MarcarPerdidoButtonClient';
 import { ConvertirButtonClient } from './ConvertirButtonClient';
+import { EliminarProspectoButtonClient } from './EliminarProspectoButtonClient';
 
 export const metadata = {
   title: 'Ficha Comercial - ERP Brusben'
@@ -142,6 +143,11 @@ export default async function ProspectoDetailPage({
           {!isAdvisor && (
             <TransferenciaModalClient prospectoId={prospecto.id} asesores={asesores || []} asesorActualId={prospecto.asesor_id} />
           )}
+          <EliminarProspectoButtonClient
+            prospectoId={prospecto.id}
+            prospectoCodigo={prospecto.codigo}
+            prospectoNombre={fullName}
+          />
         </div>
       </div>
 

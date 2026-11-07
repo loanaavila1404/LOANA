@@ -33,7 +33,9 @@ import {
   MoreVertical,
   Pencil,
   CalendarClock,
+  Trash2,
 } from "lucide-react";
+import { ProspectoDeleteModal } from "./ProspectoDeleteModal";
 
 interface CRMWorkspaceClientProps {
   initialProspectos: EnrichedProspecto[];
@@ -73,6 +75,7 @@ export function CRMWorkspaceClient({
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   const [editingProspecto, setEditingProspecto] = useState<EnrichedProspecto | null>(null);
+  const [deletingProspecto, setDeletingProspecto] = useState<EnrichedProspecto | null>(null);
   const [isPending, startTransition] = useTransition();
 
   // Cerrar menú desplegable al hacer clic fuera o presionar Escape
@@ -847,6 +850,20 @@ export function CRMWorkspaceClient({
                                       </a>
                                     )}
                                   </div>
+
+                                  <div className="py-1">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setOpenDropdownId(null);
+                                        setDeletingProspecto(p);
+                                      }}
+                                      className="w-full flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-50 transition text-left"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5 text-rose-500" />
+                                      <span>Eliminar prospecto</span>
+                                    </button>
+                                  </div>
                                 </div>
                               )}
                             </div>
@@ -907,6 +924,24 @@ export function CRMWorkspaceClient({
           isAdvisor={isAdvisor}
           isOpen={Boolean(editingProspecto)}
           onClose={() => setEditingProspecto(null)}
+        />
+      )}
+
+      {/* Modal de eliminación con doble confirmación */}
+      {deletingProspecto && (
+        <ProspectoDeleteModal
+          isOpen={Boolean(deletingProspecto)}
+          onClose={() => setDeletingProspecto(null)}
+          prospectoId={deletingProspecto.id}
+          prospectoCodigo={deletingProspecto.codigo}
+          prospectoNombre={
+            `${deletingProspecto.nombres || ''} ${deletingProspecto.apellidos || ''}`.trim() ||
+            deletingProspecto.codigo
+          }
+          onDeleted={(deletedId) => {
+            setProspectos((prev) => prev.filter((item) => item.id !== deletedId));
+            setDeletingProspecto(null);
+          }}
         />
       )}
     </div>

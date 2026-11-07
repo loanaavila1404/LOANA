@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { createClient, getSafeDbClient } from '@/lib/supabase/server';
-import { getUserPermissions, isCurrentUserAdvisor } from '@/lib/auth/permissions';
+import { getUserPermissions, isCurrentUserAdvisor, getUserAuthContext } from '@/lib/auth/permissions';
 import { prospectoSchema, transferenciaSchema } from '@/lib/validators/crm';
 
 export async function createProspectoAction(formData: FormData) {
@@ -440,3 +440,106 @@ export async function convertirAEstudianteAction(prospectoId: string) {
   revalidatePath('/matriculas');
   return { success: true, matricula_id: matriculaId, status: 'PREMATRICULA' };
 }
+
+export async function deleteProspectoAction(id: string, motivo?: string) {
+  const authCtx = await getUserAuthContext();
+  const permissions = authCtx?.permissions || [];
+  if (
+    !permissions.includes('CRM.GESTIONAR') &&
+    !permissions.includes('CRM.ADMINISTRAR') &&
+    !permissions.includes('SISTEMA.ADMINISTRAR')
+  ) {
+    return { error: 'No tienes permiso para eliminar prospectos.' };
+  }
+
+  const supabase = await createClient();
+  const db = await getSafeDbClient();
+  const user = (await supabase.auth.getUser()).data.user;
+  const isAdvisor = authCtx?.isAsesor ?? (await isCurrentUserAdvisor());
+
+  const { data: p, error: pError } = await db
+    .from('prospectos')
+    .select('id, codigo, status, asesor_id, matricula_id, nombres, apellidos')
+    .eq('id', id)
+    .single();
+
+  if (pError || !p) {
+    return { error: 'Prospecto no encontrado.' };
+  }
+
+  // Si es Asesor Comercial, solo puede eliminar prospectos que tiene asignados
+  if (isAdvisor && user?.id && p.asesor_id !== user.id) {
+    return { error: 'No tienes permiso para eliminar prospectos de otros asesores.' };
+  }
+
+  // Protección: No permitir eliminar si ya tiene matrícula ACTIVA
+  if (p.matricula_id) {
+    const { data: mat } = await db
+      .from('matriculas')
+      .select('status')
+      .eq('id', p.matricula_id)
+      .maybeSingle();
+    if (mat && mat.status === 'ACTIVA') {
+      return {
+        error: 'Este prospecto ya cuenta con una matrícula ACTIVA validada en Caja y no puede ser eliminado desde el CRM.',
+      };
+    }
+  }
+
+  // 1. Soft delete marcando status_registro = 'INACTIVO' y status = 'ELIMINADO'
+  const motivoTexto = (motivo || 'Eliminación manual confirmada en CRM').trim();
+  const { error: updError } = await db
+    .from('prospectos')
+    .update({
+      status_registro: 'INACTIVO',
+      status: 'ELIMINADO',
+      motivo_perdida: 'ELIMINADO',
+      detalle_perdida: motivoTexto,
+      updated_by: user?.id,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', id);
+
+  if (updError) {
+    return { error: 'Error al marcar prospecto como eliminado: ' + updError.message };
+  }
+
+  // 2. Intentar borrado físico si no hay restricciones de clave foránea
+  try {
+    await db.from('prospectos').delete().eq('id', id);
+  } catch {
+    // Si hay restricción FK, el soft delete asegura su exclusión total
+  }
+
+  // 3. Registrar en auditoría
+  try {
+    await db.from('audit_logs').insert({
+      user_id: user?.id || null,
+      user_role: authCtx?.roleName || authCtx?.roleCode || 'USUARIO',
+      action: 'DELETE',
+      module: 'CRM',
+      entity: 'prospectos',
+      entity_id: id,
+      detail: `Eliminación de prospecto ${p.codigo || id} (${p.nombres} ${p.apellidos || ''}). Motivo: ${motivoTexto}`,
+      data_before: {
+        id: p.id,
+        codigo: p.codigo,
+        nombres: p.nombres,
+        apellidos: p.apellidos,
+        status: p.status,
+      },
+      data_after: {
+        status: 'ELIMINADO',
+        motivo: motivoTexto,
+      },
+      result: 'EXITO',
+    });
+  } catch {
+    // Registro de auditoría tolerante a fallos
+  }
+
+  revalidatePath('/crm');
+  revalidatePath('/dashboard');
+  return { success: true };
+}
+

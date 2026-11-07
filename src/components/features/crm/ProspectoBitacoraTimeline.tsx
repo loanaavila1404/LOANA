@@ -167,12 +167,15 @@ export function ProspectoBitacoraTimeline({
   };
 
   // Manejo de Completar Tarea
+  const [completeErrorMsg, setCompleteErrorMsg] = useState<string | null>(null);
+
   const handleConfirmCompleteTask = () => {
     if (!completingTask) return;
     if (!completeOutcome.trim()) {
-      alert("Por favor describe brevemente el resultado de la tarea realizada.");
+      setCompleteErrorMsg("Por favor describe brevemente el resultado de la tarea realizada.");
       return;
     }
+    setCompleteErrorMsg(null);
 
     const taskId = completingTask.id;
     const outcomeText = completeOutcome.trim();
@@ -180,7 +183,7 @@ export function ProspectoBitacoraTimeline({
     startTransition(async () => {
       const res = await completeTareaAction(taskId, prospectoId, outcomeText);
       if (res.error) {
-        alert(res.error);
+        setCompleteErrorMsg(res.error);
       } else {
         // Actualizar tarea en memoria a COMPLETADA
         setTareas(prev =>
@@ -310,6 +313,7 @@ export function ProspectoBitacoraTimeline({
                   onClick={() => {
                     setCompletingTask(t);
                     setCompleteOutcome("");
+                    setCompleteErrorMsg(null);
                   }}
                   className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition shadow-2xs shrink-0"
                 >
@@ -759,6 +763,13 @@ export function ProspectoBitacoraTimeline({
                 : "-"}
             </p>
           </div>
+
+          {completeErrorMsg && (
+            <div className="p-2.5 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs font-semibold flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+              <span>{completeErrorMsg}</span>
+            </div>
+          )}
 
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-slate-700">

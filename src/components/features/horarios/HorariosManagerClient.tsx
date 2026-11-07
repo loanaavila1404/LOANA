@@ -29,6 +29,7 @@ import {
   AlertCircle
 } from "lucide-react";
 import { createHorarioAction, deleteHorarioAction } from "@/app/actions/oferta/horarios";
+import { ConfirmModal, AlertModal } from "@/components/ui/Feedback";
 
 export interface HorarioSesion {
   id: string;
@@ -387,16 +388,27 @@ export function HorariosManagerClient({
     }
   };
 
-  // Eliminar un bloque de horario
-  const handleDeleteHorario = async (horarioId: string) => {
-    if (!window.confirm("¿Confirmas la eliminación de este bloque horario de la cuadrícula?")) {
-      return;
-    }
+  // Estados para modal nativo de confirmación y feedback de eliminación
+  const [horarioToDelete, setHorarioToDelete] = useState<string | null>(null);
+  const [alertFeedback, setAlertFeedback] = useState<{ title: string; message: string; variant: 'success' | 'error' } | null>(null);
+
+  // Eliminar un bloque de horario (modal nativo del ERP)
+  const handleDeleteHorario = (horarioId: string) => {
+    setHorarioToDelete(horarioId);
+  };
+
+  const executeDeleteHorario = async () => {
+    if (!horarioToDelete) return;
+    const horarioId = horarioToDelete;
     setIsDeletingId(horarioId);
     try {
       const res = await deleteHorarioAction(horarioId, selectedEdicionId);
       if (res.error) {
-        alert(res.error);
+        setAlertFeedback({
+          title: "Error al eliminar bloque",
+          message: res.error,
+          variant: "error"
+        });
       } else {
         setEdicionesState(prev => prev.map(ed => {
           if (ed.id === selectedEdicionId) {
@@ -407,11 +419,16 @@ export function HorariosManagerClient({
           }
           return ed;
         }));
+        setHorarioToDelete(null);
         router.refresh();
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Error al eliminar";
-      alert(msg);
+      setAlertFeedback({
+        title: "Error inesperado",
+        message: msg,
+        variant: "error"
+      });
     } finally {
       setIsDeletingId(null);
     }
@@ -1273,6 +1290,30 @@ export function HorariosManagerClient({
             </form>
           </div>
         </div>
+      )}
+
+      {/* Modal Nativo de Confirmación de Eliminación de Bloque Horario */}
+      <ConfirmModal
+        isOpen={Boolean(horarioToDelete)}
+        onClose={() => setHorarioToDelete(null)}
+        onConfirm={executeDeleteHorario}
+        title="Eliminar Bloque de Horario"
+        description="¿Confirmas la eliminación de este bloque horario de la cuadrícula académica? Esta acción retirará la sesión programada de la oferta académica."
+        confirmText="Eliminar Bloque"
+        cancelText="Conservar Bloque"
+        variant="danger"
+        isLoading={isDeletingId !== null}
+      />
+
+      {/* Modal Nativo de Alerta/Feedback */}
+      {alertFeedback && (
+        <AlertModal
+          isOpen={Boolean(alertFeedback)}
+          onClose={() => setAlertFeedback(null)}
+          title={alertFeedback.title}
+          description={alertFeedback.message}
+          variant={alertFeedback.variant}
+        />
       )}
 
     </div>

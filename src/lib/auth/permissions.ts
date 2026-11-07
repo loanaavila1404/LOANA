@@ -35,6 +35,41 @@ export type PermissionCode =
   | 'REPORTES.VER'
   | 'SEDES.VER_TODAS'; // PROVISIONAL: Agregado para Checkpoint 2 (Fase 4). Requerirá que la BD lo tenga en tabla permissions tras migración 00010.
 
+export const ALL_PERMISSION_CODES: PermissionCode[] = [
+  'SISTEMA.ADMINISTRAR',
+  'CONFIGURACION.VER',
+  'CONFIGURACION.EDITAR',
+  'USUARIOS.VER',
+  'USUARIOS.GESTIONAR',
+  'ROLES.VER',
+  'AUDITORIA.VER',
+  'ESTUDIANTES.VER',
+  'ESTUDIANTES.EDITAR',
+  'PROGRAMAS.VER',
+  'PROGRAMAS.EDITAR',
+  'MATRICULAS.VER',
+  'MATRICULAS.GESTIONAR',
+  'MATRICULAS.DESCUENTOS_AUTORIZAR',
+  'COBRANZA.VER',
+  'PAGOS.REGISTRAR',
+  'PAGOS.ANULAR',
+  'CRM.VER',
+  'CRM.GESTIONAR',
+  'CRM.ADMINISTRAR',
+  'CRM.CONVERSION_SOLICITAR',
+  'MATRICULA.CONFIRMAR',
+  'MATRICULA.ACTIVAR',
+  'DESCUENTO.AUTORIZAR',
+  'ACADEMICO.VER',
+  'ACADEMICO.GESTIONAR',
+  'NOTAS.REGISTRAR',
+  'PERFIL_PROPIO.VER',
+  'ACADEMICO_PROPIO.VER',
+  'PAGOS_PROPIOS.VER',
+  'REPORTES.VER',
+  'SEDES.VER_TODAS',
+];
+
 export interface UserAuthContext {
   userId: string;
   email: string;
@@ -42,6 +77,23 @@ export interface UserAuthContext {
   roleName: string;
   isAsesor: boolean;
   permissions: PermissionCode[];
+}
+
+export function isSuperAdminRole(
+  roleCode?: string | null,
+  roleName?: string | null,
+  perms?: PermissionCode[]
+): boolean {
+  const upperCode = (roleCode || '').toUpperCase().trim();
+  const upperName = (roleName || '').toUpperCase().trim();
+  return (
+    upperCode === 'SUPERADMIN' ||
+    upperCode === 'SUPER_ADMINISTRADOR' ||
+    upperCode === 'SUPER_ADMIN' ||
+    upperCode.includes('SUPER') ||
+    upperName.includes('SUPER') ||
+    Boolean(perms?.includes('SISTEMA.ADMINISTRAR'))
+  );
 }
 
 export function isAsesorComercialRole(roleCode?: string | null): boolean {
@@ -85,7 +137,21 @@ export async function getUserAuthContext(): Promise<UserAuthContext | null> {
     .map((rp: { permissions: { code: string | null } | null }) => rp.permissions?.code as string as PermissionCode)
     .filter((code): code is PermissionCode => Boolean(code));
 
-  const isAdvisor = isAsesorComercialRole(upperRole) || isAsesorComercialRole(roleName);
+  // ACCESO TOTAL PARA SUPER ADMINISTRADOR:
+  // En fase de pruebas y producción, Super Administrador tiene acceso total sin restricciones
+  const isSuper = isSuperAdminRole(upperRole, roleName, perms);
+  if (isSuper) {
+    return {
+      userId: user.id,
+      email: user.email || '',
+      roleCode: roleCode || 'SUPER_ADMINISTRADOR',
+      roleName: roleName || 'Super Administrador',
+      isAsesor: false,
+      permissions: [...ALL_PERMISSION_CODES],
+    };
+  }
+
+  const isAdvisor = !isSuper && (isAsesorComercialRole(upperRole) || isAsesorComercialRole(roleName));
 
   if (isAdvisor) {
     // Permisos autorizados para Asesor Comercial: CRM total, Consulta de Matrículas y Programas
@@ -186,11 +252,36 @@ export async function getUserPermissions(): Promise<PermissionCode[]> {
 
 export async function isCurrentUserAdvisor(): Promise<boolean> {
   const authCtx = await getUserAuthContext();
-  return Boolean(authCtx?.isAsesor);
+  if (!authCtx) return false;
+  if (
+    authCtx.permissions.includes('SISTEMA.ADMINISTRAR') ||
+    isSuperAdminRole(authCtx.roleCode, authCtx.roleName, authCtx.permissions)
+  ) {
+    return false;
+  }
+  return Boolean(authCtx.isAsesor);
+}
+
+export async function isCurrentUserSuperAdmin(): Promise<boolean> {
+  const authCtx = await getUserAuthContext();
+  if (!authCtx) return false;
+  return (
+    authCtx.permissions.includes('SISTEMA.ADMINISTRAR') ||
+    isSuperAdminRole(authCtx.roleCode, authCtx.roleName, authCtx.permissions)
+  );
 }
 
 export async function hasPermission(code: PermissionCode | PermissionCode[]): Promise<boolean> {
-  const userPerms = await getUserPermissions();
+  const authCtx = await getUserAuthContext();
+  if (!authCtx) return false;
+  // Super Administrador tiene permiso irrestricto para todas las acciones y vistas del sistema
+  if (
+    authCtx.permissions.includes('SISTEMA.ADMINISTRAR') ||
+    isSuperAdminRole(authCtx.roleCode, authCtx.roleName, authCtx.permissions)
+  ) {
+    return true;
+  }
+  const userPerms = authCtx.permissions;
   if (Array.isArray(code)) {
     return code.some(c => userPerms.includes(c));
   }

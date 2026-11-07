@@ -86,21 +86,95 @@ export function CompleteTareaButtonClient({
   tareaId: string;
   prospectoId: string;
 }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [outcome, setOutcome] = useState('');
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const handleComplete = () => {
-    const result = prompt("Ingresa el resultado de la tarea:");
-    if (result !== null) {
-      startTransition(async () => {
-        const res = await completeTareaAction(tareaId, prospectoId, result);
-        if (res.error) alert(res.error);
-      });
+  const handleClose = () => {
+    if (isPending) return;
+    setIsOpen(false);
+    setErrorMsg(null);
+  };
+
+  const handleConfirm = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!outcome.trim()) {
+      setErrorMsg('Por favor describe el resultado obtenido al realizar la tarea.');
+      return;
     }
+    setErrorMsg(null);
+    startTransition(async () => {
+      const res = await completeTareaAction(tareaId, prospectoId, outcome.trim());
+      if (res.error) {
+        setErrorMsg(res.error);
+      } else {
+        setIsOpen(false);
+        setOutcome('');
+      }
+    });
   };
 
   return (
-    <button onClick={handleComplete} disabled={isPending} className="text-xs text-green-600 border border-green-200 bg-green-50 px-2 py-1 rounded hover:bg-green-100">
-      {isPending ? 'Guardando...' : 'Completar'}
-    </button>
+    <>
+      <button 
+        type="button"
+        onClick={() => {
+          setErrorMsg(null);
+          setIsOpen(true);
+        }} 
+        disabled={isPending} 
+        className="text-xs text-green-700 font-semibold border border-green-200 bg-green-50 px-2 py-1 rounded-md hover:bg-green-100 transition shadow-2xs"
+      >
+        {isPending ? 'Guardando...' : 'Completar Tarea'}
+      </button>
+
+      <Modal isOpen={isOpen} onClose={handleClose} title="Completar Tarea Comercial">
+        <form onSubmit={handleConfirm} className="space-y-4">
+          <p className="text-xs text-slate-600 leading-relaxed">
+            Ingresa el resumen de la gestión o acuerdos alcanzados para registrarla en la bitácora permanente del cliente.
+          </p>
+
+          {errorMsg && (
+            <div className="p-2.5 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs font-semibold">
+              {errorMsg}
+            </div>
+          )}
+
+          <div>
+            <label className="text-xs font-bold text-slate-700 block mb-1">
+              Resultado obtenido *
+            </label>
+            <textarea
+              value={outcome}
+              onChange={(e) => setOutcome(e.target.value)}
+              rows={3}
+              placeholder="Ej: Se llamó al prospecto y confirmó que realizará el pago de matrícula el día viernes..."
+              className="w-full text-xs p-2.5 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-800"
+              required
+              autoFocus
+            />
+          </div>
+
+          <div className="pt-2 border-t border-slate-100 flex items-center justify-end gap-2">
+            <button
+              type="button"
+              onClick={handleClose}
+              disabled={isPending}
+              className="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={isPending || !outcome.trim()}
+              className="px-4 py-1.5 rounded-lg text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 transition shadow-2xs"
+            >
+              {isPending ? 'Guardando...' : 'Confirmar Cumplimiento'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+    </>
   );
 }

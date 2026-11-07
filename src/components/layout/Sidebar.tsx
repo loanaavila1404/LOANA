@@ -31,29 +31,33 @@ export function Sidebar({
 
   const perms = user?.permissions || [];
   const roleCode = (user?.roleCode || '').toUpperCase().trim();
+  const roleName = (user?.role || '').toUpperCase().trim();
   const isSuperadmin =
     roleCode === 'SUPERADMIN' ||
     roleCode === 'SUPER_ADMINISTRADOR' ||
-    user?.role?.toLowerCase().includes('superadmin') ||
+    roleCode === 'SUPER_ADMIN' ||
+    roleCode.includes('SUPER') ||
+    roleName.includes('SUPER') ||
     perms.includes('SISTEMA.ADMINISTRAR');
 
   const isAsesorComercial =
-    roleCode === 'ASESOR_COMERCIAL' ||
-    roleCode === 'ASESOR' ||
-    user?.role?.toLowerCase().includes('asesor');
+    !isSuperadmin &&
+    (roleCode === 'ASESOR_COMERCIAL' ||
+      roleCode === 'ASESOR' ||
+      roleName.includes('ASESOR'));
 
-  // Permisos granulares de navegación
+  // Permisos de navegación: Super Administrador ve TODO sin excepción
   const canViewCrm = isSuperadmin || isAsesorComercial || perms.includes('CRM.VER') || perms.includes('CRM.GESTIONAR');
   const canViewMatriculas = isSuperadmin || isAsesorComercial || perms.includes('MATRICULAS.VER') || perms.includes('MATRICULAS.GESTIONAR');
 
-  // Restricciones estrictas para Asesor Comercial: NO debe ver módulos no comerciales
-  const canViewPersonas = !isAsesorComercial && (isSuperadmin || perms.includes('ESTUDIANTES.VER'));
-  const canViewOferta = !isAsesorComercial && (isSuperadmin || perms.includes('PROGRAMAS.VER') || perms.includes('PROGRAMAS.EDITAR'));
-  const canViewHorarios = !isAsesorComercial && (isSuperadmin || perms.includes('ACADEMICO.VER'));
-  const canViewNotas = !isAsesorComercial && (isSuperadmin || perms.includes('NOTAS.REGISTRAR') || perms.includes('ACADEMICO.VER'));
-  const canViewReportes = !isAsesorComercial && (isSuperadmin || perms.includes('REPORTES.VER') || perms.includes('SISTEMA.ADMINISTRAR'));
-  const canViewUsuarios = !isAsesorComercial && (isSuperadmin || perms.includes('USUARIOS.VER'));
-  const canViewAuditoria = !isAsesorComercial && (isSuperadmin || perms.includes('AUDITORIA.VER'));
+  // Módulos institucionales y académicos
+  const canViewPersonas = isSuperadmin || (!isAsesorComercial && perms.includes('ESTUDIANTES.VER'));
+  const canViewOferta = isSuperadmin || (!isAsesorComercial && (perms.includes('PROGRAMAS.VER') || perms.includes('PROGRAMAS.EDITAR')));
+  const canViewHorarios = isSuperadmin || (!isAsesorComercial && perms.includes('ACADEMICO.VER'));
+  const canViewNotas = isSuperadmin || (!isAsesorComercial && (perms.includes('NOTAS.REGISTRAR') || perms.includes('ACADEMICO.VER')));
+  const canViewReportes = isSuperadmin || (!isAsesorComercial && (perms.includes('REPORTES.VER') || perms.includes('SISTEMA.ADMINISTRAR')));
+  const canViewUsuarios = isSuperadmin || (!isAsesorComercial && perms.includes('USUARIOS.VER'));
+  const canViewAuditoria = isSuperadmin || (!isAsesorComercial && perms.includes('AUDITORIA.VER'));
 
   const showGestionAcademica = canViewPersonas || canViewOferta || canViewHorarios || canViewMatriculas;
   const showEvaluacion = canViewNotas || canViewReportes;
