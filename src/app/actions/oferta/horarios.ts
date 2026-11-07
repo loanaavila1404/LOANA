@@ -1,8 +1,8 @@
 'use server'
 
 import { revalidatePath } from 'next/cache';
-import { createClient } from '@/lib/supabase/server';
-import { getUserPermissions } from '@/lib/auth/permissions';
+import { createClient, getSafeDbClient } from '@/lib/supabase/server';
+import { getUserPermissions, getUserAuthContext } from '@/lib/auth/permissions';
 import { horarioSchema } from '@/lib/validators/oferta';
 
 export async function createHorarioAction(formData: FormData) {
@@ -124,8 +124,57 @@ export async function deleteHorarioAction(id: string, edicionId: string) {
     }
   }
 
-  const supabase = await createClient();
-  const { error } = await supabase.from('horarios').delete().eq('id', id);
+  const db = await getSafeDbClient();
+  const authCtx = await getUserAuthContext();
+
+  // 1. Obtener snapshot del horario antes de eliminar
+  const { data: horarioData } = await db
+    .from('horarios')
+    .select(`
+      id,
+      edicion_id,
+      curso_id,
+      dia_semana,
+      hora_inicio,
+      hora_fin,
+      docente,
+      ubicacion,
+      status,
+      cursos (codigo, nombre),
+      ediciones (codigo, nombre)
+    `)
+    .eq('id', id)
+    .single();
+
+  // 2. Registrar en la bitácora institucional (audit_logs)
+  if (horarioData) {
+    try {
+      const cursoNombre = Array.isArray(horarioData.cursos)
+        ? horarioData.cursos[0]?.nombre
+        : (horarioData.cursos as { nombre?: string } | null)?.nombre || 'Asignatura';
+      const dia = horarioData.dia_semana || 'Día';
+      const hIni = (horarioData.hora_inicio || '').slice(0, 5);
+      const hFin = (horarioData.hora_fin || '').slice(0, 5);
+
+      await db.from('audit_logs').insert({
+        user_id: authCtx?.userId || null,
+        user_role: authCtx?.roleName || authCtx?.roleCode || 'ADMINISTRACION',
+        action: 'DELETE',
+        module: 'HORARIOS',
+        entity: 'horarios',
+        entity_id: id,
+        detail: `Eliminación de bloque horario: ${cursoNombre} (${dia} ${hIni}-${hFin}) en edición ${horarioData.edicion_id}`,
+        data_before: horarioData,
+        data_after: { status: 'ELIMINADO' },
+        result: 'EXITO',
+      });
+    } catch (auditErr) {
+      console.error('Error al registrar auditoría de borrado de horario:', auditErr);
+    }
+  }
+
+  // 3. Eliminar registro
+  const { error } = await db.from('horarios').delete().eq('id', id);
   if (error) {
     return { error: `Error al eliminar horario: ${error.message}` };
   }
@@ -136,5 +185,6 @@ export async function deleteHorarioAction(id: string, edicionId: string) {
   }
   revalidatePath('/oferta/programas');
   revalidatePath('/horarios');
+  revalidatePath('/auditoria');
   return { success: true };
 }

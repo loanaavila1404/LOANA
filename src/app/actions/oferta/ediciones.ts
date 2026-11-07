@@ -1,8 +1,8 @@
 'use server'
 
 import { revalidatePath } from 'next/cache';
-import { createClient } from '@/lib/supabase/server';
-import { getUserPermissions } from '@/lib/auth/permissions';
+import { createClient, getSafeDbClient } from '@/lib/supabase/server';
+import { getUserPermissions, getUserAuthContext } from '@/lib/auth/permissions';
 import { edicionSchema } from '@/lib/validators/oferta';
 
 async function generateNextEdicionCodigo(supabase: Awaited<ReturnType<typeof createClient>>): Promise<string> {
@@ -120,4 +120,115 @@ export async function updateEdicionAction(id: string, formData: FormData) {
   revalidatePath(`/oferta/ediciones/${id}`);
   revalidatePath('/oferta/programas');
   return { success: true, data };
+}
+
+export async function toggleEdicionStatusAction(
+  id: string,
+  currentStatus: string
+): Promise<{ error?: string; success?: boolean }> {
+  const permissions = await getUserPermissions();
+  if (
+    !permissions.includes('PROGRAMAS.EDITAR') &&
+    !permissions.includes('SISTEMA.ADMINISTRAR')
+  ) {
+    return { error: 'No tienes permiso para modificar ediciones' };
+  }
+
+  const newStatus = currentStatus === 'ACTIVO' ? 'INACTIVO' : 'ACTIVO';
+  const db = await getSafeDbClient();
+
+  const { error } = await db
+    .from('ediciones')
+    .update({ status: newStatus })
+    .eq('id', id);
+
+  if (error) {
+    return { error: 'Error al cambiar estado de la edición: ' + error.message };
+  }
+
+  revalidatePath('/oferta/ediciones');
+  revalidatePath(`/oferta/ediciones/${id}`);
+  return { success: true };
+}
+
+export async function deleteEdicionAction(
+  id: string,
+  motivo?: string
+): Promise<{ error?: string; success?: boolean }> {
+  const permissions = await getUserPermissions();
+  if (
+    !permissions.includes('PROGRAMAS.EDITAR') &&
+    !permissions.includes('SISTEMA.ADMINISTRAR')
+  ) {
+    return { error: 'No tienes permiso para eliminar ediciones' };
+  }
+
+  const db = await getSafeDbClient();
+  const authCtx = await getUserAuthContext();
+
+  // 1. Obtener datos antes del borrado
+  const { data: edicion, error: fetchErr } = await db
+    .from('ediciones')
+    .select('*, programas(codigo, nombre)')
+    .eq('id', id)
+    .single();
+
+  if (fetchErr || !edicion) {
+    return { error: 'No se encontró la edición a eliminar' };
+  }
+
+  // 2. Verificar matrículas asociadas
+  const { count: matriculasCount } = await db
+    .from('matriculas')
+    .select('id', { count: 'exact', head: true })
+    .eq('edicion_id', id);
+
+  if (matriculasCount && matriculasCount > 0) {
+    return {
+      error: `No se puede eliminar la edición porque cuenta con ${matriculasCount} matrícula(s) asociadas. Inactívela para conservar el historial de los alumnos matriculados.`,
+    };
+  }
+
+  const motivoTexto = motivo || 'Eliminación de grupo/edición solicitada por administración';
+
+  // 3. Borrado lógico asegurado en la tabla de ediciones
+  await db
+    .from('ediciones')
+    .update({ status: 'ELIMINADO' })
+    .eq('id', id);
+
+  let physicalDelete = false;
+  try {
+    // Si tiene sesiones horarias vinculadas, eliminarlas primero
+    await db.from('horarios').delete().eq('edicion_id', id);
+    const { error: delErr } = await db.from('ediciones').delete().eq('id', id);
+    if (!delErr) physicalDelete = true;
+  } catch {
+    // El soft-delete asegura su exclusión
+  }
+
+  // 4. Registro permanente en bitácora audit_logs
+  try {
+    await db.from('audit_logs').insert({
+      user_id: authCtx?.userId || null,
+      user_role: authCtx?.roleName || authCtx?.roleCode || 'ADMINISTRACION',
+      action: 'DELETE',
+      module: 'OFERTA_ACADEMICA',
+      entity: 'ediciones',
+      entity_id: id,
+      detail: `Eliminación de edición/grupo: ${edicion.codigo} - ${edicion.nombre || ''} (${physicalDelete ? 'Físico' : 'Lógico'}). Motivo: ${motivoTexto}`,
+      data_before: edicion,
+      data_after: { status: 'ELIMINADO', physicalDelete, motivo: motivoTexto },
+      result: 'EXITO',
+    });
+  } catch (auditErr) {
+    console.error('Error al registrar auditoría de borrado de edición:', auditErr);
+  }
+
+  revalidatePath('/oferta/ediciones');
+  revalidatePath(`/oferta/ediciones/${id}`);
+  revalidatePath('/oferta/programas');
+  revalidatePath('/horarios');
+  revalidatePath('/auditoria');
+  return { success: true };
 }

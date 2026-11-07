@@ -10,8 +10,10 @@ import {
   createProgramaAction,
   updateProgramaAction,
   toggleProgramaStatusAction,
+  deleteProgramaAction,
   getNextProgramaCodigoAction,
 } from '@/app/actions/oferta/programas';
+import { ConfirmModal, AlertModal } from '@/components/ui/Feedback';
 
 type Programa = Database['public']['Tables']['programas']['Row'] & {
   inversionMatricula?: number | null;
@@ -34,6 +36,12 @@ export function ProgramaFormModalClient({
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [codigoValue, setCodigoValue] = useState(programa?.codigo || '');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteFeedback, setDeleteFeedback] = useState<{
+    title: string;
+    message: string;
+    variant: 'success' | 'error';
+  } | null>(null);
 
   const normalizeUnidad = (val?: string | null) => {
     const u = (val || 'Meses').trim().toUpperCase();
@@ -91,6 +99,26 @@ export function ProgramaFormModalClient({
       if (result.error) {
         setError(result.error);
       } else {
+        setIsOpen(false);
+        router.refresh();
+      }
+    });
+  };
+
+  const handleDeletePrograma = () => {
+    if (!programa) return;
+    setError(null);
+    startTransition(async () => {
+      const result = await deleteProgramaAction(programa.id);
+      if (result.error) {
+        setDeleteFeedback({
+          title: 'No se pudo eliminar el programa',
+          message: result.error,
+          variant: 'error',
+        });
+        setShowDeleteConfirm(false);
+      } else {
+        setShowDeleteConfirm(false);
         setIsOpen(false);
         router.refresh();
       }
@@ -266,21 +294,32 @@ export function ProgramaFormModalClient({
             </div>
           </div>
 
-          <div className="flex justify-between pt-4 border-t border-slate-100">
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-4 border-t border-slate-100">
             {programa ? (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleToggleStatus}
-                disabled={isPending}
-                className={
-                  programa.status === 'ACTIVO'
-                    ? 'text-red-600 border-red-200 hover:bg-red-50'
-                    : 'text-green-600 border-green-200 hover:bg-green-50'
-                }
-              >
-                {programa.status === 'ACTIVO' ? 'Inactivar Programa' : 'Activar Programa'}
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleToggleStatus}
+                  disabled={isPending}
+                  className={
+                    programa.status === 'ACTIVO'
+                      ? 'text-amber-700 border-amber-300 hover:bg-amber-50'
+                      : 'text-green-600 border-green-200 hover:bg-green-50'
+                  }
+                >
+                  {programa.status === 'ACTIVO' ? 'Inactivar Programa' : 'Activar Programa'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  disabled={isPending}
+                  className="text-red-600 border-red-300 hover:bg-red-50 hover:text-red-700 font-semibold"
+                >
+                  Borrar Programa
+                </Button>
+              </div>
             ) : (
               <div />
             )}
@@ -300,6 +339,30 @@ export function ProgramaFormModalClient({
           </div>
         </form>
       </Modal>
+
+      {/* Modal Nativo de Doble Confirmación para Eliminar Programa */}
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDeletePrograma}
+        title="Eliminar Programa Académico"
+        description={`¿Estás seguro de que deseas eliminar permanentemente el programa "${programa?.nombre || ''}" (${programa?.codigo || ''})? Esta acción se registrará en la bitácora institucional de auditoría y no se permitirá si registra matrículas activas.`}
+        confirmText="Sí, Eliminar Programa"
+        cancelText="Conservar Programa"
+        variant="danger"
+        isLoading={isPending}
+      />
+
+      {/* Modal de Alerta / Feedback */}
+      {deleteFeedback && (
+        <AlertModal
+          isOpen={Boolean(deleteFeedback)}
+          onClose={() => setDeleteFeedback(null)}
+          title={deleteFeedback.title}
+          description={deleteFeedback.message}
+          variant={deleteFeedback.variant}
+        />
+      )}
     </>
   );
 }

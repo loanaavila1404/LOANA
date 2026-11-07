@@ -26,9 +26,15 @@ import {
   Trash2,
   X,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  Lock,
+  Unlock,
+  Shield,
+  AlertTriangle,
+  Edit3,
+  Check
 } from "lucide-react";
-import { createHorarioAction, deleteHorarioAction } from "@/app/actions/oferta/horarios";
+import { createHorarioAction, updateHorarioAction, deleteHorarioAction } from "@/app/actions/oferta/horarios";
 import { ConfirmModal, AlertModal } from "@/components/ui/Feedback";
 
 export interface HorarioSesion {
@@ -196,6 +202,16 @@ export function HorariosManagerClient({
   const [selectedSemana, setSelectedSemana] = useState<string>("TODAS");
   const [selectedEstudianteId, setSelectedEstudianteId] = useState<string>("TODOS");
 
+  // Modo Edición Estricto (Protección contra alteraciones accidentales de fechas y horas)
+  const [isEditMode, setIsEditMode] = useState<boolean>(false);
+  const [showEnableEditPrompt, setShowEnableEditPrompt] = useState<boolean>(false);
+  const [editingHorarioId, setEditingHorarioId] = useState<string | null>(null);
+
+  // Historial Semanal y fechas editables en Modo Edición
+  const [semanasHistorialState, setSemanasHistorialState] = useState(SEMANAS_HISTORIAL);
+  const [isEditingWeekRange, setIsEditingWeekRange] = useState<boolean>(false);
+  const [customWeekRange, setCustomWeekRange] = useState<string>("");
+
   // Estados del Modal para Programar Horario
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalEdicionId, setModalEdicionId] = useState(initialEdicionId || ediciones[0]?.id || "");
@@ -255,10 +271,25 @@ export function HorariosManagerClient({
     return estudiantesDemo.find(est => est.id === selectedEstudianteId) || null;
   }, [estudiantesDemo, selectedEstudianteId]);
 
-  // Semana activa del historial
+  // Semana activa del historial (editable en Modo Edición)
   const activeSemanaObj = useMemo(() => {
-    return SEMANAS_HISTORIAL.find(s => s.id === selectedSemana) || SEMANAS_HISTORIAL[0];
-  }, [selectedSemana]);
+    return semanasHistorialState.find(s => s.id === selectedSemana) || semanasHistorialState[0];
+  }, [semanasHistorialState, selectedSemana]);
+
+  // Guardar rango de fechas personalizado de la semana en modo edición
+  const handleSaveWeekRange = () => {
+    if (!customWeekRange.trim()) {
+      setIsEditingWeekRange(false);
+      return;
+    }
+    setSemanasHistorialState(prev => prev.map(s => {
+      if (s.id === selectedSemana) {
+        return { ...s, rango: customWeekRange.trim() };
+      }
+      return s;
+    }));
+    setIsEditingWeekRange(false);
+  };
 
   // Horarios de la edición activa
   const horariosBase = useMemo(() => {
@@ -266,8 +297,14 @@ export function HorariosManagerClient({
     return activeEdicion.horarios || [];
   }, [activeEdicion]);
 
-  // Abrir modal de creación con parámetros predefinidos
+  // Abrir modal de creación con parámetros predefinidos (exige Modo Edición)
   const handleOpenCreateModal = (dia?: string, horaInicio?: string) => {
+    if (!isEditMode) {
+      setShowEnableEditPrompt(true);
+      return;
+    }
+
+    setEditingHorarioId(null);
     const edId = selectedEdicionId || edicionesState[0]?.id || "";
     setModalEdicionId(edId);
     if (dia) setModalDia(dia);
@@ -299,7 +336,28 @@ export function HorariosManagerClient({
     setIsModalOpen(true);
   };
 
-  // Guardar nuevo horario en base de datos
+  // Abrir modal para modificar un bloque horario existente
+  const handleOpenEditModal = (ses: HorarioSesion) => {
+    if (!isEditMode) {
+      setShowEnableEditPrompt(true);
+      return;
+    }
+
+    setEditingHorarioId(ses.id);
+    setModalEdicionId(ses.edicion_id);
+    setModalCursoId(ses.curso_id || ses.curso?.id || "");
+    setModalDia(ses.dia_semana);
+    setModalHoraInicio(ses.hora_inicio.slice(0, 5));
+    setModalHoraFin(ses.hora_fin.slice(0, 5));
+    setModalDocente(ses.docente || "");
+    setModalUbicacion(ses.ubicacion || "Aula 101 - Sede Central Tumbes");
+    setModalObservaciones(ses.observaciones || "");
+    setModalError(null);
+    setModalSuccess(null);
+    setIsModalOpen(true);
+  };
+
+  // Guardar horario (creación o actualización) en base de datos
   const handleSubmitHorario = async (e: React.FormEvent) => {
     e.preventDefault();
     setModalError(null);
@@ -331,7 +389,12 @@ export function HorariosManagerClient({
       formData.set("observaciones", modalObservaciones || "");
       formData.set("status", "ACTIVO");
 
-      const result = await createHorarioAction(formData);
+      let result;
+      if (editingHorarioId) {
+        result = await updateHorarioAction(editingHorarioId, formData);
+      } else {
+        result = await createHorarioAction(formData);
+      }
 
       if (result.error) {
         setModalError(result.error);
@@ -340,13 +403,17 @@ export function HorariosManagerClient({
       }
 
       if (result.success && result.data) {
-        setModalSuccess("¡Horario programado y registrado con éxito!");
+        setModalSuccess(
+          editingHorarioId
+            ? "¡Horario modificado y guardado con éxito!"
+            : "¡Horario programado y registrado con éxito!"
+        );
         
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const raw = result.data as any;
         const cursoObj = allAvailableCursos.find(c => c.id === modalCursoId);
         
-        const nuevoHorario: HorarioSesion = {
+        const horarioGuardado: HorarioSesion = {
           id: raw.id,
           edicion_id: raw.edicion_id,
           curso_id: raw.curso_id,
@@ -362,10 +429,17 @@ export function HorariosManagerClient({
 
         setEdicionesState(prev => prev.map(ed => {
           if (ed.id === modalEdicionId) {
-            return {
-              ...ed,
-              horarios: [...ed.horarios, nuevoHorario]
-            };
+            if (editingHorarioId) {
+              return {
+                ...ed,
+                horarios: ed.horarios.map(h => (h.id === editingHorarioId ? horarioGuardado : h))
+              };
+            } else {
+              return {
+                ...ed,
+                horarios: [...ed.horarios, horarioGuardado]
+              };
+            }
           }
           return ed;
         }));
@@ -378,11 +452,12 @@ export function HorariosManagerClient({
           setIsModalOpen(false);
           setIsSubmitting(false);
           setModalSuccess(null);
+          setEditingHorarioId(null);
           router.refresh();
         }, 500);
       }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Error inesperado al registrar el horario.";
+      const msg = err instanceof Error ? err.message : "Error inesperado al guardar el horario.";
       setModalError(msg);
       setIsSubmitting(false);
     }
@@ -512,37 +587,82 @@ export function HorariosManagerClient({
       <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-sm print:hidden no-print space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5">
               <span className="p-2 rounded-xl bg-red-50 text-[#c4121a] border border-red-100">
                 <CalendarDays className="w-5 h-5" />
               </span>
               <div>
-                <h1 className="text-xl font-bold font-heading text-slate-900 tracking-tight">
-                  Gestión de Horarios Académicos
-                </h1>
-                <p className="text-xs text-slate-500">
-                  Matriz semanal exhaustiva (07:00 a 22:00 hrs) con historial de semanas y membrete oficial.
+                <div className="flex items-center gap-2">
+                  <h1 className="text-xl font-bold font-heading text-slate-900 tracking-tight">
+                    Gestión de Horarios Académicos
+                  </h1>
+                  {isEditMode ? (
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-900 border border-amber-300 flex items-center gap-1 shadow-2xs">
+                      <AlertTriangle className="w-3 h-3 text-amber-700" />
+                      Modo Edición Activo
+                    </span>
+                  ) : (
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 border border-slate-200 flex items-center gap-1">
+                      <Lock className="w-3 h-3 text-slate-400" />
+                      Modo Consulta (Protegido)
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Matriz semanal (07:00 a 22:00 hrs) con control estricto de edición en fechas y horas.
                 </p>
               </div>
             </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
+            {/* Botón Principal de Modo Edición */}
+            {isEditMode ? (
+              <button
+                onClick={() => setIsEditMode(false)}
+                type="button"
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-bold rounded-lg shadow-sm transition flex items-center gap-2 cursor-pointer"
+                title="Finalizar edición y proteger la matriz de horarios"
+              >
+                <Check className="w-4 h-4 text-white" />
+                <span>Finalizar y Guardar Edición</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => setIsEditMode(true)}
+                type="button"
+                className="px-4 py-2 bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-slate-950 text-xs font-bold rounded-lg shadow-sm transition flex items-center gap-2 cursor-pointer"
+                title="Habilitar Modo Edición para modificar fechas y horas"
+              >
+                <Unlock className="w-4 h-4 text-slate-950" />
+                <span>Habilitar Modo Edición</span>
+              </button>
+            )}
+
             <button
-              onClick={() => handleOpenCreateModal()}
+              onClick={() => {
+                if (!isEditMode) {
+                  setShowEnableEditPrompt(true);
+                } else {
+                  handleOpenCreateModal();
+                }
+              }}
               type="button"
-              className="px-4 py-2 bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white text-xs font-bold rounded-lg shadow-sm hover:shadow transition flex items-center gap-2 cursor-pointer"
+              className={`px-4 py-2 text-white text-xs font-bold rounded-lg shadow-sm hover:shadow transition flex items-center gap-2 cursor-pointer ${
+                isEditMode ? 'bg-slate-900 hover:bg-slate-800' : 'bg-slate-700 hover:bg-slate-800 opacity-90'
+              }`}
             >
               <Plus className="w-4 h-4 text-emerald-400" />
               <span>+ Programar Horario</span>
             </button>
+
             <button
               onClick={handlePrint}
               type="button"
               className="px-4 py-2 bg-[#c4121a] hover:bg-[#a00f15] active:bg-[#850b10] text-white text-xs font-bold rounded-lg shadow-sm hover:shadow transition flex items-center gap-2 cursor-pointer"
             >
               <Printer className="w-4 h-4" />
-              <span>Imprimir Horario / Guardar PDF</span>
+              <span>Imprimir Horario / PDF</span>
             </button>
           </div>
         </div>
@@ -569,28 +689,63 @@ export function HorariosManagerClient({
             </select>
           </div>
 
-          {/* Selector de Historial Semanal */}
+          {/* Selector de Historial Semanal y Fechas */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700 flex items-center justify-between">
-              <span className="flex items-center gap-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
                 <History className="w-3.5 h-3.5 text-rose-600" />
-                <span>Historial Semanal / Vigencia</span>
-              </span>
-              <span className="text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.2 rounded-full border border-rose-200">
-                {activeSemanaObj.estado}
-              </span>
-            </label>
-            <select
-              value={selectedSemana}
-              onChange={(e) => setSelectedSemana(e.target.value)}
-              className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-[#c4121a] focus:ring-1 focus:ring-[#c4121a] text-slate-800 font-semibold"
-            >
-              {SEMANAS_HISTORIAL.map((sem) => (
-                <option key={sem.id} value={sem.id}>
-                  {sem.label} ({sem.rango})
-                </option>
-              ))}
-            </select>
+                <span>Historial Semanal / Fechas</span>
+              </label>
+              <div className="flex items-center gap-1">
+                {isEditMode && selectedSemana !== "TODAS" && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCustomWeekRange(activeSemanaObj.rango);
+                      setIsEditingWeekRange(!isEditingWeekRange);
+                    }}
+                    className="text-[10px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 px-1.5 py-0.2 rounded border border-blue-200 cursor-pointer"
+                    title="Ajustar fechas de esta semana"
+                  >
+                    {isEditingWeekRange ? "Cancelar" : "Editar Fechas"}
+                  </button>
+                )}
+                <span className="text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.2 rounded-full border border-rose-200">
+                  {activeSemanaObj.estado}
+                </span>
+              </div>
+            </div>
+
+            {isEditingWeekRange && isEditMode ? (
+              <div className="flex items-center gap-1.5">
+                <input
+                  type="text"
+                  value={customWeekRange}
+                  onChange={(e) => setCustomWeekRange(e.target.value)}
+                  placeholder="Ej. 03 Nov – 08 Nov 2026"
+                  className="flex-1 px-2.5 py-1.5 text-xs bg-white border border-blue-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 font-semibold"
+                />
+                <button
+                  type="button"
+                  onClick={handleSaveWeekRange}
+                  className="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg cursor-pointer"
+                >
+                  Guardar
+                </button>
+              </div>
+            ) : (
+              <select
+                value={selectedSemana}
+                onChange={(e) => setSelectedSemana(e.target.value)}
+                className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-[#c4121a] focus:ring-1 focus:ring-[#c4121a] text-slate-800 font-semibold"
+              >
+                {semanasHistorialState.map((sem) => (
+                  <option key={sem.id} value={sem.id}>
+                    {sem.label} ({sem.rango})
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
           {/* Selector de Estudiante (Filtro Personalizado) */}
@@ -631,6 +786,33 @@ export function HorariosManagerClient({
           </div>
         </div>
       </div>
+
+      {/* Banner de Advertencia de Modo Edición */}
+      {isEditMode && (
+        <div className="p-4 bg-amber-50 border-2 border-amber-300 rounded-2xl text-amber-950 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs print:hidden animate-in fade-in duration-150">
+          <div className="flex items-start sm:items-center gap-3 text-xs">
+            <span className="p-2 rounded-xl bg-amber-100 text-amber-800 border border-amber-200 shrink-0">
+              <AlertTriangle className="w-5 h-5 text-amber-700" />
+            </span>
+            <div>
+              <p className="font-extrabold text-sm text-amber-950">
+                MODO EDICIÓN HABILITADO — Control de Fechas, Horas y Asignaciones
+              </p>
+              <p className="text-xs text-amber-800 mt-0.5">
+                Haz clic en bloques para editar horas y docentes, usa la papelera para eliminarlos, o pulsa en celdas vacías para agregar sesiones.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsEditMode(false)}
+            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-bold rounded-lg shrink-0 transition flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
+          >
+            <Check className="w-4 h-4" />
+            <span>Finalizar y Proteger</span>
+          </button>
+        </div>
+      )}
 
       {/* ============================================================== */}
       {/* 2. FORMATO DE IMPRESIÓN Y HOJA A4 OFICIAL DEL HORARIO           */}
@@ -849,22 +1031,41 @@ export function HorariosManagerClient({
                                     <span className="text-[8.5px] font-bold text-[#c4121a]">
                                       {ses.hora_inicio.slice(0, 5)} - {ses.hora_fin.slice(0, 5)}
                                     </span>
-                                    <button
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleDeleteHorario(ses.id);
-                                      }}
-                                      disabled={isDeletingId === ses.id}
-                                      className="p-0.5 text-slate-400 hover:text-red-700 hover:bg-white/90 rounded transition print:hidden cursor-pointer"
-                                      title="Eliminar este bloque horario"
-                                    >
-                                      {isDeletingId === ses.id ? (
-                                        <Loader2 className="w-3 h-3 animate-spin text-red-600" />
-                                      ) : (
-                                        <Trash2 className="w-3 h-3" />
-                                      )}
-                                    </button>
+                                    {isEditMode ? (
+                                      <div className="flex items-center gap-0.5 print:hidden">
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleOpenEditModal(ses);
+                                          }}
+                                          className="p-1 text-blue-600 hover:text-blue-800 hover:bg-white rounded transition cursor-pointer"
+                                          title="Editar horas, docente o aula de este bloque"
+                                        >
+                                          <Edit3 className="w-3 h-3" />
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDeleteHorario(ses.id);
+                                          }}
+                                          disabled={isDeletingId === ses.id}
+                                          className="p-1 text-slate-400 hover:text-red-700 hover:bg-white rounded transition print:hidden cursor-pointer"
+                                          title="Eliminar este bloque horario (Doble confirmación)"
+                                        >
+                                          {isDeletingId === ses.id ? (
+                                            <Loader2 className="w-3 h-3 animate-spin text-red-600" />
+                                          ) : (
+                                            <Trash2 className="w-3 h-3" />
+                                          )}
+                                        </button>
+                                      </div>
+                                    ) : (
+                                      <span className="p-0.5 text-slate-300 print:hidden" title="Modo consulta protegido">
+                                        <Lock className="w-2.5 h-2.5" />
+                                      </span>
+                                    )}
                                   </div>
                                 </div>
 
@@ -888,7 +1089,23 @@ export function HorariosManagerClient({
                           );
                         }
 
-                        // Celda vacía
+                        // Celda vacía protegida si no está en Modo Edición
+                        if (!isEditMode) {
+                          return (
+                            <td
+                              key={dia.key}
+                              onClick={() => setShowEnableEditPrompt(true)}
+                              className="p-1.5 border-r last:border-r-0 border-slate-200 text-center text-slate-300 hover:text-slate-500 hover:bg-slate-50 cursor-pointer text-[10px] select-none transition group/slot print:cursor-default"
+                              title="Modo protegido. Haz clic para habilitar el Modo Edición"
+                            >
+                              <span className="group-hover/slot:hidden print:inline">—</span>
+                              <span className="hidden group-hover/slot:inline-flex items-center gap-1 text-slate-400 font-semibold text-[9px] print:hidden">
+                                <Lock className="w-2.5 h-2.5 text-slate-400" /> Protegido
+                              </span>
+                            </td>
+                          );
+                        }
+
                         return (
                           <td
                             key={dia.key}
@@ -1027,10 +1244,12 @@ export function HorariosManagerClient({
                 </span>
                 <div>
                   <h3 className="text-base font-bold text-slate-900">
-                    Programar Bloque Horario
+                    {editingHorarioId ? "Modificar Bloque Horario" : "Programar Bloque Horario"}
                   </h3>
                   <p className="text-xs text-slate-500">
-                    Asigna curso, docente, aula y rango horario para la edición activa.
+                    {editingHorarioId
+                      ? "Ajusta las horas, asignatura, docente o aula asignada a esta sesión."
+                      : "Asigna curso, docente, aula y rango horario para la edición activa."}
                   </p>
                 </div>
               </div>
@@ -1280,8 +1499,8 @@ export function HorariosManagerClient({
                     </>
                   ) : (
                     <>
-                      <Plus className="w-4 h-4" />
-                      <span>Guardar y Programar Bloque</span>
+                      {editingHorarioId ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                      <span>{editingHorarioId ? "Guardar Modificación de Horario" : "Guardar y Programar Bloque"}</span>
                     </>
                   )}
                 </button>
@@ -1292,13 +1511,28 @@ export function HorariosManagerClient({
         </div>
       )}
 
+      {/* Modal Nativo de Doble Confirmación para Habilitar Modo Edición */}
+      <ConfirmModal
+        isOpen={showEnableEditPrompt}
+        onClose={() => setShowEnableEditPrompt(false)}
+        onConfirm={() => {
+          setIsEditMode(true);
+          setShowEnableEditPrompt(false);
+        }}
+        title="Habilitar Modo Edición de Horarios"
+        description="El módulo se encuentra en Modo Consulta protegido para prevenir modificaciones involuntarias en fechas y horas. ¿Deseas activar el Modo Edición para agregar, modificar o eliminar horarios de clases?"
+        confirmText="Habilitar Modo Edición"
+        cancelText="Mantener Protegido"
+        variant="warning"
+      />
+
       {/* Modal Nativo de Confirmación de Eliminación de Bloque Horario */}
       <ConfirmModal
         isOpen={Boolean(horarioToDelete)}
         onClose={() => setHorarioToDelete(null)}
         onConfirm={executeDeleteHorario}
         title="Eliminar Bloque de Horario"
-        description="¿Confirmas la eliminación de este bloque horario de la cuadrícula académica? Esta acción retirará la sesión programada de la oferta académica."
+        description="¿Confirmas la eliminación de este bloque horario de la cuadrícula académica? Esta acción se registrará en la bitácora institucional de auditoría."
         confirmText="Eliminar Bloque"
         cancelText="Conservar Bloque"
         variant="danger"

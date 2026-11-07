@@ -13,7 +13,9 @@ import {
   updateCicloAction,
   createCursoAction,
   updateCursoAction,
+  deleteCursoAction,
 } from '@/app/actions/oferta/planes';
+import { ConfirmModal, AlertModal } from '@/components/ui/Feedback';
 
 export function PlanFormModalClient({
   programaId,
@@ -364,6 +366,32 @@ export function CursoFormModalClient({
       ? String(curso.horas_semanales)
       : '4'
   );
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteFeedback, setDeleteFeedback] = useState<{
+    title: string;
+    message: string;
+    variant: 'success' | 'error';
+  } | null>(null);
+
+  const handleDeleteCurso = () => {
+    if (!curso) return;
+    setError(null);
+    startTransition(async () => {
+      const result = await deleteCursoAction(curso.id);
+      if (result.error) {
+        setDeleteFeedback({
+          title: 'No se pudo eliminar la asignatura',
+          message: result.error,
+          variant: 'error',
+        });
+        setShowDeleteConfirm(false);
+      } else {
+        setShowDeleteConfirm(false);
+        setIsOpen(false);
+        router.refresh();
+      }
+    });
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -476,25 +504,64 @@ export function CursoFormModalClient({
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-4 border-t border-slate-100">
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => setIsOpen(false)}
-              disabled={isPending}
-            >
-              Cancelar
-            </Button>
-            <Button
-              type="submit"
-              disabled={isPending}
-              className="bg-[#C4121A] hover:bg-[#a00e15] text-white"
-            >
-              {isPending ? 'Guardando...' : 'Guardar Curso'}
-            </Button>
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-4 border-t border-slate-100">
+            {curso ? (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowDeleteConfirm(true)}
+                disabled={isPending}
+                className="text-red-600 border-red-300 hover:bg-red-50 hover:text-red-700 font-semibold"
+              >
+                Borrar Asignatura
+              </Button>
+            ) : (
+              <div />
+            )}
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setIsOpen(false)}
+                disabled={isPending}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                disabled={isPending}
+                className="bg-[#C4121A] hover:bg-[#a00e15] text-white"
+              >
+                {isPending ? 'Guardando...' : 'Guardar Curso'}
+              </Button>
+            </div>
           </div>
         </form>
       </Modal>
+
+      {/* Modal Nativo de Doble Confirmación para Eliminar Curso */}
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDeleteCurso}
+        title="Eliminar Asignatura / Curso"
+        description={`¿Estás seguro de que deseas eliminar permanentemente la asignatura "${curso?.nombre || ''}" (${curso?.codigo || ''})? Esta acción se registrará en la bitácora institucional de auditoría y no se permitirá si registra evaluaciones en actas.`}
+        confirmText="Sí, Eliminar Asignatura"
+        cancelText="Conservar Asignatura"
+        variant="danger"
+        isLoading={isPending}
+      />
+
+      {/* Modal de Alerta / Feedback */}
+      {deleteFeedback && (
+        <AlertModal
+          isOpen={Boolean(deleteFeedback)}
+          onClose={() => setDeleteFeedback(null)}
+          title={deleteFeedback.title}
+          description={deleteFeedback.message}
+          variant={deleteFeedback.variant}
+        />
+      )}
     </>
   );
 }

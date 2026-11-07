@@ -1,8 +1,8 @@
 'use server'
 
 import { revalidatePath } from 'next/cache';
-import { createClient } from '@/lib/supabase/server';
-import { getUserPermissions } from '@/lib/auth/permissions';
+import { createClient, getSafeDbClient } from '@/lib/supabase/server';
+import { getUserPermissions, getUserAuthContext } from '@/lib/auth/permissions';
 import { planEstudioSchema, cicloSchema, cursoSchema } from '@/lib/validators/oferta';
 
 async function generateNextCursoCodigo(supabase: Awaited<ReturnType<typeof createClient>>): Promise<string> {
@@ -323,4 +323,77 @@ export async function updateCursoAction(id: string, formData: FormData) {
   revalidatePath('/oferta/programas');
 
   return { success: true, data };
+}
+
+export async function deleteCursoAction(
+  id: string,
+  motivo?: string
+): Promise<{ error?: string; success?: boolean }> {
+  const permissions = await getUserPermissions();
+  if (
+    !permissions.includes('PROGRAMAS.EDITAR') &&
+    !permissions.includes('SISTEMA.ADMINISTRAR')
+  ) {
+    return { error: 'No tienes permiso para eliminar asignaturas' };
+  }
+
+  const db = await getSafeDbClient();
+  const authCtx = await getUserAuthContext();
+
+  // 1. Obtener datos antes del borrado
+  const { data: curso, error: fetchErr } = await db
+    .from('cursos')
+    .select('*, planes_estudio(programa_id)')
+    .eq('id', id)
+    .single();
+
+  if (fetchErr || !curso) {
+    return { error: 'No se encontró el curso a eliminar' };
+  }
+
+  const motivoTexto = motivo || 'Eliminación de asignatura autorizada por administración';
+
+  // 3. Borrado lógico asegurado en la tabla de cursos
+  await db
+    .from('cursos')
+    .update({ status: 'ELIMINADO' })
+    .eq('id', id);
+
+  let physicalDelete = false;
+  try {
+    // Eliminar posibles bloques de horarios asociados al curso
+    await db.from('horarios').delete().eq('curso_id', id);
+    const { error: delErr } = await db.from('cursos').delete().eq('id', id);
+    if (!delErr) physicalDelete = true;
+  } catch {
+    // El soft-delete asegura su exclusión
+  }
+
+  // 4. Registro en bitácora audit_logs
+  try {
+    await db.from('audit_logs').insert({
+      user_id: authCtx?.userId || null,
+      user_role: authCtx?.roleName || authCtx?.roleCode || 'ADMINISTRACION',
+      action: 'DELETE',
+      module: 'OFERTA_ACADEMICA',
+      entity: 'cursos',
+      entity_id: id,
+      detail: `Eliminación de asignatura: ${curso.codigo} - ${curso.nombre} (${physicalDelete ? 'Físico' : 'Lógico'}). Motivo: ${motivoTexto}`,
+      data_before: curso,
+      data_after: { status: 'ELIMINADO', physicalDelete, motivo: motivoTexto },
+      result: 'EXITO',
+    });
+  } catch (auditErr) {
+    console.error('Error al registrar auditoría de borrado de curso:', auditErr);
+  }
+
+  const plan = Array.isArray(curso.planes_estudio) ? curso.planes_estudio[0] : curso.planes_estudio;
+  if (plan?.programa_id) {
+    revalidatePath(`/oferta/programas/${plan.programa_id}`);
+  }
+  revalidatePath('/oferta/programas');
+  revalidatePath('/oferta/ediciones');
+  revalidatePath('/horarios');
+  revalidatePath('/auditoria');
+  return { success: true };
 }

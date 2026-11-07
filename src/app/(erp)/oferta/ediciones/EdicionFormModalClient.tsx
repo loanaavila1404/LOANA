@@ -10,9 +10,12 @@ import { Database } from '@/types/database.types';
 import {
   createEdicionAction,
   updateEdicionAction,
+  deleteEdicionAction,
+  toggleEdicionStatusAction,
   getNextEdicionCodigoAction,
 } from '@/app/actions/oferta/ediciones';
 import { createPeriodoAction } from '@/app/actions/oferta/periodos';
+import { ConfirmModal, AlertModal } from '@/components/ui/Feedback';
 
 type Edicion = Database['public']['Tables']['ediciones']['Row'];
 type Programa = Pick<Database['public']['Tables']['programas']['Row'], 'id' | 'nombre'>;
@@ -132,6 +135,47 @@ export function EdicionFormModalClient({
       if (result.error) {
         setError(result.error);
       } else {
+        setIsOpen(false);
+        router.refresh();
+      }
+    });
+  };
+
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteFeedback, setDeleteFeedback] = useState<{
+    title: string;
+    message: string;
+    variant: 'success' | 'error';
+  } | null>(null);
+
+  const handleToggleStatus = () => {
+    if (!edicion) return;
+    setError(null);
+    startTransition(async () => {
+      const result = await toggleEdicionStatusAction(edicion.id, edicion.status || 'ACTIVO');
+      if (result.error) {
+        setError(result.error);
+      } else {
+        setIsOpen(false);
+        router.refresh();
+      }
+    });
+  };
+
+  const handleDeleteEdicion = () => {
+    if (!edicion) return;
+    setError(null);
+    startTransition(async () => {
+      const result = await deleteEdicionAction(edicion.id);
+      if (result.error) {
+        setDeleteFeedback({
+          title: 'No se pudo eliminar la edición',
+          message: result.error,
+          variant: 'error',
+        });
+        setShowDeleteConfirm(false);
+      } else {
+        setShowDeleteConfirm(false);
         setIsOpen(false);
         router.refresh();
       }
@@ -411,19 +455,73 @@ export function EdicionFormModalClient({
             </div>
           </div>
 
-          <div className="flex justify-end pt-4 space-x-2 border-t border-slate-100">
-            <Button type="button" variant="ghost" onClick={() => setIsOpen(false)} disabled={isPending}>
-              Cancelar
-            </Button>
-            <Button
-              type="submit"
-              disabled={isPending || (!edicion && (selectedPrograma !== '' && (!planActivo || filteredCiclos.length === 0)))}
-            >
-              {isPending ? 'Guardando...' : 'Guardar Edición'}
-            </Button>
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-4 border-t border-slate-100">
+            {edicion ? (
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleToggleStatus}
+                  disabled={isPending}
+                  className={
+                    edicion.status === 'ACTIVO'
+                      ? 'text-amber-700 border-amber-300 hover:bg-amber-50'
+                      : 'text-green-600 border-green-200 hover:bg-green-50'
+                  }
+                >
+                  {edicion.status === 'ACTIVO' ? 'Inactivar Grupo' : 'Activar Grupo'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  disabled={isPending}
+                  className="text-red-600 border-red-300 hover:bg-red-50 hover:text-red-700 font-semibold"
+                >
+                  Borrar Edición
+                </Button>
+              </div>
+            ) : (
+              <div />
+            )}
+            <div className="space-x-2">
+              <Button type="button" variant="ghost" onClick={() => setIsOpen(false)} disabled={isPending}>
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                disabled={isPending || (!edicion && (selectedPrograma !== '' && (!planActivo || filteredCiclos.length === 0)))}
+              >
+                {isPending ? 'Guardando...' : 'Guardar Edición'}
+              </Button>
+            </div>
           </div>
         </form>
       </Modal>
+
+      {/* Modal Nativo de Doble Confirmación para Eliminar Edición */}
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDeleteEdicion}
+        title="Eliminar Edición / Grupo Académico"
+        description={`¿Estás seguro de que deseas eliminar permanentemente el grupo "${edicion?.codigo || ''}" (${edicion?.nombre || ''})? Esta acción se registrará en la bitácora institucional de auditoría y no se permitirá si registra matrículas de estudiantes.`}
+        confirmText="Sí, Eliminar Edición"
+        cancelText="Conservar Grupo"
+        variant="danger"
+        isLoading={isPending}
+      />
+
+      {/* Modal de Alerta / Feedback */}
+      {deleteFeedback && (
+        <AlertModal
+          isOpen={Boolean(deleteFeedback)}
+          onClose={() => setDeleteFeedback(null)}
+          title={deleteFeedback.title}
+          description={deleteFeedback.message}
+          variant={deleteFeedback.variant}
+        />
+      )}
     </>
   );
 }

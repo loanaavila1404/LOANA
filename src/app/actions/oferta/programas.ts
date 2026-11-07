@@ -1,8 +1,8 @@
 'use server'
 
 import { revalidatePath } from 'next/cache';
-import { createClient } from '@/lib/supabase/server';
-import { getUserPermissions } from '@/lib/auth/permissions';
+import { createClient, getSafeDbClient } from '@/lib/supabase/server';
+import { getUserPermissions, getUserAuthContext } from '@/lib/auth/permissions';
 import { programaSchema } from '@/lib/validators/oferta';
 import { Database } from '@/types/database.types';
 
@@ -460,5 +460,92 @@ export async function createEstructuraBasicaAction(programaId: string): Promise<
   }
 
   revalidatePath(`/oferta/programas/${programaId}`);
+  return { success: true };
+}
+
+export async function deleteProgramaAction(
+  id: string,
+  motivo?: string
+): Promise<{ error?: string; success?: boolean }> {
+  const permissions = await getUserPermissions();
+  if (
+    !permissions.includes('PROGRAMAS.EDITAR') &&
+    !permissions.includes('SISTEMA.ADMINISTRAR')
+  ) {
+    return { error: 'No tienes permiso para eliminar programas' };
+  }
+
+  const db = await getSafeDbClient();
+  const authCtx = await getUserAuthContext();
+
+  // 1. Obtener datos antes del borrado
+  const { data: programa, error: fetchErr } = await db
+    .from('programas')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (fetchErr || !programa) {
+    return { error: 'No se encontró el programa a eliminar' };
+  }
+
+  // 2. Verificar si hay matrículas activas en alguna de sus ediciones
+  const { data: ediciones } = await db
+    .from('ediciones')
+    .select('id, codigo, nombre')
+    .eq('programa_id', id);
+
+  const edicionIds = (ediciones || []).map((e: { id: string }) => e.id);
+  if (edicionIds.length > 0) {
+    const { count: matriculasCount } = await db
+      .from('matriculas')
+      .select('id', { count: 'exact', head: true })
+      .in('edicion_id', edicionIds);
+
+    if (matriculasCount && matriculasCount > 0) {
+      return {
+        error: `No se puede eliminar el programa porque tiene ${matriculasCount} matrícula(s) asociadas en sus ediciones. Inactívelo en su lugar para salvaguardar el historial institucional.`,
+      };
+    }
+  }
+
+  const motivoTexto = motivo || 'Eliminación de programa académico autorizada por administración';
+
+  // 3. Borrado lógico asegurado en la tabla de programas
+  await db
+    .from('programas')
+    .update({ status: 'ELIMINADO' })
+    .eq('id', id);
+
+  // Intentar borrado físico si no tiene claves foráneas bloqueantes
+  let physicalDelete = false;
+  try {
+    const { error: delErr } = await db.from('programas').delete().eq('id', id);
+    if (!delErr) physicalDelete = true;
+  } catch {
+    // Si hay FK, el soft-delete garantiza la exclusión total
+  }
+
+  // 4. Registro permanente e inalterable en la bitácora institucional (audit_logs)
+  try {
+    await db.from('audit_logs').insert({
+      user_id: authCtx?.userId || null,
+      user_role: authCtx?.roleName || authCtx?.roleCode || 'ADMINISTRACION',
+      action: 'DELETE',
+      module: 'OFERTA_ACADEMICA',
+      entity: 'programas',
+      entity_id: id,
+      detail: `Eliminación de programa: ${programa.codigo} - ${programa.nombre} (${physicalDelete ? 'Físico' : 'Lógico'}). Motivo: ${motivoTexto}`,
+      data_before: programa,
+      data_after: { status: 'ELIMINADO', physicalDelete, motivo: motivoTexto },
+      result: 'EXITO',
+    });
+  } catch (auditErr) {
+    console.error('Error al registrar auditoría de borrado de programa:', auditErr);
+  }
+
+  revalidatePath('/oferta/programas');
+  revalidatePath('/oferta');
+  revalidatePath('/auditoria');
   return { success: true };
 }

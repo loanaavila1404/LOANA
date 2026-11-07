@@ -30,14 +30,15 @@ import {
   CheckCircle2,
   AlertTriangle,
   Info,
-  ArrowRightLeft
+  ArrowRightLeft,
+  Trash2
 } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 
 export type SeveridadLog = 'INFO' | 'WARNING' | 'CRITICAL' | 'AUDIT';
 export type ResultadoLog = 'EXITOSO' | 'FALLIDO' | 'ADVERTENCIA' | 'AUDITADO';
-export type CategoriaTab = 'TODOS' | 'MODIFICACIONES' | 'ACCESOS' | 'FINANZAS';
+export type CategoriaTab = 'TODOS' | 'ELIMINADOS' | 'MODIFICACIONES' | 'ACCESOS' | 'FINANZAS';
 
 export interface AuditoriaEvent {
   id: string;
@@ -71,12 +72,23 @@ export const ACCIONES_AMIGABLES: Record<string, { titulo: string; colorBadge: st
   INSERT: { titulo: "Nueva Matrícula Registrada", colorBadge: "bg-emerald-50 text-emerald-800 border-emerald-200" },
   UPDATE: { titulo: "Actualización de Registro", colorBadge: "bg-blue-50 text-blue-800 border-blue-200" },
   DELETE: { titulo: "Eliminación de Registro", colorBadge: "bg-red-50 text-[#990000] border-red-200" },
+  DELETE_PROGRAMA: { titulo: "Eliminación de Programa Académico", colorBadge: "bg-red-50 text-[#990000] border-red-200" },
+  DELETE_EDICION: { titulo: "Eliminación de Edición / Grupo", colorBadge: "bg-red-50 text-[#990000] border-red-200" },
+  DELETE_CURSO: { titulo: "Eliminación de Asignatura / Curso", colorBadge: "bg-red-50 text-[#990000] border-red-200" },
+  DELETE_HORARIO: { titulo: "Eliminación de Bloque Horario", colorBadge: "bg-red-50 text-[#990000] border-red-200" },
+  DELETE_PROSPECTO: { titulo: "Eliminación de Prospecto CRM", colorBadge: "bg-red-50 text-[#990000] border-red-200" },
   PAGO_REGISTRO: { titulo: "Emisión de Recibo de Pago", colorBadge: "bg-amber-50 text-amber-800 border-amber-200" },
   ANULACION_PAGO: { titulo: "Modificación Bloqueada / Auditoría", colorBadge: "bg-red-50 text-[#990000] border-red-200" },
   SECURITY_CHECK: { titulo: "Verificación de Seguridad y Token", colorBadge: "bg-indigo-50 text-indigo-700 border-indigo-200" },
 };
 
 const DICCIONARIO_CAMPOS: Record<string, string> = {
+  motivo_eliminacion: "Motivo de la eliminación",
+  eliminado_por: "Usuario que eliminó",
+  deleted_at: "Fecha y hora de eliminación",
+  nombre: "Nombre oficial",
+  codigo: "Código identificador",
+  activo: "Estado de activación",
   sede_default: "Sede predeterminada",
   root_protection: "Protección de cuenta raíz (Superadministrador)",
   modified_by: "Modificado por",
@@ -204,6 +216,15 @@ export function AuditoriaManagerClient({ initialLogs = [] }: AuditoriaManagerCli
     ).length;
   }, [logs]);
 
+  const totalEliminados = useMemo(() => {
+    return logs.filter(l => 
+      l.action === 'DELETE' || 
+      l.action.includes('DELETE') || 
+      l.action.includes('ELIMIN') || 
+      (l.detail && l.detail.toLowerCase().includes('elimin'))
+    ).length;
+  }, [logs]);
+
   // Filtrado de eventos
   const filteredLogs = useMemo(() => {
     return logs.filter(event => {
@@ -231,8 +252,16 @@ export function AuditoriaManagerClient({ initialLogs = [] }: AuditoriaManagerCli
       }
 
       // Filtro por Categoría Tab
+      if (activeTab === 'ELIMINADOS') {
+        return (
+          event.action === 'DELETE' ||
+          event.action.includes('DELETE') ||
+          event.action.includes('ELIMIN') ||
+          (event.detail && event.detail.toLowerCase().includes('elimin'))
+        );
+      }
       if (activeTab === 'MODIFICACIONES') {
-        return ['INSERT', 'UPDATE', 'DELETE', 'RBAC_UPDATE', 'CAMBIO_ESTADO'].some(a => event.action.includes(a));
+        return ['INSERT', 'UPDATE', 'RBAC_UPDATE', 'CAMBIO_ESTADO'].some(a => event.action.includes(a));
       }
       if (activeTab === 'ACCESOS') {
         return ['LOGIN', 'LOGOUT', 'AUTH', 'SESSION', 'SECURITY_CHECK'].some(a => event.action.includes(a)) || event.module === 'SEGURIDAD';
@@ -307,7 +336,7 @@ export function AuditoriaManagerClient({ initialLogs = [] }: AuditoriaManagerCli
       </div>
 
       {/* PASO 1: TARJETAS KPI SUPERIORES DE AUDITORÍA */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
         {/* KPI 1: Eventos Auditados */}
         <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
           <div className="flex items-center justify-between">
@@ -329,7 +358,35 @@ export function AuditoriaManagerClient({ initialLogs = [] }: AuditoriaManagerCli
           </div>
         </div>
 
-        {/* KPI 2: Accesos y Sesiones */}
+        {/* KPI 2: Bitácora de Eliminados (Historial Permanente) */}
+        <div 
+          onClick={() => setActiveTab('ELIMINADOS')}
+          className={`bg-white rounded-2xl p-5 border cursor-pointer transition-all flex flex-col justify-between ${
+            activeTab === 'ELIMINADOS'
+              ? 'border-red-400 ring-2 ring-red-400/20 shadow-xs'
+              : 'border-slate-200 shadow-xs hover:border-red-200'
+          }`}
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold tracking-wider uppercase text-slate-600">Bitácora Eliminados</span>
+            <div className="p-2 bg-red-50 text-[#C4121A] rounded-xl border border-red-100">
+              <Trash2 className="h-5 w-5" />
+            </div>
+          </div>
+          <div className="mt-3">
+            <div className="text-3xl font-black text-slate-900 font-heading tracking-tight">
+              {totalEliminados} <span className="text-base font-medium text-slate-600">{totalEliminados === 1 ? 'registro' : 'registros'}</span>
+            </div>
+            <div className="flex items-center gap-1.5 mt-2 text-xs font-semibold text-[#990000]">
+              <span className="px-1.5 py-0.5 rounded bg-red-50 border border-red-200 font-bold">
+                Trazabilidad WORM
+              </span>
+              <span className="text-slate-600">Quién, cuándo y motivo</span>
+            </div>
+          </div>
+        </div>
+
+        {/* KPI 3: Accesos y Sesiones */}
         <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold tracking-wider uppercase text-slate-600">Accesos y Sesiones</span>
@@ -350,7 +407,7 @@ export function AuditoriaManagerClient({ initialLogs = [] }: AuditoriaManagerCli
           </div>
         </div>
 
-        {/* KPI 3: Modificaciones Críticas */}
+        {/* KPI 4: Modificaciones Críticas */}
         <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold tracking-wider uppercase text-slate-600">Modificaciones Críticas</span>
@@ -371,7 +428,7 @@ export function AuditoriaManagerClient({ initialLogs = [] }: AuditoriaManagerCli
           </div>
         </div>
 
-        {/* KPI 4: Operaciones Financieras */}
+        {/* KPI 5: Operaciones Financieras */}
         <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold tracking-wider uppercase text-slate-600">Finanzas Auditadas</span>
@@ -401,7 +458,8 @@ export function AuditoriaManagerClient({ initialLogs = [] }: AuditoriaManagerCli
           <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
             {[
               { id: 'TODOS' as CategoriaTab, label: 'Todos los logs', count: logs.length },
-              { id: 'MODIFICACIONES' as CategoriaTab, label: 'Modificaciones de datos (Alta/Edición)', count: logs.filter(l => ['INSERT', 'UPDATE', 'DELETE', 'RBAC_UPDATE', 'CAMBIO_ESTADO'].some(a => l.action.includes(a))).length },
+              { id: 'ELIMINADOS' as CategoriaTab, label: '🗑️ Bitácora de Eliminados (Historial)', count: totalEliminados },
+              { id: 'MODIFICACIONES' as CategoriaTab, label: 'Modificaciones de datos (Alta/Edición)', count: logs.filter(l => ['INSERT', 'UPDATE', 'RBAC_UPDATE', 'CAMBIO_ESTADO'].some(a => l.action.includes(a))).length },
               { id: 'ACCESOS' as CategoriaTab, label: 'Accesos y seguridad (Auth/Sesión)', count: totalAccesos },
               { id: 'FINANZAS' as CategoriaTab, label: 'Operaciones financieras (Pagos/Recibos)', count: totalFinancieros },
             ].map(tab => {
