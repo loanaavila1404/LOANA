@@ -512,9 +512,9 @@ export function MatriculasTableWithDrawer({ initialMatriculas, readOnly = false 
       {/* PANEL LATERAL DE DETALLE FINANCIERO (DRAWER) */}
       {selectedMatricula && (
         <div className="fixed inset-0 z-50 overflow-hidden">
-          {/* Backdrop con desenfoque suave */}
+          {/* Backdrop institucional limpio */}
           <div
-            className="absolute inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity"
+            className="absolute inset-0 bg-slate-900/50 transition-opacity"
             onClick={() => setSelectedMatricula(null)}
           />
 

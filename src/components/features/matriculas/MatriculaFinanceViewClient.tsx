@@ -627,8 +627,8 @@ export function MatriculaFinanceViewClient({
       {/* MODAL DE REGISTRO DE PAGO INTEGRADO */}
       {/* ============================================================== */}
       {!readOnly && isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <Card className="w-full max-w-md p-6 bg-white shadow-2xl relative max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200 border-slate-200">
+        <div className="fixed inset-0 z-50 bg-slate-900/70 flex items-center justify-center p-4">
+          <Card className="w-full max-w-md p-6 bg-white shadow-2xl relative max-h-[90vh] overflow-y-auto border-slate-200">
             <button
               onClick={() => {
                 setIsModalOpen(false);

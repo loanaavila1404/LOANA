@@ -488,3 +488,114 @@ export async function validarPagoMatriculaAction(input: ValidarPagoMatriculaInpu
     importePagado: importeAPagar,
   };
 }
+
+export async function rechazarPrematriculaAction(matriculaId: string, motivo?: string) {
+  const authCtx = await getUserAuthContext();
+  if (!authCtx) {
+    return { error: 'Usuario no autenticado.' };
+  }
+
+  // Protección: Asesores comerciales no pueden rechazar prematrículas
+  if (authCtx.isAsesor) {
+    return {
+      error: 'Acceso denegado: Los Asesores Comerciales tienen permisos de solo consulta y no pueden rechazar prematrículas.',
+    };
+  }
+
+  const perms = authCtx.permissions;
+  if (!perms.includes('MATRICULAS.GESTIONAR') && !perms.includes('SISTEMA.ADMINISTRAR')) {
+    return { error: 'No cuentas con los permisos requeridos para rechazar prematrículas.' };
+  }
+
+  const db = await getSafeDbClient();
+  const { data: mat, error: matErr } = await db
+    .from('matriculas')
+    .select('id, codigo_matricula, status, prospecto_id, estudiante_id')
+    .eq('id', matriculaId)
+    .single();
+
+  if (matErr || !mat) {
+    return { error: 'No se encontró el registro de la matrícula indicada.' };
+  }
+
+  if (mat.status === 'ACTIVA') {
+    return { error: 'Esta matrícula ya se encuentra ACTIVA. Para revertirla debes usar el flujo formal de anulación de matrícula.' };
+  }
+
+  const motivoTexto = (motivo || 'Voucher o pago no validado por Administración/Caja').trim();
+
+  // 1. Marcar matrícula como ANULADA
+  const { error: updMatErr } = await db
+    .from('matriculas')
+    .update({
+      status: 'ANULADA',
+      motivo_estado: motivoTexto,
+      anulada_en: new Date().toISOString(),
+      updated_by: authCtx.userId,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', matriculaId);
+
+  if (updMatErr) {
+    return { error: 'Error al rechazar la prematrícula: ' + updMatErr.message };
+  }
+
+  // 2. Anular cuotas asociadas si existían
+  await db
+    .from('cuotas')
+    .update({
+      status: 'ANULADA',
+      updated_at: new Date().toISOString(),
+    })
+    .eq('matricula_id', matriculaId);
+
+  // 3. Sincronizar prospecto CRM si procede
+  if (mat.prospecto_id) {
+    await db
+      .from('prospectos')
+      .update({
+        status: 'CONTACTADO',
+        matricula_id: null,
+        updated_by: authCtx.userId,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', mat.prospecto_id);
+
+    await db.from('seguimientos').insert({
+      prospecto_id: mat.prospecto_id,
+      tipo_actividad: 'NOTA_INTERNA',
+      resultado: 'Prematrícula Rechazada en Caja',
+      nota: `Prematrícula rechazada: ${motivoTexto}. El prospecto retorna a la etapa de seguimiento comercial para solicitar un nuevo comprobante.`,
+      fecha_hora: new Date().toISOString(),
+      estado_anterior: 'PREMATRICULA',
+      estado_nuevo: 'CONTACTADO',
+      asesor_id: authCtx.userId,
+      created_by: authCtx.userId,
+    });
+  }
+
+  // 4. Auditoría
+  try {
+    await db.from('audit_logs').insert({
+      user_id: authCtx.userId,
+      user_role: authCtx.roleName || authCtx.roleCode,
+      action: 'UPDATE',
+      module: 'MATRICULAS',
+      entity: 'matriculas',
+      entity_id: matriculaId,
+      detail: `Rechazo de prematrícula ${mat.codigo_matricula}. Motivo: ${motivoTexto}`,
+      data_before: { status: mat.status },
+      data_after: { status: 'ANULADA', motivo: motivoTexto },
+      result: 'EXITO',
+    });
+  } catch {
+    // Auditoría tolerante a fallos
+  }
+
+  revalidatePath('/matriculas');
+  revalidatePath(`/matriculas/${matriculaId}`);
+  revalidatePath('/crm');
+  revalidatePath('/dashboard');
+
+  return { success: true };
+}
