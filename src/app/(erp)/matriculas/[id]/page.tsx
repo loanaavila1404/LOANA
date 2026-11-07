@@ -630,6 +630,18 @@ export default async function MatriculaDetailPage({
             pagos={pagos}
             matriculaStatus={matricula.status || 'ACTIVA'}
             readOnly={isAdvisor}
+            matriculaParaValidar={{
+              id: matricula.id,
+              codigo_matricula: matricula.codigo_matricula,
+              importe_matricula: matricula.importe_matricula,
+              importe_pension: matricula.importe_pension,
+              numero_pensiones: matricula.numero_pensiones,
+              descuento_total: matricula.descuento_total,
+              totalNeto,
+              estudianteNombre: nombreCompleto,
+              estudianteDni: persona?.numero_documento || undefined,
+              programaNombre: prog?.nombre || undefined,
+            }}
           />
         </div>
 

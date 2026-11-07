@@ -1,8 +1,8 @@
 'use server'
 
 import { revalidatePath } from 'next/cache';
-import { createClient } from '@/lib/supabase/server';
-import { getUserPermissions, isCurrentUserAdvisor } from '@/lib/auth/permissions';
+import { createClient, getSafeDbClient } from '@/lib/supabase/server';
+import { getUserPermissions, isCurrentUserAdvisor, getUserAuthContext } from '@/lib/auth/permissions';
 import { confirmarMatriculaSchema, registrarPagoSchema } from '@/lib/validators/matriculas';
 
 export async function confirmarMatriculaAction(payload: unknown) {
@@ -112,4 +112,379 @@ export async function anularPagoAction(pagoId: string, motivo: string) {
 
   revalidatePath('/matriculas');
   return { success: true };
+}
+
+export interface ValidarPagoMatriculaInput {
+  matriculaId: string;
+  tipoPago: 'MATRICULA' | 'TOTAL' | 'PARCIAL';
+  montoPersonalizado?: number;
+  medioPago: string;
+  numeroOperacion?: string;
+  comprobanteTipo?: string;
+  comprobanteNumero?: string;
+  observaciones?: string;
+}
+
+export async function validarPagoMatriculaAction(input: ValidarPagoMatriculaInput) {
+  const authCtx = await getUserAuthContext();
+  if (!authCtx) {
+    return { error: 'Usuario no autenticado.' };
+  }
+
+  // Protección estricta: Asesores comerciales tienen prohibido validar pagos o aprobar matrículas
+  if (authCtx.isAsesor) {
+    return {
+      error: 'Acceso denegado: Los Asesores Comerciales tienen permisos estrictamente de solo lectura y no pueden validar pagos ni aprobar matrículas.',
+    };
+  }
+
+  const perms = authCtx.permissions;
+  if (
+    !perms.includes('MATRICULAS.GESTIONAR') &&
+    !perms.includes('PAGOS.REGISTRAR') &&
+    !perms.includes('SISTEMA.ADMINISTRAR')
+  ) {
+    return { error: 'No cuentas con los permisos requeridos para validar pagos o aprobar matrículas.' };
+  }
+
+  const db = await getSafeDbClient();
+
+  // 1. Obtener expediente de la matrícula
+  const { data: mat, error: matErr } = await db
+    .from('matriculas')
+    .select(`
+      *,
+      estudiantes (
+        id,
+        persona_id,
+        codigo_estudiante,
+        fecha_ingreso,
+        status,
+        personas (
+          id,
+          nombres,
+          apellido_paterno,
+          apellido_materno,
+          numero_documento
+        )
+      )
+    `)
+    .eq('id', input.matriculaId)
+    .single();
+
+  if (matErr || !mat) {
+    return { error: 'No se encontró el registro de la matrícula indicada.' };
+  }
+
+  const today = new Date().toISOString().split('T')[0];
+
+  // 2. Verificar cuotas existentes o generarlas de forma consistente
+  const { data: cuotasRaw } = await db
+    .from('cuotas')
+    .select('*')
+    .eq('matricula_id', mat.id)
+    .order('numero_cuota', { ascending: true });
+
+  let cuotasList = cuotasRaw || [];
+
+  if (cuotasList.length === 0) {
+    const impMatricula = Number(mat.importe_matricula) || 0;
+    const impPension = Number(mat.importe_pension) || 0;
+    const numPensiones = Number(mat.numero_pensiones) || 0;
+    const descTotal = Number(mat.descuento_total) || 0;
+    const freqMeses = Number(mat.frecuencia_meses) || 1;
+    const totalBruto = impMatricula + (impPension * numPensiones);
+
+    let descRestante = descTotal;
+    let brutoRestante = totalBruto;
+    const cuotasNuevas: {
+      matricula_id: string;
+      tipo_cuota: string;
+      numero_cuota: number;
+      concepto: string;
+      fecha_emision: string;
+      fecha_vencimiento: string;
+      importe_original: number;
+      descuento: number;
+      importe_neto: number;
+      saldo: number;
+      status: string;
+    }[] = [];
+
+    // Cuota de Matrícula (cuota 0)
+    if (impMatricula > 0 || numPensiones === 0) {
+      let descCuota = 0;
+      if (numPensiones === 0) {
+        descCuota = Math.min(impMatricula, descRestante);
+      } else if (brutoRestante > 0) {
+        descCuota = Math.min(impMatricula, Math.floor(((impMatricula / brutoRestante) * descRestante) * 100) / 100);
+      }
+      const neto = Math.max(0, impMatricula - descCuota);
+      descRestante = Math.max(0, descRestante - descCuota);
+      brutoRestante = Math.max(0, brutoRestante - impMatricula);
+
+      cuotasNuevas.push({
+        matricula_id: mat.id,
+        tipo_cuota: 'MATRICULA',
+        numero_cuota: 0,
+        concepto: 'Matrícula',
+        fecha_emision: today,
+        fecha_vencimiento: mat.primer_vencimiento || today,
+        importe_original: impMatricula,
+        descuento: descCuota,
+        importe_neto: neto,
+        saldo: neto,
+        status: neto === 0 ? 'PAGADA' : 'PENDIENTE',
+      });
+    }
+
+    // Cuotas de Pensión (1..N)
+    const vtoBase = mat.primer_vencimiento ? new Date(mat.primer_vencimiento + 'T00:00:00') : new Date();
+    if (!mat.primer_vencimiento) {
+      vtoBase.setDate(vtoBase.getDate() + 30);
+    }
+
+    for (let i = 1; i <= numPensiones; i++) {
+      let descCuota = 0;
+      if (i === numPensiones) {
+        descCuota = Math.min(impPension, descRestante);
+      } else if (brutoRestante > 0) {
+        descCuota = Math.min(impPension, Math.floor(((impPension / brutoRestante) * descRestante) * 100) / 100);
+      }
+      const neto = Math.max(0, impPension - descCuota);
+      descRestante = Math.max(0, descRestante - descCuota);
+      brutoRestante = Math.max(0, brutoRestante - impPension);
+
+      const vtoStr = vtoBase.toISOString().split('T')[0];
+      cuotasNuevas.push({
+        matricula_id: mat.id,
+        tipo_cuota: 'PENSION',
+        numero_cuota: i,
+        concepto: `Pensión ${i}`,
+        fecha_emision: today,
+        fecha_vencimiento: vtoStr,
+        importe_original: impPension,
+        descuento: descCuota,
+        importe_neto: neto,
+        saldo: neto,
+        status: neto === 0 ? 'PAGADA' : 'PENDIENTE',
+      });
+
+      vtoBase.setMonth(vtoBase.getMonth() + freqMeses);
+    }
+
+    if (cuotasNuevas.length > 0) {
+      const { data: inserted, error: insCuotasErr } = await db
+        .from('cuotas')
+        .insert(cuotasNuevas)
+        .select('*');
+
+      if (insCuotasErr) {
+        return { error: 'Error al generar el cronograma de cuotas: ' + insCuotasErr.message };
+      }
+      cuotasList = inserted || [];
+    }
+  }
+
+  // 3. Determinar importe a pagar según la modalidad elegida
+  let importeAPagar = 0;
+  if (input.tipoPago === 'TOTAL') {
+    importeAPagar = cuotasList.reduce((acc, c) => acc + (Number(c.saldo) || 0), 0);
+  } else if (input.tipoPago === 'MATRICULA') {
+    const cuotaMat = cuotasList.find(c => c.tipo_cuota === 'MATRICULA') || cuotasList[0];
+    importeAPagar = cuotaMat ? (Number(cuotaMat.saldo) || Number(cuotaMat.importe_neto) || 0) : (Number(mat.importe_matricula) || 0);
+  } else if (input.tipoPago === 'PARCIAL') {
+    importeAPagar = Number(input.montoPersonalizado) || 0;
+  }
+
+  if (importeAPagar <= 0 && cuotasList.some(c => (Number(c.saldo) || 0) > 0)) {
+    return { error: 'El importe a validar debe ser un monto positivo en soles.' };
+  }
+
+  // 4. Aplicar el pago a las cuotas en orden prioritario (Matrícula -> Pensión 1 -> Pensión N)
+  let restante = importeAPagar;
+  const aplicaciones: { cuota_id: string; importe_aplicado: number }[] = [];
+
+  const cuotasOrdenadas = [...cuotasList].sort((a, b) => {
+    if (a.tipo_cuota === 'MATRICULA' && b.tipo_cuota !== 'MATRICULA') return -1;
+    if (b.tipo_cuota === 'MATRICULA' && a.tipo_cuota !== 'MATRICULA') return 1;
+    return (a.numero_cuota || 0) - (b.numero_cuota || 0);
+  });
+
+  for (const c of cuotasOrdenadas) {
+    if (restante <= 0) break;
+    const saldoActual = Number(c.saldo) || 0;
+    if (saldoActual <= 0) continue;
+
+    const montoAplicar = Math.min(saldoActual, restante);
+    const nuevoSaldo = Number((saldoActual - montoAplicar).toFixed(2));
+    const nuevoStatus = nuevoSaldo === 0 ? 'PAGADA' : 'PARCIAL';
+
+    aplicaciones.push({
+      cuota_id: c.id,
+      importe_aplicado: Number(montoAplicar.toFixed(2)),
+    });
+
+    await db
+      .from('cuotas')
+      .update({
+        saldo: nuevoSaldo,
+        status: nuevoStatus,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', c.id);
+
+    restante = Number((restante - montoAplicar).toFixed(2));
+  }
+
+  // 5. Registrar el pago institucional y sus aplicaciones
+  if (importeAPagar > 0) {
+    const { data: nuevoPago, error: pagoErr } = await db
+      .from('pagos')
+      .insert({
+        estudiante_id: mat.estudiante_id,
+        fecha_pago: today,
+        importe: importeAPagar,
+        medio_pago: input.medioPago || 'TRANSFERENCIA',
+        numero_operacion: input.numeroOperacion?.trim() || null,
+        comprobante_tipo: input.comprobanteTipo || 'RECIBO',
+        comprobante_numero: input.comprobanteNumero?.trim() || null,
+        observaciones: (input.observaciones || 'Validación de pago inicial y aprobación de matrícula').trim(),
+        status: 'REGISTRADO',
+        registrado_por: authCtx.userId,
+      })
+      .select('id')
+      .single();
+
+    if (!pagoErr && nuevoPago) {
+      for (const app of aplicaciones) {
+        await db.from('pago_aplicaciones').insert({
+          pago_id: nuevoPago.id,
+          cuota_id: app.cuota_id,
+          importe_aplicado: app.importe_aplicado,
+          created_by: authCtx.userId,
+        });
+      }
+    }
+  }
+
+  // 6. Asignar código oficial si era PRE- y pasar matrícula a ACTIVA
+  let nuevoCodigoMat = mat.codigo_matricula;
+  if (!nuevoCodigoMat || nuevoCodigoMat.startsWith('PRE-')) {
+    const anio = new Date().getFullYear();
+    const { count } = await db
+      .from('matriculas')
+      .select('id', { count: 'exact' });
+    const num = (count || 0) + 1;
+    nuevoCodigoMat = `MAT-${anio}-${num.toString().padStart(5, '0')}`;
+  }
+
+  const { error: updMatErr } = await db
+    .from('matriculas')
+    .update({
+      status: 'ACTIVA',
+      codigo_matricula: nuevoCodigoMat,
+      fecha_matricula: mat.fecha_matricula || today,
+      activada_en: new Date().toISOString(),
+      cuotas_generadas_en: new Date().toISOString(),
+      updated_by: authCtx.userId,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', mat.id);
+
+  if (updMatErr) {
+    return { error: 'Error al cambiar estado de la matrícula a ACTIVA: ' + updMatErr.message };
+  }
+
+  // 7. Activar formalmente al estudiante en el Padrón Institucional
+  const est = Array.isArray(mat.estudiantes) ? mat.estudiantes[0] : mat.estudiantes;
+  let codigoEst = est?.codigo_estudiante;
+  if (!codigoEst) {
+    const anio = new Date().getFullYear();
+    const { count: countEst } = await db
+      .from('estudiantes')
+      .select('id', { count: 'exact' });
+    const numEst = (countEst || 0) + 1;
+    codigoEst = `BRU-${anio}-${numEst.toString().padStart(5, '0')}`;
+  }
+
+  await db
+    .from('estudiantes')
+    .update({
+      status: 'ACTIVO',
+      codigo_estudiante: codigoEst,
+      fecha_ingreso: est?.fecha_ingreso || today,
+      updated_by: authCtx.userId,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', mat.estudiante_id);
+
+  // 8. Si proviene de prospecto CRM, sincronizar a MATRICULADO
+  if (mat.prospecto_id) {
+    await db
+      .from('prospectos')
+      .update({
+        status: 'MATRICULADO',
+        matricula_id: mat.id,
+        updated_by: authCtx.userId,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', mat.prospecto_id);
+
+    await db.from('seguimientos').insert({
+      prospecto_id: mat.prospecto_id,
+      tipo_actividad: 'NOTA_INTERNA',
+      resultado: 'Matrícula Validada y Activada en Caja',
+      nota: `Pago verificado por S/ ${importeAPagar} (${input.medioPago}). Matrícula formalizada con código ${nuevoCodigoMat} y estudiante incorporado al padrón oficial activo.`,
+      fecha_hora: new Date().toISOString(),
+      estado_anterior: 'PREMATRICULA',
+      estado_nuevo: 'MATRICULADO',
+      asesor_id: authCtx.userId,
+      created_by: authCtx.userId,
+    });
+  }
+
+  // 9. Registrar evento en bitácora de auditoría
+  try {
+    const persona = est?.personas;
+    const nombreCompleto = persona
+      ? `${persona.nombres || ''} ${persona.apellido_paterno || ''}`.trim()
+      : 'Estudiante';
+
+    await db.from('audit_logs').insert({
+      user_id: authCtx.userId,
+      user_role: authCtx.roleName || authCtx.roleCode,
+      action: 'UPDATE',
+      module: 'MATRICULAS',
+      entity: 'matriculas',
+      entity_id: mat.id,
+      detail: `Validación de pago (S/ ${importeAPagar} vía ${input.medioPago}) y aprobación de matrícula a estado ACTIVA (${nuevoCodigoMat}). Titular: ${nombreCompleto}`,
+      data_before: {
+        status: mat.status,
+        codigo_matricula: mat.codigo_matricula,
+      },
+      data_after: {
+        status: 'ACTIVA',
+        codigo_matricula: nuevoCodigoMat,
+        importe_pagado: importeAPagar,
+      },
+      result: 'EXITO',
+    });
+  } catch {
+    // Auditoría tolerante a fallos
+  }
+
+  // 10. Revalidar todas las rutas afectadas
+  revalidatePath('/matriculas');
+  revalidatePath(`/matriculas/${mat.id}`);
+  revalidatePath('/reportes/padron-estudiantes');
+  revalidatePath('/crm');
+  revalidatePath('/dashboard');
+
+  return {
+    success: true,
+    matriculaId: mat.id,
+    codigoMatricula: nuevoCodigoMat,
+    importePagado: importeAPagar,
+  };
 }

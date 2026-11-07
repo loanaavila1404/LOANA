@@ -22,6 +22,7 @@ import {
   Receipt,
   Download,
 } from 'lucide-react';
+import { ValidarPagoMatriculaModal, MatriculaParaValidar } from './ValidarPagoMatriculaModal';
 
 export type CuotaItem = {
   id: string;
@@ -98,10 +99,16 @@ interface Props {
 }
 
 export function MatriculasTableWithDrawer({ initialMatriculas, readOnly = false }: Props) {
+  const [matriculas, setMatriculas] = useState<MatriculaRow[]>(initialMatriculas);
+  const [matriculaAValidar, setMatriculaAValidar] = useState<MatriculaParaValidar | null>(null);
   const [activeTab, setActiveTab] = useState<'TODAS' | 'AL_DIA' | 'VOUCHERS' | 'POR_VENCER' | 'CON_DEUDA'>('TODAS');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('TODOS');
   const [selectedMatricula, setSelectedMatricula] = useState<MatriculaRow | null>(null);
+
+  useEffect(() => {
+    setMatriculas(initialMatriculas);
+  }, [initialMatriculas]);
 
   // Cerrar Drawer con tecla Escape
   useEffect(() => {
@@ -117,17 +124,17 @@ export function MatriculasTableWithDrawer({ initialMatriculas, readOnly = false 
   // Conteos para las pestañas de filtrado rápido
   const counts = useMemo(() => {
     return {
-      todas: initialMatriculas.length,
-      alDia: initialMatriculas.filter(m => m.estadoFinanciero === 'AL_DIA' || m.estadoFinanciero === 'PAGADO_TOTAL').length,
-      vouchers: initialMatriculas.filter(m => m.estadoFinanciero === 'VOUCHER_PENDIENTE').length,
-      porVencer: initialMatriculas.filter(m => m.estadoFinanciero === 'POR_VENCER').length,
-      conDeuda: initialMatriculas.filter(m => m.estadoFinanciero === 'CON_DEUDA').length,
+      todas: matriculas.length,
+      alDia: matriculas.filter(m => m.estadoFinanciero === 'AL_DIA' || m.estadoFinanciero === 'PAGADO_TOTAL').length,
+      vouchers: matriculas.filter(m => m.estadoFinanciero === 'VOUCHER_PENDIENTE').length,
+      porVencer: matriculas.filter(m => m.estadoFinanciero === 'POR_VENCER').length,
+      conDeuda: matriculas.filter(m => m.estadoFinanciero === 'CON_DEUDA').length,
     };
-  }, [initialMatriculas]);
+  }, [matriculas]);
 
   // Filtrado de matrículas según pestaña, búsqueda y estado
   const filteredMatriculas = useMemo(() => {
-    return initialMatriculas.filter(m => {
+    return matriculas.filter(m => {
       // Filtro por pestaña
       if (activeTab === 'AL_DIA') {
         if (m.estadoFinanciero !== 'AL_DIA' && m.estadoFinanciero !== 'PAGADO_TOTAL') return false;
@@ -167,7 +174,7 @@ export function MatriculasTableWithDrawer({ initialMatriculas, readOnly = false 
 
       return true;
     });
-  }, [initialMatriculas, activeTab, statusFilter, searchQuery]);
+  }, [matriculas, activeTab, statusFilter, searchQuery]);
 
   return (
     <div className="space-y-4">
@@ -448,6 +455,33 @@ export function MatriculasTableWithDrawer({ initialMatriculas, readOnly = false 
                       {/* Acciones */}
                       <td className="py-3 px-4 text-center" onClick={e => e.stopPropagation()}>
                         <div className="flex items-center justify-center gap-1.5">
+                          {!readOnly && (m.status === 'PREMATRICULA' || m.estadoFinanciero === 'VOUCHER_PENDIENTE') && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const p = m.estudiante?.personas;
+                                const nombre = p ? `${p.nombres || ''} ${p.apellido_paterno || ''}`.trim() : 'Estudiante';
+                                setMatriculaAValidar({
+                                  id: m.id,
+                                  codigo_matricula: m.codigo_matricula,
+                                  importe_matricula: m.importe_matricula,
+                                  importe_pension: m.importe_pension,
+                                  numero_pensiones: m.numero_pensiones,
+                                  descuento_total: m.descuento_total,
+                                  totalNeto: m.totalNeto,
+                                  estudianteNombre: nombre,
+                                  estudianteDni: p?.numero_documento || undefined,
+                                  programaNombre: m.edicion?.programas?.nombre || undefined,
+                                });
+                              }}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 text-[11px] font-bold shadow-2xs transition group/btn"
+                              title="Validar Pago / Aprobar Matrícula"
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 group-hover/btn:scale-110 transition-transform" />
+                              <span>Validar</span>
+                            </button>
+                          )}
+
                           <button
                             type="button"
                             onClick={() => setSelectedMatricula(m)}
@@ -528,6 +562,44 @@ export function MatriculasTableWithDrawer({ initialMatriculas, readOnly = false 
               {/* Contenido scrolleable */}
               <div className="flex-1 overflow-y-auto p-5 space-y-6">
                 
+                {/* Banner de Validación para Prematrículas */}
+                {!readOnly && (selectedMatricula.status === 'PREMATRICULA' || selectedMatricula.estadoFinanciero === 'VOUCHER_PENDIENTE') && (
+                  <div className="p-3.5 bg-emerald-50/90 border border-emerald-200 rounded-xl flex items-center justify-between gap-3 shadow-2xs">
+                    <div>
+                      <span className="font-bold text-emerald-950 text-xs flex items-center gap-1.5">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                        Voucher / Prematrícula Por Validar
+                      </span>
+                      <span className="text-[11px] text-emerald-800 block mt-0.5">
+                        Valida el pago en Caja para activar formalmente al alumno en el Padrón Institucional.
+                      </span>
+                    </div>
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        const p = selectedMatricula.estudiante?.personas;
+                        const nombre = p ? `${p.nombres || ''} ${p.apellido_paterno || ''}`.trim() : 'Estudiante';
+                        setMatriculaAValidar({
+                          id: selectedMatricula.id,
+                          codigo_matricula: selectedMatricula.codigo_matricula,
+                          importe_matricula: selectedMatricula.importe_matricula,
+                          importe_pension: selectedMatricula.importe_pension,
+                          numero_pensiones: selectedMatricula.numero_pensiones,
+                          descuento_total: selectedMatricula.descuento_total,
+                          totalNeto: selectedMatricula.totalNeto,
+                          estudianteNombre: nombre,
+                          estudianteDni: p?.numero_documento || undefined,
+                          programaNombre: selectedMatricula.edicion?.programas?.nombre || undefined,
+                        });
+                      }}
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shrink-0 flex items-center gap-1.5 shadow-2xs"
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span>Validar Pago</span>
+                    </Button>
+                  </div>
+                )}
+
                 {/* 1. Datos del Estudiante */}
                 <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
                   <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-600 border-b border-slate-200 pb-2">
@@ -752,6 +824,32 @@ export function MatriculasTableWithDrawer({ initialMatriculas, readOnly = false 
 
               {/* Footer con Acciones */}
               <div className="p-4 border-t border-slate-200 bg-slate-50 flex items-center gap-2.5">
+                {!readOnly && (selectedMatricula.status === 'PREMATRICULA' || selectedMatricula.estadoFinanciero === 'VOUCHER_PENDIENTE') && (
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      const p = selectedMatricula.estudiante?.personas;
+                      const nombre = p ? `${p.nombres || ''} ${p.apellido_paterno || ''}`.trim() : 'Estudiante';
+                      setMatriculaAValidar({
+                        id: selectedMatricula.id,
+                        codigo_matricula: selectedMatricula.codigo_matricula,
+                        importe_matricula: selectedMatricula.importe_matricula,
+                        importe_pension: selectedMatricula.importe_pension,
+                        numero_pensiones: selectedMatricula.numero_pensiones,
+                        descuento_total: selectedMatricula.descuento_total,
+                        totalNeto: selectedMatricula.totalNeto,
+                        estudianteNombre: nombre,
+                        estudianteDni: p?.numero_documento || undefined,
+                        programaNombre: selectedMatricula.edicion?.programas?.nombre || undefined,
+                      });
+                    }}
+                    className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-2xs py-2.5"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>Validar Pago</span>
+                  </Button>
+                )}
+
                 <Link
                   href={`/matriculas/${selectedMatricula.id}/ficha`}
                   className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg border border-slate-300 bg-white text-slate-700 text-xs font-bold hover:bg-slate-100 transition shadow-2xs"
@@ -782,6 +880,49 @@ export function MatriculasTableWithDrawer({ initialMatriculas, readOnly = false 
           </div>
         </div>
       )}
+
+      {/* Modal de Validación de Pago y Aprobación de Matrícula */}
+      <ValidarPagoMatriculaModal
+        isOpen={Boolean(matriculaAValidar)}
+        onClose={() => setMatriculaAValidar(null)}
+        matricula={matriculaAValidar}
+        onSuccess={(res) => {
+          setMatriculas((prev) =>
+            prev.map((item) =>
+              item.id === matriculaAValidar?.id
+                ? {
+                    ...item,
+                    status: 'ACTIVA',
+                    codigo_matricula: res.codigoMatricula,
+                    estadoFinanciero:
+                      res.importePagado >= (item.totalNeto || 0)
+                        ? 'PAGADO_TOTAL'
+                        : 'AL_DIA',
+                    totalPagado: (item.totalPagado || 0) + res.importePagado,
+                    totalSaldo: Math.max(0, (item.totalNeto || 0) - ((item.totalPagado || 0) + res.importePagado)),
+                  }
+                : item
+            )
+          );
+          if (selectedMatricula?.id === matriculaAValidar?.id) {
+            setSelectedMatricula((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    status: 'ACTIVA',
+                    codigo_matricula: res.codigoMatricula,
+                    estadoFinanciero:
+                      res.importePagado >= (prev.totalNeto || 0)
+                        ? 'PAGADO_TOTAL'
+                        : 'AL_DIA',
+                    totalPagado: (prev.totalPagado || 0) + res.importePagado,
+                    totalSaldo: Math.max(0, (prev.totalNeto || 0) - ((prev.totalPagado || 0) + res.importePagado)),
+                  }
+                : null
+            );
+          }
+        }}
+      />
     </div>
   );
 }

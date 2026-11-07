@@ -27,6 +27,7 @@ import {
   ExternalLink,
   ShieldCheck,
 } from 'lucide-react';
+import { ValidarPagoMatriculaModal, MatriculaParaValidar } from './ValidarPagoMatriculaModal';
 
 export type CuotaDetailItem = {
   id: string;
@@ -77,6 +78,7 @@ interface Props {
   pagos: PagoDetailItem[];
   matriculaStatus: string;
   readOnly?: boolean;
+  matriculaParaValidar?: MatriculaParaValidar;
 }
 
 export function MatriculaFinanceViewClient({
@@ -85,8 +87,10 @@ export function MatriculaFinanceViewClient({
   pagos,
   matriculaStatus,
   readOnly = false,
+  matriculaParaValidar,
 }: Props) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isValidarModalOpen, setIsValidarModalOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -262,6 +266,42 @@ export function MatriculaFinanceViewClient({
         </div>
       )}
 
+      {/* Banner Prominente de Validación para Prematrículas */}
+      {!readOnly && matriculaStatus === 'PREMATRICULA' && matriculaParaValidar && (
+        <div className="p-4 bg-gradient-to-r from-emerald-50 via-emerald-100/40 to-white border border-emerald-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-2xs">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
+              <CheckCircle2 className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-200/60 px-2.5 py-0.5 rounded-full">
+                  Por Validar en Caja
+                </span>
+                <span className="text-xs font-mono font-bold text-slate-600">
+                  {matriculaParaValidar.codigo_matricula}
+                </span>
+              </div>
+              <h3 className="text-sm font-bold text-slate-900 mt-1">
+                Esta matrícula se encuentra en estado PREMATRÍCULA
+              </h3>
+              <p className="text-xs text-slate-600 mt-0.5">
+                Valida el pago inicial o cancelación total para generar el cronograma oficial y activar formalmente al estudiante en el Padrón Institucional.
+              </p>
+            </div>
+          </div>
+
+          <Button
+            type="button"
+            onClick={() => setIsValidarModalOpen(true)}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-2xs sm:shrink-0 py-2.5 px-4"
+          >
+            <CheckCircle2 className="w-4 h-4" />
+            <span>Validar Pago y Aprobar Matrícula</span>
+          </Button>
+        </div>
+      )}
+
       {/* ============================================================== */}
       {/* 1. CRONOGRAMA DE PAGOS Y CUOTAS (INTERACTIVO) */}
       {/* ============================================================== */}
@@ -278,6 +318,17 @@ export function MatriculaFinanceViewClient({
               Control de obligaciones de pensiones, fechas de vencimiento y saldos en tiempo real.
             </p>
           </div>
+
+          {!readOnly && matriculaStatus === 'PREMATRICULA' && matriculaParaValidar && (
+            <Button
+              type="button"
+              onClick={() => setIsValidarModalOpen(true)}
+              className="h-9 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs flex items-center gap-2 shadow-2xs shrink-0"
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              <span>Validar Pago / Aprobar</span>
+            </Button>
+          )}
 
           {!readOnly && (matriculaStatus === 'ACTIVA' || matriculaStatus === 'FINALIZADA') && cuotasPendientes.length > 0 && (
             <Button
@@ -817,6 +868,13 @@ export function MatriculaFinanceViewClient({
           </Card>
         </div>
       )}
+
+      {/* Modal de Validación de Pago y Aprobación de Matrícula */}
+      <ValidarPagoMatriculaModal
+        isOpen={isValidarModalOpen}
+        onClose={() => setIsValidarModalOpen(false)}
+        matricula={matriculaParaValidar || null}
+      />
     </div>
   );
 }
