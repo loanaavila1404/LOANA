@@ -15,6 +15,7 @@ import {
   updateCursoAction,
   deleteCursoAction,
 } from '@/app/actions/oferta/planes';
+import { savePrerrequisitoAction } from '@/app/actions/academico/prerrequisitos';
 import { ConfirmModal, AlertModal } from '@/components/ui/Feedback';
 
 export function PlanFormModalClient({
@@ -366,6 +367,7 @@ export function CursoFormModalClient({
       ? String(curso.horas_semanales)
       : '4'
   );
+  const [prerrequisito, setPrerrequisito] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteFeedback, setDeleteFeedback] = useState<{
     title: string;
@@ -408,6 +410,7 @@ export function CursoFormModalClient({
           ? String(curso.horas_semanales)
           : '4'
       );
+      setPrerrequisito('');
     }
   }, [isOpen, curso]);
 
@@ -431,6 +434,10 @@ export function CursoFormModalClient({
       if (res?.error) {
         setError(res.error);
       } else {
+        const cursoId = (res as any)?.data?.id || curso?.id;
+        if (cursoId) {
+          await savePrerrequisitoAction(cursoId, prerrequisito.trim().toUpperCase() || null);
+        }
         setIsOpen(false);
         router.refresh();
       }
@@ -502,6 +509,22 @@ export function CursoFormModalClient({
                 className="text-slate-900 bg-white"
               />
             </div>
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-slate-700">
+              Prerrequisito Académico (Código de Curso Previo)
+            </label>
+            <Input
+              name="prerrequisito"
+              value={prerrequisito}
+              onChange={e => setPrerrequisito(e.target.value.toUpperCase())}
+              placeholder="Ej: ENF-101, CON-101 (opcional)"
+              className="uppercase text-slate-900 bg-white font-mono"
+            />
+            <p className="text-[10.5px] text-slate-500">
+              Asignatura obligatoria que el estudiante debe tener aprobada para cursar esta materia.
+            </p>
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-2 pt-4 border-t border-slate-100">

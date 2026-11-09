@@ -19,6 +19,7 @@ import {
   User,
   LogOut,
   X,
+  GraduationCap,
 } from 'lucide-react'
 
 export function MobileDrawer({
@@ -287,18 +288,35 @@ export function MobileDrawer({
               )}
 
               {canViewMatriculas && (
-                <Link
-                  onClick={onClose}
-                  className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
-                    isActive('/matriculas')
-                      ? 'bg-[#c4121a] text-white shadow-sm font-bold'
-                      : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
-                  }`}
-                  href="/matriculas"
-                >
-                  <ClipboardList className="w-4 h-4 shrink-0" />
-                  <span>Matrículas</span>
-                </Link>
+                <div className="space-y-0.5">
+                  <Link
+                    onClick={onClose}
+                    className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
+                      pathname === '/matriculas' || pathname.startsWith('/matriculas/nueva')
+                        ? 'bg-[#c4121a] text-white shadow-sm font-bold'
+                        : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
+                    }`}
+                    href="/matriculas"
+                  >
+                    <ClipboardList className="w-4 h-4 shrink-0" />
+                    <span>Matrículas</span>
+                  </Link>
+
+                  {!isAsesorComercial && (
+                    <Link
+                      onClick={onClose}
+                      className={`flex items-center gap-2.5 pl-6 pr-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                        pathname.startsWith('/matriculas/ratificacion')
+                          ? 'bg-white/10 text-white font-bold'
+                          : 'text-slate-400 hover:bg-white/[0.04] hover:text-slate-200'
+                      }`}
+                      href="/matriculas/ratificacion"
+                    >
+                      <GraduationCap className="w-3.5 h-3.5 shrink-0 text-[#c4121a]" />
+                      <span>Ratificación de Ciclos</span>
+                    </Link>
+                  )}
+                </div>
               )}
             </div>
           )}

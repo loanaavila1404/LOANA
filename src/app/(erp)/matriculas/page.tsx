@@ -2,7 +2,7 @@ import { createClient, getSafeDbClient } from '@/lib/supabase/server';
 import { requirePermission, isCurrentUserAdvisor } from '@/lib/auth/permissions';
 import { MatriculasMetrics, MatriculasMetricsData } from '@/components/features/matriculas/MatriculasMetrics';
 import { MatriculasTableWithDrawer, MatriculaRow, CuotaItem } from '@/components/features/matriculas/MatriculasTableWithDrawer';
-import { Receipt, Plus, ShieldCheck } from 'lucide-react';
+import { Receipt, Plus, ShieldCheck, GraduationCap } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 
@@ -251,7 +251,13 @@ export default async function MatriculasPage(props: {
         </div>
 
         {!isAdvisor && (
-          <div className="flex items-center gap-2.5 w-full sm:w-auto">
+          <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
+            <Link href="/matriculas/ratificacion">
+              <Button variant="outline" className="border-slate-300 hover:bg-slate-100 text-slate-800 font-semibold flex items-center gap-2">
+                <GraduationCap className="w-4 h-4 text-[#C4121A]" />
+                <span>Ratificación y Promoción de Ciclos</span>
+              </Button>
+            </Link>
             <Link href="/matriculas/nueva">
               <Button className="bg-[#C4121A] hover:bg-red-700 text-white font-semibold flex items-center gap-2">
                 <Plus className="w-4 h-4" />

@@ -25,6 +25,7 @@ import {
   Mail,
   Phone,
   Trash2,
+  Award,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -33,6 +34,8 @@ import { ConvertirEstudianteForm } from "@/components/features/personas/Converti
 import { TogglePersonaStatusButton } from "@/components/features/personas/TogglePersonaStatusButton";
 import { DocumentoRequisitoItem } from "@/lib/utils/personaUtils";
 import { eliminarPersonaEstudianteAction } from "@/app/actions/personas";
+import { KardexAcademicoView } from "@/components/features/personas/KardexAcademicoView";
+import { buildKardexEstudiante } from "@/lib/academic/arrastres";
 
 interface Persona360ClientProps {
   persona: any;
@@ -78,9 +81,9 @@ export function Persona360Client({
   initials,
 }: Persona360ClientProps) {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"documentos" | "financiero" | "academico">(
-    "documentos"
-  );
+  const [activeTab, setActiveTab] = useState<
+    "documentos" | "financiero" | "academico" | "kardex"
+  >(isEstudiante ? "kardex" : "documentos");
   const [showCarnetModal, setShowCarnetModal] = useState(false);
 
   // Estado para el flujo de doble confirmación de eliminación / baja
@@ -159,6 +162,13 @@ export function Persona360Client({
     programaPrincipal?.nombre ||
     persona.prospecto_vinculado?.programas?.nombre ||
     "Programa Académico General";
+  const kardex = React.useMemo(() => {
+    return buildKardexEstudiante({
+      estudiante,
+      programaNombre: nombrePrograma,
+      matriculas,
+    });
+  }, [estudiante, nombrePrograma, matriculas]);
   const sedeUbicacion = persona.distrito
     ? `Sede Central · ${persona.distrito}`
     : "Sede Central Brusben";
@@ -522,6 +532,37 @@ export function Persona360Client({
               <GraduationCap className="w-4 h-4" />
               <span>Expediente Personal y Matrículas ({matriculas.length})</span>
             </button>
+
+            {isEstudiante && (
+              <button
+                type="button"
+                onClick={() => setActiveTab("kardex")}
+                className={`inline-flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition ${
+                  activeTab === "kardex"
+                    ? "border-[#C4121A] text-[#C4121A] bg-white rounded-t-lg"
+                    : "border-transparent text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                <Award className="w-4 h-4 text-[#C4121A]" />
+                <span>Kardex Académico (Ciclos I - VI)</span>
+                {kardex.totalArrastresActivos > 0 ? (
+                  <span
+                    className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
+                      kardex.condicion === "BLOQUEADO_TRES_ARRASTRES"
+                        ? "bg-rose-100 text-rose-800 border border-rose-300"
+                        : "bg-amber-100 text-amber-800 border border-amber-300"
+                    }`}
+                  >
+                    {kardex.totalArrastresActivos}{" "}
+                    {kardex.totalArrastresActivos === 1 ? "arrastre" : "arrastres"}
+                  </span>
+                ) : (
+                  <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold">
+                    PPA: {kardex.promedioPonderadoAcumulado.toFixed(1)}
+                  </span>
+                )}
+              </button>
+            )}
           </div>
         </div>
 
@@ -973,6 +1014,18 @@ export function Persona360Client({
                 )}
               </div>
             </div>
+          </div>
+        )}
+        {/* CONTENIDO DE PESTAÑA 4: KARDEX ACADÉMICO LONGITUDINAL (CICLOS I - VI) */}
+        {activeTab === "kardex" && (
+          <div className="p-6">
+            <KardexAcademicoView
+              persona={persona}
+              estudiante={estudiante}
+              programaNombre={nombrePrograma}
+              kardex={kardex}
+              initials={initials}
+            />
           </div>
         )}
       </div>

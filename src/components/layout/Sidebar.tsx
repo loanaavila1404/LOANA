@@ -16,6 +16,7 @@ import {
   ShieldCheck,
   History,
   ChevronRight,
+  GraduationCap,
 } from 'lucide-react';
 
 export function Sidebar({
@@ -219,17 +220,33 @@ export function Sidebar({
 
             {/* Matrículas */}
             {canViewMatriculas && (
-              <Link
-                href="/matriculas"
-                className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
-                  isActive('/matriculas')
-                    ? 'bg-[#c4121a] text-white shadow-sm font-bold'
-                    : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
-                }`}
-              >
-                <ClipboardList className={`w-4 h-4 shrink-0 ${isActive('/matriculas') ? 'text-white' : 'text-slate-400'}`} />
-                <span className="truncate">Matrículas</span>
-              </Link>
+              <div className="space-y-0.5">
+                <Link
+                  href="/matriculas"
+                  className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
+                    pathname === '/matriculas' || pathname.startsWith('/matriculas/nueva')
+                      ? 'bg-[#c4121a] text-white shadow-sm font-bold'
+                      : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
+                  }`}
+                >
+                  <ClipboardList className={`w-4 h-4 shrink-0 ${pathname === '/matriculas' ? 'text-white' : 'text-slate-400'}`} />
+                  <span className="truncate">Matrículas</span>
+                </Link>
+
+                {!isAsesorComercial && (
+                  <Link
+                    href="/matriculas/ratificacion"
+                    className={`flex items-center gap-2.5 pl-6 pr-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                      pathname.startsWith('/matriculas/ratificacion')
+                        ? 'bg-white/10 text-white font-bold'
+                        : 'text-slate-400 hover:bg-white/[0.04] hover:text-slate-200'
+                    }`}
+                  >
+                    <GraduationCap className={`w-3.5 h-3.5 shrink-0 ${pathname.startsWith('/matriculas/ratificacion') ? 'text-[#c4121a]' : 'text-slate-400'}`} />
+                    <span className="truncate">Ratificación de Ciclos</span>
+                  </Link>
+                )}
+              </div>
             )}
           </div>
         )}
