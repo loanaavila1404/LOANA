@@ -140,17 +140,104 @@ const BLOQUES_HORARIOS = [
   { start: 21, label: "21:00 - 22:00", inicio: "21:00", fin: "22:00" },
 ];
 
-// Opciones del selector de semanas para trazabilidad e historial
-const SEMANAS_HISTORIAL = [
-  { id: "TODAS", label: "Régimen Regular Consolidado (Ciclo Completo)", rango: "Ciclo Académico 2026-II", estado: "Vigente" },
-  { id: "1", label: "Semana 1: Apertura e Inducción", rango: "03 Nov – 08 Nov 2026", estado: "Completada" },
-  { id: "2", label: "Semana 2: Desarrollo Curricular", rango: "10 Nov – 15 Nov 2026", estado: "Completada" },
-  { id: "3", label: "Semana 3: Prácticas y Laboratorio", rango: "17 Nov – 22 Nov 2026", estado: "Completada" },
-  { id: "4", label: "Semana 4: Evaluaciones Parciales", rango: "24 Nov – 29 Nov 2026", estado: "En Curso" },
-  { id: "5", label: "Semana 5: Módulo de Especialización", rango: "01 Dic – 06 Dic 2026", estado: "Programada" },
-  { id: "6", label: "Semana 6: Talleres Clínicos", rango: "08 Dic – 13 Dic 2026", estado: "Programada" },
-  { id: "7", label: "Semana 7: Cierre y Sustentación", rango: "15 Dic – 20 Dic 2026", estado: "Programada" },
+// Opciones del selector de semanas para trazabilidad e historial con fechas estructuradas
+export interface SemanaHistorialItem {
+  id: string;
+  label: string;
+  rango: string;
+  estado: string;
+  fechaInicio?: string;
+  fechaFin?: string;
+}
+
+const SEMANAS_HISTORIAL: SemanaHistorialItem[] = [
+  { id: "TODAS", label: "Régimen Regular Consolidado (Ciclo Completo)", rango: "Ciclo Académico 2026-II", estado: "Vigente", fechaInicio: "2026-11-01", fechaFin: "2026-12-31" },
+  { id: "1", label: "Semana 1: Apertura e Inducción", rango: "03 Nov – 08 Nov 2026", estado: "Completada", fechaInicio: "2026-11-03", fechaFin: "2026-11-08" },
+  { id: "2", label: "Semana 2: Desarrollo Curricular", rango: "10 Nov – 15 Nov 2026", estado: "Completada", fechaInicio: "2026-11-10", fechaFin: "2026-11-15" },
+  { id: "3", label: "Semana 3: Prácticas y Laboratorio", rango: "17 Nov – 22 Nov 2026", estado: "Completada", fechaInicio: "2026-11-17", fechaFin: "2026-11-22" },
+  { id: "4", label: "Semana 4: Evaluaciones Parciales", rango: "24 Nov – 29 Nov 2026", estado: "En Curso", fechaInicio: "2026-11-24", fechaFin: "2026-11-29" },
+  { id: "5", label: "Semana 5: Módulo de Especialización", rango: "01 Dic – 06 Dic 2026", estado: "Programada", fechaInicio: "2026-12-01", fechaFin: "2026-12-06" },
+  { id: "6", label: "Semana 6: Talleres Clínicos", rango: "08 Dic – 13 Dic 2026", estado: "Programada", fechaInicio: "2026-12-08", fechaFin: "2026-12-13" },
+  { id: "7", label: "Semana 7: Cierre y Sustentación", rango: "15 Dic – 20 Dic 2026", estado: "Programada", fechaInicio: "2026-12-15", fechaFin: "2026-12-20" },
 ];
+
+const MESES_ABR = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Set", "Oct", "Nov", "Dic"];
+
+// Formatea un rango de dos fechas ISO en formato institucional (ej. '03 Nov – 08 Nov 2026')
+function formatWeekRangeDisplay(startIso: string, endIso: string): string {
+  if (!startIso && !endIso) return "";
+  if (startIso && !endIso) {
+    const parts = startIso.split("-");
+    const y = parts[0];
+    const m = parseInt(parts[1], 10) || 1;
+    const d = parts[2];
+    const mes = MESES_ABR[m - 1] || "Mes";
+    return `${d} ${mes} ${y}`;
+  }
+  const parts1 = startIso.split("-");
+  const y1 = parts1[0];
+  const m1 = parseInt(parts1[1], 10) || 1;
+  const d1 = parts1[2];
+
+  const parts2 = endIso.split("-");
+  const y2 = parts2[0];
+  const m2 = parseInt(parts2[1], 10) || 1;
+  const d2 = parts2[2];
+
+  const mes1 = MESES_ABR[m1 - 1] || "Mes";
+  const mes2 = MESES_ABR[m2 - 1] || "Mes";
+
+  if (y1 === y2) {
+    if (m1 === m2) {
+      return `${d1} – ${d2} ${mes1} ${y1}`;
+    }
+    return `${d1} ${mes1} – ${d2} ${mes2} ${y1}`;
+  }
+  return `${d1} ${mes1} ${y1} – ${d2} ${mes2} ${y2}`;
+}
+
+// Parsea un rango textual previo en fechas de inicio y fin
+function parseRangeToDates(rango: string, defaultStart = "2026-11-03", defaultEnd = "2026-11-08"): { start: string; end: string } {
+  const MESES_MAP: Record<string, string> = {
+    ene: "01", feb: "02", mar: "03", abr: "04", may: "05", jun: "06",
+    jul: "07", ago: "08", set: "09", sep: "09", oct: "10", nov: "11", dic: "12"
+  };
+
+  try {
+    const parts = rango.split(/[–—-]/).map(p => p.trim());
+    if (parts.length >= 2) {
+      const yearMatch = rango.match(/\b(20\d\d)\b/);
+      const year = yearMatch ? yearMatch[1] : "2026";
+      const cleanWord = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+      const startDayMatch = parts[0].match(/\b(\d{1,2})\b/);
+      const endDayMatch = parts[1].match(/\b(\d{1,2})\b/);
+
+      let startMonth = "11";
+      let endMonth = "11";
+
+      for (const [k, v] of Object.entries(MESES_MAP)) {
+        if (cleanWord(parts[0]).includes(k)) startMonth = v;
+        if (cleanWord(parts[1]).includes(k)) endMonth = v;
+      }
+      if (!cleanWord(parts[0]).match(/[a-z]{3}/) && cleanWord(parts[1]).match(/[a-z]{3}/)) {
+        startMonth = endMonth;
+      }
+
+      if (startDayMatch && endDayMatch) {
+        const d1 = parseInt(startDayMatch[1], 10);
+        const d2 = parseInt(endDayMatch[1], 10);
+        return {
+          start: `${year}-${startMonth}-${d1 < 10 ? '0' + d1 : d1}`,
+          end: `${year}-${endMonth}-${d2 < 10 ? '0' + d2 : d2}`
+        };
+      }
+    }
+  } catch {
+    // fallback
+  }
+  return { start: defaultStart, end: defaultEnd };
+}
 
 const UBICACIONES_PREDEFINIDAS = [
   "Aula 101 - Sede Central Tumbes",
@@ -207,10 +294,11 @@ export function HorariosManagerClient({
   const [showEnableEditPrompt, setShowEnableEditPrompt] = useState<boolean>(false);
   const [editingHorarioId, setEditingHorarioId] = useState<string | null>(null);
 
-  // Historial Semanal y fechas editables en Modo Edición
-  const [semanasHistorialState, setSemanasHistorialState] = useState(SEMANAS_HISTORIAL);
+  // Historial Semanal y fechas editables en Modo Edición mediante Date Range Picker (Calendario)
+  const [semanasHistorialState, setSemanasHistorialState] = useState<SemanaHistorialItem[]>(SEMANAS_HISTORIAL);
   const [isEditingWeekRange, setIsEditingWeekRange] = useState<boolean>(false);
-  const [customWeekRange, setCustomWeekRange] = useState<string>("");
+  const [weekStartDate, setWeekStartDate] = useState<string>("2026-11-03");
+  const [weekEndDate, setWeekEndDate] = useState<string>("2026-11-08");
 
   // Estados del Modal para Programar Horario
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -276,15 +364,35 @@ export function HorariosManagerClient({
     return semanasHistorialState.find(s => s.id === selectedSemana) || semanasHistorialState[0];
   }, [semanasHistorialState, selectedSemana]);
 
-  // Guardar rango de fechas personalizado de la semana en modo edición
+  // Abrir selector de fechas tipo calendario
+  const handleOpenWeekDateEditor = () => {
+    const sem = activeSemanaObj;
+    if (sem.fechaInicio && sem.fechaFin) {
+      setWeekStartDate(sem.fechaInicio);
+      setWeekEndDate(sem.fechaFin);
+    } else {
+      const parsed = parseRangeToDates(sem.rango);
+      setWeekStartDate(parsed.start);
+      setWeekEndDate(parsed.end);
+    }
+    setIsEditingWeekRange(true);
+  };
+
+  // Guardar rango de fechas seleccionado con el calendario
   const handleSaveWeekRange = () => {
-    if (!customWeekRange.trim()) {
+    if (!weekStartDate || !weekEndDate) {
       setIsEditingWeekRange(false);
       return;
     }
+    const formattedRango = formatWeekRangeDisplay(weekStartDate, weekEndDate);
     setSemanasHistorialState(prev => prev.map(s => {
       if (s.id === selectedSemana) {
-        return { ...s, rango: customWeekRange.trim() };
+        return {
+          ...s,
+          rango: formattedRango,
+          fechaInicio: weekStartDate,
+          fechaFin: weekEndDate
+        };
       }
       return s;
     }));
@@ -653,7 +761,7 @@ export function HorariosManagerClient({
               }`}
             >
               <Plus className="w-4 h-4 text-emerald-400" />
-              <span>+ Programar Horario</span>
+              <span>Programar Horario</span>
             </button>
 
             <button
@@ -689,8 +797,8 @@ export function HorariosManagerClient({
             </select>
           </div>
 
-          {/* Selector de Historial Semanal y Fechas */}
-          <div className="space-y-1.5">
+          {/* Selector de Historial Semanal y Fechas con Date Picker (Calendario) */}
+          <div className="space-y-1.5 relative">
             <div className="flex items-center justify-between">
               <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
                 <History className="w-3.5 h-3.5 text-rose-600" />
@@ -701,13 +809,21 @@ export function HorariosManagerClient({
                   <button
                     type="button"
                     onClick={() => {
-                      setCustomWeekRange(activeSemanaObj.rango);
-                      setIsEditingWeekRange(!isEditingWeekRange);
+                      if (isEditingWeekRange) {
+                        setIsEditingWeekRange(false);
+                      } else {
+                        handleOpenWeekDateEditor();
+                      }
                     }}
-                    className="text-[10px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 px-1.5 py-0.2 rounded border border-blue-200 cursor-pointer"
-                    title="Ajustar fechas de esta semana"
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border transition cursor-pointer flex items-center gap-1 ${
+                      isEditingWeekRange
+                        ? 'bg-blue-600 text-white border-blue-600 shadow-2xs'
+                        : 'text-blue-700 bg-blue-50 hover:bg-blue-100 border-blue-200'
+                    }`}
+                    title="Seleccionar fechas de la semana mediante calendario"
                   >
-                    {isEditingWeekRange ? "Cancelar" : "Editar Fechas"}
+                    <CalendarDays className="w-3 h-3" />
+                    <span>{isEditingWeekRange ? "Cerrar Calendario" : "Calendario de Fechas"}</span>
                   </button>
                 )}
                 <span className="text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.2 rounded-full border border-rose-200">
@@ -717,21 +833,76 @@ export function HorariosManagerClient({
             </div>
 
             {isEditingWeekRange && isEditMode ? (
-              <div className="flex items-center gap-1.5">
-                <input
-                  type="text"
-                  value={customWeekRange}
-                  onChange={(e) => setCustomWeekRange(e.target.value)}
-                  placeholder="Ej. 03 Nov – 08 Nov 2026"
-                  className="flex-1 px-2.5 py-1.5 text-xs bg-white border border-blue-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 font-semibold"
-                />
-                <button
-                  type="button"
-                  onClick={handleSaveWeekRange}
-                  className="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg cursor-pointer"
-                >
-                  Guardar
-                </button>
+              <div className="p-3 bg-gradient-to-b from-blue-50/90 to-slate-50 border border-blue-200 rounded-xl space-y-3 shadow-xs animate-in fade-in zoom-in-95 duration-150">
+                <div className="flex items-center justify-between border-b border-blue-100 pb-2">
+                  <span className="text-xs font-extrabold text-blue-950 flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Selector de Rango Semanal (Calendario)</span>
+                  </span>
+                  <span className="text-[10px] font-mono font-bold text-blue-700 bg-blue-100/80 px-2 py-0.5 rounded-full border border-blue-200">
+                    {activeSemanaObj.label.split(":")[0]}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">
+                      Fecha Inicio
+                    </label>
+                    <input
+                      type="date"
+                      value={weekStartDate}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setWeekStartDate(val);
+                        if (val && weekEndDate && val > weekEndDate) {
+                          setWeekEndDate(val);
+                        }
+                      }}
+                      className="w-full px-2.5 py-1.5 text-xs bg-white border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold text-slate-800 cursor-pointer shadow-2xs"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">
+                      Fecha Fin
+                    </label>
+                    <input
+                      type="date"
+                      value={weekEndDate}
+                      min={weekStartDate}
+                      onChange={(e) => setWeekEndDate(e.target.value)}
+                      className="w-full px-2.5 py-1.5 text-xs bg-white border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold text-slate-800 cursor-pointer shadow-2xs"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-blue-100">
+                  <div className="text-[11px] text-blue-950">
+                    <span className="text-slate-500">Rango seleccionado: </span>
+                    <strong className="font-bold text-slate-900 bg-white px-2 py-0.5 rounded border border-blue-200 font-mono text-[11px]">
+                      {formatWeekRangeDisplay(weekStartDate, weekEndDate) || "Selecciona las fechas"}
+                    </strong>
+                  </div>
+                  <div className="flex items-center gap-1.5 justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setIsEditingWeekRange(false)}
+                      className="px-2.5 py-1 text-slate-600 hover:text-slate-800 text-xs font-semibold rounded cursor-pointer"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSaveWeekRange}
+                      disabled={!weekStartDate || !weekEndDate}
+                      className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-bold rounded-lg shadow-2xs transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                    >
+                      <Check className="w-3.5 h-3.5" />
+                      <span>Aplicar Rango</span>
+                    </button>
+                  </div>
+                </div>
               </div>
             ) : (
               <select
