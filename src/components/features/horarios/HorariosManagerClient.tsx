@@ -32,9 +32,12 @@ import {
   Shield,
   AlertTriangle,
   Edit3,
-  Check
+  Check,
+  CalendarPlus,
+  CalendarX,
+  CalendarCog
 } from "lucide-react";
-import { createHorarioAction, updateHorarioAction, deleteHorarioAction } from "@/app/actions/oferta/horarios";
+import { createHorarioAction, updateHorarioAction, deleteHorarioAction, logSemanaAuditAction } from "@/app/actions/oferta/horarios";
 import { ConfirmModal, AlertModal } from "@/components/ui/Feedback";
 
 export interface HorarioSesion {
@@ -297,8 +300,23 @@ export function HorariosManagerClient({
   // Historial Semanal y fechas editables en Modo Edición mediante Date Range Picker (Calendario)
   const [semanasHistorialState, setSemanasHistorialState] = useState<SemanaHistorialItem[]>(SEMANAS_HISTORIAL);
   const [isEditingWeekRange, setIsEditingWeekRange] = useState<boolean>(false);
+  const [weekLabel, setWeekLabel] = useState<string>("");
   const [weekStartDate, setWeekStartDate] = useState<string>("2026-11-03");
   const [weekEndDate, setWeekEndDate] = useState<string>("2026-11-08");
+  const [weekEstado, setWeekEstado] = useState<string>("Programada");
+
+  // Estados para Agregar y Eliminar Semanas
+  const [isAddWeekModalOpen, setIsAddWeekModalOpen] = useState<boolean>(false);
+  const [newWeekLabel, setNewWeekLabel] = useState<string>("");
+  const [newWeekStartDate, setNewWeekStartDate] = useState<string>("2026-12-22");
+  const [newWeekEndDate, setNewWeekEndDate] = useState<string>("2026-12-27");
+  const [newWeekEstado, setNewWeekEstado] = useState<string>("Programada");
+  const [semanaToDelete, setSemanaToDelete] = useState<SemanaHistorialItem | null>(null);
+  const [isDeletingSemana, setIsDeletingSemana] = useState<boolean>(false);
+
+  // Estados para modal nativo de confirmación y feedback de eliminación
+  const [horarioToDelete, setHorarioToDelete] = useState<string | null>(null);
+  const [alertFeedback, setAlertFeedback] = useState<{ title: string; message: string; variant: 'success' | 'error' | 'warning' | 'info' } | null>(null);
 
   // Estados del Modal para Programar Horario
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -364,9 +382,15 @@ export function HorariosManagerClient({
     return semanasHistorialState.find(s => s.id === selectedSemana) || semanasHistorialState[0];
   }, [semanasHistorialState, selectedSemana]);
 
-  // Abrir selector de fechas tipo calendario
-  const handleOpenWeekDateEditor = () => {
+  // Abrir editor de semana (nombre y fechas tipo calendario)
+  const handleOpenWeekEditor = () => {
+    if (!isEditMode) {
+      setShowEnableEditPrompt(true);
+      return;
+    }
     const sem = activeSemanaObj;
+    setWeekLabel(sem.label);
+    setWeekEstado(sem.estado || "Programada");
     if (sem.fechaInicio && sem.fechaFin) {
       setWeekStartDate(sem.fechaInicio);
       setWeekEndDate(sem.fechaFin);
@@ -378,25 +402,196 @@ export function HorariosManagerClient({
     setIsEditingWeekRange(true);
   };
 
-  // Guardar rango de fechas seleccionado con el calendario
-  const handleSaveWeekRange = () => {
-    if (!weekStartDate || !weekEndDate) {
-      setIsEditingWeekRange(false);
+  // Guardar datos editados de la semana (nombre, rango de fechas con calendario, estado)
+  const handleSaveWeekData = async () => {
+    if (!weekLabel.trim()) {
+      setAlertFeedback({
+        title: "Nombre requerido",
+        message: "Por favor asigna un nombre o etiqueta a la semana.",
+        variant: "warning"
+      });
       return;
     }
+    if (!weekStartDate || !weekEndDate) {
+      setAlertFeedback({
+        title: "Fechas requeridas",
+        message: "Por favor selecciona las fechas de inicio y fin mediante el calendario.",
+        variant: "warning"
+      });
+      return;
+    }
+
     const formattedRango = formatWeekRangeDisplay(weekStartDate, weekEndDate);
+    const updatedSemana = {
+      label: weekLabel.trim(),
+      rango: formattedRango,
+      estado: weekEstado,
+      fechaInicio: weekStartDate,
+      fechaFin: weekEndDate
+    };
+
     setSemanasHistorialState(prev => prev.map(s => {
       if (s.id === selectedSemana) {
-        return {
-          ...s,
-          rango: formattedRango,
-          fechaInicio: weekStartDate,
-          fechaFin: weekEndDate
-        };
+        return { ...s, ...updatedSemana };
       }
       return s;
     }));
+
     setIsEditingWeekRange(false);
+
+    // Registro inmutable en auditoría
+    await logSemanaAuditAction('UPDATE', {
+      id: selectedSemana,
+      label: weekLabel.trim(),
+      rango: formattedRango,
+      estado: weekEstado,
+      edicionId: selectedEdicionId
+    });
+
+    setAlertFeedback({
+      title: "Semana Actualizada",
+      message: `Se actualizaron el nombre y fechas de "${weekLabel.trim()}" (${formattedRango}) con éxito.`,
+      variant: "success"
+    });
+  };
+
+  // Abrir modal para agregar una nueva semana
+  const handleOpenAddWeekModal = () => {
+    if (!isEditMode) {
+      setShowEnableEditPrompt(true);
+      return;
+    }
+    const numericalWeeks = semanasHistorialState
+      .map(s => parseInt(s.id, 10))
+      .filter(n => !isNaN(n));
+    const nextNum = numericalWeeks.length > 0 ? Math.max(...numericalWeeks) + 1 : 1;
+
+    const lastWeek = semanasHistorialState[semanasHistorialState.length - 1];
+    let startSuggestion = "2026-12-22";
+    let endSuggestion = "2026-12-27";
+    if (lastWeek?.fechaFin) {
+      try {
+        const d = new Date(lastWeek.fechaFin + "T12:00:00Z");
+        d.setDate(d.getDate() + 2);
+        startSuggestion = d.toISOString().split("T")[0];
+        d.setDate(d.getDate() + 5);
+        endSuggestion = d.toISOString().split("T")[0];
+      } catch {
+        // fallback
+      }
+    }
+
+    setNewWeekLabel(`Semana ${nextNum}: Módulo Temático`);
+    setNewWeekStartDate(startSuggestion);
+    setNewWeekEndDate(endSuggestion);
+    setNewWeekEstado("Programada");
+    setIsAddWeekModalOpen(true);
+  };
+
+  // Crear y agregar una nueva semana dinámicamente
+  const handleCreateNewWeek = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newWeekLabel.trim()) {
+      setAlertFeedback({
+        title: "Nombre requerido",
+        message: "Ingresa el nombre de la nueva semana.",
+        variant: "warning"
+      });
+      return;
+    }
+    if (!newWeekStartDate || !newWeekEndDate) {
+      setAlertFeedback({
+        title: "Fechas requeridas",
+        message: "Selecciona el rango de fechas con el calendario.",
+        variant: "warning"
+      });
+      return;
+    }
+
+    const numericalWeeks = semanasHistorialState
+      .map(s => parseInt(s.id, 10))
+      .filter(n => !isNaN(n));
+    const nextNum = numericalWeeks.length > 0 ? Math.max(...numericalWeeks) + 1 : 1;
+    const newId = String(nextNum);
+    const formattedRango = formatWeekRangeDisplay(newWeekStartDate, newWeekEndDate);
+
+    const newWeekItem: SemanaHistorialItem = {
+      id: newId,
+      label: newWeekLabel.trim(),
+      rango: formattedRango,
+      estado: newWeekEstado || "Programada",
+      fechaInicio: newWeekStartDate,
+      fechaFin: newWeekEndDate
+    };
+
+    setSemanasHistorialState(prev => [...prev, newWeekItem]);
+    setSelectedSemana(newId);
+    setIsAddWeekModalOpen(false);
+
+    // Auditoría inmutable
+    await logSemanaAuditAction('INSERT', {
+      id: newId,
+      label: newWeekItem.label,
+      rango: formattedRango,
+      estado: newWeekItem.estado,
+      edicionId: selectedEdicionId
+    });
+
+    setAlertFeedback({
+      title: "Nueva Semana Agregada",
+      message: `Se incorporó "${newWeekItem.label}" (${formattedRango}) al cronograma académico.`,
+      variant: "success"
+    });
+  };
+
+  // Solicitar confirmación para eliminar una semana
+  const handlePromptDeleteSemana = (semanaItem?: SemanaHistorialItem) => {
+    if (!isEditMode) {
+      setShowEnableEditPrompt(true);
+      return;
+    }
+    const target = semanaItem || activeSemanaObj;
+    if (target.id === "TODAS") {
+      setAlertFeedback({
+        title: "Operación no permitida",
+        message: "El 'Régimen Regular Consolidado (Ciclo Completo)' es la estructura base del ciclo y no puede eliminarse.",
+        variant: "warning"
+      });
+      return;
+    }
+    setSemanaToDelete(target);
+  };
+
+  // Ejecutar eliminación segura de la semana
+  const executeDeleteSemana = async () => {
+    if (!semanaToDelete) return;
+    setIsDeletingSemana(true);
+    const deletedId = semanaToDelete.id;
+    const deletedLabel = semanaToDelete.label;
+    const deletedRango = semanaToDelete.rango;
+
+    try {
+      setSemanasHistorialState(prev => prev.filter(s => s.id !== deletedId));
+      if (selectedSemana === deletedId) {
+        setSelectedSemana("TODAS");
+      }
+      setSemanaToDelete(null);
+
+      await logSemanaAuditAction('DELETE', {
+        id: deletedId,
+        label: deletedLabel,
+        rango: deletedRango,
+        edicionId: selectedEdicionId
+      });
+
+      setAlertFeedback({
+        title: "Semana Eliminada",
+        message: `La semana "${deletedLabel}" fue eliminada del cronograma y registrada en la bitácora institucional de auditoría.`,
+        variant: "info"
+      });
+    } finally {
+      setIsDeletingSemana(false);
+    }
   };
 
   // Horarios de la edición activa
@@ -571,9 +766,6 @@ export function HorariosManagerClient({
     }
   };
 
-  // Estados para modal nativo de confirmación y feedback de eliminación
-  const [horarioToDelete, setHorarioToDelete] = useState<string | null>(null);
-  const [alertFeedback, setAlertFeedback] = useState<{ title: string; message: string; variant: 'success' | 'error' } | null>(null);
 
   // Eliminar un bloque de horario (modal nativo del ERP)
   const handleDeleteHorario = (horarioId: string) => {
@@ -804,28 +996,58 @@ export function HorariosManagerClient({
                 <History className="w-3.5 h-3.5 text-rose-600" />
                 <span>Historial Semanal / Fechas</span>
               </label>
-              <div className="flex items-center gap-1">
-                {isEditMode && selectedSemana !== "TODAS" && (
+              <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                {/* Botón "+ Nueva Semana" */}
+                <button
+                  type="button"
+                  onClick={handleOpenAddWeekModal}
+                  className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border transition cursor-pointer flex items-center gap-1 ${
+                    isEditMode
+                      ? 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border-emerald-300'
+                      : 'bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200'
+                  }`}
+                  title={isEditMode ? "Agregar nueva semana al cronograma" : "Habilita Modo Edición para agregar semanas"}
+                >
+                  <CalendarPlus className="w-3 h-3 text-emerald-600" />
+                  <span>+ Nueva Semana</span>
+                </button>
+
+                {/* Botón "Editar Semana (Nombre y Fechas)" */}
+                {selectedSemana !== "TODAS" && (
                   <button
                     type="button"
-                    onClick={() => {
-                      if (isEditingWeekRange) {
-                        setIsEditingWeekRange(false);
-                      } else {
-                        handleOpenWeekDateEditor();
-                      }
-                    }}
+                    onClick={handleOpenWeekEditor}
                     className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border transition cursor-pointer flex items-center gap-1 ${
                       isEditingWeekRange
                         ? 'bg-blue-600 text-white border-blue-600 shadow-2xs'
-                        : 'text-blue-700 bg-blue-50 hover:bg-blue-100 border-blue-200'
+                        : isEditMode
+                        ? 'text-blue-700 bg-blue-50 hover:bg-blue-100 border-blue-200'
+                        : 'bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200'
                     }`}
-                    title="Seleccionar fechas de la semana mediante calendario"
+                    title={isEditMode ? "Editar nombre y fechas de esta semana" : "Habilita Modo Edición para editar"}
                   >
-                    <CalendarDays className="w-3 h-3" />
-                    <span>{isEditingWeekRange ? "Cerrar Calendario" : "Calendario de Fechas"}</span>
+                    <Edit3 className="w-3 h-3 text-blue-600" />
+                    <span>{isEditingWeekRange ? "Cerrar Edición" : "Editar Semana"}</span>
                   </button>
                 )}
+
+                {/* Botón "Eliminar Semana" */}
+                {selectedSemana !== "TODAS" && (
+                  <button
+                    type="button"
+                    onClick={() => handlePromptDeleteSemana()}
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border transition cursor-pointer flex items-center gap-1 ${
+                      isEditMode
+                        ? 'text-red-700 bg-red-50 hover:bg-red-100 border-red-200'
+                        : 'bg-slate-100 text-slate-400 border-slate-200 hover:bg-slate-200'
+                    }`}
+                    title={isEditMode ? "Eliminar esta semana del cronograma" : "Habilita Modo Edición para eliminar"}
+                  >
+                    <Trash2 className="w-3 h-3 text-red-600" />
+                    <span>Eliminar</span>
+                  </button>
+                )}
+
                 <span className="text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.2 rounded-full border border-rose-200">
                   {activeSemanaObj.estado}
                 </span>
@@ -833,21 +1055,36 @@ export function HorariosManagerClient({
             </div>
 
             {isEditingWeekRange && isEditMode ? (
-              <div className="p-3 bg-gradient-to-b from-blue-50/90 to-slate-50 border border-blue-200 rounded-xl space-y-3 shadow-xs animate-in fade-in zoom-in-95 duration-150">
-                <div className="flex items-center justify-between border-b border-blue-100 pb-2">
-                  <span className="text-xs font-extrabold text-blue-950 flex items-center gap-1.5">
-                    <Calendar className="w-3.5 h-3.5 text-blue-600" />
-                    <span>Selector de Rango Semanal (Calendario)</span>
+              <div className="p-3.5 bg-gradient-to-b from-blue-50/90 to-slate-50 border-2 border-blue-300 rounded-xl space-y-3 shadow-sm animate-in fade-in zoom-in-95 duration-150">
+                <div className="flex items-center justify-between border-b border-blue-200/80 pb-2">
+                  <span className="text-xs font-black text-blue-950 flex items-center gap-1.5">
+                    <Calendar className="w-4 h-4 text-blue-700" />
+                    <span>Personalizar Nombre y Fechas de la Semana</span>
                   </span>
-                  <span className="text-[10px] font-mono font-bold text-blue-700 bg-blue-100/80 px-2 py-0.5 rounded-full border border-blue-200">
-                    {activeSemanaObj.label.split(":")[0]}
+                  <span className="text-[10px] font-mono font-bold text-blue-800 bg-blue-100 px-2 py-0.5 rounded-full border border-blue-200">
+                    ID: {activeSemanaObj.id}
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2.5">
+                {/* Nombre / Etiqueta personalizada de la semana */}
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">
+                    Nombre / Etiqueta de la Semana
+                  </label>
+                  <input
+                    type="text"
+                    value={weekLabel}
+                    onChange={(e) => setWeekLabel(e.target.value)}
+                    placeholder="Ej. Semana 3: Evaluaciones Parciales y Prácticas"
+                    className="w-full px-3 py-1.5 text-xs bg-white border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold text-slate-900 shadow-2xs"
+                  />
+                </div>
+
+                {/* Rango de Fechas con Calendario (Date Picker) y Estado */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">
-                      Fecha Inicio
+                      Fecha Inicio (Calendario)
                     </label>
                     <input
                       type="date"
@@ -865,7 +1102,7 @@ export function HorariosManagerClient({
 
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">
-                      Fecha Fin
+                      Fecha Fin (Calendario)
                     </label>
                     <input
                       type="date"
@@ -875,11 +1112,26 @@ export function HorariosManagerClient({
                       className="w-full px-2.5 py-1.5 text-xs bg-white border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold text-slate-800 cursor-pointer shadow-2xs"
                     />
                   </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">
+                      Estado Operativo
+                    </label>
+                    <select
+                      value={weekEstado}
+                      onChange={(e) => setWeekEstado(e.target.value)}
+                      className="w-full px-2.5 py-1.5 text-xs bg-white border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold text-slate-800 cursor-pointer shadow-2xs"
+                    >
+                      <option value="Programada">Programada</option>
+                      <option value="En Curso">En Curso</option>
+                      <option value="Completada">Completada</option>
+                    </select>
+                  </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-blue-100">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-blue-200/80">
                   <div className="text-[11px] text-blue-950">
-                    <span className="text-slate-500">Rango seleccionado: </span>
+                    <span className="text-slate-500">Rango calculado: </span>
                     <strong className="font-bold text-slate-900 bg-white px-2 py-0.5 rounded border border-blue-200 font-mono text-[11px]">
                       {formatWeekRangeDisplay(weekStartDate, weekEndDate) || "Selecciona las fechas"}
                     </strong>
@@ -894,12 +1146,12 @@ export function HorariosManagerClient({
                     </button>
                     <button
                       type="button"
-                      onClick={handleSaveWeekRange}
-                      disabled={!weekStartDate || !weekEndDate}
-                      className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-bold rounded-lg shadow-2xs transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                      onClick={handleSaveWeekData}
+                      disabled={!weekLabel.trim() || !weekStartDate || !weekEndDate}
+                      className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-bold rounded-lg shadow-2xs transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                     >
                       <Check className="w-3.5 h-3.5" />
-                      <span>Aplicar Rango</span>
+                      <span>Guardar Cambios</span>
                     </button>
                   </div>
                 </div>
@@ -967,10 +1219,10 @@ export function HorariosManagerClient({
             </span>
             <div>
               <p className="font-extrabold text-sm text-amber-950">
-                MODO EDICIÓN HABILITADO — Control de Fechas, Horas y Asignaciones
+                MODO EDICIÓN HABILITADO — Semanas, Fechas, Nombres y Horas Desbloqueados
               </p>
               <p className="text-xs text-amber-800 mt-0.5">
-                Haz clic en bloques para editar horas y docentes, usa la papelera para eliminarlos, o pulsa en celdas vacías para agregar sesiones.
+                Puedes agregar nuevas semanas, personalizar nombres y rangos con el calendario, eliminar semanas, y programar o modificar bloques horarios.
               </p>
             </div>
           </div>
@@ -1682,6 +1934,142 @@ export function HorariosManagerClient({
         </div>
       )}
 
+      {/* Modal para Agregar Nueva Semana al Cronograma */}
+      {isAddWeekModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150 print:hidden">
+          <div 
+            className="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
+              <div className="flex items-center gap-2.5">
+                <span className="p-2 rounded-xl bg-emerald-100 text-emerald-800 border border-emerald-200">
+                  <CalendarPlus className="w-5 h-5 text-emerald-700" />
+                </span>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">
+                    Agregar Nueva Semana al Cronograma
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Configura la denominación temática y el rango de fechas con calendario.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAddWeekModalOpen(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateNewWeek} className="p-6 space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700">
+                  Nombre o Etiqueta de la Semana
+                </label>
+                <input
+                  type="text"
+                  value={newWeekLabel}
+                  onChange={(e) => setNewWeekLabel(e.target.value)}
+                  placeholder="Ej. Semana 8: Evaluaciones Finales y Nivelación"
+                  className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-[#c4121a] focus:ring-1 focus:ring-[#c4121a] font-bold text-slate-900"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700">
+                    Fecha de Inicio (Calendario)
+                  </label>
+                  <input
+                    type="date"
+                    value={newWeekStartDate}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setNewWeekStartDate(val);
+                      if (val && newWeekEndDate && val > newWeekEndDate) {
+                        setNewWeekEndDate(val);
+                      }
+                    }}
+                    className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-[#c4121a] focus:ring-1 focus:ring-[#c4121a] font-semibold text-slate-800 cursor-pointer"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700">
+                    Fecha de Fin (Calendario)
+                  </label>
+                  <input
+                    type="date"
+                    value={newWeekEndDate}
+                    min={newWeekStartDate}
+                    onChange={(e) => setNewWeekEndDate(e.target.value)}
+                    className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-[#c4121a] focus:ring-1 focus:ring-[#c4121a] font-semibold text-slate-800 cursor-pointer"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700">
+                  Estado Operativo
+                </label>
+                <select
+                  value={newWeekEstado}
+                  onChange={(e) => setNewWeekEstado(e.target.value)}
+                  className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-[#c4121a] focus:ring-1 focus:ring-[#c4121a] font-semibold text-slate-800 cursor-pointer"
+                >
+                  <option value="Programada">Programada</option>
+                  <option value="En Curso">En Curso</option>
+                  <option value="Completada">Completada</option>
+                </select>
+              </div>
+
+              <div className="p-3 bg-blue-50/70 border border-blue-200 rounded-xl text-xs text-blue-900 flex items-center justify-between">
+                <span>Rango calculado:</span>
+                <strong className="font-mono text-slate-900 font-bold">
+                  {formatWeekRangeDisplay(newWeekStartDate, newWeekEndDate) || "Selecciona fechas"}
+                </strong>
+              </div>
+
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setIsAddWeekModalOpen(false)}
+                  className="px-4 py-2 border border-slate-200 text-slate-600 hover:bg-slate-100 rounded-lg text-xs font-bold transition cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-lg text-xs font-bold transition flex items-center gap-2 shadow-sm cursor-pointer"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>Agregar Semana</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Nativo de Confirmación de Eliminación de Semana */}
+      <ConfirmModal
+        isOpen={Boolean(semanaToDelete)}
+        onClose={() => setSemanaToDelete(null)}
+        onConfirm={executeDeleteSemana}
+        title="Eliminar Semana del Cronograma"
+        description={`¿Confirmas la eliminación definitiva de "${semanaToDelete?.label}" (${semanaToDelete?.rango}) de la estructura del cronograma? Esta acción quedará registrada en la bitácora inmutable de auditoría.`}
+        confirmText="Eliminar Semana"
+        cancelText="Conservar Semana"
+        variant="danger"
+        isLoading={isDeletingSemana}
+      />
+
       {/* Modal Nativo de Doble Confirmación para Habilitar Modo Edición */}
       <ConfirmModal
         isOpen={showEnableEditPrompt}
@@ -1691,7 +2079,7 @@ export function HorariosManagerClient({
           setShowEnableEditPrompt(false);
         }}
         title="Habilitar Modo Edición de Horarios"
-        description="El módulo se encuentra en Modo Consulta protegido para prevenir modificaciones involuntarias en fechas y horas. ¿Deseas activar el Modo Edición para agregar, modificar o eliminar horarios de clases?"
+        description="El módulo se encuentra en Modo Consulta protegido para prevenir modificaciones involuntarias en fechas, semanas y horas. ¿Deseas activar el Modo Edición para agregar, modificar o eliminar semanas y horarios de clases?"
         confirmText="Habilitar Modo Edición"
         cancelText="Mantener Protegido"
         variant="warning"

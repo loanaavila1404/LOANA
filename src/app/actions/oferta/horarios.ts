@@ -188,3 +188,39 @@ export async function deleteHorarioAction(id: string, edicionId: string) {
   revalidatePath('/auditoria');
   return { success: true };
 }
+
+export async function logSemanaAuditAction(
+  action: 'INSERT' | 'UPDATE' | 'DELETE',
+  semanaData: {
+    id: string;
+    label: string;
+    rango: string;
+    estado?: string;
+    edicionId?: string;
+  }
+) {
+  const db = await getSafeDbClient();
+  const authCtx = await getUserAuthContext();
+
+  try {
+    await db.from('audit_logs').insert({
+      user_id: authCtx?.userId || null,
+      user_role: authCtx?.roleName || authCtx?.roleCode || 'ADMINISTRACION',
+      action: action === 'DELETE' ? 'DELETE' : action === 'INSERT' ? 'INSERT' : 'UPDATE',
+      module: 'HORARIOS',
+      entity: 'semanas_cronograma',
+      entity_id: semanaData.id,
+      detail: `${action === 'DELETE' ? 'Eliminación' : action === 'INSERT' ? 'Creación' : 'Modificación'} de semana académica: "${semanaData.label}" (${semanaData.rango})`,
+      data_before: action === 'DELETE' ? semanaData : null,
+      data_after: action !== 'DELETE' ? semanaData : { status: 'ELIMINADO' },
+      result: 'EXITO',
+    });
+    revalidatePath('/horarios');
+    revalidatePath('/auditoria');
+    return { success: true };
+  } catch (err: unknown) {
+    console.error('Error al registrar auditoría de semana:', err);
+    return { success: false };
+  }
+}
+

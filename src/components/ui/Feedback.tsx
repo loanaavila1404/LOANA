@@ -193,7 +193,7 @@ export function AlertModal({
   onClose: () => void;
   title: string;
   description: string | React.ReactNode;
-  variant?: 'success' | 'error' | 'info';
+  variant?: 'success' | 'error' | 'info' | 'warning';
   buttonText?: string;
 }) {
   return (
@@ -206,6 +206,8 @@ export function AlertModal({
                 ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
                 : variant === 'error'
                 ? 'bg-red-50 text-[#C4121A] border border-red-200'
+                : variant === 'warning'
+                ? 'bg-amber-50 text-amber-700 border border-amber-200'
                 : 'bg-blue-50 text-blue-600 border border-blue-200'
             }`}
           >
@@ -216,6 +218,10 @@ export function AlertModal({
             ) : variant === 'error' ? (
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            ) : variant === 'warning' ? (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
             ) : (
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
