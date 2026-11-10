@@ -181,13 +181,40 @@ export async function deleteEdicionAction(
   const now = new Date();
   const fechaHora = now.toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'medium' });
 
-  // 2. Desvincular prospectos que apunten a esta edición
+  // 2. Registro preventivo permanente en bitácora audit_logs ANTES de eliminar
+  try {
+    await db.from('audit_logs').insert({
+      action: 'DELETE',
+      entity: 'ediciones',
+      entity_id: id,
+      module: 'OFERTA_ACADEMICA',
+      user_id: authCtx?.userId || null,
+      user_role: authCtx?.roleName || authCtx?.roleCode || 'SUPER_ADMINISTRADOR',
+      detail: `Eliminación física definitiva (Hard Delete) de edición: ${edicion.codigo} - ${edicion.nombre || ''} - ${fechaHora}. Motivo: ${motivoTexto}`,
+      data_before: {
+        edicion,
+        fecha_eliminacion: now.toISOString(),
+        eliminado_por: authCtx?.userId || 'Administrador',
+        motivo: motivoTexto,
+      },
+      data_after: {
+        status: 'ELIMINADO_FISICO',
+        deleted_at: now.toISOString(),
+        hard_delete: true,
+      },
+      result: 'EXITO',
+    });
+  } catch (auditErr) {
+    console.error('Error al registrar auditoría de borrado de edición:', auditErr);
+  }
+
+  // 3. Desvincular prospectos que apunten a esta edición
   await db.from('prospectos').update({ edicion_id: null }).eq('edicion_id', id);
 
-  // 3. Eliminar bloques horarios vinculados a la edición
+  // 4. Eliminar bloques horarios vinculados a la edición
   await db.from('horarios').delete().eq('edicion_id', id);
 
-  // 4. Limpiar matrículas asociadas
+  // 5. Limpiar matrículas asociadas en cascada inversa
   const { data: mats } = await db
     .from('matriculas')
     .select('id')
@@ -209,7 +236,7 @@ export async function deleteEdicionAction(
     await db.from('matriculas').delete().eq('edicion_id', id);
   }
 
-  // 5. Borrado físico definitivo (Hard Delete) de la tabla ediciones
+  // 6. Borrado físico definitivo (Hard Delete) de la tabla ediciones
   const { error: delErr } = await db
     .from('ediciones')
     .delete()
@@ -217,34 +244,6 @@ export async function deleteEdicionAction(
 
   if (delErr) {
     return { error: `Error al eliminar físicamente la edición: ${delErr.message}` };
-  }
-
-  // 6. Registro permanente en bitácora audit_logs
-  try {
-    await db.from('audit_logs').insert({
-      action: 'DELETE',
-      entity: 'ediciones',
-      entity_id: id,
-      module: 'OFERTA_ACADEMICA',
-      user_id: authCtx?.userId || null,
-      user_role: authCtx?.roleName || authCtx?.roleCode || 'SUPER_ADMINISTRADOR',
-      detail: `Eliminación física definitiva (Hard Delete) de edición: ${edicion.codigo} - ${edicion.nombre || ''} - ${fechaHora}. Motivo: ${motivoTexto}`,
-      data_before: {
-        edicion,
-        matriculas_eliminadas: matIds.length,
-        fecha_eliminacion: now.toISOString(),
-        eliminado_por: authCtx?.userId || 'Administrador',
-        motivo: motivoTexto,
-      },
-      data_after: {
-        status: 'ELIMINADO_FISICO',
-        deleted_at: now.toISOString(),
-        hard_delete: true,
-      },
-      result: 'EXITO',
-    });
-  } catch (auditErr) {
-    console.error('Error al registrar auditoría de borrado de edición:', auditErr);
   }
 
   revalidatePath('/oferta/ediciones');

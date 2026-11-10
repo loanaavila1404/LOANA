@@ -498,25 +498,7 @@ export async function deleteProspectoAction(id: string, motivo?: string) {
     db.from('seguimientos').select('*').eq('prospecto_id', id),
   ]);
 
-  // 3. Cascada de eliminación física de dependencias hijas del prospecto
-  await db.from('tareas_comerciales').delete().eq('prospecto_id', id);
-  await db.from('transferencias_prospectos').delete().eq('prospecto_id', id);
-  await db.from('seguimientos').delete().eq('prospecto_id', id);
-
-  // 4. Desvincular matrículas que apunten a este prospecto
-  await db.from('matriculas').update({ prospecto_id: null }).eq('prospecto_id', id);
-
-  // 5. Borrado físico definitivo (Hard Delete) de la tabla prospectos
-  const { error: delError } = await db
-    .from('prospectos')
-    .delete()
-    .eq('id', id);
-
-  if (delError) {
-    return { error: `Error en borrado definitivo del prospecto: ${delError.message}` };
-  }
-
-  // 6. Asiento inalterable en la bitácora institucional (audit_logs)
+  // 3. REGISTRO PREVIO EN AUDITORÍA ANTES DEL BORRADO FÍSICO
   try {
     const nombreCompleto = `${p.nombres || ''} ${p.apellidos || ''}`.trim();
     await db.from('audit_logs').insert({
@@ -545,6 +527,25 @@ export async function deleteProspectoAction(id: string, motivo?: string) {
     });
   } catch (auditErr) {
     console.warn('[deleteProspectoAction] Error audit:', auditErr);
+  }
+
+  // 4. Cascada de eliminación física de dependencias hijas del prospecto
+  await db.from('tareas_comerciales').delete().eq('prospecto_id', id);
+  await db.from('transferencias_prospectos').delete().eq('prospecto_id', id);
+  await db.from('seguimientos').delete().eq('prospecto_id', id);
+
+  // 5. Desvincular matrículas que apunten a este prospecto y limpiar campos circulares
+  await db.from('matriculas').update({ prospecto_id: null }).eq('prospecto_id', id);
+  await db.from('prospectos').update({ matricula_id: null }).eq('id', id);
+
+  // 6. Borrado físico definitivo (Hard Delete) de la tabla prospectos
+  const { error: delError } = await db
+    .from('prospectos')
+    .delete()
+    .eq('id', id);
+
+  if (delError) {
+    return { error: `Error en borrado definitivo del prospecto: ${delError.message}` };
   }
 
   revalidatePath('/crm');

@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getSafeDbClient } from "@/lib/supabase/server";
 import { personaSchema, PersonaFormData } from "@/lib/validators/personas";
 import { ActionState, success, error } from "@/lib/utils/actions";
 import { revalidatePath } from "next/cache";
@@ -611,120 +611,109 @@ export async function eliminarPersonaEstudianteAction(
   }
 
   try {
+    const db = await getSafeDbClient();
     const supabase = await createClient();
     const authCtx = await getUserAuthContext();
     const { data: { user } } = await supabase.auth.getUser();
 
     // 1. Obtener snapshot completo de la persona antes de eliminar
-    const { data: persona } = await supabase
+    const { data: persona, error: pErr } = await db
       .from("personas")
       .select("*")
       .eq("id", personaId)
       .maybeSingle();
 
-    if (!persona) {
+    if (pErr || !persona) {
       return error("No se encontró el registro de la persona a eliminar.");
     }
 
-    const { data: est } = await supabase
+    // 2. Obtener todos los registros de estudiantes asociados a esta persona
+    const { data: estudiantesList } = await db
       .from("estudiantes")
       .select("*")
-      .eq("persona_id", personaId)
-      .maybeSingle();
-
-    let matriculasSnapshot: any[] = [];
-    let cuotasSnapshot: any[] = [];
-    let pagosSnapshot: any[] = [];
-
-    // 2. Si es estudiante, cascada de eliminación física para dependencias
-    if (est?.id) {
-      const { data: mats } = await supabase
-        .from("matriculas")
-        .select("id, codigo_matricula, status, edicion_id, importe_matricula, importe_pension")
-        .eq("estudiante_id", est.id);
-      matriculasSnapshot = mats || [];
-      const matIds = matriculasSnapshot.map(m => m.id);
-
-      if (matIds.length > 0) {
-        const { data: cuotas } = await supabase
-          .from("cuotas")
-          .select("id, matricula_id, numero_cuota, importe_neto, saldo, status")
-          .in("matricula_id", matIds);
-        cuotasSnapshot = cuotas || [];
-        const cuotaIds = cuotasSnapshot.map(c => c.id);
-
-        if (cuotaIds.length > 0) {
-          await supabase.from("pago_aplicaciones").delete().in("cuota_id", cuotaIds);
-        }
-        await supabase.from("cuotas").delete().in("matricula_id", matIds);
-      }
-
-      const { data: pags } = await supabase
-        .from("pagos")
-        .select("id, importe, fecha_pago, status")
-        .eq("estudiante_id", est.id);
-      pagosSnapshot = pags || [];
-      const pagIds = pagosSnapshot.map(p => p.id);
-      if (pagIds.length > 0) {
-        await supabase.from("pago_aplicaciones").delete().in("pago_id", pagIds);
-        await supabase.from("pagos").delete().eq("estudiante_id", est.id);
-      }
-
-      // Desvincular prospectos que apunten a estas matrículas
-      if (matIds.length > 0) {
-        await supabase.from("prospectos").update({ matricula_id: null }).in("matricula_id", matIds);
-        await supabase.from("matriculas").delete().eq("estudiante_id", est.id);
-      }
-
-      await supabase.from("estudiantes").delete().eq("id", est.id);
-    }
-
-    // 3. Desvincular o eliminar prospectos vinculados a esta persona
-    const { data: prospList } = await supabase
-      .from("prospectos")
-      .select("id")
       .eq("persona_id", personaId);
-    if (prospList && prospList.length > 0) {
-      const prospIds = prospList.map(p => p.id);
-      await supabase.from("tareas_comerciales").delete().in("prospecto_id", prospIds);
-      await supabase.from("transferencias_prospectos").delete().in("prospecto_id", prospIds);
-      await supabase.from("seguimientos").delete().in("prospecto_id", prospIds);
-      await supabase.from("prospectos").delete().in("id", prospIds);
+
+    const estRows = estudiantesList || [];
+    const estudianteIds = estRows.map((e) => e.id);
+
+    // 3. Obtener todos los prospectos vinculados a la persona O a cualquiera de sus IDs de estudiante
+    let prospRows: any[] = [];
+    if (estudianteIds.length > 0) {
+      const [{ data: pByPersona }, { data: pByEstudiante }] = await Promise.all([
+        db.from("prospectos").select("*").eq("persona_id", personaId),
+        db.from("prospectos").select("*").in("estudiante_id", estudianteIds),
+      ]);
+      const combined = [...(pByPersona || []), ...(pByEstudiante || [])];
+      const seen = new Set<string>();
+      for (const p of combined) {
+        if (!seen.has(p.id)) {
+          seen.add(p.id);
+          prospRows.push(p);
+        }
+      }
+    } else {
+      const { data: pByPersona } = await db.from("prospectos").select("*").eq("persona_id", personaId);
+      prospRows = pByPersona || [];
     }
+    const prospectoIds = prospRows.map((p) => p.id);
 
-    // 4. Borrado físico definitivo (Hard Delete) de la tabla personas
-    const { error: delError } = await supabase
-      .from("personas")
-      .delete()
-      .eq("id", personaId);
-
-    if (delError) {
-      throw new Error(`Error en borrado definitivo: ${delError.message}`);
+    // 4. Obtener todas las matrículas vinculadas a los estudiantes
+    let matRows: any[] = [];
+    if (estudianteIds.length > 0) {
+      const { data: mats } = await db
+        .from("matriculas")
+        .select("*")
+        .in("estudiante_id", estudianteIds);
+      matRows = mats || [];
     }
+    const matriculaIds = matRows.map((m) => m.id);
 
-    // 5. Asiento inalterable en la bitácora institucional (audit_logs)
-    const nombreCompleto = `${persona.nombres || ''} ${persona.apellido_paterno || ''} ${persona.apellido_materno || ''}`.trim();
-    const dni = persona.numero_documento || 'Sin DNI';
+    // 5. Obtener todas las cuotas de esas matrículas
+    let cuotasRows: any[] = [];
+    if (matriculaIds.length > 0) {
+      const { data: cuots } = await db
+        .from("cuotas")
+        .select("*")
+        .in("matricula_id", matriculaIds);
+      cuotasRows = cuots || [];
+    }
+    const cuotaIds = cuotasRows.map((c) => c.id);
+
+    // 6. Obtener todos los pagos vinculados a los estudiantes
+    let pagosRows: any[] = [];
+    if (estudianteIds.length > 0) {
+      const { data: pags } = await db
+        .from("pagos")
+        .select("*")
+        .in("estudiante_id", estudianteIds);
+      pagosRows = pags || [];
+    }
+    const pagoIds = pagosRows.map((p) => p.id);
+
     const now = new Date();
     const fechaHora = now.toLocaleString("es-PE", { dateStyle: "short", timeStyle: "medium" });
+    const nombreCompleto = `${persona.nombres || ""} ${persona.apellido_paterno || ""} ${persona.apellido_materno || ""}`.trim();
+    const dni = persona.numero_documento || "Sin DNI";
 
+    // 7. REGISTRO PREVIO OBLIGATORIO EN LA BITÁCORA INSTITUCIONAL (audit_logs) ANTES DEL BORRADO FÍSICO
     try {
-      await supabase.from("audit_logs").insert({
+      await db.from("audit_logs").insert({
         action: "DELETE",
         entity: "personas",
         entity_id: personaId,
         module: "ESTUDIANTES",
         user_id: user?.id || null,
         user_role: authCtx?.roleName || authCtx?.roleCode || "SUPER_ADMINISTRADOR",
-        detail: `Eliminación física definitiva (Hard Delete) de expediente: ${nombreCompleto} (DNI ${dni}) - ${fechaHora} por ${user?.email || 'Usuario'}`,
+        detail: `Eliminación física definitiva (Hard Delete en Cascada) de expediente: ${nombreCompleto} (DNI ${dni}) - ${fechaHora} por ${user?.email || "Usuario"}`,
         data_before: {
           persona,
-          estudiante: est,
-          matriculas: matriculasSnapshot,
-          cuotas: cuotasSnapshot,
-          pagos: pagosSnapshot,
+          estudiantes: estRows,
+          prospectos: prospRows,
+          matriculas: matRows,
+          cuotas: cuotasRows,
+          pagos: pagosRows,
           fecha_eliminacion: now.toISOString(),
-          eliminado_por: user?.email || 'Administrador',
+          eliminado_por: user?.email || "Administrador",
         },
         data_after: {
           status: "ELIMINADO_FISICO",
@@ -737,8 +726,90 @@ export async function eliminarPersonaEstudianteAction(
       console.warn("[eliminarPersonaEstudianteAction] Error audit:", auditErr);
     }
 
+    // ========================================================
+    // 8. EJECUCIÓN EN CASCADA FÍSICA ESTRICTA (CHILDREN FIRST)
+    // ========================================================
+
+    // A. Eliminar aplicaciones de pagos vinculadas a las cuotas o a los pagos
+    if (cuotaIds.length > 0) {
+      await db.from("pago_aplicaciones").delete().in("cuota_id", cuotaIds);
+    }
+    if (pagoIds.length > 0) {
+      await db.from("pago_aplicaciones").delete().in("pago_id", pagoIds);
+    }
+
+    // B. Romper referencias circulares mutuas entre prospectos y matrículas
+    if (matriculaIds.length > 0) {
+      await db.from("prospectos").update({ matricula_id: null }).in("matricula_id", matriculaIds);
+    }
+    if (prospectoIds.length > 0) {
+      await db.from("matriculas").update({ prospecto_id: null }).in("prospecto_id", prospectoIds);
+    }
+
+    // C. Eliminar cuotas
+    if (matriculaIds.length > 0) {
+      await db.from("cuotas").delete().in("matricula_id", matriculaIds);
+    }
+
+    // D. Eliminar pagos
+    if (estudianteIds.length > 0) {
+      await db.from("pagos").delete().in("estudiante_id", estudianteIds);
+    }
+
+    // E. Eliminar matrículas
+    if (estudianteIds.length > 0) {
+      await db.from("matriculas").delete().in("estudiante_id", estudianteIds);
+    }
+
+    // F. Eliminar actividades de CRM vinculadas a los prospectos
+    if (prospectoIds.length > 0) {
+      await db.from("tareas_comerciales").delete().in("prospecto_id", prospectoIds);
+      await db.from("transferencias_prospectos").delete().in("prospecto_id", prospectoIds);
+      await db.from("seguimientos").delete().in("prospecto_id", prospectoIds);
+      await db.from("prospectos").delete().in("id", prospectoIds);
+    }
+
+    // G. Desvincular cualquier otro prospecto residual que apunte a estos estudiantes o persona
+    if (estudianteIds.length > 0) {
+      await db.from("prospectos").update({ estudiante_id: null }).in("estudiante_id", estudianteIds);
+    }
+    await db.from("prospectos").update({ persona_id: null }).eq("persona_id", personaId);
+
+    // H. Desvincular cuentas de usuario (profiles)
+    await db.from("profiles").update({ persona_id: null }).eq("persona_id", personaId);
+
+    // I. Eliminar registros de la tabla estudiantes
+    if (estudianteIds.length > 0) {
+      const { error: delEstErr } = await db
+        .from("estudiantes")
+        .delete()
+        .in("id", estudianteIds);
+
+      if (delEstErr) {
+        throw new Error(`Error al eliminar registro de estudiante: ${delEstErr.message}`);
+      }
+    }
+
+    // J. Borrado físico definitivo (Hard Delete) de la tabla personas
+    const { error: delPersonaErr } = await db
+      .from("personas")
+      .delete()
+      .eq("id", personaId);
+
+    if (delPersonaErr) {
+      throw new Error(`Error en borrado definitivo de persona: ${delPersonaErr.message}`);
+    }
+
+    // 9. Revalidación de rutas
     revalidatePath("/personas");
-    return success("Registro eliminado físicamente de la base de datos de manera definitiva.");
+    revalidatePath(`/personas/${personaId}`);
+    revalidatePath("/estudiantes");
+    revalidatePath("/matriculas");
+    revalidatePath("/crm");
+    revalidatePath("/auditoria");
+    revalidatePath("/dashboard");
+
+    return success("Expediente y todos sus registros vinculados eliminados físicamente de la base de datos de manera definitiva.");
   } catch (err: unknown) {
     console.error("eliminarPersonaEstudianteAction error:", err);
     return error(

@@ -664,38 +664,9 @@ export async function eliminarMatriculaAction(
       .select('id, pago_id, cuota_id, importe_aplicado')
       .in('cuota_id', cuotaIds);
     appsSnapshot = apps || [];
-
-    // Eliminar aplicaciones de pago vinculadas a estas cuotas
-    await db.from('pago_aplicaciones').delete().in('cuota_id', cuotaIds);
-
-    // Eliminar las cuotas físicamente
-    const { error: delCuotasErr } = await db
-      .from('cuotas')
-      .delete()
-      .eq('matricula_id', matriculaId);
-
-    if (delCuotasErr) {
-      return { error: `Error al eliminar cuotas asociadas: ${delCuotasErr.message}` };
-    }
   }
 
-  // 3. Desvincular prospectos que apunten a esta matrícula
-  await db
-    .from('prospectos')
-    .update({ matricula_id: null })
-    .eq('matricula_id', matriculaId);
-
-  // 4. Borrado físico definitivo (Hard Delete) de la tabla matriculas
-  const { error: delMatErr } = await db
-    .from('matriculas')
-    .delete()
-    .eq('id', matriculaId);
-
-  if (delMatErr) {
-    return { error: `Error al eliminar físicamente la matrícula: ${delMatErr.message}` };
-  }
-
-  // 5. Asiento inalterable en la bitácora institucional (audit_logs)
+  // 3. REGISTRO PREVIO EN LA BITÁCORA DE AUDITORÍA ANTES DE EJECUTAR EL BORRADO FÍSICO
   const est = Array.isArray(mat.estudiantes) ? mat.estudiantes[0] : mat.estudiantes;
   const persona = est?.personas;
   const nombreEstudiante = persona
@@ -734,7 +705,41 @@ export async function eliminarMatriculaAction(
     console.warn('[eliminarMatriculaAction] Error audit:', auditErr);
   }
 
-  // 6. Revalidar rutas
+  // 4. Cascada de eliminación física: aplicaciones de pago y cuotas
+  if (cuotaIds.length > 0) {
+    await db.from('pago_aplicaciones').delete().in('cuota_id', cuotaIds);
+    const { error: delCuotasErr } = await db
+      .from('cuotas')
+      .delete()
+      .eq('matricula_id', matriculaId);
+
+    if (delCuotasErr) {
+      return { error: `Error al eliminar cuotas asociadas: ${delCuotasErr.message}` };
+    }
+  }
+
+  // 5. Desvincular referencias circulares con prospectos
+  await db
+    .from('prospectos')
+    .update({ matricula_id: null })
+    .eq('matricula_id', matriculaId);
+
+  await db
+    .from('matriculas')
+    .update({ prospecto_id: null })
+    .eq('id', matriculaId);
+
+  // 6. Borrado físico definitivo (Hard Delete) de la tabla matriculas
+  const { error: delMatErr } = await db
+    .from('matriculas')
+    .delete()
+    .eq('id', matriculaId);
+
+  if (delMatErr) {
+    return { error: `Error al eliminar físicamente la matrícula: ${delMatErr.message}` };
+  }
+
+  // 7. Revalidar rutas
   revalidatePath('/matriculas');
   revalidatePath('/reportes/padron-estudiantes');
   revalidatePath('/crm');

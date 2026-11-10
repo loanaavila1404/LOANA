@@ -355,16 +355,7 @@ export async function deleteCursoAction(
   const now = new Date();
   const fechaHora = now.toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'medium' });
 
-  // 2. Eliminar posibles bloques de horarios asociados al curso
-  await db.from('horarios').delete().eq('curso_id', id);
-
-  // 3. Borrado físico definitivo (Hard Delete) de la tabla cursos
-  const { error: delErr } = await db.from('cursos').delete().eq('id', id);
-  if (delErr) {
-    return { error: `Error al eliminar físicamente la asignatura: ${delErr.message}` };
-  }
-
-  // 4. Registro en bitácora audit_logs
+  // 2. Registro preventivo permanente en bitácora audit_logs ANTES del borrado
   try {
     await db.from('audit_logs').insert({
       action: 'DELETE',
@@ -389,6 +380,15 @@ export async function deleteCursoAction(
     });
   } catch (auditErr) {
     console.error('Error al registrar auditoría de borrado de curso:', auditErr);
+  }
+
+  // 3. Eliminar posibles bloques de horarios asociados al curso
+  await db.from('horarios').delete().eq('curso_id', id);
+
+  // 4. Borrado físico definitivo (Hard Delete) de la tabla cursos
+  const { error: delErr } = await db.from('cursos').delete().eq('id', id);
+  if (delErr) {
+    return { error: `Error al eliminar físicamente la asignatura: ${delErr.message}` };
   }
 
   const plan = Array.isArray(curso.planes_estudio) ? curso.planes_estudio[0] : curso.planes_estudio;
@@ -431,21 +431,11 @@ export async function deleteCicloAction(
   const now = new Date();
   const fechaHora = now.toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'medium' });
 
-  // 1. Obtener y eliminar cursos asociados a este ciclo
+  // 1. Obtener cursos asociados
   const { data: cursos } = await db.from('cursos').select('id').eq('ciclo_id', id);
   const cursoIds = (cursos || []).map(c => c.id);
-  if (cursoIds.length > 0) {
-    await db.from('horarios').delete().in('curso_id', cursoIds);
-    await db.from('cursos').delete().eq('ciclo_id', id);
-  }
 
-  // 2. Borrado físico del ciclo
-  const { error: delErr } = await db.from('ciclos').delete().eq('id', id);
-  if (delErr) {
-    return { error: `Error al eliminar físicamente el ciclo: ${delErr.message}` };
-  }
-
-  // 3. Auditoría
+  // 2. Registro preventivo permanente en bitácora audit_logs ANTES del borrado
   try {
     await db.from('audit_logs').insert({
       action: 'DELETE',
@@ -471,6 +461,22 @@ export async function deleteCicloAction(
     });
   } catch (auditErr) {
     console.error('Error al registrar auditoría de borrado de ciclo:', auditErr);
+  }
+
+  // 3. Desvincular referencias foráneas a este ciclo
+  await db.from('matriculas').update({ ciclo_id: null }).eq('ciclo_id', id);
+  await db.from('ediciones').update({ ciclo_id: null }).eq('ciclo_id', id);
+
+  // 4. Eliminar cursos y horarios asociados
+  if (cursoIds.length > 0) {
+    await db.from('horarios').delete().in('curso_id', cursoIds);
+    await db.from('cursos').delete().eq('ciclo_id', id);
+  }
+
+  // 5. Borrado físico del ciclo
+  const { error: delErr } = await db.from('ciclos').delete().eq('id', id);
+  if (delErr) {
+    return { error: `Error al eliminar físicamente el ciclo: ${delErr.message}` };
   }
 
   const plan = Array.isArray(ciclo.planes_estudio) ? ciclo.planes_estudio[0] : ciclo.planes_estudio;
@@ -511,24 +517,15 @@ export async function deletePlanAction(
   const now = new Date();
   const fechaHora = now.toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'medium' });
 
-  // 1. Obtener y eliminar cursos del plan
-  const { data: cursos } = await db.from('cursos').select('id').eq('plan_id', id);
+  // 1. Obtener cursos y ciclos del plan
+  const [{ data: cursos }, { data: ciclos }] = await Promise.all([
+    db.from('cursos').select('id').eq('plan_id', id),
+    db.from('ciclos').select('id').eq('plan_id', id),
+  ]);
   const cursoIds = (cursos || []).map(c => c.id);
-  if (cursoIds.length > 0) {
-    await db.from('horarios').delete().in('curso_id', cursoIds);
-    await db.from('cursos').delete().eq('plan_id', id);
-  }
+  const cicloIds = (ciclos || []).map(c => c.id);
 
-  // 2. Eliminar ciclos del plan
-  await db.from('ciclos').delete().eq('plan_id', id);
-
-  // 3. Borrado físico del plan
-  const { error: delErr } = await db.from('planes_estudio').delete().eq('id', id);
-  if (delErr) {
-    return { error: `Error al eliminar físicamente el plan: ${delErr.message}` };
-  }
-
-  // 4. Auditoría
+  // 2. Registro preventivo permanente en bitácora audit_logs ANTES del borrado
   try {
     await db.from('audit_logs').insert({
       action: 'DELETE',
@@ -541,6 +538,7 @@ export async function deletePlanAction(
       data_before: {
         plan,
         cursos_eliminados: cursoIds.length,
+        ciclos_eliminados: cicloIds.length,
         fecha_eliminacion: now.toISOString(),
         eliminado_por: authCtx?.userId || 'Administrador',
         motivo: motivoTexto,
@@ -554,6 +552,29 @@ export async function deletePlanAction(
     });
   } catch (auditErr) {
     console.error('Error al registrar auditoría de borrado de plan:', auditErr);
+  }
+
+  // 3. Desvincular referencias foráneas a este plan
+  await db.from('prospectos').update({ plan_id: null }).eq('plan_id', id);
+  await db.from('ediciones').update({ plan_id: null }).eq('plan_id', id);
+  if (cicloIds.length > 0) {
+    await db.from('matriculas').update({ ciclo_id: null }).in('ciclo_id', cicloIds);
+    await db.from('ediciones').update({ ciclo_id: null }).in('ciclo_id', cicloIds);
+  }
+
+  // 4. Eliminar cursos y horarios
+  if (cursoIds.length > 0) {
+    await db.from('horarios').delete().in('curso_id', cursoIds);
+    await db.from('cursos').delete().eq('plan_id', id);
+  }
+
+  // 5. Eliminar ciclos
+  await db.from('ciclos').delete().eq('plan_id', id);
+
+  // 6. Borrado físico del plan
+  const { error: delErr } = await db.from('planes_estudio').delete().eq('id', id);
+  if (delErr) {
+    return { error: `Error al eliminar físicamente el plan: ${delErr.message}` };
   }
 
   if (plan.programa_id) {

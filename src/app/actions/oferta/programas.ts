@@ -508,7 +508,36 @@ export async function deleteProgramaAction(
     await db.from('prospectos').update({ edicion_id: null }).in('edicion_id', edicionIds);
   }
 
-  // 4. Cascada de ediciones: horarios y matrículas de prueba
+  // 4. REGISTRO PERMANENTE EN LA BITÁCORA INSTITUCIONAL (audit_logs) ANTES DEL BORRADO FÍSICO
+  try {
+    await db.from('audit_logs').insert({
+      action: 'DELETE',
+      entity: 'programas',
+      entity_id: id,
+      module: 'OFERTA_ACADEMICA',
+      user_id: authCtx?.userId || null,
+      user_role: authCtx?.roleName || authCtx?.roleCode || 'SUPER_ADMINISTRADOR',
+      detail: `Eliminación física definitiva (Hard Delete) de programa: ${programa.codigo} - ${programa.nombre} - ${fechaHora}. Motivo: ${motivoTexto}`,
+      data_before: {
+        programa,
+        ediciones: ediciones || [],
+        planes: planes || [],
+        fecha_eliminacion: now.toISOString(),
+        eliminado_por: authCtx?.userId || 'Administrador',
+        motivo: motivoTexto,
+      },
+      data_after: {
+        status: 'ELIMINADO_FISICO',
+        deleted_at: now.toISOString(),
+        hard_delete: true,
+      },
+      result: 'EXITO',
+    });
+  } catch (auditErr) {
+    console.error('Error al registrar auditoría de borrado de programa:', auditErr);
+  }
+
+  // 5. Cascada de ediciones: horarios y matrículas de prueba
   if (edicionIds.length > 0) {
     // Eliminar horarios vinculados a las ediciones
     await db.from('horarios').delete().in('edicion_id', edicionIds);
@@ -539,7 +568,7 @@ export async function deleteProgramaAction(
     await db.from('ediciones').delete().eq('programa_id', id);
   }
 
-  // 5. Cascada de planes de estudio: cursos, ciclos y planes
+  // 6. Cascada de planes de estudio: cursos, ciclos y planes
   if (planIds.length > 0) {
     const { data: cursos } = await db
       .from('cursos')
@@ -556,7 +585,7 @@ export async function deleteProgramaAction(
     await db.from('planes_estudio').delete().eq('programa_id', id);
   }
 
-  // 6. Borrado físico definitivo (Hard Delete) de la tabla programas
+  // 7. Borrado físico definitivo (Hard Delete) de la tabla programas
   const { error: delErr } = await db
     .from('programas')
     .delete()
@@ -564,35 +593,6 @@ export async function deleteProgramaAction(
 
   if (delErr) {
     return { error: `Error en borrado definitivo de programa: ${delErr.message}` };
-  }
-
-  // 7. Registro permanente e inalterable en la bitácora institucional (audit_logs)
-  try {
-    await db.from('audit_logs').insert({
-      action: 'DELETE',
-      entity: 'programas',
-      entity_id: id,
-      module: 'OFERTA_ACADEMICA',
-      user_id: authCtx?.userId || null,
-      user_role: authCtx?.roleName || authCtx?.roleCode || 'SUPER_ADMINISTRADOR',
-      detail: `Eliminación física definitiva (Hard Delete) de programa: ${programa.codigo} - ${programa.nombre} - ${fechaHora}. Motivo: ${motivoTexto}`,
-      data_before: {
-        programa,
-        ediciones: ediciones || [],
-        planes: planes || [],
-        fecha_eliminacion: now.toISOString(),
-        eliminado_por: authCtx?.userId || 'Administrador',
-        motivo: motivoTexto,
-      },
-      data_after: {
-        status: 'ELIMINADO_FISICO',
-        deleted_at: now.toISOString(),
-        hard_delete: true,
-      },
-      result: 'EXITO',
-    });
-  } catch (auditErr) {
-    console.error('Error al registrar auditoría de borrado de programa:', auditErr);
   }
 
   revalidatePath('/oferta/programas');
