@@ -599,3 +599,148 @@ export async function rechazarPrematriculaAction(matriculaId: string, motivo?: s
 
   return { success: true };
 }
+
+export async function eliminarMatriculaAction(
+  matriculaId: string,
+  motivo?: string
+): Promise<{ error?: string; success?: boolean }> {
+  const authCtx = await getUserAuthContext();
+  if (!authCtx) {
+    return { error: 'Usuario no autenticado.' };
+  }
+
+  // Protección: Asesores comerciales no pueden eliminar matrículas
+  if (authCtx.isAsesor) {
+    return {
+      error: 'Acceso denegado: El rol Asesor Comercial no tiene autorización para eliminar matrículas.',
+    };
+  }
+
+  const perms = authCtx.permissions || [];
+  if (!perms.includes('MATRICULAS.GESTIONAR') && !perms.includes('SISTEMA.ADMINISTRAR')) {
+    return { error: 'No cuentas con los permisos requeridos para eliminar matrículas.' };
+  }
+
+  const db = await getSafeDbClient();
+
+  // 1. Obtener snapshot completo de la matrícula
+  const { data: mat, error: matErr } = await db
+    .from('matriculas')
+    .select(`
+      *,
+      estudiantes (
+        id,
+        persona_id,
+        codigo_estudiante,
+        personas (
+          id,
+          nombres,
+          apellido_paterno,
+          apellido_materno,
+          numero_documento
+        )
+      )
+    `)
+    .eq('id', matriculaId)
+    .single();
+
+  if (matErr || !mat) {
+    return { error: 'No se encontró el registro de la matrícula indicada.' };
+  }
+
+  // 2. Obtener cuotas asociadas y sus aplicaciones de pago
+  const { data: cuotas } = await db
+    .from('cuotas')
+    .select('id, numero_cuota, concepto, importe_neto, saldo, status')
+    .eq('matricula_id', matriculaId);
+
+  const cuotasSnapshot = cuotas || [];
+  const cuotaIds = cuotasSnapshot.map((c) => c.id);
+
+  let appsSnapshot: any[] = [];
+  if (cuotaIds.length > 0) {
+    const { data: apps } = await db
+      .from('pago_aplicaciones')
+      .select('id, pago_id, cuota_id, importe_aplicado')
+      .in('cuota_id', cuotaIds);
+    appsSnapshot = apps || [];
+
+    // Eliminar aplicaciones de pago vinculadas a estas cuotas
+    await db.from('pago_aplicaciones').delete().in('cuota_id', cuotaIds);
+
+    // Eliminar las cuotas físicamente
+    const { error: delCuotasErr } = await db
+      .from('cuotas')
+      .delete()
+      .eq('matricula_id', matriculaId);
+
+    if (delCuotasErr) {
+      return { error: `Error al eliminar cuotas asociadas: ${delCuotasErr.message}` };
+    }
+  }
+
+  // 3. Desvincular prospectos que apunten a esta matrícula
+  await db
+    .from('prospectos')
+    .update({ matricula_id: null })
+    .eq('matricula_id', matriculaId);
+
+  // 4. Borrado físico definitivo (Hard Delete) de la tabla matriculas
+  const { error: delMatErr } = await db
+    .from('matriculas')
+    .delete()
+    .eq('id', matriculaId);
+
+  if (delMatErr) {
+    return { error: `Error al eliminar físicamente la matrícula: ${delMatErr.message}` };
+  }
+
+  // 5. Asiento inalterable en la bitácora institucional (audit_logs)
+  const est = Array.isArray(mat.estudiantes) ? mat.estudiantes[0] : mat.estudiantes;
+  const persona = est?.personas;
+  const nombreEstudiante = persona
+    ? `${persona.nombres || ''} ${persona.apellido_paterno || ''} ${persona.apellido_materno || ''}`.trim()
+    : 'Estudiante';
+  const dni = persona?.numero_documento || 'Sin DNI';
+  const motivoTexto = (motivo || 'Eliminación física definitiva autorizada por administración').trim();
+  const now = new Date();
+  const fechaHora = now.toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'medium' });
+
+  try {
+    await db.from('audit_logs').insert({
+      action: 'DELETE',
+      entity: 'matriculas',
+      entity_id: matriculaId,
+      module: 'MATRICULAS',
+      user_id: authCtx.userId,
+      user_role: authCtx.roleName || authCtx.roleCode || 'SUPER_ADMINISTRADOR',
+      detail: `Eliminación física definitiva (Hard Delete) de matrícula ${mat.codigo_matricula || matriculaId} (${nombreEstudiante} - DNI ${dni}) - ${fechaHora}. Motivo: ${motivoTexto}`,
+      data_before: {
+        matricula: mat,
+        cuotas: cuotasSnapshot,
+        pago_aplicaciones: appsSnapshot,
+        fecha_eliminacion: now.toISOString(),
+        eliminado_por: authCtx.userId,
+        motivo: motivoTexto,
+      },
+      data_after: {
+        status: 'ELIMINADO_FISICO',
+        deleted_at: now.toISOString(),
+        hard_delete: true,
+      },
+      result: 'EXITO',
+    });
+  } catch (auditErr) {
+    console.warn('[eliminarMatriculaAction] Error audit:', auditErr);
+  }
+
+  // 6. Revalidar rutas
+  revalidatePath('/matriculas');
+  revalidatePath('/reportes/padron-estudiantes');
+  revalidatePath('/crm');
+  revalidatePath('/dashboard');
+  revalidatePath('/auditoria');
+
+  return { success: true };
+}
+

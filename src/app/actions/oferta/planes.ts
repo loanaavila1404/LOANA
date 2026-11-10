@@ -351,36 +351,40 @@ export async function deleteCursoAction(
     return { error: 'No se encontró el curso a eliminar' };
   }
 
-  const motivoTexto = motivo || 'Eliminación de asignatura autorizada por administración';
+  const motivoTexto = (motivo || 'Eliminación física definitiva de asignatura autorizada por administración').trim();
+  const now = new Date();
+  const fechaHora = now.toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'medium' });
 
-  // 3. Borrado lógico asegurado en la tabla de cursos
-  await db
-    .from('cursos')
-    .update({ status: 'ELIMINADO' })
-    .eq('id', id);
+  // 2. Eliminar posibles bloques de horarios asociados al curso
+  await db.from('horarios').delete().eq('curso_id', id);
 
-  let physicalDelete = false;
-  try {
-    // Eliminar posibles bloques de horarios asociados al curso
-    await db.from('horarios').delete().eq('curso_id', id);
-    const { error: delErr } = await db.from('cursos').delete().eq('id', id);
-    if (!delErr) physicalDelete = true;
-  } catch {
-    // El soft-delete asegura su exclusión
+  // 3. Borrado físico definitivo (Hard Delete) de la tabla cursos
+  const { error: delErr } = await db.from('cursos').delete().eq('id', id);
+  if (delErr) {
+    return { error: `Error al eliminar físicamente la asignatura: ${delErr.message}` };
   }
 
   // 4. Registro en bitácora audit_logs
   try {
     await db.from('audit_logs').insert({
-      user_id: authCtx?.userId || null,
-      user_role: authCtx?.roleName || authCtx?.roleCode || 'ADMINISTRACION',
       action: 'DELETE',
-      module: 'OFERTA_ACADEMICA',
       entity: 'cursos',
       entity_id: id,
-      detail: `Eliminación de asignatura: ${curso.codigo} - ${curso.nombre} (${physicalDelete ? 'Físico' : 'Lógico'}). Motivo: ${motivoTexto}`,
-      data_before: curso,
-      data_after: { status: 'ELIMINADO', physicalDelete, motivo: motivoTexto },
+      module: 'OFERTA_ACADEMICA',
+      user_id: authCtx?.userId || null,
+      user_role: authCtx?.roleName || authCtx?.roleCode || 'SUPER_ADMINISTRADOR',
+      detail: `Eliminación física definitiva (Hard Delete) de asignatura: ${curso.codigo} - ${curso.nombre} - ${fechaHora}. Motivo: ${motivoTexto}`,
+      data_before: {
+        curso,
+        fecha_eliminacion: now.toISOString(),
+        eliminado_por: authCtx?.userId || 'Administrador',
+        motivo: motivoTexto,
+      },
+      data_after: {
+        status: 'ELIMINADO_FISICO',
+        deleted_at: now.toISOString(),
+        hard_delete: true,
+      },
       result: 'EXITO',
     });
   } catch (auditErr) {
@@ -397,3 +401,166 @@ export async function deleteCursoAction(
   revalidatePath('/auditoria');
   return { success: true };
 }
+
+export async function deleteCicloAction(
+  id: string,
+  motivo?: string
+): Promise<{ error?: string; success?: boolean }> {
+  const permissions = await getUserPermissions();
+  if (
+    !permissions.includes('PROGRAMAS.EDITAR') &&
+    !permissions.includes('SISTEMA.ADMINISTRAR')
+  ) {
+    return { error: 'No tienes permiso para eliminar ciclos' };
+  }
+
+  const db = await getSafeDbClient();
+  const authCtx = await getUserAuthContext();
+
+  const { data: ciclo, error: fetchErr } = await db
+    .from('ciclos')
+    .select('*, planes_estudio(programa_id)')
+    .eq('id', id)
+    .single();
+
+  if (fetchErr || !ciclo) {
+    return { error: 'No se encontró el ciclo a eliminar' };
+  }
+
+  const motivoTexto = (motivo || 'Eliminación física definitiva de ciclo autorizada por administración').trim();
+  const now = new Date();
+  const fechaHora = now.toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'medium' });
+
+  // 1. Obtener y eliminar cursos asociados a este ciclo
+  const { data: cursos } = await db.from('cursos').select('id').eq('ciclo_id', id);
+  const cursoIds = (cursos || []).map(c => c.id);
+  if (cursoIds.length > 0) {
+    await db.from('horarios').delete().in('curso_id', cursoIds);
+    await db.from('cursos').delete().eq('ciclo_id', id);
+  }
+
+  // 2. Borrado físico del ciclo
+  const { error: delErr } = await db.from('ciclos').delete().eq('id', id);
+  if (delErr) {
+    return { error: `Error al eliminar físicamente el ciclo: ${delErr.message}` };
+  }
+
+  // 3. Auditoría
+  try {
+    await db.from('audit_logs').insert({
+      action: 'DELETE',
+      entity: 'ciclos',
+      entity_id: id,
+      module: 'OFERTA_ACADEMICA',
+      user_id: authCtx?.userId || null,
+      user_role: authCtx?.roleName || authCtx?.roleCode || 'SUPER_ADMINISTRADOR',
+      detail: `Eliminación física definitiva (Hard Delete) de ciclo: ${ciclo.nombre || `Ciclo ${ciclo.numero_orden}`} - ${fechaHora}. Motivo: ${motivoTexto}`,
+      data_before: {
+        ciclo,
+        cursos_eliminados: cursoIds.length,
+        fecha_eliminacion: now.toISOString(),
+        eliminado_por: authCtx?.userId || 'Administrador',
+        motivo: motivoTexto,
+      },
+      data_after: {
+        status: 'ELIMINADO_FISICO',
+        deleted_at: now.toISOString(),
+        hard_delete: true,
+      },
+      result: 'EXITO',
+    });
+  } catch (auditErr) {
+    console.error('Error al registrar auditoría de borrado de ciclo:', auditErr);
+  }
+
+  const plan = Array.isArray(ciclo.planes_estudio) ? ciclo.planes_estudio[0] : ciclo.planes_estudio;
+  if (plan?.programa_id) {
+    revalidatePath(`/oferta/programas/${plan.programa_id}`);
+  }
+  revalidatePath('/oferta/programas');
+  revalidatePath('/auditoria');
+  return { success: true };
+}
+
+export async function deletePlanAction(
+  id: string,
+  motivo?: string
+): Promise<{ error?: string; success?: boolean }> {
+  const permissions = await getUserPermissions();
+  if (
+    !permissions.includes('PROGRAMAS.EDITAR') &&
+    !permissions.includes('SISTEMA.ADMINISTRAR')
+  ) {
+    return { error: 'No tienes permiso para eliminar planes de estudio' };
+  }
+
+  const db = await getSafeDbClient();
+  const authCtx = await getUserAuthContext();
+
+  const { data: plan, error: fetchErr } = await db
+    .from('planes_estudio')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (fetchErr || !plan) {
+    return { error: 'No se encontró el plan de estudio a eliminar' };
+  }
+
+  const motivoTexto = (motivo || 'Eliminación física definitiva de plan de estudio autorizada por administración').trim();
+  const now = new Date();
+  const fechaHora = now.toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'medium' });
+
+  // 1. Obtener y eliminar cursos del plan
+  const { data: cursos } = await db.from('cursos').select('id').eq('plan_id', id);
+  const cursoIds = (cursos || []).map(c => c.id);
+  if (cursoIds.length > 0) {
+    await db.from('horarios').delete().in('curso_id', cursoIds);
+    await db.from('cursos').delete().eq('plan_id', id);
+  }
+
+  // 2. Eliminar ciclos del plan
+  await db.from('ciclos').delete().eq('plan_id', id);
+
+  // 3. Borrado físico del plan
+  const { error: delErr } = await db.from('planes_estudio').delete().eq('id', id);
+  if (delErr) {
+    return { error: `Error al eliminar físicamente el plan: ${delErr.message}` };
+  }
+
+  // 4. Auditoría
+  try {
+    await db.from('audit_logs').insert({
+      action: 'DELETE',
+      entity: 'planes_estudio',
+      entity_id: id,
+      module: 'OFERTA_ACADEMICA',
+      user_id: authCtx?.userId || null,
+      user_role: authCtx?.roleName || authCtx?.roleCode || 'SUPER_ADMINISTRADOR',
+      detail: `Eliminación física definitiva (Hard Delete) de plan de estudio: ${plan.codigo} - ${plan.nombre} - ${fechaHora}. Motivo: ${motivoTexto}`,
+      data_before: {
+        plan,
+        cursos_eliminados: cursoIds.length,
+        fecha_eliminacion: now.toISOString(),
+        eliminado_por: authCtx?.userId || 'Administrador',
+        motivo: motivoTexto,
+      },
+      data_after: {
+        status: 'ELIMINADO_FISICO',
+        deleted_at: now.toISOString(),
+        hard_delete: true,
+      },
+      result: 'EXITO',
+    });
+  } catch (auditErr) {
+    console.error('Error al registrar auditoría de borrado de plan:', auditErr);
+  }
+
+  if (plan.programa_id) {
+    revalidatePath(`/oferta/programas/${plan.programa_id}`);
+  }
+  revalidatePath('/oferta/programas');
+  revalidatePath('/auditoria');
+  return { success: true };
+}
+

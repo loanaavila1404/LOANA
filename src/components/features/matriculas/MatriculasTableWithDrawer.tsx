@@ -21,8 +21,10 @@ import {
   ArrowRight,
   Receipt,
   Download,
+  Trash2,
 } from 'lucide-react';
 import { ValidarPagoMatriculaModal, MatriculaParaValidar } from './ValidarPagoMatriculaModal';
+import { MatriculaDeleteModal } from './MatriculaDeleteModal';
 
 export type CuotaItem = {
   id: string;
@@ -101,6 +103,7 @@ interface Props {
 export function MatriculasTableWithDrawer({ initialMatriculas, readOnly = false }: Props) {
   const [matriculas, setMatriculas] = useState<MatriculaRow[]>(initialMatriculas);
   const [matriculaAValidar, setMatriculaAValidar] = useState<MatriculaParaValidar | null>(null);
+  const [matriculaAEliminar, setMatriculaAEliminar] = useState<MatriculaRow | null>(null);
   const [activeTab, setActiveTab] = useState<'TODAS' | 'AL_DIA' | 'VOUCHERS' | 'POR_VENCER' | 'CON_DEUDA'>('TODAS');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('TODOS');
@@ -498,6 +501,17 @@ export function MatriculasTableWithDrawer({ initialMatriculas, readOnly = false 
                           >
                             <FileText className="w-4 h-4 text-red-600" />
                           </Link>
+
+                          {!readOnly && (
+                            <button
+                              type="button"
+                              onClick={() => setMatriculaAEliminar(m)}
+                              className="p-1.5 rounded-md hover:bg-red-50 text-slate-400 hover:text-[#C4121A] transition-colors"
+                              title="Eliminar Matrícula Permanentemente (Hard Delete)"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -874,6 +888,19 @@ export function MatriculasTableWithDrawer({ initialMatriculas, readOnly = false 
                     </>
                   )}
                 </Link>
+
+                {!readOnly && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setMatriculaAEliminar(selectedMatricula)}
+                    className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 text-xs font-bold px-3 py-2.5 flex items-center gap-1.5 shadow-2xs"
+                    title="Eliminar matrícula permanentemente (Hard Delete)"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">Eliminar</span>
+                  </Button>
+                )}
               </div>
 
             </div>
@@ -920,6 +947,25 @@ export function MatriculasTableWithDrawer({ initialMatriculas, readOnly = false 
                   }
                 : null
             );
+          }
+        }}
+      />
+
+      {/* Modal Nativo de Doble Confirmación para Eliminación Definitiva (Hard Delete) */}
+      <MatriculaDeleteModal
+        isOpen={Boolean(matriculaAEliminar)}
+        onClose={() => setMatriculaAEliminar(null)}
+        matriculaId={matriculaAEliminar?.id || ''}
+        codigoMatricula={matriculaAEliminar?.codigo_matricula || ''}
+        estudianteNombre={(() => {
+          const p = matriculaAEliminar?.estudiante?.personas;
+          return p ? `${p.nombres || ''} ${p.apellido_paterno || ''}`.trim() : 'Estudiante';
+        })()}
+        programaNombre={matriculaAEliminar?.edicion?.programas?.nombre || undefined}
+        onDeleted={(deletedId) => {
+          setMatriculas((prev) => prev.filter((m) => m.id !== deletedId));
+          if (selectedMatricula?.id === deletedId) {
+            setSelectedMatricula(null);
           }
         }}
       />

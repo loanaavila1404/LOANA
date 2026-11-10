@@ -478,7 +478,7 @@ export async function deleteProgramaAction(
   const db = await getSafeDbClient();
   const authCtx = await getUserAuthContext();
 
-  // 1. Obtener datos antes del borrado
+  // 1. Obtener datos y snapshot completo antes del borrado
   const { data: programa, error: fetchErr } = await db
     .from('programas')
     .select('*')
@@ -489,55 +489,106 @@ export async function deleteProgramaAction(
     return { error: 'No se encontró el programa a eliminar' };
   }
 
-  // 2. Verificar si hay matrículas activas en alguna de sus ediciones
-  const { data: ediciones } = await db
-    .from('ediciones')
-    .select('id, codigo, nombre')
-    .eq('programa_id', id);
+  const motivoTexto = (motivo || 'Eliminación física definitiva de programa autorizada por administración').trim();
+  const now = new Date();
+  const fechaHora = now.toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'medium' });
+
+  // 2. Obtener ediciones y planes asociados
+  const [{ data: ediciones }, { data: planes }] = await Promise.all([
+    db.from('ediciones').select('id, codigo, nombre').eq('programa_id', id),
+    db.from('planes_estudio').select('id, codigo, nombre').eq('programa_id', id),
+  ]);
 
   const edicionIds = (ediciones || []).map((e: { id: string }) => e.id);
+  const planIds = (planes || []).map((p: { id: string }) => p.id);
+
+  // 3. Desvincular prospectos que apunten a este programa o a sus ediciones
+  await db.from('prospectos').update({ programa_id: null }).eq('programa_id', id);
   if (edicionIds.length > 0) {
-    const { count: matriculasCount } = await db
+    await db.from('prospectos').update({ edicion_id: null }).in('edicion_id', edicionIds);
+  }
+
+  // 4. Cascada de ediciones: horarios y matrículas de prueba
+  if (edicionIds.length > 0) {
+    // Eliminar horarios vinculados a las ediciones
+    await db.from('horarios').delete().in('edicion_id', edicionIds);
+
+    // Limpiar matrículas asociadas
+    const { data: mats } = await db
       .from('matriculas')
-      .select('id', { count: 'exact', head: true })
+      .select('id')
       .in('edicion_id', edicionIds);
 
-    if (matriculasCount && matriculasCount > 0) {
-      return {
-        error: `No se puede eliminar el programa porque tiene ${matriculasCount} matrícula(s) asociadas en sus ediciones. Inactívelo en su lugar para salvaguardar el historial institucional.`,
-      };
+    const matIds = (mats || []).map((m: { id: string }) => m.id);
+    if (matIds.length > 0) {
+      const { data: cuotas } = await db
+        .from('cuotas')
+        .select('id')
+        .in('matricula_id', matIds);
+
+      const cuotaIds = (cuotas || []).map((c: { id: string }) => c.id);
+      if (cuotaIds.length > 0) {
+        await db.from('pago_aplicaciones').delete().in('cuota_id', cuotaIds);
+        await db.from('cuotas').delete().in('matricula_id', matIds);
+      }
+      await db.from('prospectos').update({ matricula_id: null }).in('matricula_id', matIds);
+      await db.from('matriculas').delete().in('edicion_id', edicionIds);
     }
+
+    // Eliminar ediciones físicamente
+    await db.from('ediciones').delete().eq('programa_id', id);
   }
 
-  const motivoTexto = motivo || 'Eliminación de programa académico autorizada por administración';
+  // 5. Cascada de planes de estudio: cursos, ciclos y planes
+  if (planIds.length > 0) {
+    const { data: cursos } = await db
+      .from('cursos')
+      .select('id')
+      .in('plan_id', planIds);
 
-  // 3. Borrado lógico asegurado en la tabla de programas
-  await db
+    const cursoIds = (cursos || []).map((c: { id: string }) => c.id);
+    if (cursoIds.length > 0) {
+      await db.from('horarios').delete().in('curso_id', cursoIds);
+      await db.from('cursos').delete().in('plan_id', planIds);
+    }
+
+    await db.from('ciclos').delete().in('plan_id', planIds);
+    await db.from('planes_estudio').delete().eq('programa_id', id);
+  }
+
+  // 6. Borrado físico definitivo (Hard Delete) de la tabla programas
+  const { error: delErr } = await db
     .from('programas')
-    .update({ status: 'ELIMINADO' })
+    .delete()
     .eq('id', id);
 
-  // Intentar borrado físico si no tiene claves foráneas bloqueantes
-  let physicalDelete = false;
-  try {
-    const { error: delErr } = await db.from('programas').delete().eq('id', id);
-    if (!delErr) physicalDelete = true;
-  } catch {
-    // Si hay FK, el soft-delete garantiza la exclusión total
+  if (delErr) {
+    return { error: `Error en borrado definitivo de programa: ${delErr.message}` };
   }
 
-  // 4. Registro permanente e inalterable en la bitácora institucional (audit_logs)
+  // 7. Registro permanente e inalterable en la bitácora institucional (audit_logs)
   try {
     await db.from('audit_logs').insert({
-      user_id: authCtx?.userId || null,
-      user_role: authCtx?.roleName || authCtx?.roleCode || 'ADMINISTRACION',
       action: 'DELETE',
-      module: 'OFERTA_ACADEMICA',
       entity: 'programas',
       entity_id: id,
-      detail: `Eliminación de programa: ${programa.codigo} - ${programa.nombre} (${physicalDelete ? 'Físico' : 'Lógico'}). Motivo: ${motivoTexto}`,
-      data_before: programa,
-      data_after: { status: 'ELIMINADO', physicalDelete, motivo: motivoTexto },
+      module: 'OFERTA_ACADEMICA',
+      user_id: authCtx?.userId || null,
+      user_role: authCtx?.roleName || authCtx?.roleCode || 'SUPER_ADMINISTRADOR',
+      detail: `Eliminación física definitiva (Hard Delete) de programa: ${programa.codigo} - ${programa.nombre} - ${fechaHora}. Motivo: ${motivoTexto}`,
+      data_before: {
+        programa,
+        ediciones: ediciones || [],
+        planes: planes || [],
+        fecha_eliminacion: now.toISOString(),
+        eliminado_por: authCtx?.userId || 'Administrador',
+        motivo: motivoTexto,
+      },
+      data_after: {
+        status: 'ELIMINADO_FISICO',
+        deleted_at: now.toISOString(),
+        hard_delete: true,
+      },
       result: 'EXITO',
     });
   } catch (auditErr) {
@@ -545,6 +596,7 @@ export async function deleteProgramaAction(
   }
 
   revalidatePath('/oferta/programas');
+  revalidatePath('/oferta/ediciones');
   revalidatePath('/oferta');
   revalidatePath('/auditoria');
   return { success: true };

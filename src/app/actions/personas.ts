@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { personaSchema, PersonaFormData } from "@/lib/validators/personas";
 import { ActionState, success, error } from "@/lib/utils/actions";
 import { revalidatePath } from "next/cache";
-import { requirePermission } from "@/lib/auth/permissions";
+import { requirePermission, getUserAuthContext } from "@/lib/auth/permissions";
 
 export type PersonaSearchParams = {
   q?: string;
@@ -612,65 +612,137 @@ export async function eliminarPersonaEstudianteAction(
 
   try {
     const supabase = await createClient();
+    const authCtx = await getUserAuthContext();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // 1. Obtener snapshot completo de la persona antes de eliminar
+    const { data: persona } = await supabase
+      .from("personas")
+      .select("*")
+      .eq("id", personaId)
+      .maybeSingle();
+
+    if (!persona) {
+      return error("No se encontró el registro de la persona a eliminar.");
+    }
 
     const { data: est } = await supabase
       .from("estudiantes")
-      .select("id")
+      .select("*")
       .eq("persona_id", personaId)
       .maybeSingle();
 
+    let matriculasSnapshot: any[] = [];
+    let cuotasSnapshot: any[] = [];
+    let pagosSnapshot: any[] = [];
+
+    // 2. Si es estudiante, cascada de eliminación física para dependencias
     if (est?.id) {
-      const [{ count: matCount }, { count: pagCount }] = await Promise.all([
-        supabase
-          .from("matriculas")
-          .select("id", { count: "exact", head: true })
-          .eq("estudiante_id", est.id),
-        supabase
-          .from("pagos")
-          .select("id", { count: "exact", head: true })
-          .eq("estudiante_id", est.id),
-      ]);
+      const { data: mats } = await supabase
+        .from("matriculas")
+        .select("id, codigo_matricula, status, edicion_id, importe_matricula, importe_pension")
+        .eq("estudiante_id", est.id);
+      matriculasSnapshot = mats || [];
+      const matIds = matriculasSnapshot.map(m => m.id);
 
-      // Si posee historial financiero o de matrículas, aplicar baja definitiva institucional (INACTIVO) para preservar trazabilidad contable
-      if ((matCount && matCount > 0) || (pagCount && pagCount > 0)) {
-        await supabase
-          .from("estudiantes")
-          .update({ status: "INACTIVO" })
-          .eq("id", est.id);
-        const { error: updErr } = await supabase
-          .from("personas")
-          .update({ status: "INACTIVO" })
-          .eq("id", personaId);
-        if (updErr) throw updErr;
+      if (matIds.length > 0) {
+        const { data: cuotas } = await supabase
+          .from("cuotas")
+          .select("id, matricula_id, numero_cuota, importe_neto, saldo, status")
+          .in("matricula_id", matIds);
+        cuotasSnapshot = cuotas || [];
+        const cuotaIds = cuotasSnapshot.map(c => c.id);
 
-        revalidatePath("/personas");
-        return success(
-          "El estudiante cuenta con historial de matrículas/pagos; se aplicó la baja definitiva institucional preservando la auditoría."
-        );
+        if (cuotaIds.length > 0) {
+          await supabase.from("pago_aplicaciones").delete().in("cuota_id", cuotaIds);
+        }
+        await supabase.from("cuotas").delete().in("matricula_id", matIds);
+      }
+
+      const { data: pags } = await supabase
+        .from("pagos")
+        .select("id, importe, fecha_pago, status")
+        .eq("estudiante_id", est.id);
+      pagosSnapshot = pags || [];
+      const pagIds = pagosSnapshot.map(p => p.id);
+      if (pagIds.length > 0) {
+        await supabase.from("pago_aplicaciones").delete().in("pago_id", pagIds);
+        await supabase.from("pagos").delete().eq("estudiante_id", est.id);
+      }
+
+      // Desvincular prospectos que apunten a estas matrículas
+      if (matIds.length > 0) {
+        await supabase.from("prospectos").update({ matricula_id: null }).in("matricula_id", matIds);
+        await supabase.from("matriculas").delete().eq("estudiante_id", est.id);
       }
 
       await supabase.from("estudiantes").delete().eq("id", est.id);
     }
 
+    // 3. Desvincular o eliminar prospectos vinculados a esta persona
+    const { data: prospList } = await supabase
+      .from("prospectos")
+      .select("id")
+      .eq("persona_id", personaId);
+    if (prospList && prospList.length > 0) {
+      const prospIds = prospList.map(p => p.id);
+      await supabase.from("tareas_comerciales").delete().in("prospecto_id", prospIds);
+      await supabase.from("transferencias_prospectos").delete().in("prospecto_id", prospIds);
+      await supabase.from("seguimientos").delete().in("prospecto_id", prospIds);
+      await supabase.from("prospectos").delete().in("id", prospIds);
+    }
+
+    // 4. Borrado físico definitivo (Hard Delete) de la tabla personas
     const { error: delError } = await supabase
       .from("personas")
       .delete()
       .eq("id", personaId);
 
     if (delError) {
-      // Fallback seguro a baja definitiva si alguna restricción de llave foránea impide el borrado físico
-      await supabase
-        .from("personas")
-        .update({ status: "INACTIVO" })
-        .eq("id", personaId);
+      throw new Error(`Error en borrado definitivo: ${delError.message}`);
+    }
+
+    // 5. Asiento inalterable en la bitácora institucional (audit_logs)
+    const nombreCompleto = `${persona.nombres || ''} ${persona.apellido_paterno || ''} ${persona.apellido_materno || ''}`.trim();
+    const dni = persona.numero_documento || 'Sin DNI';
+    const now = new Date();
+    const fechaHora = now.toLocaleString("es-PE", { dateStyle: "short", timeStyle: "medium" });
+
+    try {
+      await supabase.from("audit_logs").insert({
+        action: "DELETE",
+        entity: "personas",
+        entity_id: personaId,
+        module: "ESTUDIANTES",
+        user_id: user?.id || null,
+        user_role: authCtx?.roleName || authCtx?.roleCode || "SUPER_ADMINISTRADOR",
+        detail: `Eliminación física definitiva (Hard Delete) de expediente: ${nombreCompleto} (DNI ${dni}) - ${fechaHora} por ${user?.email || 'Usuario'}`,
+        data_before: {
+          persona,
+          estudiante: est,
+          matriculas: matriculasSnapshot,
+          cuotas: cuotasSnapshot,
+          pagos: pagosSnapshot,
+          fecha_eliminacion: now.toISOString(),
+          eliminado_por: user?.email || 'Administrador',
+        },
+        data_after: {
+          status: "ELIMINADO_FISICO",
+          deleted_at: now.toISOString(),
+          hard_delete: true,
+        },
+        result: "EXITO",
+      });
+    } catch (auditErr) {
+      console.warn("[eliminarPersonaEstudianteAction] Error audit:", auditErr);
     }
 
     revalidatePath("/personas");
-    return success("Estudiante eliminado / dado de baja del padrón exitosamente.");
+    return success("Registro eliminado físicamente de la base de datos de manera definitiva.");
   } catch (err: unknown) {
     console.error("eliminarPersonaEstudianteAction error:", err);
     return error(
-      (err as Error).message || "Ocurrió un error al eliminar o dar de baja el registro."
+      (err as Error).message || "Ocurrió un error al eliminar físicamente el registro."
     );
   }
 }

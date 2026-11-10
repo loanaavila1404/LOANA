@@ -177,48 +177,70 @@ export async function deleteEdicionAction(
     return { error: 'No se encontró la edición a eliminar' };
   }
 
-  // 2. Verificar matrículas asociadas
-  const { count: matriculasCount } = await db
+  const motivoTexto = (motivo || 'Eliminación física definitiva de edición autorizada por administración').trim();
+  const now = new Date();
+  const fechaHora = now.toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'medium' });
+
+  // 2. Desvincular prospectos que apunten a esta edición
+  await db.from('prospectos').update({ edicion_id: null }).eq('edicion_id', id);
+
+  // 3. Eliminar bloques horarios vinculados a la edición
+  await db.from('horarios').delete().eq('edicion_id', id);
+
+  // 4. Limpiar matrículas asociadas
+  const { data: mats } = await db
     .from('matriculas')
-    .select('id', { count: 'exact', head: true })
+    .select('id')
     .eq('edicion_id', id);
 
-  if (matriculasCount && matriculasCount > 0) {
-    return {
-      error: `No se puede eliminar la edición porque cuenta con ${matriculasCount} matrícula(s) asociadas. Inactívela para conservar el historial de los alumnos matriculados.`,
-    };
+  const matIds = (mats || []).map((m: { id: string }) => m.id);
+  if (matIds.length > 0) {
+    const { data: cuotas } = await db
+      .from('cuotas')
+      .select('id')
+      .in('matricula_id', matIds);
+
+    const cuotaIds = (cuotas || []).map((c: { id: string }) => c.id);
+    if (cuotaIds.length > 0) {
+      await db.from('pago_aplicaciones').delete().in('cuota_id', cuotaIds);
+      await db.from('cuotas').delete().in('matricula_id', matIds);
+    }
+    await db.from('prospectos').update({ matricula_id: null }).in('matricula_id', matIds);
+    await db.from('matriculas').delete().eq('edicion_id', id);
   }
 
-  const motivoTexto = motivo || 'Eliminación de grupo/edición solicitada por administración';
-
-  // 3. Borrado lógico asegurado en la tabla de ediciones
-  await db
+  // 5. Borrado físico definitivo (Hard Delete) de la tabla ediciones
+  const { error: delErr } = await db
     .from('ediciones')
-    .update({ status: 'ELIMINADO' })
+    .delete()
     .eq('id', id);
 
-  let physicalDelete = false;
-  try {
-    // Si tiene sesiones horarias vinculadas, eliminarlas primero
-    await db.from('horarios').delete().eq('edicion_id', id);
-    const { error: delErr } = await db.from('ediciones').delete().eq('id', id);
-    if (!delErr) physicalDelete = true;
-  } catch {
-    // El soft-delete asegura su exclusión
+  if (delErr) {
+    return { error: `Error al eliminar físicamente la edición: ${delErr.message}` };
   }
 
-  // 4. Registro permanente en bitácora audit_logs
+  // 6. Registro permanente en bitácora audit_logs
   try {
     await db.from('audit_logs').insert({
-      user_id: authCtx?.userId || null,
-      user_role: authCtx?.roleName || authCtx?.roleCode || 'ADMINISTRACION',
       action: 'DELETE',
-      module: 'OFERTA_ACADEMICA',
       entity: 'ediciones',
       entity_id: id,
-      detail: `Eliminación de edición/grupo: ${edicion.codigo} - ${edicion.nombre || ''} (${physicalDelete ? 'Físico' : 'Lógico'}). Motivo: ${motivoTexto}`,
-      data_before: edicion,
-      data_after: { status: 'ELIMINADO', physicalDelete, motivo: motivoTexto },
+      module: 'OFERTA_ACADEMICA',
+      user_id: authCtx?.userId || null,
+      user_role: authCtx?.roleName || authCtx?.roleCode || 'SUPER_ADMINISTRADOR',
+      detail: `Eliminación física definitiva (Hard Delete) de edición: ${edicion.codigo} - ${edicion.nombre || ''} - ${fechaHora}. Motivo: ${motivoTexto}`,
+      data_before: {
+        edicion,
+        matriculas_eliminadas: matIds.length,
+        fecha_eliminacion: now.toISOString(),
+        eliminado_por: authCtx?.userId || 'Administrador',
+        motivo: motivoTexto,
+      },
+      data_after: {
+        status: 'ELIMINADO_FISICO',
+        deleted_at: now.toISOString(),
+        hard_delete: true,
+      },
       result: 'EXITO',
     });
   } catch (auditErr) {

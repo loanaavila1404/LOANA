@@ -457,9 +457,10 @@ export async function deleteProspectoAction(id: string, motivo?: string) {
   const user = (await supabase.auth.getUser()).data.user;
   const isAdvisor = authCtx?.isAsesor ?? (await isCurrentUserAdvisor());
 
+  // 1. Obtener snapshot completo del prospecto
   const { data: p, error: pError } = await db
     .from('prospectos')
-    .select('id, codigo, status, asesor_id, matricula_id, nombres, apellidos')
+    .select('*')
     .eq('id', id)
     .single();
 
@@ -486,60 +487,69 @@ export async function deleteProspectoAction(id: string, motivo?: string) {
     }
   }
 
-  // 1. Soft delete marcando status_registro = 'INACTIVO' y status = 'ELIMINADO'
-  const motivoTexto = (motivo || 'Eliminación manual confirmada en CRM').trim();
-  const { error: updError } = await db
+  const motivoTexto = (motivo || 'Eliminación física definitiva autorizada en CRM').trim();
+  const now = new Date();
+  const fechaHora = now.toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'medium' });
+
+  // 2. Obtener snapshots de actividades para la bitácora
+  const [{ data: tareas }, { data: transferencias }, { data: seguimientos }] = await Promise.all([
+    db.from('tareas_comerciales').select('*').eq('prospecto_id', id),
+    db.from('transferencias_prospectos').select('*').eq('prospecto_id', id),
+    db.from('seguimientos').select('*').eq('prospecto_id', id),
+  ]);
+
+  // 3. Cascada de eliminación física de dependencias hijas del prospecto
+  await db.from('tareas_comerciales').delete().eq('prospecto_id', id);
+  await db.from('transferencias_prospectos').delete().eq('prospecto_id', id);
+  await db.from('seguimientos').delete().eq('prospecto_id', id);
+
+  // 4. Desvincular matrículas que apunten a este prospecto
+  await db.from('matriculas').update({ prospecto_id: null }).eq('prospecto_id', id);
+
+  // 5. Borrado físico definitivo (Hard Delete) de la tabla prospectos
+  const { error: delError } = await db
     .from('prospectos')
-    .update({
-      status_registro: 'INACTIVO',
-      status: 'ELIMINADO',
-      motivo_perdida: 'ELIMINADO',
-      detalle_perdida: motivoTexto,
-      updated_by: user?.id,
-      updated_at: new Date().toISOString(),
-    })
+    .delete()
     .eq('id', id);
 
-  if (updError) {
-    return { error: 'Error al marcar prospecto como eliminado: ' + updError.message };
+  if (delError) {
+    return { error: `Error en borrado definitivo del prospecto: ${delError.message}` };
   }
 
-  // 2. Intentar borrado físico si no hay restricciones de clave foránea
+  // 6. Asiento inalterable en la bitácora institucional (audit_logs)
   try {
-    await db.from('prospectos').delete().eq('id', id);
-  } catch {
-    // Si hay restricción FK, el soft delete asegura su exclusión total
-  }
-
-  // 3. Registrar en auditoría
-  try {
+    const nombreCompleto = `${p.nombres || ''} ${p.apellidos || ''}`.trim();
     await db.from('audit_logs').insert({
-      user_id: user?.id || null,
-      user_role: authCtx?.roleName || authCtx?.roleCode || 'USUARIO',
       action: 'DELETE',
-      module: 'CRM',
       entity: 'prospectos',
       entity_id: id,
-      detail: `Eliminación de prospecto ${p.codigo || id} (${p.nombres} ${p.apellidos || ''}). Motivo: ${motivoTexto}`,
+      module: 'CRM',
+      user_id: user?.id || null,
+      user_role: authCtx?.roleName || authCtx?.roleCode || 'USUARIO',
+      detail: `Eliminación física definitiva (Hard Delete) de prospecto ${p.codigo || id} (${nombreCompleto}) - ${fechaHora}. Motivo: ${motivoTexto}`,
       data_before: {
-        id: p.id,
-        codigo: p.codigo,
-        nombres: p.nombres,
-        apellidos: p.apellidos,
-        status: p.status,
+        prospecto: p,
+        tareas_comerciales: tareas || [],
+        transferencias: transferencias || [],
+        seguimientos: seguimientos || [],
+        fecha_eliminacion: now.toISOString(),
+        eliminado_por: user?.email || 'Usuario',
+        motivo: motivoTexto,
       },
       data_after: {
-        status: 'ELIMINADO',
-        motivo: motivoTexto,
+        status: 'ELIMINADO_FISICO',
+        deleted_at: now.toISOString(),
+        hard_delete: true,
       },
       result: 'EXITO',
     });
-  } catch {
-    // Registro de auditoría tolerante a fallos
+  } catch (auditErr) {
+    console.warn('[deleteProspectoAction] Error audit:', auditErr);
   }
 
   revalidatePath('/crm');
   revalidatePath('/dashboard');
+  revalidatePath('/auditoria');
   return { success: true };
 }
 
