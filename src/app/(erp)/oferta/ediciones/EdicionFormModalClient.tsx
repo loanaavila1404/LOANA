@@ -505,7 +505,7 @@ export function EdicionFormModalClient({
         onClose={() => setShowDeleteConfirm(false)}
         onConfirm={handleDeleteEdicion}
         title="Eliminar Edición / Grupo Académico"
-        description={`¿Estás seguro de que deseas eliminar permanentemente el grupo "${edicion?.codigo || ''}" (${edicion?.nombre || ''})? Esta acción se registrará en la bitácora institucional de auditoría y no se permitirá si registra matrículas de estudiantes.`}
+        description={`¿Estás seguro de que deseas eliminar permanentemente el grupo "${edicion?.codigo || ''}" (${edicion?.nombre || ''})? Se eliminarán de forma física y en cascada sus horarios y matrículas asociadas, registrándose un asiento inalterable en la bitácora institucional.`}
         confirmText="Sí, Eliminar Edición"
         cancelText="Conservar Grupo"
         variant="danger"

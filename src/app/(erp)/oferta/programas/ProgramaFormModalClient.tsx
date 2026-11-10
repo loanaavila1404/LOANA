@@ -346,7 +346,7 @@ export function ProgramaFormModalClient({
         onClose={() => setShowDeleteConfirm(false)}
         onConfirm={handleDeletePrograma}
         title="Eliminar Programa Académico"
-        description={`¿Estás seguro de que deseas eliminar permanentemente el programa "${programa?.nombre || ''}" (${programa?.codigo || ''})? Esta acción se registrará en la bitácora institucional de auditoría y no se permitirá si registra matrículas activas.`}
+        description={`¿Estás seguro de que deseas eliminar permanentemente el programa "${programa?.nombre || ''}" (${programa?.codigo || ''})? Se eliminarán de forma física y en cascada sus planes de estudio, cursos, ciclos y elementos asociados, registrando un asiento inalterable en la bitácora institucional de auditoría.`}
         confirmText="Sí, Eliminar Programa"
         cancelText="Conservar Programa"
         variant="danger"

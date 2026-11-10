@@ -493,22 +493,85 @@ export async function deleteProgramaAction(
   const now = new Date();
   const fechaHora = now.toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'medium' });
 
-  // 2. Obtener ediciones y planes asociados
-  const [{ data: ediciones }, { data: planes }] = await Promise.all([
-    db.from('ediciones').select('id, codigo, nombre').eq('programa_id', id),
-    db.from('planes_estudio').select('id, codigo, nombre').eq('programa_id', id),
-  ]);
-
-  const edicionIds = (ediciones || []).map((e: { id: string }) => e.id);
+  // 2. Obtener planes asociados al programa
+  const { data: planes } = await db
+    .from('planes_estudio')
+    .select('id, codigo, nombre')
+    .eq('programa_id', id);
   const planIds = (planes || []).map((p: { id: string }) => p.id);
 
-  // 3. Desvincular prospectos que apunten a este programa o a sus ediciones
-  await db.from('prospectos').update({ programa_id: null }).eq('programa_id', id);
-  if (edicionIds.length > 0) {
-    await db.from('prospectos').update({ edicion_id: null }).in('edicion_id', edicionIds);
+  // 3. Obtener ciclos asociados a esos planes
+  let cicloIds: string[] = [];
+  if (planIds.length > 0) {
+    const { data: ciclos } = await db
+      .from('ciclos')
+      .select('id')
+      .in('plan_id', planIds);
+    cicloIds = (ciclos || []).map((c: { id: string }) => c.id);
   }
 
-  // 4. REGISTRO PERMANENTE EN LA BITÁCORA INSTITUCIONAL (audit_logs) ANTES DEL BORRADO FÍSICO
+  // 4. Obtener cursos asociados (tanto por plan_id como por ciclo_id)
+  let cursoIds: string[] = [];
+  const cursoQueries = [];
+  if (planIds.length > 0) {
+    cursoQueries.push(db.from('cursos').select('id').in('plan_id', planIds));
+  }
+  if (cicloIds.length > 0) {
+    cursoQueries.push(db.from('cursos').select('id').in('ciclo_id', cicloIds));
+  }
+  if (cursoQueries.length > 0) {
+    const cursoRes = await Promise.all(cursoQueries);
+    const seen = new Set<string>();
+    for (const res of cursoRes) {
+      for (const c of res.data || []) {
+        if (!seen.has(c.id)) {
+          seen.add(c.id);
+          cursoIds.push(c.id);
+        }
+      }
+    }
+  }
+
+  // 5. Obtener ediciones asociadas (por programa_id o por plan_id)
+  const edicionQueries = [
+    db.from('ediciones').select('id, codigo, nombre').eq('programa_id', id),
+  ];
+  if (planIds.length > 0) {
+    edicionQueries.push(db.from('ediciones').select('id, codigo, nombre').in('plan_id', planIds));
+  }
+  const edicionRes = await Promise.all(edicionQueries);
+  const edicionIds: string[] = [];
+  const seenEd = new Set<string>();
+  for (const res of edicionRes) {
+    for (const e of res.data || []) {
+      if (!seenEd.has(e.id)) {
+        seenEd.add(e.id);
+        edicionIds.push(e.id);
+      }
+    }
+  }
+
+  // 6. Obtener matrículas asociadas a esas ediciones
+  let matIds: string[] = [];
+  if (edicionIds.length > 0) {
+    const { data: mats } = await db
+      .from('matriculas')
+      .select('id')
+      .in('edicion_id', edicionIds);
+    matIds = (mats || []).map((m: { id: string }) => m.id);
+  }
+
+  // 7. Obtener cuotas asociadas a esas matrículas
+  let cuotaIds: string[] = [];
+  if (matIds.length > 0) {
+    const { data: cuots } = await db
+      .from('cuotas')
+      .select('id')
+      .in('matricula_id', matIds);
+    cuotaIds = (cuots || []).map((c: { id: string }) => c.id);
+  }
+
+  // 8. REGISTRO PERMANENTE EN LA BITÁCORA INSTITUCIONAL (audit_logs) ANTES DEL BORRADO FÍSICO
   try {
     await db.from('audit_logs').insert({
       action: 'DELETE',
@@ -517,11 +580,14 @@ export async function deleteProgramaAction(
       module: 'OFERTA_ACADEMICA',
       user_id: authCtx?.userId || null,
       user_role: authCtx?.roleName || authCtx?.roleCode || 'SUPER_ADMINISTRADOR',
-      detail: `Eliminación física definitiva (Hard Delete) de programa: ${programa.codigo} - ${programa.nombre} - ${fechaHora}. Motivo: ${motivoTexto}`,
+      detail: `Eliminación física definitiva (Hard Delete en Cascada) de programa: ${programa.codigo} - ${programa.nombre} - ${fechaHora}. Motivo: ${motivoTexto}`,
       data_before: {
         programa,
-        ediciones: ediciones || [],
-        planes: planes || [],
+        planes_eliminados: planIds.length,
+        ciclos_eliminados: cicloIds.length,
+        cursos_eliminados: cursoIds.length,
+        ediciones_eliminadas: edicionIds.length,
+        matriculas_eliminadas: matIds.length,
         fecha_eliminacion: now.toISOString(),
         eliminado_por: authCtx?.userId || 'Administrador',
         motivo: motivoTexto,
@@ -537,55 +603,83 @@ export async function deleteProgramaAction(
     console.error('Error al registrar auditoría de borrado de programa:', auditErr);
   }
 
-  // 5. Cascada de ediciones: horarios y matrículas de prueba
+  // =========================================================================
+  // 9. CASCADA INVERSA FÍSICA ESTRICTA (CHILDREN FIRST - SIN ERRORES DE FK)
+  // =========================================================================
+
+  // A. Eliminar aplicaciones de pagos vinculadas a las cuotas
+  if (cuotaIds.length > 0) {
+    await db.from('pago_aplicaciones').delete().in('cuota_id', cuotaIds);
+  }
+
+  // B. Romper referencias circulares entre prospectos y matrículas, y eliminar cuotas y matrículas
+  if (matIds.length > 0) {
+    await db.from('cuotas').delete().in('matricula_id', matIds);
+    await db.from('prospectos').update({ matricula_id: null }).in('matricula_id', matIds);
+    await db.from('matriculas').update({ prospecto_id: null }).in('id', matIds);
+    await db.from('matriculas').delete().in('id', matIds);
+  }
+
+  // C. Desvincular cualquier otra matrícula que apunte a los ciclos de este programa
+  if (cicloIds.length > 0) {
+    await db.from('matriculas').update({ ciclo_id: null }).in('ciclo_id', cicloIds);
+  }
+
+  // D. Eliminar bloques horarios vinculados a los cursos o a las ediciones
+  if (cursoIds.length > 0) {
+    await db.from('horarios').delete().in('curso_id', cursoIds);
+  }
   if (edicionIds.length > 0) {
-    // Eliminar horarios vinculados a las ediciones
     await db.from('horarios').delete().in('edicion_id', edicionIds);
-
-    // Limpiar matrículas asociadas
-    const { data: mats } = await db
-      .from('matriculas')
-      .select('id')
-      .in('edicion_id', edicionIds);
-
-    const matIds = (mats || []).map((m: { id: string }) => m.id);
-    if (matIds.length > 0) {
-      const { data: cuotas } = await db
-        .from('cuotas')
-        .select('id')
-        .in('matricula_id', matIds);
-
-      const cuotaIds = (cuotas || []).map((c: { id: string }) => c.id);
-      if (cuotaIds.length > 0) {
-        await db.from('pago_aplicaciones').delete().in('cuota_id', cuotaIds);
-        await db.from('cuotas').delete().in('matricula_id', matIds);
-      }
-      await db.from('prospectos').update({ matricula_id: null }).in('matricula_id', matIds);
-      await db.from('matriculas').delete().in('edicion_id', edicionIds);
-    }
-
-    // Eliminar ediciones físicamente
-    await db.from('ediciones').delete().eq('programa_id', id);
   }
 
-  // 6. Cascada de planes de estudio: cursos, ciclos y planes
+  // E. Desvincular completamente prospectos (programa_id, plan_id, edicion_id)
+  await db.from('prospectos').update({ programa_id: null }).eq('programa_id', id);
   if (planIds.length > 0) {
-    const { data: cursos } = await db
-      .from('cursos')
-      .select('id')
-      .in('plan_id', planIds);
-
-    const cursoIds = (cursos || []).map((c: { id: string }) => c.id);
-    if (cursoIds.length > 0) {
-      await db.from('horarios').delete().in('curso_id', cursoIds);
-      await db.from('cursos').delete().in('plan_id', planIds);
-    }
-
-    await db.from('ciclos').delete().in('plan_id', planIds);
-    await db.from('planes_estudio').delete().eq('programa_id', id);
+    await db.from('prospectos').update({ plan_id: null }).in('plan_id', planIds);
+  }
+  if (edicionIds.length > 0) {
+    await db.from('prospectos').update({ edicion_id: null }).in('edicion_id', edicionIds);
   }
 
-  // 7. Borrado físico definitivo (Hard Delete) de la tabla programas
+  // F. Desvincular y eliminar ediciones
+  if (planIds.length > 0) {
+    await db.from('ediciones').update({ plan_id: null }).in('plan_id', planIds);
+  }
+  if (cicloIds.length > 0) {
+    await db.from('ediciones').update({ ciclo_id: null }).in('ciclo_id', cicloIds);
+  }
+  if (edicionIds.length > 0) {
+    await db.from('ediciones').delete().in('id', edicionIds);
+  }
+  await db.from('ediciones').delete().eq('programa_id', id);
+
+  // G. Eliminar cursos
+  if (cursoIds.length > 0) {
+    await db.from('cursos').delete().in('id', cursoIds);
+  }
+  if (planIds.length > 0) {
+    await db.from('cursos').delete().in('plan_id', planIds);
+  }
+  if (cicloIds.length > 0) {
+    await db.from('cursos').delete().in('ciclo_id', cicloIds);
+  }
+
+  // H. Eliminar ciclos
+  if (cicloIds.length > 0) {
+    await db.from('ciclos').delete().in('id', cicloIds);
+  }
+  if (planIds.length > 0) {
+    await db.from('ciclos').delete().in('plan_id', planIds);
+  }
+
+  // I. Eliminar planes de estudio
+  if (planIds.length > 0) {
+    await db.from('planes_estudio').delete().in('id', planIds);
+  }
+  await db.from('planes_estudio').delete().eq('programa_id', id);
+
+  // J. Eliminar el registro principal en programas
   const { error: delErr } = await db
     .from('programas')
     .delete()
@@ -598,6 +692,10 @@ export async function deleteProgramaAction(
   revalidatePath('/oferta/programas');
   revalidatePath('/oferta/ediciones');
   revalidatePath('/oferta');
+  revalidatePath('/horarios');
+  revalidatePath('/notas');
+  revalidatePath('/matriculas');
+  revalidatePath('/crm');
   revalidatePath('/auditoria');
   return { success: true };
 }

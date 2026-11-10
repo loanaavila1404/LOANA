@@ -385,6 +385,27 @@ export async function deleteCursoAction(
   // 3. Eliminar posibles bloques de horarios asociados al curso
   await db.from('horarios').delete().eq('curso_id', id);
 
+  // Limpiar prerrequisitos si estuviera configurado
+  try {
+    const { data: cfg } = await db
+      .from('institutional_config')
+      .select('value')
+      .eq('key', 'malla_prerrequisitos')
+      .maybeSingle();
+    if (cfg?.value) {
+      const map = JSON.parse(cfg.value);
+      if (map[id]) {
+        delete map[id];
+        await db
+          .from('institutional_config')
+          .update({ value: JSON.stringify(map), updated_at: new Date().toISOString() })
+          .eq('key', 'malla_prerrequisitos');
+      }
+    }
+  } catch (e) {
+    console.warn('Error limpiando prerrequisitos del curso:', e);
+  }
+
   // 4. Borrado físico definitivo (Hard Delete) de la tabla cursos
   const { error: delErr } = await db.from('cursos').delete().eq('id', id);
   if (delErr) {
@@ -444,7 +465,7 @@ export async function deleteCicloAction(
       module: 'OFERTA_ACADEMICA',
       user_id: authCtx?.userId || null,
       user_role: authCtx?.roleName || authCtx?.roleCode || 'SUPER_ADMINISTRADOR',
-      detail: `Eliminación física definitiva (Hard Delete) de ciclo: ${ciclo.nombre || `Ciclo ${ciclo.numero_orden}`} - ${fechaHora}. Motivo: ${motivoTexto}`,
+      detail: `Eliminación física definitiva (Hard Delete en Cascada) de ciclo: ${ciclo.nombre || `Ciclo ${ciclo.numero_orden}`} - ${fechaHora}. Motivo: ${motivoTexto}`,
       data_before: {
         ciclo,
         cursos_eliminados: cursoIds.length,
@@ -470,8 +491,9 @@ export async function deleteCicloAction(
   // 4. Eliminar cursos y horarios asociados
   if (cursoIds.length > 0) {
     await db.from('horarios').delete().in('curso_id', cursoIds);
-    await db.from('cursos').delete().eq('ciclo_id', id);
+    await db.from('cursos').delete().in('id', cursoIds);
   }
+  await db.from('cursos').delete().eq('ciclo_id', id);
 
   // 5. Borrado físico del ciclo
   const { error: delErr } = await db.from('ciclos').delete().eq('id', id);
@@ -517,15 +539,28 @@ export async function deletePlanAction(
   const now = new Date();
   const fechaHora = now.toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'medium' });
 
-  // 1. Obtener cursos y ciclos del plan
-  const [{ data: cursos }, { data: ciclos }] = await Promise.all([
-    db.from('cursos').select('id').eq('plan_id', id),
-    db.from('ciclos').select('id').eq('plan_id', id),
-  ]);
-  const cursoIds = (cursos || []).map(c => c.id);
+  // 1. Obtener ciclos del plan
+  const { data: ciclos } = await db.from('ciclos').select('id').eq('plan_id', id);
   const cicloIds = (ciclos || []).map(c => c.id);
 
-  // 2. Registro preventivo permanente en bitácora audit_logs ANTES del borrado
+  // 2. Obtener cursos del plan (por plan_id o por ciclo_id)
+  let cursoIds: string[] = [];
+  const cursoQueries = [db.from('cursos').select('id').eq('plan_id', id)];
+  if (cicloIds.length > 0) {
+    cursoQueries.push(db.from('cursos').select('id').in('ciclo_id', cicloIds));
+  }
+  const cursoRes = await Promise.all(cursoQueries);
+  const seenCursos = new Set<string>();
+  for (const res of cursoRes) {
+    for (const c of res.data || []) {
+      if (!seenCursos.has(c.id)) {
+        seenCursos.add(c.id);
+        cursoIds.push(c.id);
+      }
+    }
+  }
+
+  // 3. Registro preventivo permanente en bitácora audit_logs ANTES del borrado
   try {
     await db.from('audit_logs').insert({
       action: 'DELETE',
@@ -534,7 +569,7 @@ export async function deletePlanAction(
       module: 'OFERTA_ACADEMICA',
       user_id: authCtx?.userId || null,
       user_role: authCtx?.roleName || authCtx?.roleCode || 'SUPER_ADMINISTRADOR',
-      detail: `Eliminación física definitiva (Hard Delete) de plan de estudio: ${plan.codigo} - ${plan.nombre} - ${fechaHora}. Motivo: ${motivoTexto}`,
+      detail: `Eliminación física definitiva (Hard Delete en Cascada) de plan de estudio: ${plan.codigo} - ${plan.nombre} - ${fechaHora}. Motivo: ${motivoTexto}`,
       data_before: {
         plan,
         cursos_eliminados: cursoIds.length,
@@ -554,7 +589,7 @@ export async function deletePlanAction(
     console.error('Error al registrar auditoría de borrado de plan:', auditErr);
   }
 
-  // 3. Desvincular referencias foráneas a este plan
+  // 4. Desvincular referencias foráneas a este plan y sus ciclos
   await db.from('prospectos').update({ plan_id: null }).eq('plan_id', id);
   await db.from('ediciones').update({ plan_id: null }).eq('plan_id', id);
   if (cicloIds.length > 0) {
@@ -562,16 +597,23 @@ export async function deletePlanAction(
     await db.from('ediciones').update({ ciclo_id: null }).in('ciclo_id', cicloIds);
   }
 
-  // 4. Eliminar cursos y horarios
+  // 5. Eliminar cursos y horarios
   if (cursoIds.length > 0) {
     await db.from('horarios').delete().in('curso_id', cursoIds);
-    await db.from('cursos').delete().eq('plan_id', id);
+    await db.from('cursos').delete().in('id', cursoIds);
+  }
+  await db.from('cursos').delete().eq('plan_id', id);
+  if (cicloIds.length > 0) {
+    await db.from('cursos').delete().in('ciclo_id', cicloIds);
   }
 
-  // 5. Eliminar ciclos
+  // 6. Eliminar ciclos
+  if (cicloIds.length > 0) {
+    await db.from('ciclos').delete().in('id', cicloIds);
+  }
   await db.from('ciclos').delete().eq('plan_id', id);
 
-  // 6. Borrado físico del plan
+  // 7. Borrado físico del plan
   const { error: delErr } = await db.from('planes_estudio').delete().eq('id', id);
   if (delErr) {
     return { error: `Error al eliminar físicamente el plan: ${delErr.message}` };

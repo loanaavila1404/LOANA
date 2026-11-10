@@ -9,8 +9,10 @@ import { Input } from '@/components/ui/Input';
 import {
   createPlanAction,
   updatePlanAction,
+  deletePlanAction,
   createCicloAction,
   updateCicloAction,
+  deleteCicloAction,
   createCursoAction,
   updateCursoAction,
   deleteCursoAction,
@@ -31,6 +33,12 @@ export function PlanFormModalClient({
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteFeedback, setDeleteFeedback] = useState<{
+    title: string;
+    message: string;
+    variant: 'success' | 'error';
+  } | null>(null);
 
   const [codigo, setCodigo] = useState(plan?.codigo || '');
   const [nombre, setNombre] = useState(plan?.nombre || '');
@@ -50,6 +58,26 @@ export function PlanFormModalClient({
       ? String(plan.fecha_vigencia_hasta).slice(0, 10)
       : ''
   );
+
+  const handleDeletePlan = () => {
+    if (!plan) return;
+    setError(null);
+    startTransition(async () => {
+      const result = await deletePlanAction(plan.id);
+      if (result.error) {
+        setDeleteFeedback({
+          title: 'No se pudo eliminar el plan',
+          message: result.error,
+          variant: 'error',
+        });
+        setShowDeleteConfirm(false);
+      } else {
+        setShowDeleteConfirm(false);
+        setIsOpen(false);
+        router.refresh();
+      }
+    });
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -191,25 +219,64 @@ export function PlanFormModalClient({
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-4 border-t border-slate-100">
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => setIsOpen(false)}
-              disabled={isPending}
-            >
-              Cancelar
-            </Button>
-            <Button
-              type="submit"
-              disabled={isPending}
-              className="bg-[#C4121A] hover:bg-[#a00e15] text-white"
-            >
-              {isPending ? 'Guardando...' : 'Guardar Plan'}
-            </Button>
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-4 border-t border-slate-100">
+            {plan ? (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowDeleteConfirm(true)}
+                disabled={isPending}
+                className="text-red-600 border-red-300 hover:bg-red-50 hover:text-red-700 font-semibold"
+              >
+                Borrar Plan
+              </Button>
+            ) : (
+              <div />
+            )}
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setIsOpen(false)}
+                disabled={isPending}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                disabled={isPending}
+                className="bg-[#C4121A] hover:bg-[#a00e15] text-white"
+              >
+                {isPending ? 'Guardando...' : 'Guardar Plan'}
+              </Button>
+            </div>
           </div>
         </form>
       </Modal>
+
+      {/* Modal Nativo de Doble Confirmación para Eliminar Plan */}
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDeletePlan}
+        title="Eliminar Plan de Estudio"
+        description={`¿Estás seguro de que deseas eliminar permanentemente el plan "${plan?.nombre || ''}" (${plan?.codigo || ''})? Se eliminarán en cascada sus ciclos, asignaturas y horarios vinculados, registrándose un asiento inalterable en la bitácora institucional.`}
+        confirmText="Sí, Eliminar Plan"
+        cancelText="Conservar Plan"
+        variant="danger"
+        isLoading={isPending}
+      />
+
+      {/* Modal de Alerta / Feedback */}
+      {deleteFeedback && (
+        <AlertModal
+          isOpen={Boolean(deleteFeedback)}
+          onClose={() => setDeleteFeedback(null)}
+          title={deleteFeedback.title}
+          description={deleteFeedback.message}
+          variant={deleteFeedback.variant}
+        />
+      )}
     </>
   );
 }
@@ -228,12 +295,39 @@ export function CicloFormModalClient({
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteFeedback, setDeleteFeedback] = useState<{
+    title: string;
+    message: string;
+    variant: 'success' | 'error';
+  } | null>(null);
+
   const [numeroOrden, setNumeroOrden] = useState<string>(
     ciclo?.numero_orden !== null && ciclo?.numero_orden !== undefined
       ? String(ciclo.numero_orden)
       : '1'
   );
   const [nombre, setNombre] = useState(ciclo?.nombre || '');
+
+  const handleDeleteCiclo = () => {
+    if (!ciclo) return;
+    setError(null);
+    startTransition(async () => {
+      const result = await deleteCicloAction(ciclo.id);
+      if (result.error) {
+        setDeleteFeedback({
+          title: 'No se pudo eliminar el ciclo',
+          message: result.error,
+          variant: 'error',
+        });
+        setShowDeleteConfirm(false);
+      } else {
+        setShowDeleteConfirm(false);
+        setIsOpen(false);
+        router.refresh();
+      }
+    });
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -316,25 +410,64 @@ export function CicloFormModalClient({
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-4 border-t border-slate-100">
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => setIsOpen(false)}
-              disabled={isPending}
-            >
-              Cancelar
-            </Button>
-            <Button
-              type="submit"
-              disabled={isPending}
-              className="bg-[#C4121A] hover:bg-[#a00e15] text-white"
-            >
-              {isPending ? 'Guardando...' : 'Guardar Ciclo'}
-            </Button>
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-4 border-t border-slate-100">
+            {ciclo ? (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowDeleteConfirm(true)}
+                disabled={isPending}
+                className="text-red-600 border-red-300 hover:bg-red-50 hover:text-red-700 font-semibold"
+              >
+                Borrar Ciclo
+              </Button>
+            ) : (
+              <div />
+            )}
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setIsOpen(false)}
+                disabled={isPending}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                disabled={isPending}
+                className="bg-[#C4121A] hover:bg-[#a00e15] text-white"
+              >
+                {isPending ? 'Guardando...' : 'Guardar Ciclo'}
+              </Button>
+            </div>
           </div>
         </form>
       </Modal>
+
+      {/* Modal Nativo de Doble Confirmación para Eliminar Ciclo */}
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDeleteCiclo}
+        title="Eliminar Ciclo Formativo"
+        description={`¿Estás seguro de que deseas eliminar permanentemente el ciclo "${ciclo?.nombre || `Ciclo ${ciclo?.numero_orden}`}"? Se eliminarán en cascada sus asignaturas y horarios vinculados, registrándose un asiento inalterable en la bitácora institucional.`}
+        confirmText="Sí, Eliminar Ciclo"
+        cancelText="Conservar Ciclo"
+        variant="danger"
+        isLoading={isPending}
+      />
+
+      {/* Modal de Alerta / Feedback */}
+      {deleteFeedback && (
+        <AlertModal
+          isOpen={Boolean(deleteFeedback)}
+          onClose={() => setDeleteFeedback(null)}
+          title={deleteFeedback.title}
+          description={deleteFeedback.message}
+          variant={deleteFeedback.variant}
+        />
+      )}
     </>
   );
 }
@@ -568,7 +701,7 @@ export function CursoFormModalClient({
         onClose={() => setShowDeleteConfirm(false)}
         onConfirm={handleDeleteCurso}
         title="Eliminar Asignatura / Curso"
-        description={`¿Estás seguro de que deseas eliminar permanentemente la asignatura "${curso?.nombre || ''}" (${curso?.codigo || ''})? Esta acción se registrará en la bitácora institucional de auditoría y no se permitirá si registra evaluaciones en actas.`}
+        description={`¿Estás seguro de que deseas eliminar permanentemente la asignatura "${curso?.nombre || ''}" (${curso?.codigo || ''})? Se eliminarán de forma física y en cascada sus bloques de horarios vinculados, registrándose un asiento inalterable en la bitácora institucional.`}
         confirmText="Sí, Eliminar Asignatura"
         cancelText="Conservar Asignatura"
         variant="danger"

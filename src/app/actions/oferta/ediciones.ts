@@ -233,6 +233,7 @@ export async function deleteEdicionAction(
       await db.from('cuotas').delete().in('matricula_id', matIds);
     }
     await db.from('prospectos').update({ matricula_id: null }).in('matricula_id', matIds);
+    await db.from('matriculas').update({ prospecto_id: null }).in('id', matIds);
     await db.from('matriculas').delete().eq('edicion_id', id);
   }
 
