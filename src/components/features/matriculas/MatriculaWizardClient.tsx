@@ -73,6 +73,11 @@ export type EdicionOption = {
     nombre: string;
     codigo: string;
   } | null;
+  periodos?: {
+    id: string;
+    codigo: string;
+    nombre: string;
+  } | null;
   vacantesOcupadas?: number;
 };
 
@@ -253,18 +258,25 @@ export function MatriculaWizardClient({
     });
 
     // Cuotas de pensión
-    const baseDate = primerVencimiento ? new Date(primerVencimiento) : new Date();
+    const baseDate = primerVencimiento ? new Date(primerVencimiento + 'T00:00:00') : new Date();
+    const MESES_ES = [
+       'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+       'Julio', 'Agosto', 'Setiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+    const periodoCodigo = selectedEdicion?.periodos?.codigo || selectedEdicion?.codigo || '';
 
     for (let i = 1; i <= Number(numeroPensiones); i++) {
       const cuotaDate = new Date(baseDate);
       cuotaDate.setMonth(baseDate.getMonth() + (i - 1) * Number(frecuenciaMeses));
       const fechaStr = cuotaDate.toISOString().split('T')[0];
+      const mesNombre = MESES_ES[cuotaDate.getMonth()];
+      const conceptoStr = `Pensión ${mesNombre}${periodoCodigo ? ` ${periodoCodigo}` : ''}`;
 
       const cuotaNeto = Math.max(0, Number(importePension) - Math.round(descPorCuota));
 
       list.push({
         numero: i,
-        concepto: `Pensión N° 0${i}`,
+        concepto: conceptoStr,
         fechaVencimiento: fechaStr,
         importeBruto: Number(importePension),
         descuento: Math.round(descPorCuota),
@@ -273,7 +285,7 @@ export function MatriculaWizardClient({
     }
 
     return list;
-  }, [importeMatricula, importePension, numeroPensiones, primerVencimiento, frecuenciaMeses, descuentoTotal, totalBruto]);
+  }, [importeMatricula, importePension, numeroPensiones, primerVencimiento, frecuenciaMeses, descuentoTotal, totalBruto, selectedEdicion]);
 
   // --- CONFIRMAR MATRÍCULA ATÓMICA ---
   const handleConfirmarMatricula = () => {
@@ -535,9 +547,20 @@ export function MatriculaWizardClient({
                       type="text"
                       value={studentSearch}
                       onChange={e => setStudentSearch(e.target.value)}
-                      placeholder="Buscar por DNI, Nombres, Apellidos o Código Estudiantil..."
-                      className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500"
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          if (filteredEstudiantes.length > 0) {
+                            setSelectedEstudianteId(filteredEstudiantes[0].id);
+                          }
+                        }
+                      }}
+                      placeholder="Buscar por DNI, Nombres, Apellidos o Código Estudiantil (Enter para seleccionar)..."
+                      className="w-full pl-9 pr-28 py-2 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#C4121A] font-medium"
                     />
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-mono">
+                      {filteredEstudiantes.length} resultado(s)
+                    </div>
                   </div>
 
                   <div className="border border-slate-200 rounded-lg divide-y divide-slate-100 max-h-72 overflow-y-auto">

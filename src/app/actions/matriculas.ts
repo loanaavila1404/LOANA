@@ -154,6 +154,15 @@ export async function validarPagoMatriculaAction(input: ValidarPagoMatriculaInpu
     .from('matriculas')
     .select(`
       *,
+      ediciones (
+        id,
+        codigo,
+        periodos (
+          id,
+          codigo,
+          nombre
+        )
+      ),
       estudiantes (
         id,
         persona_id,
@@ -244,6 +253,14 @@ export async function validarPagoMatriculaAction(input: ValidarPagoMatriculaInpu
       vtoBase.setDate(vtoBase.getDate() + 30);
     }
 
+    const MESES_ES = [
+      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+      'Julio', 'Agosto', 'Setiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+    const edicionRow = Array.isArray((mat as any).ediciones) ? (mat as any).ediciones[0] : (mat as any).ediciones;
+    const periodoRow = Array.isArray(edicionRow?.periodos) ? edicionRow.periodos[0] : edicionRow?.periodos;
+    const periodoCodigo = periodoRow?.codigo || edicionRow?.codigo || '';
+
     for (let i = 1; i <= numPensiones; i++) {
       let descCuota = 0;
       if (i === numPensiones) {
@@ -256,11 +273,14 @@ export async function validarPagoMatriculaAction(input: ValidarPagoMatriculaInpu
       brutoRestante = Math.max(0, brutoRestante - impPension);
 
       const vtoStr = vtoBase.toISOString().split('T')[0];
+      const mesNombre = MESES_ES[vtoBase.getMonth()];
+      const conceptoStr = `Pensión ${mesNombre}${periodoCodigo ? ` ${periodoCodigo}` : ''}`;
+
       cuotasNuevas.push({
         matricula_id: mat.id,
         tipo_cuota: 'PENSION',
         numero_cuota: i,
-        concepto: `Pensión ${i}`,
+        concepto: conceptoStr,
         fecha_emision: today,
         fecha_vencimiento: vtoStr,
         importe_original: impPension,

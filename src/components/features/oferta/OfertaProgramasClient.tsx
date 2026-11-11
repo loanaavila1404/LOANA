@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { ProgramaFormModalClient } from "@/app/(erp)/oferta/programas/ProgramaFormModalClient";
 import { EdicionFormModalClient } from "@/app/(erp)/oferta/ediciones/EdicionFormModalClient";
-import { CursoNuevoModalClient } from "@/app/(erp)/oferta/programas/CursoNuevoModalClient";
+import { PeriodoFormModalClient } from "@/app/(erp)/oferta/periodos/PeriodoFormModalClient";
 
 interface OfertaProgramasClientProps {
   programas: any[];
@@ -48,9 +48,10 @@ export function OfertaProgramasClient({
   initialTab = "programas",
 }: OfertaProgramasClientProps) {
   const [activeTab, setActiveTab] = useState<
-    "programas" | "ediciones" | "cursos" | "mallas"
+    "programas" | "ediciones" | "periodos" | "cursos" | "mallas"
   >(
     initialTab === "ediciones" ||
+      initialTab === "periodos" ||
       initialTab === "cursos" ||
       initialTab === "mallas"
       ? initialTab
@@ -201,6 +202,12 @@ export function OfertaProgramasClient({
       icon: Users,
     },
     {
+      id: "periodos" as const,
+      label: "Periodos Académicos",
+      count: periodos.length,
+      icon: Calendar,
+    },
+    {
       id: "cursos" as const,
       label: "Cursos Modulares",
       count: cursos.length,
@@ -254,11 +261,19 @@ export function OfertaProgramasClient({
           {/* Botones de Acción */}
           <div className="flex flex-wrap items-center gap-2">
             <Link
+              href="/oferta/periodos"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-800 hover:bg-slate-50 shadow-2xs text-xs font-bold transition"
+            >
+              <Calendar className="w-3.5 h-3.5 text-[#C4121A]" />
+              <span>Ver Periodos</span>
+            </Link>
+            <PeriodoFormModalClient triggerText="+ Nuevo Periodo" variant="outline" />
+            <Link
               href="/oferta/ficha"
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-white border border-slate-300 text-slate-800 hover:bg-slate-50 shadow-2xs text-xs font-bold transition"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-800 hover:bg-slate-50 shadow-2xs text-xs font-bold transition"
             >
               <FileText className="w-3.5 h-3.5 text-[#C4121A]" />
-              <span>Exportar Catálogo PDF</span>
+              <span>Catálogo PDF</span>
             </Link>
             <EdicionFormModalClient
               programas={programas.map(p => ({ id: p.id, nombre: p.nombre }))}
@@ -269,16 +284,6 @@ export function OfertaProgramasClient({
               }))}
               periodos={periodos}
               ciclos={ciclos}
-            />
-            <CursoNuevoModalClient
-              planes={planes.map(pl => ({
-                id: pl.id,
-                codigo: pl.codigo,
-                nombre: pl.nombre,
-                programa_id: pl.programa_id,
-              }))}
-              ciclos={ciclos}
-              programas={programas.map(p => ({ id: p.id, nombre: p.nombre }))}
             />
             <ProgramaFormModalClient triggerText="+ Nuevo Programa" />
           </div>
@@ -636,6 +641,65 @@ export function OfertaProgramasClient({
                       </tr>
                     );
                   })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* VISTA: PERIODOS ACADÉMICOS */}
+      {activeTab === "periodos" && (
+        <div className="bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
+          <div className="p-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-extrabold text-slate-900">Periodos Académicos Oficiales</h3>
+              <p className="text-xs text-slate-500">Base estructural del calendario y convocatorias institucionales.</p>
+            </div>
+            <PeriodoFormModalClient triggerText="+ Nuevo Periodo" variant="primary" />
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50 border-b border-slate-200 text-[10px] uppercase font-bold text-slate-600">
+                <tr>
+                  <th className="py-3 px-4">Código</th>
+                  <th className="py-3 px-3">Denominación Oficial</th>
+                  <th className="py-3 px-3">Fecha de Inicio</th>
+                  <th className="py-3 px-3">Fecha de Fin</th>
+                  <th className="py-3 px-3">Estado</th>
+                  <th className="py-3 px-4 text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {periodos.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-8 text-center text-slate-400">
+                      No hay periodos académicos registrados.
+                    </td>
+                  </tr>
+                ) : (
+                  periodos.map(per => (
+                    <tr key={per.id} className="hover:bg-slate-50/80">
+                      <td className="py-3 px-4 font-mono font-bold text-slate-900">{per.codigo}</td>
+                      <td className="py-3 px-3 font-semibold text-slate-800">{per.nombre}</td>
+                      <td className="py-3 px-3 text-slate-600">
+                        {per.fecha_inicio ? new Date(per.fecha_inicio + 'T00:00:00').toLocaleDateString('es-PE') : '-'}
+                      </td>
+                      <td className="py-3 px-3 text-slate-600">
+                        {per.fecha_fin ? new Date(per.fecha_fin + 'T00:00:00').toLocaleDateString('es-PE') : '-'}
+                      </td>
+                      <td className="py-3 px-3">
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                          per.status === 'ACTIVO' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-600'
+                        }`}>
+                          {per.status || 'ACTIVO'}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <PeriodoFormModalClient periodo={per} triggerText="Editar" variant="outline" />
+                      </td>
+                    </tr>
+                  ))
                 )}
               </tbody>
             </table>

@@ -24,10 +24,20 @@ export default async function NotasPage() {
     .select("id, codigo, nombre, tipo_programa")
     .order("nombre");
 
+  // 1.5. Obtener planes de estudio para relacionar ciclos y cursos a su programa
+  const { data: planesRaw } = await supabase
+    .from("planes_estudio")
+    .select("id, programa_id");
+
+  const planToProg = new Map<string, string>();
+  (planesRaw || []).forEach((pl: any) => {
+    if (pl.id && pl.programa_id) planToProg.set(pl.id, pl.programa_id);
+  });
+
   // 2. Obtener ciclos académicos
   const { data: ciclosRaw } = await supabase
     .from("ciclos")
-    .select("id, nombre, numero_orden")
+    .select("id, nombre, numero_orden, plan_id")
     .order("numero_orden");
 
   // 3. Obtener cursos / asignaturas
@@ -87,29 +97,16 @@ export default async function NotasPage() {
     tipo_programa: p.tipo_programa,
   }));
 
-  // Mapear y deduplicar ciclos académicos por nombre y número de orden
-  const ciclosMap = new Map<string, { id: string; nombre: string; numero_orden: number; matchingIds: string[] }>();
+  // Mapear ciclos académicos con su respectivo programa
+  const ciclos: CicloData[] = (ciclosRaw || []).map((c: any) => ({
+    id: c.id,
+    nombre: c.nombre || `Ciclo ${c.numero_orden || 1}`,
+    numero_orden: c.numero_orden ?? 1,
+    programa_id: c.plan_id ? planToProg.get(c.plan_id) || null : null,
+    matchingIds: [c.id],
+  }));
 
-  for (const c of (ciclosRaw || [])) {
-    const key = `${(c.nombre || "").trim().toUpperCase()}_${c.numero_orden ?? 0}`;
-    if (!ciclosMap.has(key)) {
-      ciclosMap.set(key, {
-        id: c.id,
-        nombre: c.nombre || "Ciclo",
-        numero_orden: c.numero_orden ?? 1,
-        matchingIds: [c.id],
-      });
-    } else {
-      const entry = ciclosMap.get(key);
-      if (entry && !entry.matchingIds.includes(c.id)) {
-        entry.matchingIds.push(c.id);
-      }
-    }
-  }
-
-  const ciclos: CicloData[] = Array.from(ciclosMap.values());
-
-  // Mapear cursos
+  // Mapear cursos con su respectivo programa
   const cursos: CursoData[] = (cursosRaw || []).map((c: any) => ({
     id: c.id,
     codigo: c.codigo,
@@ -118,6 +115,7 @@ export default async function NotasPage() {
     horas_semanales: c.horas_semanales || 4,
     plan_id: c.plan_id,
     ciclo_id: c.ciclo_id,
+    programa_id: c.plan_id ? planToProg.get(c.plan_id) || null : null,
     status: c.status,
   }));
 

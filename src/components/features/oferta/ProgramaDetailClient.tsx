@@ -664,18 +664,34 @@ export function ProgramaDetailClient({
                                       </button>
                                     }
                                   />
-                                  <CursoFormModalClient
-                                    planId={planActivo.id}
-                                    cicloId={ciclo.id}
-                                    trigger={
-                                      <button
-                                        type="button"
-                                        className="text-xs font-bold text-white bg-slate-900 hover:bg-[#C4121A] px-2.5 py-1 rounded-md transition"
-                                      >
-                                        + Agregar curso
-                                      </button>
-                                    }
-                                  />
+                                  {(() => {
+                                    const numCiclo = ciclo.numero_orden || 1;
+                                    const cursosPrevios = ciclosOrdenados
+                                      .filter((c: any) => (c.numero_orden || 1) < numCiclo)
+                                      .flatMap((c: any) => (c.cursos || []).map((cur: any) => ({
+                                        id: cur.id,
+                                        codigo: cur.codigo || '',
+                                        nombre: cur.nombre || '',
+                                        cicloNumero: c.numero_orden || 1,
+                                      })));
+
+                                    return (
+                                      <CursoFormModalClient
+                                        planId={planActivo.id}
+                                        cicloId={ciclo.id}
+                                        cicloNumero={numCiclo}
+                                        cursosPrevios={cursosPrevios}
+                                        trigger={
+                                          <button
+                                            type="button"
+                                            className="text-xs font-bold text-white bg-slate-900 hover:bg-[#C4121A] px-2.5 py-1 rounded-md transition"
+                                          >
+                                            + Agregar curso
+                                          </button>
+                                        }
+                                      />
+                                    );
+                                  })()}
                                 </div>
                               </div>
 
@@ -706,6 +722,16 @@ export function ProgramaDetailClient({
                                         const docente =
                                           docenteByCursoId[curso.id] ||
                                           "Plana Docente Brusben";
+
+                                        const numCiclo = ciclo.numero_orden || 1;
+                                        const cursosPrevios = ciclosOrdenados
+                                          .filter((c: any) => (c.numero_orden || 1) < numCiclo)
+                                          .flatMap((c: any) => (c.cursos || []).map((cur: any) => ({
+                                            id: cur.id,
+                                            codigo: cur.codigo || '',
+                                            nombre: cur.nombre || '',
+                                            cicloNumero: c.numero_orden || 1,
+                                          })));
 
                                         return (
                                           <tr
@@ -739,6 +765,8 @@ export function ProgramaDetailClient({
                                               <CursoFormModalClient
                                                 planId={planActivo.id}
                                                 cicloId={ciclo.id}
+                                                cicloNumero={numCiclo}
+                                                cursosPrevios={cursosPrevios}
                                                 curso={curso}
                                                 trigger={
                                                   <button

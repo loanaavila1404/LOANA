@@ -29,9 +29,15 @@ import {
   Users, 
   X,
   AlertTriangle,
-  Building2
+  Building2,
+  Lock,
+  Unlock,
+  Sliders,
+  Check
 } from "lucide-react";
 import { saveNotasAction } from "@/app/actions/notas";
+import { Modal } from "@/components/ui/Modal";
+import { ConfirmModal } from "@/components/ui/Feedback";
 
 // Interfaces
 export interface ProgramaData {
@@ -45,6 +51,7 @@ export interface CicloData {
   id: string;
   nombre: string;
   numero_orden: number;
+  programa_id?: string | null;
   matchingIds?: string[];
 }
 
@@ -56,6 +63,7 @@ export interface CursoData {
   horas_semanales?: number | null;
   plan_id?: string | null;
   ciclo_id?: string | null;
+  programa_id?: string | null;
   status?: string | null;
 }
 
@@ -176,6 +184,24 @@ export function NotasManagerClient({
   const [saveSuccessMsg, setSaveSuccessMsg] = useState<string | null>(null);
   const [lastSavedTimestamp, setLastSavedTimestamp] = useState<string | null>(null);
 
+  // 4. Modo Edición Obligatorio (Bloqueo Inicial) y Ponderaciones Configurables
+  const [isEditMode, setIsEditMode] = useState<boolean>(false);
+  const [ponderaciones, setPonderaciones] = useState<{ ec1: number; ec2: number; ep: number; ef: number }>({
+    ec1: 20,
+    ec2: 20,
+    ep: 30,
+    ef: 30,
+  });
+  const [showPonderacionModal, setShowPonderacionModal] = useState<boolean>(false);
+  const [tempPonderaciones, setTempPonderaciones] = useState<{ ec1: number; ec2: number; ep: number; ef: number }>({
+    ec1: 20,
+    ec2: 20,
+    ep: 30,
+    ef: 30,
+  });
+  const [showConfirmPonderacion, setShowConfirmPonderacion] = useState<boolean>(false);
+  const [ponderacionError, setPonderacionError] = useState<string | null>(null);
+
   // Ediciones filtradas por Programa seleccionado
   const edicionesFiltradas = useMemo(() => {
     if (!selectedProgramaId) return ediciones;
@@ -195,10 +221,18 @@ export function NotasManagerClient({
     }
   }, [edicionesFiltradas, selectedEdicionId]);
 
-  // Deduplicación reactiva de ciclos académicos para el selector
+  // Deduplicación reactiva de ciclos académicos para el selector (filtrados por programa seleccionado)
   const ciclosUnicos = useMemo(() => {
     const map = new Map<string, CicloData>();
-    for (const c of ciclos) {
+    let filtrados = ciclos;
+    if (selectedProgramaId) {
+      const porProg = ciclos.filter(c => c.programa_id === selectedProgramaId);
+      if (porProg.length > 0) {
+        filtrados = porProg;
+      }
+    }
+
+    for (const c of filtrados) {
       const key = `${(c.nombre || "").trim().toUpperCase()}_${c.numero_orden ?? 0}`;
       if (!map.has(key)) {
         map.set(key, {
@@ -213,8 +247,8 @@ export function NotasManagerClient({
         }
       }
     }
-    return Array.from(map.values());
-  }, [ciclos]);
+    return Array.from(map.values()).sort((a, b) => a.numero_orden - b.numero_orden);
+  }, [ciclos, selectedProgramaId]);
 
   // Sincronizar Ciclo seleccionado si el actual no está en la lista única
   useEffect(() => {
@@ -223,21 +257,25 @@ export function NotasManagerClient({
     }
   }, [ciclosUnicos, selectedCicloId]);
 
-  // Cursos filtrados para la edición y ciclo seleccionado
+  // Cursos filtrados para la edición y ciclo seleccionado (restringidos al programa seleccionado)
   const cursosFiltrados = useMemo(() => {
     let filtrados = cursos;
+    if (selectedProgramaId) {
+      const porProg = cursos.filter(c => c.programa_id === selectedProgramaId);
+      if (porProg.length > 0) filtrados = porProg;
+    }
     if (activeEdicion?.plan_id) {
-      const porPlan = cursos.filter(c => c.plan_id === activeEdicion.plan_id);
+      const porPlan = filtrados.filter(c => c.plan_id === activeEdicion.plan_id);
       if (porPlan.length > 0) filtrados = porPlan;
     }
     if (selectedCicloId) {
       const cicloActivo = ciclosUnicos.find(c => c.id === selectedCicloId);
       const idsValidos = cicloActivo?.matchingIds || [selectedCicloId];
       const porCiclo = filtrados.filter(c => c.ciclo_id && idsValidos.includes(c.ciclo_id));
-      if (porCiclo.length > 0) return porCiclo;
+      if (porCiclo.length > 0) filtrados = porCiclo;
     }
-    return filtrados.length > 0 ? filtrados : cursos;
-  }, [cursos, activeEdicion, selectedCicloId, ciclosUnicos]);
+    return filtrados;
+  }, [cursos, selectedProgramaId, activeEdicion, selectedCicloId, ciclosUnicos]);
 
   // Curso activo
   const activeCurso = useMemo(() => {
@@ -348,10 +386,14 @@ export function NotasManagerClient({
         [campo]: parsed,
       };
 
-      // Cálculo oficial del Promedio Final ponderado (EC1 20%, EC2 20%, EP 30%, EF 30%)
+      // Cálculo oficial del Promedio Final ponderado (con ponderaciones configuradas)
       const { ec1, ec2, ep, ef } = updated;
       if (ec1 !== null && ec2 !== null && ep !== null && ef !== null) {
-        const ponderado = ec1 * 0.2 + ec2 * 0.2 + ep * 0.3 + ef * 0.3;
+        const w1 = ponderaciones.ec1 / 100;
+        const w2 = ponderaciones.ec2 / 100;
+        const w3 = ponderaciones.ep / 100;
+        const w4 = ponderaciones.ef / 100;
+        const ponderado = ec1 * w1 + ec2 * w2 + ep * w3 + ef * w4;
         const pfRedondeado = Math.round(ponderado);
         updated.promedioFinal = pfRedondeado;
         updated.estado = pfRedondeado >= 11 ? "APROBADO" : "DESAPROBADO";
@@ -373,6 +415,58 @@ export function NotasManagerClient({
         [estudianteId]: updated,
       };
     });
+  };
+
+  // Configuración de Ponderaciones con Doble Confirmación
+  const handleOpenPonderacionModal = () => {
+    setTempPonderaciones({ ...ponderaciones });
+    setPonderacionError(null);
+    setShowPonderacionModal(true);
+  };
+
+  const handleApplyPonderaciones = () => {
+    const sum = Number(tempPonderaciones.ec1) + Number(tempPonderaciones.ec2) + Number(tempPonderaciones.ep) + Number(tempPonderaciones.ef);
+    if (sum !== 100) {
+      setPonderacionError(`La suma de ponderaciones debe ser exactamente 100% (suma actual: ${sum}%).`);
+      return;
+    }
+    setPonderacionError(null);
+    setShowConfirmPonderacion(true);
+  };
+
+  const handleConfirmPonderaciones = () => {
+    const w1 = tempPonderaciones.ec1 / 100;
+    const w2 = tempPonderaciones.ec2 / 100;
+    const w3 = tempPonderaciones.ep / 100;
+    const w4 = tempPonderaciones.ef / 100;
+
+    setPonderaciones({ ...tempPonderaciones });
+
+    // Recalcular calificaciones con la nueva ponderación
+    setCalificacionesMap(prev => {
+      const nextMap: Record<string, CalificacionRow> = {};
+      Object.entries(prev).forEach(([key, row]) => {
+        const { ec1, ec2, ep, ef } = row;
+        let pf = row.promedioFinal;
+        let est = row.estado;
+        if (ec1 !== null && ec2 !== null && ep !== null && ef !== null) {
+          const pond = ec1 * w1 + ec2 * w2 + ep * w3 + ef * w4;
+          pf = Math.round(pond);
+          est = pf >= 11 ? "APROBADO" : "DESAPROBADO";
+        }
+        nextMap[key] = {
+          ...row,
+          promedioFinal: pf,
+          estado: est,
+        };
+      });
+      return nextMap;
+    });
+
+    setShowConfirmPonderacion(false);
+    setShowPonderacionModal(false);
+    setSaveSuccessMsg("¡Ponderaciones oficiales actualizadas y promedios recalculados con éxito!");
+    setTimeout(() => setSaveSuccessMsg(null), 4000);
   };
 
   // Guardar calificaciones (LocalStorage + Auditoría Supabase)
@@ -558,6 +652,41 @@ export function NotasManagerClient({
 
           {/* Acciones Rápidas */}
           <div className="flex flex-wrap items-center gap-2">
+            {/* Toggle Modo Edición */}
+            <button
+              type="button"
+              onClick={() => setIsEditMode(prev => !prev)}
+              className={`px-3 py-2 text-xs font-bold rounded-lg transition flex items-center gap-1.5 cursor-pointer border ${
+                isEditMode
+                  ? "bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200"
+                  : "bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200"
+              }`}
+              title={isEditMode ? "Bloquear edición de notas" : "Habilitar ingreso y edición de notas"}
+            >
+              {isEditMode ? (
+                <>
+                  <Unlock className="w-4 h-4 text-amber-600" />
+                  <span>Edición Habilitada</span>
+                </>
+              ) : (
+                <>
+                  <Lock className="w-4 h-4 text-slate-500" />
+                  <span>Habilitar Edición</span>
+                </>
+              )}
+            </button>
+
+            {/* Configurar Ponderaciones */}
+            <button
+              type="button"
+              onClick={handleOpenPonderacionModal}
+              className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 text-xs font-bold rounded-lg transition flex items-center gap-1.5 cursor-pointer"
+              title="Configurar pesos de evaluación de este curso"
+            >
+              <Sliders className="w-4 h-4 text-slate-500" />
+              <span>Ponderaciones ({ponderaciones.ec1}%/{ponderaciones.ec2}%/{ponderaciones.ep}%/{ponderaciones.ef}%)</span>
+            </button>
+
             <button
               onClick={handleSaveCalificaciones}
               disabled={isSaving}
@@ -778,7 +907,7 @@ export function NotasManagerClient({
                 </span>
               </h2>
               <p className="text-xs text-slate-500">
-                Ponderación oficial: Continua 1 (20%), Continua 2 (20%), Parcial (30%), Final (30%). Nota aprobatoria mínima: <strong>11</strong>.
+                Ponderación activa: Continua 1 ({ponderaciones.ec1}%), Continua 2 ({ponderaciones.ec2}%), Parcial ({ponderaciones.ep}%), Final ({ponderaciones.ef}%). Nota aprobatoria mínima: <strong>11</strong>.
               </p>
             </div>
 
@@ -792,6 +921,26 @@ export function NotasManagerClient({
             </div>
           </div>
 
+          {/* Banner de protección cuando la edición está bloqueada */}
+          {!isEditMode && (
+            <div className="p-3 bg-amber-50/70 border border-amber-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-amber-900 animate-in fade-in">
+              <div className="flex items-center gap-2">
+                <Lock className="w-4 h-4 text-amber-600 shrink-0" />
+                <span>
+                  <strong>Control de Edición Obligatorio:</strong> Las notas se encuentran bloqueadas para evitar modificaciones accidentales.
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsEditMode(true)}
+                className="px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg text-xs shadow-2xs flex items-center gap-1.5 cursor-pointer self-start sm:self-auto shrink-0"
+              >
+                <Unlock className="w-3.5 h-3.5" />
+                <span>Habilitar Edición Ahora</span>
+              </button>
+            </div>
+          )}
+
           <div className="overflow-x-auto rounded-xl border border-slate-200">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
@@ -799,19 +948,19 @@ export function NotasManagerClient({
                   <th className="py-2.5 px-3 w-12 text-center">N°</th>
                   <th className="py-2.5 px-3 min-w-[200px]">Estudiante / Código</th>
                   <th className="py-2.5 px-3 w-28 text-center bg-blue-50/40 border-l border-slate-200">
-                    <div>EC1 (20%)</div>
+                    <div>EC1 ({ponderaciones.ec1}%)</div>
                     <div className="text-[8.5px] font-normal text-slate-400 lowercase">ev. continua</div>
                   </th>
                   <th className="py-2.5 px-3 w-28 text-center bg-blue-50/40">
-                    <div>EC2 (20%)</div>
+                    <div>EC2 ({ponderaciones.ec2}%)</div>
                     <div className="text-[8.5px] font-normal text-slate-400 lowercase">ev. continua</div>
                   </th>
                   <th className="py-2.5 px-3 w-28 text-center bg-amber-50/40 border-l border-slate-200">
-                    <div>EP (30%)</div>
+                    <div>EP ({ponderaciones.ep}%)</div>
                     <div className="text-[8.5px] font-normal text-slate-400 lowercase">ex. parcial</div>
                   </th>
                   <th className="py-2.5 px-3 w-28 text-center bg-amber-50/40">
-                    <div>EF (30%)</div>
+                    <div>EF ({ponderaciones.ef}%)</div>
                     <div className="text-[8.5px] font-normal text-slate-400 lowercase">ex. final</div>
                   </th>
                   <th className="py-2.5 px-3 w-28 text-center bg-red-50/50 border-l border-slate-200 font-black text-slate-900">
@@ -880,15 +1029,19 @@ export function NotasManagerClient({
                           min="0"
                           max="20"
                           step="1"
+                          disabled={!isEditMode}
                           value={row.ec1 !== null ? row.ec1 : ""}
                           onChange={(e) => handleNotaChange(est.estudianteId, "ec1", e.target.value)}
                           placeholder="—"
-                          className={`w-16 mx-auto px-2 py-1.5 text-center text-xs font-mono font-bold rounded-lg border focus:ring-1 focus:ring-[#c4121a] focus:bg-white transition ${
-                            row.ec1 !== null && row.ec1 <= 10
-                              ? "bg-red-50 text-rose-700 border-red-200"
+                          title={!isEditMode ? "Modo solo lectura. Haga clic en 'Habilitar Edición' para calificar." : ""}
+                          className={`w-16 mx-auto px-2 py-1.5 text-center text-xs font-mono font-bold rounded-lg border transition ${
+                            !isEditMode
+                              ? "bg-slate-50 text-slate-500 border-slate-200 cursor-not-allowed opacity-90"
+                              : row.ec1 !== null && row.ec1 <= 10
+                              ? "bg-red-50 text-rose-700 border-red-200 focus:ring-1 focus:ring-[#c4121a] focus:bg-white"
                               : row.ec1 !== null && row.ec1 >= 11
-                              ? "bg-emerald-50/60 text-emerald-800 border-emerald-200"
-                              : "bg-white text-slate-800 border-slate-200"
+                              ? "bg-emerald-50/60 text-emerald-800 border-emerald-200 focus:ring-1 focus:ring-[#c4121a] focus:bg-white"
+                              : "bg-white text-slate-800 border-slate-200 focus:ring-1 focus:ring-[#c4121a]"
                           }`}
                         />
                       </td>
@@ -900,15 +1053,19 @@ export function NotasManagerClient({
                           min="0"
                           max="20"
                           step="1"
+                          disabled={!isEditMode}
                           value={row.ec2 !== null ? row.ec2 : ""}
                           onChange={(e) => handleNotaChange(est.estudianteId, "ec2", e.target.value)}
                           placeholder="—"
-                          className={`w-16 mx-auto px-2 py-1.5 text-center text-xs font-mono font-bold rounded-lg border focus:ring-1 focus:ring-[#c4121a] focus:bg-white transition ${
-                            row.ec2 !== null && row.ec2 <= 10
-                              ? "bg-red-50 text-rose-700 border-red-200"
+                          title={!isEditMode ? "Modo solo lectura. Haga clic en 'Habilitar Edición' para calificar." : ""}
+                          className={`w-16 mx-auto px-2 py-1.5 text-center text-xs font-mono font-bold rounded-lg border transition ${
+                            !isEditMode
+                              ? "bg-slate-50 text-slate-500 border-slate-200 cursor-not-allowed opacity-90"
+                              : row.ec2 !== null && row.ec2 <= 10
+                              ? "bg-red-50 text-rose-700 border-red-200 focus:ring-1 focus:ring-[#c4121a] focus:bg-white"
                               : row.ec2 !== null && row.ec2 >= 11
-                              ? "bg-emerald-50/60 text-emerald-800 border-emerald-200"
-                              : "bg-white text-slate-800 border-slate-200"
+                              ? "bg-emerald-50/60 text-emerald-800 border-emerald-200 focus:ring-1 focus:ring-[#c4121a] focus:bg-white"
+                              : "bg-white text-slate-800 border-slate-200 focus:ring-1 focus:ring-[#c4121a]"
                           }`}
                         />
                       </td>
@@ -920,15 +1077,19 @@ export function NotasManagerClient({
                           min="0"
                           max="20"
                           step="1"
+                          disabled={!isEditMode}
                           value={row.ep !== null ? row.ep : ""}
                           onChange={(e) => handleNotaChange(est.estudianteId, "ep", e.target.value)}
                           placeholder="—"
-                          className={`w-16 mx-auto px-2 py-1.5 text-center text-xs font-mono font-bold rounded-lg border focus:ring-1 focus:ring-[#c4121a] focus:bg-white transition ${
-                            row.ep !== null && row.ep <= 10
-                              ? "bg-red-50 text-rose-700 border-red-200"
+                          title={!isEditMode ? "Modo solo lectura. Haga clic en 'Habilitar Edición' para calificar." : ""}
+                          className={`w-16 mx-auto px-2 py-1.5 text-center text-xs font-mono font-bold rounded-lg border transition ${
+                            !isEditMode
+                              ? "bg-slate-50 text-slate-500 border-slate-200 cursor-not-allowed opacity-90"
+                              : row.ep !== null && row.ep <= 10
+                              ? "bg-red-50 text-rose-700 border-red-200 focus:ring-1 focus:ring-[#c4121a] focus:bg-white"
                               : row.ep !== null && row.ep >= 11
-                              ? "bg-emerald-50/60 text-emerald-800 border-emerald-200"
-                              : "bg-white text-slate-800 border-slate-200"
+                              ? "bg-emerald-50/60 text-emerald-800 border-emerald-200 focus:ring-1 focus:ring-[#c4121a] focus:bg-white"
+                              : "bg-white text-slate-800 border-slate-200 focus:ring-1 focus:ring-[#c4121a]"
                           }`}
                         />
                       </td>
@@ -940,15 +1101,19 @@ export function NotasManagerClient({
                           min="0"
                           max="20"
                           step="1"
+                          disabled={!isEditMode}
                           value={row.ef !== null ? row.ef : ""}
                           onChange={(e) => handleNotaChange(est.estudianteId, "ef", e.target.value)}
                           placeholder="—"
-                          className={`w-16 mx-auto px-2 py-1.5 text-center text-xs font-mono font-bold rounded-lg border focus:ring-1 focus:ring-[#c4121a] focus:bg-white transition ${
-                            row.ef !== null && row.ef <= 10
-                              ? "bg-red-50 text-rose-700 border-red-200"
+                          title={!isEditMode ? "Modo solo lectura. Haga clic en 'Habilitar Edición' para calificar." : ""}
+                          className={`w-16 mx-auto px-2 py-1.5 text-center text-xs font-mono font-bold rounded-lg border transition ${
+                            !isEditMode
+                              ? "bg-slate-50 text-slate-500 border-slate-200 cursor-not-allowed opacity-90"
+                              : row.ef !== null && row.ef <= 10
+                              ? "bg-red-50 text-rose-700 border-red-200 focus:ring-1 focus:ring-[#c4121a] focus:bg-white"
                               : row.ef !== null && row.ef >= 11
-                              ? "bg-emerald-50/60 text-emerald-800 border-emerald-200"
-                              : "bg-white text-slate-800 border-slate-200"
+                              ? "bg-emerald-50/60 text-emerald-800 border-emerald-200 focus:ring-1 focus:ring-[#c4121a] focus:bg-white"
+                              : "bg-white text-slate-800 border-slate-200 focus:ring-1 focus:ring-[#c4121a]"
                           }`}
                         />
                       </td>
@@ -1525,6 +1690,127 @@ export function NotasManagerClient({
           </div>
 
         </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* MODAL: CONFIGURACIÓN DE PONDERACIONES Y CRITERIOS DE EVALUACIÓN */}
+      {/* ============================================================== */}
+      {showPonderacionModal && (
+        <Modal
+          isOpen={showPonderacionModal}
+          onClose={() => setShowPonderacionModal(false)}
+          title="Configuración de Ponderaciones de Evaluación"
+        >
+          <div className="space-y-4 p-1">
+            <p className="text-xs text-slate-500 leading-relaxed">
+              Define los porcentajes oficiales de cada instrumento de evaluación para la asignatura{" "}
+              <strong className="text-slate-800">{activeCurso?.nombre}</strong>. La suma total de los 4 rubros debe ser exactamente del 100%.
+            </p>
+
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700">EC1: Evaluación Continua 1 (%)</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="5"
+                  value={tempPonderaciones.ec1}
+                  onChange={(e) => setTempPonderaciones(prev => ({ ...prev, ec1: Number(e.target.value) || 0 }))}
+                  className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg font-mono font-bold focus:ring-1 focus:ring-[#c4121a]"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700">EC2: Evaluación Continua 2 (%)</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="5"
+                  value={tempPonderaciones.ec2}
+                  onChange={(e) => setTempPonderaciones(prev => ({ ...prev, ec2: Number(e.target.value) || 0 }))}
+                  className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg font-mono font-bold focus:ring-1 focus:ring-[#c4121a]"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700">EP: Examen Parcial (%)</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="5"
+                  value={tempPonderaciones.ep}
+                  onChange={(e) => setTempPonderaciones(prev => ({ ...prev, ep: Number(e.target.value) || 0 }))}
+                  className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg font-mono font-bold focus:ring-1 focus:ring-[#c4121a]"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700">EF: Examen Final (%)</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="5"
+                  value={tempPonderaciones.ef}
+                  onChange={(e) => setTempPonderaciones(prev => ({ ...prev, ef: Number(e.target.value) || 0 }))}
+                  className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg font-mono font-bold focus:ring-1 focus:ring-[#c4121a]"
+                />
+              </div>
+            </div>
+
+            {/* Total acumulado */}
+            {(() => {
+              const suma = Number(tempPonderaciones.ec1) + Number(tempPonderaciones.ec2) + Number(tempPonderaciones.ep) + Number(tempPonderaciones.ef);
+              const esExacto = suma === 100;
+              return (
+                <div className={`p-3 rounded-xl border flex items-center justify-between text-xs font-bold ${
+                  esExacto ? "bg-emerald-50 border-emerald-200 text-emerald-800" : "bg-red-50 border-red-200 text-rose-800"
+                }`}>
+                  <span>Suma Total Ponderada:</span>
+                  <span className="font-mono text-sm">{suma}% {esExacto ? "✓ (Correcto)" : "(Debe ser 100%)"}</span>
+                </div>
+              );
+            })()}
+
+            {ponderacionError && (
+              <p className="text-xs text-rose-600 font-semibold">{ponderacionError}</p>
+            )}
+
+            <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setShowPonderacionModal(false)}
+                className="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-900 border border-slate-200 rounded-lg cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleApplyPonderaciones}
+                className="px-4 py-1.5 bg-[#c4121a] hover:bg-[#a00f15] text-white text-xs font-bold rounded-lg shadow-sm transition cursor-pointer"
+              >
+                Continuar y Confirmar
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Modal de Doble Confirmación para aplicar ponderaciones */}
+      {showConfirmPonderacion && (
+        <ConfirmModal
+          isOpen={showConfirmPonderacion}
+          onClose={() => setShowConfirmPonderacion(false)}
+          onConfirm={handleConfirmPonderaciones}
+          title="Confirmar Nuevas Ponderaciones"
+          description={`¿Está completamente seguro de actualizar la ponderación a: EC1 (${tempPonderaciones.ec1}%), EC2 (${tempPonderaciones.ec2}%), EP (${tempPonderaciones.ep}%), EF (${tempPonderaciones.ef}%)? Todos los promedios finales y condiciones académicas de los estudiantes del aula se recalcularán automáticamente.`}
+          confirmText="Sí, Aplicar y Recalcular"
+          cancelText="Regresar"
+          variant="warning"
+        />
       )}
 
     </div>

@@ -472,14 +472,32 @@ export function CicloFormModalClient({
   );
 }
 
+export function generateAutoCourseCode(cicloNumero: number = 1, cursoNombre: string = ""): string {
+  const cicloPrefix = String(cicloNumero).padStart(2, "0");
+  if (!cursoNombre.trim()) return `${cicloPrefix}-CURSO`;
+  const clean = cursoNombre
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toUpperCase()
+    .replace(/[^A-Z0-9\s]/g, "")
+    .trim();
+  const words = clean.split(/\s+/).filter(w => !["DE", "DEL", "LA", "LAS", "EL", "LOS", "Y", "E", "EN", "PARA", "CON"].includes(w));
+  const mainWord = words[0] || clean.split(/\s+/)[0] || "CURSO";
+  return `${cicloPrefix}-${mainWord.slice(0, 15)}`;
+}
+
 export function CursoFormModalClient({
   planId,
   cicloId,
+  cicloNumero = 1,
+  cursosPrevios = [],
   curso,
   trigger,
 }: {
   planId: string;
   cicloId: string;
+  cicloNumero?: number;
+  cursosPrevios?: Array<{ id: string; codigo: string; nombre: string; cicloNumero: number }>;
   curso?: Database['public']['Tables']['cursos']['Row'];
   trigger: React.ReactNode;
 }) {
@@ -488,7 +506,7 @@ export function CursoFormModalClient({
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
-  const [codigo, setCodigo] = useState(curso?.codigo || '');
+  const [codigo, setCodigo] = useState(curso?.codigo || generateAutoCourseCode(cicloNumero, ''));
   const [nombre, setNombre] = useState(curso?.nombre || '');
   const [creditos, setCreditos] = useState<string>(
     curso?.creditos !== null && curso?.creditos !== undefined
@@ -531,7 +549,7 @@ export function CursoFormModalClient({
   useEffect(() => {
     if (isOpen) {
       setError(null);
-      setCodigo(curso?.codigo || '');
+      setCodigo(curso?.codigo || generateAutoCourseCode(cicloNumero, ''));
       setNombre(curso?.nombre || '');
       setCreditos(
         curso?.creditos !== null && curso?.creditos !== undefined
@@ -545,7 +563,14 @@ export function CursoFormModalClient({
       );
       setPrerrequisito('');
     }
-  }, [isOpen, curso]);
+  }, [isOpen, curso, cicloNumero]);
+
+  const handleNombreChange = (val: string) => {
+    setNombre(val);
+    if (!curso) {
+      setCodigo(generateAutoCourseCode(cicloNumero, val));
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -553,8 +578,8 @@ export function CursoFormModalClient({
     const formData = new FormData();
     formData.append('plan_id', planId);
     formData.append('ciclo_id', cicloId);
-    formData.append('codigo', codigo);
-    formData.append('nombre', nombre);
+    formData.append('codigo', codigo.trim().toUpperCase());
+    formData.append('nombre', nombre.trim());
     formData.append('creditos', creditos);
     formData.append('horas_semanales', horasSemanales);
     formData.append('status', curso?.status || 'ACTIVO');
@@ -585,7 +610,7 @@ export function CursoFormModalClient({
       <Modal
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
-        title={curso ? 'Editar Asignatura / Curso' : 'Agregar Asignatura al Ciclo'}
+        title={curso ? 'Editar Asignatura / Curso' : `Agregar Asignatura al Ciclo ${cicloNumero}`}
       >
         <form onSubmit={handleSubmit} className="space-y-4 text-slate-900">
           {error && (
@@ -595,14 +620,23 @@ export function CursoFormModalClient({
           )}
 
           <div className="space-y-1">
-            <label className="text-xs font-bold text-slate-700">Código de Curso</label>
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-slate-700">Código de Curso (Automático) *</label>
+              <span className="text-[10px] font-mono font-bold text-[#C4121A] bg-red-50 px-2 py-0.5 rounded border border-red-200">
+                Formato: 0{cicloNumero}-ASIGNATURA
+              </span>
+            </div>
             <Input
               name="codigo"
               value={codigo}
-              onChange={e => setCodigo(e.target.value)}
-              placeholder="EJ: CRS-101"
-              className="uppercase text-slate-900 bg-white"
+              onChange={e => setCodigo(e.target.value.toUpperCase())}
+              placeholder={`EJ: 0${cicloNumero}-ANATOMIA`}
+              className="uppercase font-mono font-bold text-slate-900 bg-white"
+              required
             />
+            <p className="text-[10.5px] text-slate-500">
+              Generado automáticamente según el ciclo ({cicloNumero}) y nombre del curso (ej. 01-ANATOMIA, 02-MICROBIOLOGIA).
+            </p>
           </div>
 
           <div className="space-y-1">
@@ -612,7 +646,7 @@ export function CursoFormModalClient({
             <Input
               name="nombre"
               value={nombre}
-              onChange={e => setNombre(e.target.value)}
+              onChange={e => handleNombreChange(e.target.value)}
               required
               placeholder="Ej: Anatomía y Fisiología Aplicada"
               className="text-slate-900 bg-white"
@@ -644,20 +678,36 @@ export function CursoFormModalClient({
             </div>
           </div>
 
+          {/* Prerrequisitos Selectivos por Ciclo */}
           <div className="space-y-1">
             <label className="text-xs font-bold text-slate-700">
-              Prerrequisito Académico (Código de Curso Previo)
+              Prerrequisito Académico
             </label>
-            <Input
-              name="prerrequisito"
-              value={prerrequisito}
-              onChange={e => setPrerrequisito(e.target.value.toUpperCase())}
-              placeholder="Ej: ENF-101, CON-101 (opcional)"
-              className="uppercase text-slate-900 bg-white font-mono"
-            />
-            <p className="text-[10.5px] text-slate-500">
-              Asignatura obligatoria que el estudiante debe tener aprobada para cursar esta materia.
-            </p>
+            {cicloNumero <= 1 ? (
+              <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-2.5 text-xs text-emerald-800 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                <span>Ciclo 1: Sin prerrequisitos (Nivel formativo inicial de la carrera).</span>
+              </div>
+            ) : (
+              <div className="space-y-1">
+                <select
+                  name="prerrequisito"
+                  value={prerrequisito}
+                  onChange={e => setPrerrequisito(e.target.value)}
+                  className="w-full text-xs font-semibold p-2.5 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-[#C4121A] focus:outline-none"
+                >
+                  <option value="">-- Sin prerrequisito (Ninguno) --</option>
+                  {cursosPrevios.map(cp => (
+                    <option key={cp.id} value={cp.codigo || cp.id}>
+                      Ciclo {cp.cicloNumero}: {cp.codigo} — {cp.nombre}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-[10.5px] text-slate-500">
+                  Asignatura previa de ciclos anteriores que el estudiante debe aprobar obligatoriamente para cursar esta materia.
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-2 pt-4 border-t border-slate-100">

@@ -171,24 +171,59 @@ export async function getOperationalNotifications(): Promise<OperationalNotifica
   ])
 
   const notifications: OperationalNotificationItem[] = []
-  const todayStr = new Date().toISOString().slice(0, 10)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const todayStr = today.toISOString().slice(0, 10)
+
+  // 10. Agrupación y optimización de alertas de cobranza (restringidas a 3-5 días)
+  const proximasAVencer: any[] = []
+  let sumaProximas = 0
+  const vencidas: any[] = []
+  let sumaVencidas = 0
 
   for (const c of cuotasRes.data || []) {
-    const mat = Array.isArray(c.matriculas) ? c.matriculas[0] : c.matriculas
-    const est = Array.isArray(mat?.estudiantes) ? mat?.estudiantes[0] : mat?.estudiantes
-    const per = Array.isArray(est?.personas) ? est?.personas[0] : est?.personas
-    const studentName = per ? `${per.nombres || ''} ${per.apellido_paterno || ''}`.trim() : ''
-    const monto = Number(c.saldo ?? c.importe_neto ?? 0).toFixed(2)
     const isOverdue = c.status === 'VENCIDA' || (c.fecha_vencimiento && c.fecha_vencimiento < todayStr)
+    const monto = Number(c.saldo ?? c.importe_neto ?? 0)
 
+    if (isOverdue) {
+      vencidas.push(c)
+      sumaVencidas += monto
+    } else if (c.fecha_vencimiento) {
+      const fVenc = new Date(c.fecha_vencimiento + 'T00:00:00')
+      const diffTime = fVenc.getTime() - today.getTime()
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+      // Restringir alertas preventivas a cuotas por vencer en 3 a 5 días
+      if (diffDays >= 0 && diffDays <= 5) {
+        proximasAVencer.push(c)
+        sumaProximas += monto
+      }
+    }
+  }
+
+  // Notificación global consolidada para pensiones próximas a vencer
+  if (proximasAVencer.length > 0) {
     notifications.push({
-      id: `notif-cuota-${c.id}`,
+      id: 'notif-cuotas-global-proximas',
       type: 'CUOTA',
-      title: `${isOverdue ? 'Cuota vencida' : 'Cuota pendiente'}: ${c.concepto || 'Cuota'}`,
-      description: `${mat?.codigo_matricula || 'Matrícula'}${studentName ? ` • ${studentName}` : ''} — S/ ${monto}`,
-      meta: c.fecha_vencimiento ? `Vence: ${c.fecha_vencimiento}` : 'Cobranza activa',
-      severity: isOverdue ? 'red' : 'amber',
-      href: `/matriculas/${c.matricula_id}`,
+      title: 'Pensiones próximas a vencer',
+      description: `${proximasAVencer.length} pensión(es) por vencer en los próximos 3 a 5 días • Total: S/ ${sumaProximas.toFixed(2)}`,
+      meta: 'Cobranza preventiva (3 a 5 días)',
+      severity: 'amber',
+      href: '/matriculas',
+    })
+  }
+
+  // Notificación global consolidada para pensiones vencidas
+  if (vencidas.length > 0) {
+    notifications.push({
+      id: 'notif-cuotas-global-vencidas',
+      type: 'CUOTA',
+      title: 'Pensiones vencidas por regularizar',
+      description: `${vencidas.length} cuota(s) vencidas pendientes de pago • Total: S/ ${sumaVencidas.toFixed(2)}`,
+      meta: 'Cobranza urgente',
+      severity: 'red',
+      href: '/matriculas',
     })
   }
 

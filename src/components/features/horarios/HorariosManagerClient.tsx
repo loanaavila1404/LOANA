@@ -360,13 +360,19 @@ export function HorariosManagerClient({
     return edicionesState.find(e => e.id === selectedEdicionId) || edicionesState[0] || null;
   }, [edicionesState, selectedEdicionId]);
 
-  // Cursos filtrados para la edición seleccionada en el modal
+  // Cursos filtrados para la edición seleccionada en el modal (exclusivamente del ciclo vigente)
   const cursosParaModalEdicion = useMemo(() => {
     const ed = edicionesState.find(e => e.id === modalEdicionId);
     if (!ed) return allAvailableCursos;
+    // Filtrar estrictamente por ciclo vigente de la edición
+    if (ed.ciclo_id) {
+      const matchCiclo = allAvailableCursos.filter(c => c.ciclo_id === ed.ciclo_id);
+      if (matchCiclo.length > 0) return matchCiclo;
+    }
+    // Fallback por plan_id si la edición no tiene ciclo_id específico
     if (ed.plan_id) {
-      const match = allAvailableCursos.filter(c => c.plan_id === ed.plan_id);
-      if (match.length > 0) return match;
+      const matchPlan = allAvailableCursos.filter(c => c.plan_id === ed.plan_id);
+      if (matchPlan.length > 0) return matchPlan;
     }
     return allAvailableCursos;
   }, [allAvailableCursos, edicionesState, modalEdicionId]);

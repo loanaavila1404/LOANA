@@ -366,65 +366,22 @@ export function buildKardexEstudiante(params: {
   let sumPuntosPonderados = 0;
   let sumCreditosConNota = 0;
 
-  // Semilla pseudoaleatoria determinista para notas demo si no hay notas registradas
-  const getDemoGrade = (cursoCod: string, index: number, targetCiclo: number): EvaluacionDesglose => {
+  // Obtener calificaciones oficiales registradas o retornar estado pendiente limpio (en ceros)
+  const getGrade = (cursoCod: string): EvaluacionDesglose => {
     // Si el estudiante ya tiene notas guardadas específicamente
     const customKey = `${estId}_${cursoCod}`;
     if (calificacionesGuardadas[customKey]) {
       return calificacionesGuardadas[customKey];
     }
 
-    if (targetCiclo > maxCicloMatriculado) {
-      return {
-        ec1: null,
-        ec2: null,
-        ep: null,
-        ef: null,
-        promedioFinal: null,
-        estado: 'PENDIENTE',
-      };
-    }
-
-    // Hash determinista del código para generar notas realistas
-    let hash = 0;
-    for (let i = 0; i < cursoCod.length; i++) {
-      hash = (hash << 5) - hash + cursoCod.charCodeAt(i);
-      hash |= 0;
-    }
-    const absHash = Math.abs(hash);
-
-    // Si es el ciclo actual en curso
-    if (targetCiclo === maxCicloMatriculado) {
-      const ec1 = 14 + (absHash % 6);
-      const ec2 = 13 + ((absHash >> 2) % 6);
-      return {
-        ec1,
-        ec2,
-        ep: 15,
-        ef: null,
-        promedioFinal: null,
-        estado: 'PENDIENTE',
-      };
-    }
-
-    // Ciclos concluidos
-    // Determinar si reprueba algún curso para poner a prueba arrastres
-    const isDesaprobado = (absHash % 10 === 0 && index === 2) || (targetCiclo === 1 && absHash % 7 === 0 && index === 0);
-    const finalGrade = isDesaprobado ? 10 + (absHash % 3) : 13 + (absHash % 7); // 10-12 (desaprobado) o 13-19 (aprobado)
-
-    const pf = finalGrade;
-    const ec1 = Math.min(20, Math.max(8, pf + (absHash % 3) - 1));
-    const ec2 = Math.min(20, Math.max(8, pf - (absHash % 2)));
-    const ep = pf;
-    const ef = pf;
-
+    // Sin notas simuladas: arranca totalmente limpio / en ceros / PENDIENTE
     return {
-      ec1,
-      ec2,
-      ep,
-      ef,
-      promedioFinal: pf,
-      estado: pf >= 13 ? 'APROBADO' : 'DESAPROBADO',
+      ec1: null,
+      ec2: null,
+      ep: null,
+      ef: null,
+      promedioFinal: null,
+      estado: 'PENDIENTE',
     };
   };
 
@@ -455,7 +412,7 @@ export function buildKardexEstudiante(params: {
         cPlantilla.prerrequisitoCodigo ||
         null;
 
-      const evalData = getDemoGrade(cPlantilla.codigo, cIdx, targetCicloNum);
+      const evalData = getGrade(cPlantilla.codigo);
       const isApproved = evalData.promedioFinal !== null && evalData.promedioFinal >= 13;
       const isFailed = evalData.promedioFinal !== null && evalData.promedioFinal < 13;
 
@@ -493,9 +450,7 @@ export function buildKardexEstudiante(params: {
       cicloCreditosTotales += creditos;
       totalCreditosPlanAcum += creditos;
 
-      // Calcular porcentaje de asistencia (promedio 90%-98%)
-      const hashAsist = Math.abs((cPlantilla.codigo.charCodeAt(0) * 17) + cIdx * 13) % 11;
-      const asistenciaPct = evalData.promedioFinal !== null ? 90 + hashAsist : 0;
+      const asistenciaPct = evalData.promedioFinal !== null ? 100 : 0;
 
       return {
         cursoId,

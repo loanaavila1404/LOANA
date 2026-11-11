@@ -52,6 +52,29 @@ export default async function NuevaMatriculaPage({
     }
   }
 
+  // Asegurar que todas las personas activas cuenten con expediente de estudiante para búsqueda fluida
+  const { data: personasSinEst } = await supabase
+    .from('personas')
+    .select('id')
+    .neq('status', 'INACTIVO');
+
+  if (personasSinEst && personasSinEst.length > 0) {
+    const { data: existentes } = await supabase
+      .from('estudiantes')
+      .select('persona_id');
+    const existingPersonaIds = new Set((existentes || []).map(e => e.persona_id));
+    const toInsert = personasSinEst
+      .filter(p => !existingPersonaIds.has(p.id))
+      .map(p => ({
+        persona_id: p.id,
+        codigo_estudiante: null,
+        status: 'ACTIVO',
+      }));
+    if (toInsert.length > 0) {
+      await supabase.from('estudiantes').insert(toInsert);
+    }
+  }
+
   const [
     { data: estudiantesRaw },
     { data: prospectosRaw },
@@ -98,6 +121,11 @@ export default async function NuevaMatriculaPage({
           id,
           nombre,
           codigo
+        ),
+        periodos (
+          id,
+          codigo,
+          nombre
         )
       `)
       .eq('status', 'ACTIVO'),
@@ -126,6 +154,7 @@ export default async function NuevaMatriculaPage({
   const ediciones = (edicionesRaw || []).map(ed => ({
     ...ed,
     programas: Array.isArray(ed.programas) ? ed.programas[0] : ed.programas,
+    periodos: Array.isArray(ed.periodos) ? ed.periodos[0] : ed.periodos,
     vacantesOcupadas: vacantesMap[ed.id] || 0,
   })) as unknown as EdicionOption[];
 
