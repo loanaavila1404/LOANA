@@ -76,7 +76,8 @@ export default async function NotasPage() {
         )
       )
     `)
-    .limit(100);
+    .not("status", "in", '("ANULADA","RETIRADA","VENCIDA")')
+    .order("codigo_matricula", { ascending: true });
 
   // Mapear programas
   const programas: ProgramaData[] = (programasRaw || []).map((p: any) => ({

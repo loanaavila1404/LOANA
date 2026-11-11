@@ -25,6 +25,7 @@ import {
   ShieldCheck, 
   Sparkles, 
   UserCheck, 
+  UserX,
   Users, 
   X,
   AlertTriangle,
@@ -144,70 +145,6 @@ export function formatNota(nota: number | null): string {
   return nota < 10 ? `0${nota}` : `${nota}`;
 }
 
-// Alumnos de respaldo enriquecidos por si no hay nómina activa en una edición seleccionada
-const ALUMNOS_DEMO_DEFAULT: Omit<EstudianteMatriculaData, "edicionId">[] = [
-  {
-    matriculaId: "MAT-2026-0001",
-    estudianteId: "EST-001",
-    codigoMatricula: "MAT-2026-0001",
-    codigoEstudiante: "BRU-2026-00101",
-    nombreCompleto: "LOANA AVILA ZAPATA",
-    tipoDocumento: "DNI",
-    numeroDocumento: "74020650",
-    email: "loana.avila@brusben.edu.pe",
-  },
-  {
-    matriculaId: "MAT-2026-0002",
-    estudianteId: "EST-002",
-    codigoMatricula: "MAT-2026-0002",
-    codigoEstudiante: "BRU-2026-00102",
-    nombreCompleto: "CARLOS ALBERTO MENDOZA FLORES",
-    tipoDocumento: "DNI",
-    numeroDocumento: "45892134",
-    email: "carlos.mendoza@brusben.edu.pe",
-  },
-  {
-    matriculaId: "MAT-2026-0003",
-    estudianteId: "EST-003",
-    codigoMatricula: "MAT-2026-0003",
-    codigoEstudiante: "BRU-2026-00103",
-    nombreCompleto: "MARÍA ELENA PEÑA CORDOVA",
-    tipoDocumento: "DNI",
-    numeroDocumento: "71245890",
-    email: "maria.pena@brusben.edu.pe",
-  },
-  {
-    matriculaId: "MAT-2026-0004",
-    estudianteId: "EST-004",
-    codigoMatricula: "MAT-2026-0004",
-    codigoEstudiante: "BRU-2026-00104",
-    nombreCompleto: "JORGE LUIS RAMÍREZ SILVA",
-    tipoDocumento: "DNI",
-    numeroDocumento: "73456128",
-    email: "jorge.ramirez@brusben.edu.pe",
-  },
-  {
-    matriculaId: "MAT-2026-0005",
-    estudianteId: "EST-005",
-    codigoMatricula: "MAT-2026-0005",
-    codigoEstudiante: "BRU-2026-00105",
-    nombreCompleto: "ANA PATRICIA CORNEJO VALDIVIA",
-    tipoDocumento: "DNI",
-    numeroDocumento: "76123490",
-    email: "ana.cornejo@brusben.edu.pe",
-  },
-  {
-    matriculaId: "MAT-2026-0006",
-    estudianteId: "EST-006",
-    codigoMatricula: "MAT-2026-0006",
-    codigoEstudiante: "BRU-2026-00106",
-    nombreCompleto: "DIEGO ALONSO RIVERA CHÁVEZ",
-    tipoDocumento: "DNI",
-    numeroDocumento: "75890123",
-    email: "diego.rivera@brusben.edu.pe",
-  },
-];
-
 export function NotasManagerClient({
   programas,
   ciclos,
@@ -314,15 +251,10 @@ export function NotasManagerClient({
     }
   }, [cursosFiltrados, selectedCursoId]);
 
-  // Estudiantes inscritos en la edición activa
+  // Estudiantes inscritos en la edición activa (únicamente nómina real matriculada)
   const estudiantesDelAula = useMemo(() => {
-    const list = estudiantesMatriculados.filter(e => e.edicionId === activeEdicion?.id);
-    if (list.length > 0) return list;
-    // Si la edición en BD no tiene matrículas aún, inyectamos la nómina demo oficial
-    return ALUMNOS_DEMO_DEFAULT.map(demo => ({
-      ...demo,
-      edicionId: activeEdicion?.id || "demo-edicion",
-    }));
+    if (!activeEdicion?.id) return [];
+    return estudiantesMatriculados.filter(e => e.edicionId === activeEdicion.id);
   }, [estudiantesMatriculados, activeEdicion]);
 
   // Clave de almacenamiento local para persistencia rápida
@@ -346,40 +278,25 @@ export function NotasManagerClient({
 
     const initialMap: Record<string, CalificacionRow> = {};
 
-    estudiantesDelAula.forEach((est, idx) => {
+    estudiantesDelAula.forEach((est) => {
       const existing = savedData[est.estudianteId];
       if (existing) {
         initialMap[est.estudianteId] = existing;
       } else {
-        // Semillas predeterminadas de ejemplo si no hay notas previas
-        const demoSeeds = [
-          { ec1: 16, ec2: 17, ep: 15, ef: 16 },
-          { ec1: 14, ec2: 15, ep: 13, ef: 14 },
-          { ec1: 18, ec2: 19, ep: 17, ef: 18 },
-          { ec1: 12, ec2: 11, ep: 10, ef: 12 },
-          { ec1: 15, ec2: 16, ep: 16, ef: 17 },
-          { ec1: 17, ec2: 18, ep: 18, ef: 19 },
-        ];
-        const seed = demoSeeds[idx % demoSeeds.length];
-
-        const pf = Math.round(
-          seed.ec1 * 0.2 + seed.ec2 * 0.2 + seed.ep * 0.3 + seed.ef * 0.3
-        );
-        const estado = pf >= 11 ? "APROBADO" : "DESAPROBADO";
-
+        // Inicia totalmente en blanco / sin notas precargadas (en ceros/vacío)
         initialMap[est.estudianteId] = {
           estudianteId: est.estudianteId,
           matriculaId: est.matriculaId,
           nombreCompleto: est.nombreCompleto,
           codigoEstudiante: est.codigoEstudiante,
           numeroDocumento: est.numeroDocumento,
-          ec1: seed.ec1,
-          ec2: seed.ec2,
-          ep: seed.ep,
-          ef: seed.ef,
-          promedioFinal: pf,
-          estado: estado as "APROBADO" | "DESAPROBADO",
-          observaciones: "Evaluación regular continua",
+          ec1: null,
+          ec2: null,
+          ep: null,
+          ef: null,
+          promedioFinal: null,
+          estado: "PENDIENTE",
+          observaciones: "",
         };
       }
     });
@@ -387,8 +304,12 @@ export function NotasManagerClient({
     setCalificacionesMap(initialMap);
 
     // Seleccionar el primer alumno para la Boleta si no hay seleccionado
-    if (!selectedBoletaEstudianteId && estudiantesDelAula[0]) {
-      setSelectedBoletaEstudianteId(estudiantesDelAula[0].estudianteId);
+    if (estudiantesDelAula.length > 0) {
+      if (!selectedBoletaEstudianteId || !estudiantesDelAula.some(e => e.estudianteId === selectedBoletaEstudianteId)) {
+        setSelectedBoletaEstudianteId(estudiantesDelAula[0].estudianteId);
+      }
+    } else {
+      setSelectedBoletaEstudianteId("");
     }
   }, [storageKey, estudiantesDelAula, selectedBoletaEstudianteId]);
 
@@ -501,42 +422,31 @@ export function NotasManagerClient({
     }
   };
 
-  // Autocompletar con notas demo
-  const handleResetDemoNotas = () => {
-    const freshMap: Record<string, CalificacionRow> = {};
-    const demoSeeds = [
-      { ec1: 17, ec2: 18, ep: 16, ef: 17 },
-      { ec1: 15, ec2: 16, ep: 14, ef: 15 },
-      { ec1: 19, ec2: 19, ep: 18, ef: 19 },
-      { ec1: 11, ec2: 12, ep: 11, ef: 10 },
-      { ec1: 16, ec2: 17, ep: 15, ef: 16 },
-      { ec1: 14, ec2: 13, ep: 14, ef: 15 },
-    ];
-
-    estudiantesDelAula.forEach((est, idx) => {
-      const seed = demoSeeds[idx % demoSeeds.length];
-      const pf = Math.round(seed.ec1 * 0.2 + seed.ec2 * 0.2 + seed.ep * 0.3 + seed.ef * 0.3);
-      freshMap[est.estudianteId] = {
+  // Limpiar y reiniciar calificaciones a blanco / pendientes
+  const handleResetNotas = () => {
+    const cleanMap: Record<string, CalificacionRow> = {};
+    estudiantesDelAula.forEach((est) => {
+      cleanMap[est.estudianteId] = {
         estudianteId: est.estudianteId,
         matriculaId: est.matriculaId,
         nombreCompleto: est.nombreCompleto,
         codigoEstudiante: est.codigoEstudiante,
         numeroDocumento: est.numeroDocumento,
-        ec1: seed.ec1,
-        ec2: seed.ec2,
-        ep: seed.ep,
-        ef: seed.ef,
-        promedioFinal: pf,
-        estado: pf >= 11 ? "APROBADO" : "DESAPROBADO",
-        observaciones: "Evaluación regular",
+        ec1: null,
+        ec2: null,
+        ep: null,
+        ef: null,
+        promedioFinal: null,
+        estado: "PENDIENTE",
+        observaciones: "",
       };
     });
 
-    setCalificacionesMap(freshMap);
+    setCalificacionesMap(cleanMap);
     if (typeof window !== "undefined") {
-      localStorage.setItem(storageKey, JSON.stringify(freshMap));
+      localStorage.removeItem(storageKey);
     }
-    setSaveSuccessMsg("Valores modelo restaurados.");
+    setSaveSuccessMsg("Registro auxiliar limpiado.");
     setTimeout(() => setSaveSuccessMsg(null), 3000);
   };
 
@@ -568,33 +478,32 @@ export function NotasManagerClient({
     return estudiantesDelAula.find(e => e.estudianteId === selectedBoletaEstudianteId) || estudiantesDelAula[0] || null;
   }, [estudiantesDelAula, selectedBoletaEstudianteId]);
 
-  // Lista de cursos para la Boleta individual del estudiante (con calificaciones calculadas para cada uno)
+  // Lista de cursos para la Boleta individual del estudiante (con calificaciones reales de la BD/mapa)
   const cursosBoletaEstudiante = useMemo(() => {
-    return cursosFiltrados.map((cur, idx) => {
+    if (!estudianteBoleta) return [];
+    return cursosFiltrados.map((cur) => {
       // Si es el curso activo actual, tomamos la calificación real del mapa
       if (cur.id === activeCurso?.id && estudianteBoleta) {
         const row = calificacionesMap[estudianteBoleta.estudianteId];
         return {
           curso: cur,
-          ec1: row?.ec1 ?? 15,
-          ec2: row?.ec2 ?? 16,
-          ep: row?.ep ?? 14,
-          ef: row?.ef ?? 15,
-          promedio: row?.promedioFinal ?? 15,
-          estado: row?.estado ?? "APROBADO",
+          ec1: row?.ec1 ?? null,
+          ec2: row?.ec2 ?? null,
+          ep: row?.ep ?? null,
+          ef: row?.ef ?? null,
+          promedio: row?.promedioFinal ?? null,
+          estado: (row?.estado ?? "PENDIENTE") as "APROBADO" | "DESAPROBADO" | "PENDIENTE",
         };
       }
-      // Para los otros cursos del ciclo, generamos un promedio consistente de la malla
-      const offsets = [16, 17, 15, 18, 14, 16];
-      const p = offsets[idx % offsets.length];
+      // Para los otros cursos del ciclo, inician sin notas precargadas si no han sido calificados
       return {
         curso: cur,
-        ec1: Math.min(20, p + 1),
-        ec2: p,
-        ep: Math.max(10, p - 1),
-        ef: p,
-        promedio: p,
-        estado: (p >= 11 ? "APROBADO" : "DESAPROBADO") as "APROBADO" | "DESAPROBADO",
+        ec1: null,
+        ec2: null,
+        ep: null,
+        ef: null,
+        promedio: null,
+        estado: "PENDIENTE" as const,
       };
     });
   }, [cursosFiltrados, activeCurso, estudianteBoleta, calificacionesMap]);
@@ -604,11 +513,13 @@ export function NotasManagerClient({
     let sumaPonderada = 0;
     let totalCreditos = 0;
     for (const item of cursosBoletaEstudiante) {
-      const cred = item.curso.creditos || 3;
-      sumaPonderada += item.promedio * cred;
-      totalCreditos += cred;
+      if (item.promedio !== null && !isNaN(item.promedio)) {
+        const cred = item.curso.creditos || 3;
+        sumaPonderada += item.promedio * cred;
+        totalCreditos += cred;
+      }
     }
-    if (totalCreditos === 0) return 0;
+    if (totalCreditos === 0) return "—";
     return (sumaPonderada / totalCreditos).toFixed(2);
   }, [cursosBoletaEstudiante]);
 
@@ -836,17 +747,19 @@ export function NotasManagerClient({
             </button>
           </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleResetDemoNotas}
-              className="text-[11px] text-slate-500 hover:text-slate-800 flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer"
-              title="Restaurar valores de prueba"
-            >
-              <RotateCcw className="w-3 h-3" />
-              <span>Autocompletar notas de ejemplo</span>
-            </button>
-          </div>
+          {estudiantesDelAula.length > 0 && (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleResetNotas}
+                className="text-[11px] text-slate-500 hover:text-slate-800 flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer"
+                title="Limpiar calificaciones del registro"
+              >
+                <RotateCcw className="w-3 h-3" />
+                <span>Limpiar notas del aula</span>
+              </button>
+            </div>
+          )}
         </div>
 
       </div>
@@ -910,7 +823,24 @@ export function NotasManagerClient({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 bg-white">
-                {estudiantesDelAula.map((est, idx) => {
+                {estudiantesDelAula.length === 0 ? (
+                  <tr>
+                    <td colSpan={9} className="py-12 px-4 text-center">
+                      <div className="flex flex-col items-center justify-center max-w-md mx-auto text-slate-400 space-y-2.5">
+                        <span className="p-3.5 rounded-full bg-slate-50 border border-slate-200 text-slate-400">
+                          <UserX className="w-6 h-6 text-slate-400" />
+                        </span>
+                        <p className="text-sm font-semibold text-slate-700">
+                          No hay estudiantes matriculados en este grupo / curso
+                        </p>
+                        <p className="text-xs text-slate-500 leading-relaxed">
+                          El Registro Auxiliar iniciará totalmente vacío (en ceros) cuando se formalicen las matrículas para esta edición y grupo académico.
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  estudiantesDelAula.map((est, idx) => {
                   const row = calificacionesMap[est.estudianteId] || {
                     estudianteId: est.estudianteId,
                     matriculaId: est.matriculaId,
@@ -1069,7 +999,7 @@ export function NotasManagerClient({
                       </td>
                     </tr>
                   );
-                })}
+                }))}
               </tbody>
             </table>
           </div>
@@ -1101,9 +1031,24 @@ export function NotasManagerClient({
       {/* ============================================================== */}
       {activeTab === "boleta" && (
         <div className="space-y-4">
-          
-          {/* Selector de Estudiante para la Boleta (no imprimible) */}
-          <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3 print:hidden no-print">
+          {estudiantesDelAula.length === 0 ? (
+            <div className="bg-white border border-slate-200/90 rounded-2xl p-12 text-center shadow-sm">
+              <div className="flex flex-col items-center justify-center max-w-md mx-auto text-slate-400 space-y-3">
+                <span className="p-3.5 rounded-full bg-slate-50 border border-slate-200 text-slate-400">
+                  <UserX className="w-8 h-8 text-slate-400" />
+                </span>
+                <p className="text-sm font-semibold text-slate-700">
+                  Sin estudiantes matriculados para emitir Boleta de Notas
+                </p>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  No hay estudiantes registrados en este grupo académico. Cuando se registren matrículas oficiales, podrás generar e imprimir sus boletas individuales aquí.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* Selector de Estudiante para la Boleta (no imprimible) */}
+              <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3 print:hidden no-print">
             <div className="flex items-center gap-2">
               <UserCheck className="w-4 h-4 text-[#c4121a]" />
               <span className="text-xs font-bold text-slate-800">Seleccionar Estudiante para la Boleta:</span>
@@ -1283,7 +1228,8 @@ export function NotasManagerClient({
                 </thead>
                 <tbody className="divide-y divide-slate-200">
                   {cursosBoletaEstudiante.map((item, idx) => {
-                    const esAprobado = item.promedio >= 11;
+                    const esAprobado = item.promedio !== null && item.promedio >= 11;
+                    const esDesaprobado = item.promedio !== null && item.promedio <= 10;
                     return (
                       <tr key={item.curso.id} className="hover:bg-slate-50/50">
                         <td className="py-2 px-2 text-center text-slate-400 font-mono text-[10px] border-r border-slate-200">
@@ -1321,9 +1267,13 @@ export function NotasManagerClient({
                             <span className="font-bold text-emerald-800 text-[10px]">
                               APROBADO
                             </span>
-                          ) : (
+                          ) : esDesaprobado ? (
                             <span className="font-bold text-rose-800 text-[10px]">
                               DESAPROBADO
+                            </span>
+                          ) : (
+                            <span className="font-bold text-slate-400 text-[10px]">
+                              PENDIENTE
                             </span>
                           )}
                         </td>
@@ -1429,6 +1379,8 @@ export function NotasManagerClient({
             </footer>
 
           </div>
+            </>
+          )}
 
         </div>
       )}
@@ -1517,7 +1469,14 @@ export function NotasManagerClient({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200">
-                {estudiantesDelAula.map((est, idx) => {
+                {estudiantesDelAula.length === 0 ? (
+                  <tr>
+                    <td colSpan={9} className="py-8 px-4 text-center text-slate-400 italic">
+                      No se registran estudiantes matriculados en esta edición / grupo.
+                    </td>
+                  </tr>
+                ) : (
+                  estudiantesDelAula.map((est, idx) => {
                   const row = calificacionesMap[est.estudianteId];
                   const pf = row?.promedioFinal ?? null;
                   const esAprobado = pf !== null && pf >= 11;
@@ -1548,7 +1507,7 @@ export function NotasManagerClient({
                       </td>
                     </tr>
                   );
-                })}
+                }))}
               </tbody>
             </table>
 
