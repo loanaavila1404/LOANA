@@ -1,5 +1,4 @@
-import { redirect } from 'next/navigation';
+import ProgramasPage, { metadata } from './programas/page';
 
-export default function OfertaRedirect() {
-  redirect('/oferta/programas');
-}
+export { metadata };
+export default ProgramasPage;

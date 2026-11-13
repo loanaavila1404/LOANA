@@ -40,7 +40,7 @@ export default async function ProgramasPage({
     supabase.from("programas").select("*").order("created_at", { ascending: false }),
     supabase
       .from("ediciones")
-      .select("*, programas(id, nombre, codigo), planes_estudio(id, nombre, codigo)")
+      .select("*, programas(id, nombre, codigo), periodos(id, nombre, codigo), planes_estudio(id, nombre, codigo)")
       .order("created_at", { ascending: false }),
     supabase.from("cursos").select("*").order("codigo", { ascending: true }),
     supabase.from("planes_estudio").select("*").order("created_at", { ascending: false }),
@@ -48,7 +48,7 @@ export default async function ProgramasPage({
     supabase.from("ciclos").select("id, nombre, plan_id, numero_orden").order("numero_orden"),
     supabase
       .from("matriculas")
-      .select("id, edicion_id, status")
+      .select("edicion_id")
       .in("status", ["ACTIVA", "RESERVADA", "PREMATRICULA", "FINALIZADA"]),
   ]);
 
@@ -168,7 +168,7 @@ export default async function ProgramasPage({
                 {cursosActivos.length}
               </span>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
-                {planes.length} mallas vigentes
+                {periodos.length} periodos oficiales
               </span>
             </div>
             <p className="text-[11px] text-slate-600 mt-1.5">

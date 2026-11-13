@@ -29,7 +29,7 @@ export function EdicionFormModalClient({
   planes,
   periodos,
   ciclos,
-  triggerText = 'Nueva Edición',
+  triggerText = '+ Nueva Edición',
   variant = 'primary'
 }: { 
   edicion?: Edicion;

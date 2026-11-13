@@ -191,7 +191,7 @@ export function Sidebar({
             {/* Oferta académica */}
             {canViewOferta && (
               <Link
-                href="/oferta"
+                href="/oferta/programas"
                 className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg font-medium transition-all ${
                   isActive('/oferta')
                     ? 'bg-[#c4121a] text-white shadow-sm font-bold'

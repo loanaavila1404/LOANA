@@ -26,6 +26,7 @@ export default async function EdicionesPage({
   let dbQuery = supabase.from('ediciones').select(`
     *,
     programas(nombre, codigo),
+    periodos(nombre, codigo),
     planes_estudio(nombre, codigo)
   `);
 
@@ -103,7 +104,7 @@ export default async function EdicionesPage({
             <TableRow className="bg-slate-50">
               <TableHead className="font-bold text-slate-700">Código / Grupo</TableHead>
               <TableHead className="font-bold text-slate-700">Programa</TableHead>
-              <TableHead className="font-bold text-slate-700">Plan de Estudio</TableHead>
+              <TableHead className="font-bold text-slate-700">Periodo Académico</TableHead>
               <TableHead className="font-bold text-slate-700">Modalidad / Turno</TableHead>
               <TableHead className="font-bold text-slate-700">Fechas</TableHead>
               <TableHead className="font-bold text-slate-700">Vacantes</TableHead>
@@ -130,8 +131,8 @@ export default async function EdicionesPage({
                   <TableCell className="font-semibold text-slate-800">
                     {(edicion as unknown as { programas: { nombre: string } })?.programas?.nombre || '-'}
                   </TableCell>
-                  <TableCell className="text-slate-600">
-                    {(edicion as unknown as { planes_estudio: { nombre: string } })?.planes_estudio?.nombre || '-'}
+                  <TableCell className="text-slate-700 font-medium">
+                    {(edicion as any)?.periodos?.codigo || (edicion as any)?.periodos?.nombre || (edicion as any)?.planes_estudio?.nombre || '-'}
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-col gap-1">

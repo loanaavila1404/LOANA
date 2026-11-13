@@ -80,6 +80,41 @@ export default async function PersonaDetailPage({
   const integridad = checkPersonaIntegrity(persona, estudiante, hasActiveMatricula);
   const initials = getInitials(persona.nombres || "", persona.apellido_paterno || "");
 
+  // Cargar ciclos y cursos reales de la base de datos para la malla del programa
+  const { createClient } = await import("@/lib/supabase/server");
+  const supabase = await createClient();
+  let ciclosDb: any[] = [];
+  let cursosDb: any[] = [];
+
+  let targetPlanId = planPrincipal?.id;
+  if (!targetPlanId && programaPrincipal?.id) {
+    const { data: p } = await supabase
+      .from("planes_estudio")
+      .select("id")
+      .eq("programa_id", programaPrincipal.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    targetPlanId = p?.id;
+  }
+
+  if (targetPlanId) {
+    const [{ data: cData }, { data: kData }] = await Promise.all([
+      supabase
+        .from("ciclos")
+        .select("id, nombre, numero_orden, plan_id")
+        .eq("plan_id", targetPlanId)
+        .order("numero_orden", { ascending: true }),
+      supabase
+        .from("cursos")
+        .select("id, nombre, codigo, creditos, horas_semanales, ciclo_id, plan_id")
+        .eq("plan_id", targetPlanId)
+        .order("codigo", { ascending: true }),
+    ]);
+    ciclosDb = cData || [];
+    cursosDb = kData || [];
+  }
+
   return (
     <div className="space-y-5 max-w-[1400px] mx-auto pb-12">
       <div className="flex items-center justify-between print:hidden no-print">
@@ -110,6 +145,8 @@ export default async function PersonaDetailPage({
         pagos={pagos}
         integridad={integridad}
         initials={initials}
+        ciclosDb={ciclosDb}
+        cursosDb={cursosDb}
       />
     </div>
   );

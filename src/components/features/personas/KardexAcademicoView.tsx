@@ -364,10 +364,10 @@ export function KardexAcademicoView({
         <div className="p-5 border-b border-slate-200 bg-slate-50/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h3 className="text-sm font-bold text-slate-900 font-heading">
-              Malla Curricular y Récord Académico Longitudinal (Ciclos I al VI)
+              Malla Curricular y Récord Académico Oficial
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">
-              Carrera Técnica de 3 Años · Centro de Capacitaciones Brusben · Sede Central Tumbes
+              {programaNombre} · Centro de Capacitaciones Brusben · Sede Central Tumbes
             </p>
           </div>
 
@@ -383,9 +383,18 @@ export function KardexAcademicoView({
           </div>
         </div>
 
-        {/* Listado de los 6 Ciclos */}
+        {/* Listado de Ciclos con Asignaturas Reales */}
         <div className="divide-y divide-slate-200">
-          {kardex.ciclos.map(ciclo => {
+          {kardex.ciclos.filter(c => c.cursos.length > 0).length === 0 ? (
+            <div className="p-8 text-center text-slate-500 text-xs">
+              <BookOpen className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+              <p className="font-semibold text-slate-700">No hay asignaturas registradas en la malla para este estudiante.</p>
+              <p className="text-[11px] text-slate-500 mt-1">Los cursos aparecerán automáticamente cuando se configuren las asignaturas en la estructura del programa.</p>
+            </div>
+          ) : (
+            kardex.ciclos
+              .filter(c => c.cursos.length > 0)
+              .map(ciclo => {
             return (
               <div key={ciclo.cicloNumero} className="p-5 space-y-3">
                 {/* Cabecera del Ciclo */}
@@ -537,7 +546,8 @@ export function KardexAcademicoView({
                 </div>
               </div>
             );
-          })}
+          })
+          )}
         </div>
       </div>
 
@@ -590,7 +600,7 @@ export function KardexAcademicoView({
 
         {/* Tabla Consolidada para Impresión */}
         <div className="space-y-4">
-          {kardex.ciclos.map(ciclo => (
+          {kardex.ciclos.filter(c => c.cursos.length > 0).map(ciclo => (
             <div key={ciclo.cicloNumero} className="space-y-1">
               <div className="flex justify-between items-center bg-slate-200 px-3 py-1 font-bold text-xs uppercase">
                 <span>{ciclo.cicloNombre}</span>

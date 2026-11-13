@@ -265,7 +265,7 @@ export function MobileDrawer({
                       ? 'bg-[#c4121a] text-white shadow-sm font-bold'
                       : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
                   }`}
-                  href="/oferta"
+                  href="/oferta/programas"
                 >
                   <BookOpen className="w-4 h-4 shrink-0" />
                   <span>Oferta académica</span>

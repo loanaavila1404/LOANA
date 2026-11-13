@@ -61,6 +61,8 @@ interface Persona360ClientProps {
     requisitos: DocumentoRequisitoItem[];
   };
   initials: string;
+  ciclosDb?: any[];
+  cursosDb?: any[];
 }
 
 export function Persona360Client({
@@ -79,6 +81,8 @@ export function Persona360Client({
   pagos,
   integridad,
   initials,
+  ciclosDb = [],
+  cursosDb = [],
 }: Persona360ClientProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<
@@ -167,8 +171,22 @@ export function Persona360Client({
       estudiante,
       programaNombre: nombrePrograma,
       matriculas,
+      ciclosDb,
+      cursosDb,
+      totalCiclosPrograma:
+        programaPrincipal?.total_ciclos ||
+        planPrincipal?.total_ciclos ||
+        null,
     });
-  }, [estudiante, nombrePrograma, matriculas]);
+  }, [
+    estudiante,
+    nombrePrograma,
+    matriculas,
+    ciclosDb,
+    cursosDb,
+    programaPrincipal,
+    planPrincipal,
+  ]);
   const sedeUbicacion = persona.distrito
     ? `Sede Central · ${persona.distrito}`
     : "Sede Central Brusben";
@@ -544,7 +562,7 @@ export function Persona360Client({
                 }`}
               >
                 <Award className="w-4 h-4 text-[#C4121A]" />
-                <span>Kardex Académico (Ciclos I - VI)</span>
+                <span>Kardex Académico Oficial</span>
                 {kardex.totalArrastresActivos > 0 ? (
                   <span
                     className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${

@@ -329,6 +329,7 @@ export function buildKardexEstudiante(params: {
   matriculas: any[];
   cursosDb?: any[];
   ciclosDb?: any[];
+  totalCiclosPrograma?: number | null;
   prerrequisitosMap?: Record<string, string>; // cursoId o codigo -> prerrequisitoId o codigo
   calificacionesGuardadas?: Record<string, EvaluacionDesglose>; // key: `${estudianteId}_${cursoCodigo}`
 }): ResumenKardex {
@@ -338,6 +339,7 @@ export function buildKardexEstudiante(params: {
     matriculas = [],
     cursosDb = [],
     ciclosDb = [],
+    totalCiclosPrograma = null,
     prerrequisitosMap = {},
     calificacionesGuardadas = {},
   } = params;
@@ -345,8 +347,54 @@ export function buildKardexEstudiante(params: {
   const estId = estudiante?.id || '';
   const estCodigo = estudiante?.codigo_estudiante || 'EST-2026';
 
-  // 1. Obtener la plantilla de 6 ciclos
-  const plantilla6Ciclos = getMallaEstandarBrusben(programaNombre);
+  // 1. Determinar si existen ciclos y cursos reales cargados desde la base de datos
+  const hasRealDbCiclos = Boolean(ciclosDb && ciclosDb.length > 0);
+
+  type CicloSource = {
+    cicloNumero: number;
+    cicloNombre: string;
+    cursos: {
+      id?: string;
+      codigo: string;
+      nombre: string;
+      creditos: number;
+      horas: number;
+      prerrequisitoCodigo?: string | null;
+    }[];
+  };
+
+  let ciclosEstructura: CicloSource[] = [];
+
+  if (hasRealDbCiclos) {
+    const sortedDb = [...ciclosDb].sort(
+      (a, b) => Number(a.numero_orden || 1) - Number(b.numero_orden || 1)
+    );
+    ciclosEstructura = sortedDb.map(cDb => {
+      const cNum = Number(cDb.numero_orden || 1);
+      const cNom = cDb.nombre || `Ciclo ${cNum}`;
+      const cursosDelCiclo = cursosDb.filter((cd: any) => cd.ciclo_id === cDb.id);
+      return {
+        cicloNumero: cNum,
+        cicloNombre: cNom,
+        cursos: cursosDelCiclo.map((cd: any) => ({
+          id: cd.id,
+          codigo: cd.codigo || `CRS-${cd.id.slice(0, 6)}`,
+          nombre: cd.nombre,
+          creditos: Number(cd.creditos || 3),
+          horas: Number(cd.horas_semanales || 4),
+        })),
+      };
+    });
+  } else {
+    // Si no hay ciclos en la base de datos, limitar al total de ciclos configurado
+    const maxCiclos = totalCiclosPrograma && totalCiclosPrograma > 0 ? Math.min(6, totalCiclosPrograma) : 6;
+    const plantilla = getMallaEstandarBrusben(programaNombre).slice(0, maxCiclos);
+    ciclosEstructura = plantilla.map(p => ({
+      cicloNumero: p.cicloNumero,
+      cicloNombre: p.cicloNombre,
+      cursos: p.cursos,
+    }));
+  }
 
   // 2. Determinar ciclo actual basado en la última matrícula activa o mayor ciclo cursado
   let maxCicloMatriculado = 1;
@@ -385,7 +433,7 @@ export function buildKardexEstudiante(params: {
     };
   };
 
-  const ciclosKardex: CicloKardexItem[] = plantilla6Ciclos.map(plantillaCiclo => {
+  const ciclosKardex: CicloKardexItem[] = ciclosEstructura.map(plantillaCiclo => {
     const targetCicloNum = plantillaCiclo.cicloNumero;
     let cicloCreditosAprobados = 0;
     let cicloCreditosTotales = 0;
@@ -393,7 +441,7 @@ export function buildKardexEstudiante(params: {
     let cicloSumaPuntos = 0;
     let cicloCreditosConNota = 0;
 
-    const cursosMapeados: CursoKardexItem[] = plantillaCiclo.cursos.map((cPlantilla, cIdx) => {
+    const cursosMapeados: CursoKardexItem[] = plantillaCiclo.cursos.map((cPlantilla) => {
       // Buscar si el curso existe en base de datos
       const cursoDbMatch = cursosDb.find(
         (cd: any) =>
@@ -401,7 +449,7 @@ export function buildKardexEstudiante(params: {
           (cd.nombre || '').toLowerCase() === cPlantilla.nombre.toLowerCase()
       );
 
-      const cursoId = cursoDbMatch?.id || `CRS-GEN-${cPlantilla.codigo}`;
+      const cursoId = cPlantilla.id || cursoDbMatch?.id || `CRS-GEN-${cPlantilla.codigo}`;
       const creditos = cursoDbMatch?.creditos || cPlantilla.creditos || 3;
       const horas = cursoDbMatch?.horas_semanales || cPlantilla.horas || 4;
 

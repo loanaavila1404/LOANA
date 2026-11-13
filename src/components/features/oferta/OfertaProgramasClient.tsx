@@ -48,12 +48,11 @@ export function OfertaProgramasClient({
   initialTab = "programas",
 }: OfertaProgramasClientProps) {
   const [activeTab, setActiveTab] = useState<
-    "programas" | "ediciones" | "periodos" | "cursos" | "mallas"
+    "programas" | "ediciones" | "periodos" | "cursos"
   >(
     initialTab === "ediciones" ||
       initialTab === "periodos" ||
-      initialTab === "cursos" ||
-      initialTab === "mallas"
+      initialTab === "cursos"
       ? initialTab
       : "programas"
   );
@@ -213,12 +212,6 @@ export function OfertaProgramasClient({
       count: cursos.length,
       icon: BookOpen,
     },
-    {
-      id: "mallas" as const,
-      label: "Mallas Curriculares",
-      count: planes.length,
-      icon: Layers,
-    },
   ];
 
   return (
@@ -267,7 +260,7 @@ export function OfertaProgramasClient({
               <Calendar className="w-3.5 h-3.5 text-[#C4121A]" />
               <span>Ver Periodos</span>
             </Link>
-            <PeriodoFormModalClient triggerText="+ Nuevo Periodo" variant="outline" />
+            <PeriodoFormModalClient triggerText="+ Nuevo Periodo" variant="primary" />
             <Link
               href="/oferta/ficha"
               className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-800 hover:bg-slate-50 shadow-2xs text-xs font-bold transition"
@@ -276,6 +269,7 @@ export function OfertaProgramasClient({
               <span>Catálogo PDF</span>
             </Link>
             <EdicionFormModalClient
+              triggerText="+ Nueva Edición"
               programas={programas.map(p => ({ id: p.id, nombre: p.nombre }))}
               planes={planes.map(pl => ({
                 id: pl.id,
@@ -763,69 +757,6 @@ export function OfertaProgramasClient({
               </tbody>
             </table>
           </div>
-        </div>
-      )}
-
-      {/* VISTA 4: MALLAS CURRICULARES */}
-      {activeTab === "mallas" && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {planes.map(pl => {
-            const prog = programas.find(p => p.id === pl.programa_id);
-            const planCiclos = ciclos.filter(c => c.plan_id === pl.id);
-            const planCursos = cursos.filter(c => c.plan_id === pl.id);
-
-            return (
-              <div
-                key={pl.id}
-                className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs flex flex-col justify-between gap-4"
-              >
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs font-bold px-2.5 py-0.5 rounded bg-red-50 text-[#C4121A] border border-red-200">
-                      {pl.codigo}
-                    </span>
-                    <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                      Versión {pl.version || "2026.1"} · {pl.status || "ACTIVO"}
-                    </span>
-                  </div>
-                  <h3 className="text-base font-extrabold text-slate-900">
-                    {pl.nombre}
-                  </h3>
-                  <p className="text-xs text-slate-600">
-                    Programa:{" "}
-                    <strong className="text-slate-800">
-                      {prog?.nombre || "Programa Institucional"}
-                    </strong>
-                  </p>
-                </div>
-
-                <div className="flex items-center justify-between pt-3 border-t border-slate-100 text-xs">
-                  <span className="text-slate-600 font-medium">
-                    <strong>{planCiclos.length}</strong> ciclos ·{" "}
-                    <strong>{planCursos.length}</strong> cursos registrados
-                  </span>
-                  {prog && (
-                    <div className="flex items-center gap-2">
-                      <Link
-                        href={`/oferta/programas/${prog.id}/ficha`}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold"
-                      >
-                        <FileText className="w-3.5 h-3.5 text-[#C4121A]" />
-                        <span>PDF</span>
-                      </Link>
-                      <Link
-                        href={`/oferta/programas/${prog.id}`}
-                        className="inline-flex items-center gap-1 px-3 py-1 rounded bg-slate-900 hover:bg-[#C4121A] text-white font-bold transition"
-                      >
-                        <span>Ver Malla Completa</span>
-                        <ArrowRight className="w-3 h-3" />
-                      </Link>
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
         </div>
       )}
     </div>

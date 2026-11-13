@@ -578,39 +578,26 @@ export function ProgramaDetailClient({
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-[#C4121A]">
-                            {planActivo.codigo}
+                            {programa.codigo}
                           </span>
                           <h3 className="text-sm font-extrabold">
-                            {planActivo.nombre || "Malla Curricular Vigente"}
+                            Estructura Académica por Periodos Oficiales
                           </h3>
                         </div>
                         <p className="text-[11px] text-slate-300 mt-0.5">
-                          Versión {planActivo.version || "2026.1"} · Vigencia desde{" "}
-                          {planActivo.fecha_vigencia_desde || "2026-01-01"}
+                          Organización de ciclos formativos y asignaturas del programa
                         </p>
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <PlanFormModalClient
-                          programaId={programa.id}
-                          plan={planActivo}
-                          trigger={
-                            <button
-                              type="button"
-                              className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition"
-                            >
-                              Editar Plan
-                            </button>
-                          }
-                        />
                         <CicloFormModalClient
                           planId={planActivo.id}
                           trigger={
                             <button
                               type="button"
-                              className="px-3 py-1.5 rounded-lg bg-[#C4121A] hover:bg-[#a00e15] text-white text-xs font-bold transition"
+                              className="px-3.5 py-1.5 rounded-lg bg-[#C4121A] hover:bg-[#a00e15] text-white text-xs font-bold transition shadow-2xs flex items-center gap-1.5"
                             >
-                              + Agregar Ciclo Formativo
+                              + Nuevo Ciclo
                             </button>
                           }
                         />

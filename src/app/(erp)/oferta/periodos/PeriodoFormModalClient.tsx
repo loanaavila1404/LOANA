@@ -39,9 +39,26 @@ export function PeriodoFormModalClient({
   const [nombre, setNombre] = useState<string>(periodo?.nombre || `Primer Semestre Académico ${currentYear}`);
   const [fechaInicio, setFechaInicio] = useState<string>(periodo?.fecha_inicio || '');
   const [fechaFin, setFechaFin] = useState<string>(periodo?.fecha_fin || '');
+  const [userModifiedNombre, setUserModifiedNombre] = useState(false);
+  const [userModifiedFechas, setUserModifiedFechas] = useState(false);
 
   // Modal de doble confirmación para borrar
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const MESES = [
+    { value: '01', nombre: 'Enero' },
+    { value: '02', nombre: 'Febrero' },
+    { value: '03', nombre: 'Marzo' },
+    { value: '04', nombre: 'Abril' },
+    { value: '05', nombre: 'Mayo' },
+    { value: '06', nombre: 'Junio' },
+    { value: '07', nombre: 'Julio' },
+    { value: '08', nombre: 'Agosto' },
+    { value: '09', nombre: 'Setiembre' },
+    { value: '10', nombre: 'Octubre' },
+    { value: '11', nombre: 'Noviembre' },
+    { value: '12', nombre: 'Diciembre' },
+  ];
 
   useEffect(() => {
     if (isOpen) {
@@ -51,6 +68,8 @@ export function PeriodoFormModalClient({
         setNombre(periodo.nombre || '');
         setFechaInicio(periodo.fecha_inicio || '');
         setFechaFin(periodo.fecha_fin || '');
+        setUserModifiedNombre(true);
+        setUserModifiedFechas(true);
         // Extraer año y semestre si coincide el formato
         const parts = (periodo.codigo || '').split('-');
         if (parts.length === 2 && !isNaN(Number(parts[0]))) {
@@ -63,9 +82,11 @@ export function PeriodoFormModalClient({
           ? `Ciclo de Verano / Nivelación ${anio}`
           : `${semestre === 'I' ? 'Primer' : 'Segundo'} Semestre Académico ${anio}`;
         setCodigo(autoCode);
-        setNombre(autoNom);
-        setFechaInicio(`${anio}-${semestre === 'II' ? '08-01' : '03-01'}`);
-        setFechaFin(`${anio}-${semestre === 'II' ? '12-20' : '07-20'}`);
+        if (!userModifiedNombre) setNombre(autoNom);
+        if (!userModifiedFechas) {
+          setFechaInicio(`${anio}-${semestre === 'II' ? '08-01' : '03-01'}`);
+          setFechaFin(`${anio}-${semestre === 'II' ? '12-20' : '07-20'}`);
+        }
       }
     }
   }, [isOpen, periodo]);
@@ -76,14 +97,43 @@ export function PeriodoFormModalClient({
     setSemestre(newSem);
     const newCode = `${newYear}-${newSem}`;
     setCodigo(newCode);
-    if (!periodo) {
+    if (!periodo && !userModifiedNombre) {
       const newNom = newSem === 'V'
         ? `Ciclo de Verano / Nivelación ${newYear}`
         : `${newSem === 'I' ? 'Primer' : 'Segundo'} Semestre Académico ${newYear}`;
       setNombre(newNom);
-      setFechaInicio(`${newYear}-${newSem === 'II' ? '08-01' : '03-01'}`);
-      setFechaFin(`${newYear}-${newSem === 'II' ? '12-20' : '07-20'}`);
     }
+    if (!periodo && !userModifiedFechas) {
+      if (newSem === 'I') {
+        setFechaInicio(`${newYear}-03-01`);
+        setFechaFin(`${newYear}-07-31`);
+      } else if (newSem === 'II') {
+        setFechaInicio(`${newYear}-08-01`);
+        setFechaFin(`${newYear}-12-31`);
+      } else if (newSem === 'V') {
+        setFechaInicio(`${newYear}-01-05`);
+        setFechaFin(`${newYear}-02-28`);
+      }
+    }
+  };
+
+  const handleSugerirValores = () => {
+    const autoNom = semestre === 'V'
+      ? `Ciclo de Verano / Nivelación ${anio}`
+      : `${semestre === 'I' ? 'Primer' : 'Segundo'} Semestre Académico ${anio}`;
+    setNombre(autoNom);
+    setUserModifiedNombre(false);
+    if (semestre === 'I') {
+      setFechaInicio(`${anio}-03-01`);
+      setFechaFin(`${anio}-07-31`);
+    } else if (semestre === 'II') {
+      setFechaInicio(`${anio}-08-01`);
+      setFechaFin(`${anio}-12-31`);
+    } else if (semestre === 'V') {
+      setFechaInicio(`${anio}-01-05`);
+      setFechaFin(`${anio}-02-28`);
+    }
+    setUserModifiedFechas(false);
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -131,7 +181,6 @@ export function PeriodoFormModalClient({
       const result = await deletePeriodoAction(periodo.id, 'Eliminación manual desde panel de periodos');
       if (result.error) {
         setError(result.error);
-        setShowDeleteConfirm(false);
       } else {
         setShowDeleteConfirm(false);
         setIsOpen(false);
@@ -185,9 +234,9 @@ export function PeriodoFormModalClient({
                   onChange={e => handleAutoGenerate(anio, e.target.value as 'I' | 'II' | 'V')}
                   className="w-full text-xs font-semibold p-1.5 rounded-lg border border-slate-200 bg-white"
                 >
-                  <option value="I">Semestre I (Marzo - Julio)</option>
-                  <option value="II">Semestre II (Agosto - Diciembre)</option>
-                  <option value="V">Ciclo Verano (Enero - Febrero)</option>
+                  <option value="I">Semestre I (Primer Semestre)</option>
+                  <option value="II">Semestre II (Segundo Semestre)</option>
+                  <option value="V">Ciclo de Verano / Nivelación</option>
                 </select>
               </div>
             </div>
@@ -214,35 +263,105 @@ export function PeriodoFormModalClient({
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-700">Nombre Oficial del Periodo *</label>
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-semibold text-slate-700">Nombre Oficial del Periodo *</label>
+              <button
+                type="button"
+                onClick={handleSugerirValores}
+                className="text-[10.5px] text-[#C4121A] hover:underline font-semibold"
+              >
+                Sugerir estándar
+              </button>
+            </div>
             <Input
               name="nombre"
               value={nombre}
-              onChange={e => setNombre(e.target.value)}
+              onChange={e => {
+                setNombre(e.target.value);
+                setUserModifiedNombre(true);
+              }}
               required
               placeholder="Ej: Primer Semestre Académico 2026"
               className="text-slate-900 bg-white"
             />
           </div>
 
+          {/* Selector de Meses Flexible (Opcional) */}
+          <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-xs space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-slate-700 flex items-center gap-1">
+                <Calendar className="w-3.5 h-3.5 text-[#C4121A]" />
+                <span>Flexibilidad de Meses del Periodo</span>
+              </span>
+              <span className="text-[10px] text-slate-500 font-medium">Rangos según realidad operativa</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-[10px] font-medium text-slate-500 block mb-0.5">Mes de Inicio</label>
+                <select
+                  value={fechaInicio ? fechaInicio.slice(5, 7) : ''}
+                  onChange={e => {
+                    const m = e.target.value;
+                    if (m) {
+                      setFechaInicio(`${anio}-${m}-01`);
+                      setUserModifiedFechas(true);
+                    }
+                  }}
+                  className="w-full text-xs p-1.5 rounded-lg border border-slate-200 bg-white font-medium"
+                >
+                  <option value="">Seleccionar mes...</option>
+                  {MESES.map(m => (
+                    <option key={m.value} value={m.value}>{m.nombre}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-[10px] font-medium text-slate-500 block mb-0.5">Mes de Fin</label>
+                <select
+                  value={fechaFin ? fechaFin.slice(5, 7) : ''}
+                  onChange={e => {
+                    const m = e.target.value;
+                    if (m) {
+                      const lastDay = new Date(anio, Number(m), 0).getDate();
+                      setFechaFin(`${anio}-${m}-${String(lastDay).padStart(2, '0')}`);
+                      setUserModifiedFechas(true);
+                    }
+                  }}
+                  className="w-full text-xs p-1.5 rounded-lg border border-slate-200 bg-white font-medium"
+                >
+                  <option value="">Seleccionar mes...</option>
+                  {MESES.map(m => (
+                    <option key={m.value} value={m.value}>{m.nombre}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-700">Fecha de Inicio</label>
+              <label className="text-xs font-semibold text-slate-700">Fecha de Inicio Exacta</label>
               <Input
                 type="date"
                 name="fecha_inicio"
                 value={fechaInicio}
-                onChange={e => setFechaInicio(e.target.value)}
+                onChange={e => {
+                  setFechaInicio(e.target.value);
+                  setUserModifiedFechas(true);
+                }}
                 className="text-slate-900 bg-white"
               />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-700">Fecha de Fin</label>
+              <label className="text-xs font-semibold text-slate-700">Fecha de Fin Exacta</label>
               <Input
                 type="date"
                 name="fecha_fin"
                 value={fechaFin}
-                onChange={e => setFechaFin(e.target.value)}
+                onChange={e => {
+                  setFechaFin(e.target.value);
+                  setUserModifiedFechas(true);
+                }}
                 className="text-slate-900 bg-white"
               />
             </div>
